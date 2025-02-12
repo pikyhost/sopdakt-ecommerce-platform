@@ -1,0 +1,97 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Resources\BundleResource\Pages;
+use App\Models\Bundle;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Resources\Concerns\Translatable;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
+
+class BundleResource extends Resource
+{
+    use Translatable;
+
+    protected static ?string $model = Bundle::class;
+
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Forms\Components\TextInput::make('name')
+                    ->required()
+                    ->maxLength(255),
+                Forms\Components\TextInput::make('main_product_id')
+                    ->numeric(),
+                Forms\Components\TextInput::make('bundle_category')
+                    ->required(),
+                Forms\Components\TextInput::make('bundle_type'),
+                Forms\Components\TextInput::make('discount_price')
+                    ->numeric(),
+                Forms\Components\TextInput::make('buy_x')
+                    ->numeric(),
+                Forms\Components\TextInput::make('get_y')
+                    ->numeric(),
+                Forms\Components\TextInput::make('discount_percentage')
+                    ->numeric(),
+            ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('main_product_id')
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('bundle_category'),
+                Tables\Columns\TextColumn::make('bundle_type'),
+                Tables\Columns\TextColumn::make('discount_price')
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('buy_x')
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('get_y')
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('discount_percentage')
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->filters([
+                //
+            ])
+            ->actions([
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ]);
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ManageBundles::route('/'),
+        ];
+    }
+}

@@ -1,0 +1,226 @@
+<?php
+
+namespace App\Models;
+
+use App\Enums\Status;
+use Cviebrock\EloquentSluggable\Sluggable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Parallax\FilamentComments\Models\Traits\HasFilamentComments;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\Translatable\HasTranslations;
+
+class Product extends Model implements HasMedia
+{
+    use HasFactory, HasTranslations, InteractsWithMedia, HasFilamentComments;
+
+    public $translatable = [
+        'name',
+        'description',
+        'summary',
+        'meta_title',
+        'meta_description',
+        'product_name',
+        'user_name'
+    ];
+
+    protected $casts = [
+        'discount_start' => 'datetime',
+        'discount_end' => 'datetime',
+        'saved_at' => 'datetime',
+        'rating_status' => Status::class
+    ];
+
+    protected $guarded = [];
+
+    protected static function booted()
+    {
+        // Create inventory record when a product is created
+        static::created(function (Product $product) {
+            Inventory::create([
+                'product_id' => $product->id,
+                'quantity'   => $product->quantity,
+            ]);
+        });
+
+        // Update inventory when product quantity changes
+        static::updated(function (Product $product) {
+            if ($product->wasChanged('quantity')) {
+                Inventory::where('product_id', $product->id)
+                    ->update(['quantity' => $product->quantity]);
+            }
+        });
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function label()
+    {
+        return $this->belongsTo(Label::class);
+    }
+
+    public function sizes()
+    {
+        return $this->belongsToMany(Size::class, 'product_sizes');
+    }
+
+    public function colors()
+    {
+        return $this->belongsToMany(Color::class, 'product_colors');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function attributes()
+    {
+        return $this->hasMany(Attribute::class);
+    }
+
+    function shippingTypes()
+    {
+        return $this->belongsToMany(ShippingType::class)->withPivot(['shipping_cost', 'status']);
+    }
+
+    function shippingZones()
+    {
+        return $this->belongsToMany(Zone::class,'product_shipping_zone')->withPivot(['shipping_cost', 'status']);
+    }
+
+    function shippingGovernorates()
+    {
+        return $this->belongsToMany(Governorate::class,'product_governorate')->withPivot(['shipping_cost', 'status']);
+    }
+
+    function shippingRegions()
+    {
+        return $this->belongsToMany(Region::class,'product_region')->withPivot(['shipping_cost', 'status']);
+    }
+
+    public function specialPrices()
+    {
+        return $this->hasMany(ProductSpecialPrice::class, 'product_id', 'id');
+    }
+
+
+    public function inventory()
+    {
+        return $this->hasOne(Inventory::class);
+    }
+
+    public function getStockAttribute()
+    {
+        return $this->inventory ? $this->inventory->quantity : 0;
+    }
+
+    /**
+     * Get comments related to the book.
+     */
+    public function filamentComments()
+    {
+        return $this->morphMany(CustomFilamentComment::class, 'subject');
+    }
+
+    public function ratings()
+    {
+        return $this->hasMany(ProductRating::class);
+    }
+
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    /**
+     * Get the URL for the 'main_author_image' .
+     */
+    public function getMainCategoryImageUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('main_category_image') ?: null;
+    }
+
+    // Media Collections
+    public function registerMediaCollections(): void
+    {
+        $this
+            ->addMediaCollection('main_product_image')
+            ->singleFile()
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp'])
+            ->registerMediaConversions(function () {
+                $this->addMediaConversion('thumb')
+                    ->width(150)
+                    ->height(150)
+                    ->sharpen(10)
+                    ->nonQueued();
+
+                $this->addMediaConversion('medium')
+                    ->width(400)
+                    ->height(400)
+                    ->nonQueued();
+            });
+
+        $this
+            ->addMediaCollection('sizes_image')
+            ->singleFile();
+
+        $this
+            ->addMediaCollection('more_product_images')
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+
+        $this->addMediaCollection('video')
+            ->singleFile();
+    }
+
+    /**
+     * Get the URL for the 'main_author_image' .
+     */
+    public function getMainProductImageUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('main_product_image') ?: null;
+    }
+
+
+    public function getMoreProductImagesUrls(string $conversion = 'medium'): array
+    {
+        return $this->getMedia('more_product_images')
+            ->map(fn ($media) => $media->getUrl($conversion))
+            ->toArray();
+    }
+
+
+    public function usersWhoSaved(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'saved_products', 'product_id', 'user_id')
+            ->withTimestamps()
+            ->withPivot('created_at as saved_at');
+    }
+
+    public function getPriceForCurrentCountryAttribute()
+    {
+        return \App\Helpers\GeneralHelper::getPriceForCountry($this);
+    }
+
+    public function getDiscountPriceForCurrentCountryAttribute()
+    {
+        return \App\Helpers\GeneralHelper::getPriceForCountryWithDiscount($this);
+    }
+
+    public function getRouteKeyName()
+    {
+        return 'slug'; // This allows Laravel to automatically resolve routes by slug instead of ID
+    }
+
+    public function bundles()
+    {
+        return $this->belongsToMany(Bundle::class, 'bundle_product')->withPivot('quantity');
+    }
+
+}

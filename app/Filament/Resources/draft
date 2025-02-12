@@ -1,0 +1,35 @@
+   Repeater::make('specialPrices')
+                                    ->label(__('tabs.special_prices'))
+                                    ->relationship('specialPrices')
+                                    ->columns(2)
+                                    ->schema([
+                                        Placeholder::make('country_or_group_info')
+                                            ->label(__('country_or_group_info'))
+                                            ->content(__('messages.select_country_or_group'))
+                                            ->columnSpanFull(),
+
+                                        Select::make('country_id')
+                                            ->label(__('fields.select_country'))
+                                            ->relationship('country', 'name')
+                                            ->nullable()
+                                            ->live()
+                                            ->afterStateUpdated(fn (Forms\Set $set) => $set('country_group_id', null))
+                                            ->hidden(fn (Forms\Get $get) => filled($get('country_group_id')))
+                                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                                            ->disableOptionWhen(function (string $value, Forms\Get $get) {
+                                                $allItems = $get('../../specialPrices') ?? [];
+                                                $selectedGroupIds = collect($allItems)->pluck('country_group_id')->filter()->unique()->values();
+
+                                                if ($selectedGroupIds->isEmpty()) {
+                                                    return false;
+                                                }
+
+                                                // Fetch all countries associated with the selected country groups
+                                                $disabledCountries = \App\Models\CountryGroup::whereIn('id', $selectedGroupIds)
+                                                    ->with('countries')
+                                                    ->get()
+                                                    ->flatMap(fn ($group) => $group->countries->pluck('id'))
+                                                    ->toArray();
+
+                                                return in_array($value, $disabledCountries);
+                                            }, merge: true),
