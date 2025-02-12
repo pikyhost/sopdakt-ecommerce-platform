@@ -32,3 +32,8 @@ Route::get('/products/{slug}', [ProductController::class, 'show'])->name('produc
 
 Route::post('/wishlist/toggle', [ProductController::class, 'toggleWishlist'])->middleware('auth');
 Route::get('/wishlist/check/{productId}', [ProductController::class, 'checkWishlist'])->middleware('auth');
+
+
+Route::get('test-push', function () {
+    return 'success';
+});
