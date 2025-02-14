@@ -202,7 +202,7 @@ class ProductResource extends Resource
                             ]),
                         Tab::make(__('Features'))
                             ->columns(3)
-                            ->icon('heroicon-o-bolt')
+                            ->icon('heroicon-o-table-cells')
                             ->schema([
                                 Select::make('label_id')
                                     ->label(__('label'))
@@ -232,35 +232,41 @@ class ProductResource extends Resource
                                             ->preload()
                                             ->createOptionForm([
                                                 TextInput::make('name')
+                                                    ->columnSpanFull()
                                                     ->label(__('Attribute Name'))
                                                     ->required(),
 
+                                                Textarea::make('description')
+                                                    ->columnSpanFull()
+                                                    ->label(__('Description'))
+                                                    ->nullable(),
+
                                                 Select::make('type')
-                                                    ->label(__('Attribute Type'))
+                                                    ->columnSpanFull()
+                                                    ->label(__('attributes.type'))
                                                     ->options([
-                                                        'boolean' => __('Boolean (Yes/No)'),
-                                                        'select' => __('Select (Dropdown)'),
-                                                        'text' => __('Text Input'),
+                                                        'boolean' => __('attributes.type.boolean'),
+                                                        'select' => __('attributes.type.select'),
+                                                        'text' => __('attributes.type.text'),
                                                     ])
                                                     ->live()
                                                     ->required(),
 
                                                 Toggle::make('default_value')
+                                                    ->columnSpanFull()
                                                     ->label(__('Default Value (for Boolean)'))
                                                     ->visible(fn ($get) => $get('type') === 'boolean'),
 
                                                 KeyValue::make('values')
+                                                ->columnSpanFull()
                                                     ->label(__('Attribute Values (for Select type)'))
                                                     ->visible(fn ($get) => $get('type') === 'select')
                                                     ->addActionLabel(__('Add Option')),
 
                                                 TextInput::make('default_value')
+                                                ->columnSpanFull()
                                                     ->label(__('Default Value (for Text)'))
                                                     ->visible(fn ($get) => $get('type') === 'text'),
-
-                                                Textarea::make('description')
-                                                    ->label(__('Description'))
-                                                    ->nullable()
                                             ]),
 
                                         KeyValue::make('custom_attributes')
