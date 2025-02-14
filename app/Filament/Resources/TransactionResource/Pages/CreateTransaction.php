@@ -44,7 +44,7 @@ class CreateTransaction extends CreateRecord
 
         $this->getCreatedNotification()?->send();
 
-        $this->getRedirectUrl();
+        $this->redirect('/admin/transactions', true);
     }
 
     protected function getRedirectUrl(): string
