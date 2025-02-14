@@ -99,8 +99,7 @@ class TransactionResource extends Resource
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('notes')
-                    ->label(__('Notes'))
-                    ->wrap(), // Optional: Ensures text wraps in the column
+                    ->label(__('Notes')),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
