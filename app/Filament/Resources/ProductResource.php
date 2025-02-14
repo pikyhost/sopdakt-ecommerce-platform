@@ -336,9 +336,6 @@ class ProductResource extends Resource
                                     ->relationship('bundles', 'name')
                                     ->preload()
                                     ->createOptionForm([
-                                        Hidden::make('main_product_id')
-                                            ->default(fn () => \App\Models\Product::where('slug', request()->route('record'))->value('id')),
-
                                         TextInput::make('name')
                                             ->label(__('bundles.name'))
                                             ->required(),
@@ -383,7 +380,67 @@ class ProductResource extends Resource
                                             ->multiple()
                                             ->relationship('products', 'name')
                                             ->preload(),
-                                    ])
+
+                                        // Special Prices for Bundles
+                                        Repeater::make('specialPrices')
+                                            ->label(__('bundles.special_prices'))
+                                            ->relationship('specialPrices')
+                                            ->columns(2)
+                                            ->schema([
+                                                Placeholder::make('country_or_group_info')
+                                                    ->label(__('country_or_group_info'))
+                                                    ->content(__('messages.select_country_or_group'))
+                                                    ->columnSpanFull(),
+
+                                                Select::make('country_id')
+                                                    ->label(__('fields.select_country'))
+                                                    ->relationship('country', 'name')
+                                                    ->nullable()
+                                                    ->live()
+                                                    ->afterStateUpdated(fn (Forms\Set $set) => $set('country_group_id', null))
+                                                    ->hidden(fn (Forms\Get $get) => filled($get('country_group_id')))
+                                                    ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
+
+                                                Select::make('country_group_id')
+                                                    ->label(__('fields.select_country_group'))
+                                                    ->relationship('countryGroup', 'name')
+                                                    ->preload()
+                                                    ->createOptionForm([
+                                                        Forms\Components\TextInput::make('name')
+                                                            ->label(__('name'))
+                                                            ->required()
+                                                            ->maxLength(255),
+
+                                                        Forms\Components\Select::make('countries')
+                                                            ->label(__('countries'))
+                                                            ->relationship('countries', 'name')
+                                                            ->multiple()
+                                                            ->searchable()
+                                                            ->preload(),
+                                                    ])
+                                                    ->nullable()
+                                                    ->live()
+                                                    ->afterStateUpdated(fn (Forms\Set $set) => $set('country_id', null))
+                                                    ->hidden(fn (Forms\Get $get) => filled($get('country_id')))
+                                                    ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
+
+                                                Select::make('currency_id')
+                                                    ->label(__('fields.currency'))
+                                                    ->relationship('currency', 'name')
+                                                    ->required(),
+
+                                                TextInput::make('special_price')
+                                                    ->label(__('bundles.special_price'))
+                                                    ->numeric()
+                                                    ->required(),
+
+                                                TextInput::make('special_price_after_discount')
+                                                    ->lt('special_price')
+                                                    ->label(__('bundles.after_discount_price'))
+                                                    ->numeric()
+                                                    ->nullable(),
+                                            ])->columnSpanFull(),
+                                    ]),
                             ]),
 
                         // Additional Info Tab

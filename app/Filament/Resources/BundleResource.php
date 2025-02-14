@@ -5,6 +5,8 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\BundleResource\Pages;
 use App\Models\Bundle;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
@@ -56,22 +58,121 @@ class BundleResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('main_product_id')
-                    ->numeric(),
-                Forms\Components\TextInput::make('bundle_category')
-                    ->required(),
-                Forms\Components\TextInput::make('bundle_type'),
-                Forms\Components\TextInput::make('discount_price')
-                    ->numeric(),
-                Forms\Components\TextInput::make('buy_x')
-                    ->numeric(),
-                Forms\Components\TextInput::make('get_y')
-                    ->numeric(),
-                Forms\Components\TextInput::make('discount_percentage')
-                    ->numeric(),
+                Forms\Components\Tabs::make()
+                    ->columnSpanFull()
+                    ->tabs([
+                        // General Information Tab
+                        Forms\Components\Tabs\Tab::make(__('bundles.general_information'))
+                            ->columnSpanFull()
+                            ->schema([
+                                TextInput::make('name')
+                                    ->label(__('bundles.name'))
+                                    ->required(),
+
+                                Select::make('bundle_type')
+                                    ->live()
+                                    ->label(__('bundles.type'))
+                                    ->options([
+                                        'fixed_price' => __('bundles.type.fixed_price'),
+                                        'discount_percentage' => __('bundles.type.discount_percentage'),
+                                        'buy_x_get_y' => __('bundles.type.buy_x_get_y'),
+                                    ])
+                                    ->required(),
+
+                                TextInput::make('discount_price')
+                                    ->live()
+                                    ->label(__('bundles.discount_price'))
+                                    ->numeric()
+                                    ->visible(fn ($get) => $get('bundle_type') == 'fixed_price'),
+
+                                TextInput::make('discount_percentage')
+                                    ->live()
+                                    ->label(__('bundles.discount_percentage'))
+                                    ->numeric()
+                                    ->visible(fn ($get) => $get('bundle_type') == 'discount_percentage'),
+
+                                TextInput::make('buy_x')
+                                    ->live()
+                                    ->label(__('bundles.buy_x'))
+                                    ->numeric()
+                                    ->visible(fn ($get) => $get('bundle_type') === 'buy_x_get_y'),
+
+                                TextInput::make('get_y')
+                                    ->live()
+                                    ->label(__('bundles.get_y_free'))
+                                    ->numeric()
+                                    ->visible(fn ($get) => $get('bundle_type') === 'buy_x_get_y'),
+
+                                Select::make('products')
+                                    ->visible(fn ($get) => $get('bundle_type') !== 'buy_x_get_y')
+                                    ->label(__('bundles.products'))
+                                    ->multiple()
+                                    ->relationship('products', 'name')
+                                    ->preload(),
+                            ]),
+
+                        // Special Prices Tab
+                        Forms\Components\Tabs\Tab::make(__('bundles.special_prices'))
+                            ->schema([
+                                Forms\Components\Repeater::make('specialPrices')
+                                    ->label(__('bundles.special_prices'))
+                                    ->relationship('specialPrices')
+                                    ->columns(2)
+                                    ->schema([
+                                        Forms\Components\Placeholder::make('country_or_group_info')
+                                            ->label(__('country_or_group_info'))
+                                            ->content(__('messages.select_country_or_group'))
+                                            ->columnSpanFull(),
+
+                                        Forms\Components\Select::make('country_id')
+                                            ->label(__('fields.select_country'))
+                                            ->relationship('country', 'name')
+                                            ->nullable()
+                                            ->live()
+                                            ->afterStateUpdated(fn (Forms\Set $set) => $set('country_group_id', null))
+                                            ->hidden(fn (Forms\Get $get) => filled($get('country_group_id')))
+                                            ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
+
+                                        Forms\Components\Select::make('country_group_id')
+                                            ->label(__('fields.select_country_group'))
+                                            ->relationship('countryGroup', 'name')
+                                            ->preload()
+                                            ->createOptionForm([
+                                                Forms\Components\TextInput::make('name')
+                                                    ->label(__('name'))
+                                                    ->required()
+                                                    ->maxLength(255),
+                                                Forms\Components\Select::make('countries')
+                                                    ->label(__('countries'))
+                                                    ->relationship('countries', 'name')
+                                                    ->multiple()
+                                                    ->searchable()
+                                                    ->preload(),
+                                            ])
+                                            ->nullable()
+                                            ->live()
+                                            ->afterStateUpdated(fn (Forms\Set $set) => $set('country_id', null))
+                                            ->hidden(fn (Forms\Get $get) => filled($get('country_id')))
+                                            ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
+
+                                        Forms\Components\Select::make('currency_id')
+                                            ->label(__('fields.currency'))
+                                            ->relationship('currency', 'name')
+                                            ->required(),
+
+                                        Forms\Components\TextInput::make('special_price')
+                                            ->label(__('bundles.special_price'))
+                                            ->numeric()
+                                            ->required(),
+
+                                        Forms\Components\TextInput::make('special_price_after_discount')
+                                            ->lt('special_price')
+                                            ->label(__('bundles.after_discount_price'))
+                                            ->numeric()
+                                            ->nullable(),
+                                    ])->columnSpanFull(),
+                            ]),
+                    ]),
             ]);
     }
 
@@ -80,22 +181,35 @@ class BundleResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
+                    ->label(__('bundles.name'))
                     ->searchable(),
-                Tables\Columns\TextColumn::make('main_product_id')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('bundle_category'),
-                Tables\Columns\TextColumn::make('bundle_type'),
+                Tables\Columns\TextColumn::make('products.name')
+                    ->label(__('bundles.products'))
+                    ->placeholder('-')
+                    ->label(__('Sizes'))
+                    ->limitList(2)
+                    ->badge(),
+                Tables\Columns\TextColumn::make('bundle_type')
+                    ->badge()
+                    ->label(__('bundles.type')),
                 Tables\Columns\TextColumn::make('discount_price')
+                    ->placeholder('-')
+                    ->label(__('bundles.discount_price'))
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('buy_x')
+                    ->placeholder('-')
+                    ->label(__('bundles.buy_x'))
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('get_y')
+                    ->placeholder('-')
+                    ->label(__('bundles.get_y_free'))
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('discount_percentage')
+                    ->placeholder('-')
+                    ->label(__('bundles.discount_percentage'))
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
@@ -106,9 +220,6 @@ class BundleResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
-                //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

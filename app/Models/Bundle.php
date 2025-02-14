@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BundleType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
@@ -17,6 +18,10 @@ class Bundle extends Model
     protected $fillable = [
         'name', 'main_product_id', 'bundle_category', 'bundle_type',
         'discount_price', 'buy_x', 'get_y', 'discount_percentage'
+    ];
+
+    protected $casts = [
+        'bundle_type' => BundleType::class,
     ];
 
     public function mainProduct()
@@ -69,4 +74,8 @@ class Bundle extends Model
         }
     }
 
+    public function specialPrices()
+    {
+        return $this->hasMany(BundleSpecialPrice::class);
+    }
 }

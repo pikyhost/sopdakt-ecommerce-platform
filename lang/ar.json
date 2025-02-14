@@ -384,5 +384,12 @@
     "bundles.discount_percentage": "نسبة الخصم",
     "bundles.buy_x": "شراء X",
     "bundles.get_y_free": "احصل على Y مجانًا",
-    "bundles.products": "المنتجات في العرض"
+    "bundles.products": "المنتجات في العرض",
+    "bundles.special_prices": "تفضيلات البلاد لعروض المنتج",
+    "bundles.special_price": "تفضيلات البلاد",
+    "bundles.after_discount_price": "السعر بعد الخصم",
+
+
+    "bundles.fixed_price": "سعر ثابت",
+    "bundles.buy_x_get_y": "اشترِ X واحصل على Y"
 }

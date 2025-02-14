@@ -16,6 +16,7 @@ class ManageBundles extends ManageRecords
     {
         return [
             Actions\CreateAction::make(),
+            Actions\LocaleSwitcher::make(),
         ];
     }
 }

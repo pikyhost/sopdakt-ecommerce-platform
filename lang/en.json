@@ -240,13 +240,19 @@
     "attributes.custom": "Custom Attributes",
     "attributes.custom.add": "Add Custom Attribute",
 
+
+    "bundles.fixed_price": "Fixed Price",
+    "bundles.buy_x_get_y": "Buy X Get Y",
+
     "attributes.label": "Attributes",
     "attributes.values.add_option": "Add Option",
     "select_predefined_attributes": "Select Predefined Attributes",
     "custom_attributes": "Custom Attributes",
     "custom_attributes.add": "Add Custom Attribute",
 
-
+    "bundles.special_prices": "Special Prices for Bundles",
+    "bundles.special_price": "Special Price",
+    "bundles.after_discount_price": "After Discount Price",
     "attributes.boolean": "Boolean (Yes/No)",
     "attributes.select": "Select (Dropdown)",
     "attributes.text": "Text Input",

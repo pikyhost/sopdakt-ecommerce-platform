@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('name'); // Bundle name
             $table->foreignId('main_product_id')->nullable()->constrained('products')->onDelete('cascade');
-            $table->enum('bundle_category', ['discount', 'accessory'])->default('discount'); // Category
             $table->enum('bundle_type', ['fixed_price', 'discount_percentage', 'buy_x_get_y'])->nullable(); // Bundle type for discount bundles
             $table->integer('discount_price')->nullable(); // Fixed bundle price
             $table->unsignedInteger('buy_x')->nullable(); // Needed for "Buy X Get Y Free"
