@@ -22,13 +22,4 @@ class ProductRating extends Model
     {
         return $this->belongsTo(User::class);
     }
-
-    public function comment()
-    {
-        return $this->hasOne(CustomFilamentComment::class, 'subject_id')
-            ->where('subject_type', Product::class)
-            ->where('user_id', $this->user_id);
-    }
-
-
 }

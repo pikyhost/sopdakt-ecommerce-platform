@@ -37,3 +37,7 @@ Route::get('/wishlist/check/{productId}', [ProductController::class, 'checkWishl
 Route::get('test-push', function () {
     return 'success';
 });
+
+Route::get('live', function () {
+    return 'server is live now';
+});

@@ -3,18 +3,16 @@
 namespace App\Models;
 
 use App\Enums\Status;
-use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Parallax\FilamentComments\Models\Traits\HasFilamentComments;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Translatable\HasTranslations;
 
 class Product extends Model implements HasMedia
 {
-    use HasFactory, HasTranslations, InteractsWithMedia, HasFilamentComments;
+    use HasFactory, HasTranslations, InteractsWithMedia;
 
     public $translatable = [
         'name',
@@ -120,14 +118,6 @@ class Product extends Model implements HasMedia
         return $this->inventory ? $this->inventory->quantity : 0;
     }
 
-    /**
-     * Get comments related to the book.
-     */
-    public function filamentComments()
-    {
-        return $this->morphMany(CustomFilamentComment::class, 'subject');
-    }
-
     public function ratings()
     {
         return $this->hasMany(ProductRating::class);
@@ -222,5 +212,4 @@ class Product extends Model implements HasMedia
     {
         return $this->belongsToMany(Bundle::class, 'bundle_product')->withPivot('quantity');
     }
-
 }

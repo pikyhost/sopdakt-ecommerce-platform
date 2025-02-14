@@ -9,14 +9,14 @@
     "Environment file not found.": "لم يتم العثور على ملف البيئة.",
 
     "reviewed_products.title": "المنتجات التي تم تقييمها",
-    "reviewed_products.navigation_label": "تقييم المنتجات",
+    "reviewed_products.navigation_label": "تقييمات المنتجات",
     "reviewed_products.navigation_group": "تجربة المستخدم",
     "reviewed_products.model_label": "مراجعة منتج",
-    "reviewed_products.plural_label": "تقييم المنتجات",
-    "reviewed_products.table_header": "قائمة تقييم المنتجات",
-    "reviewed_products.heading": "تقييم المنتجات (آراء المستخدمين)",
+    "reviewed_products.plural_label": "تقييمات المنتجات",
+    "reviewed_products.table_header": "قائمة تقييمات المنتجات",
+    "reviewed_products.heading": "تقييمات المنتجات (آراء المستخدمين)",
     "reviewed_products.label": "مراجعة منتج",
-    "reviewed_products.plural_model_label": "تقييم المنتجات (آراء المستخدمين)",
+    "reviewed_products.plural_model_label": "تقييمات المنتجات (آراء المستخدمين)",
 
 
     "errors": "أخطاء",
@@ -154,6 +154,17 @@
     "Description": "الوصف",
     "Slug": "الرابط الدائم",
     "Stock & Pricing": "المخزون والتسعير",
+
+    "comments.add": "إضافة تعليق",
+    "comments.empty": "لا توجد تعليقات بعد.",
+    "comments.placeholder": "أضف تعليقاً...",
+
+    "notifications.created": "تم إضافة التعليق.",
+    "notifications.deleted": "تم حذف التعليق.",
+
+    "modal.heading": "التعليقات",
+
+    "comments.delete.tooltip": "حذف التعليق",
     "transaction": "العمليات",
     "Price": "السعر",
     "Has Discount": "هل هناك خصم",

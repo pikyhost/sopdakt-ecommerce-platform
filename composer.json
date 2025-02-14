@@ -21,7 +21,6 @@
         "laravel/tinker": "^2.9",
         "livewire/livewire": "^3.5",
         "mokhosh/filament-rating": "^1.4",
-        "parallax/filament-comments": "^1.4",
         "pxlrbt/filament-excel": "^2.4",
         "solution-forest/filament-simplelightbox": "^0.0.10",
         "spatie/laravel-medialibrary": "^11.12",

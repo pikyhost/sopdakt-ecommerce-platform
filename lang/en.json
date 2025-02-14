@@ -12,6 +12,17 @@
     "product.actions.view_details": "View details",
     "tabs.special_prices": "Countries preferences",
 
+    "comments.add": "Add comment",
+    "comments.empty": "No comments yet.",
+    "comments.placeholder": "Add a comment...",
+
+    "notifications.created": "Comment added.",
+    "notifications.deleted": "Comment deleted.",
+
+    "modal.heading": "Comments",
+
+    "comments.delete.tooltip": "Delete comment",
+
     "fields.text_title": "Text title",
     "fields.text_color": "Text title color",
     "fields.text_color_code": "Text title color code",

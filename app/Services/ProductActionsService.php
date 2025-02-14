@@ -97,10 +97,9 @@ class ProductActionsService
                         ->rows(3)
                         ->hiddenLabel()
                         ->helperText(__('Add any notes (optional)'))
-                        ->placeholder(__('filament-comments::filament-comments.comments.placeholder'))
+                        ->placeholder(__('comments.placeholder'))
                         ->default(fn ($record) =>
-                        CustomFilamentComment::where('subject_type', $record->getMorphClass())
-                            ->where('subject_id', $record->id)
+                        ProductRating::where('product_id', $record->id)
                             ->where('user_id', Auth::id())
                             ->value('comment')
                         ),
@@ -122,10 +121,10 @@ class ProductActionsService
         // Set status based on role
         $status = $isAdmin ? 'approved' : 'pending';
 
-        // Save or update the rating
+        // Save or update the rating & comment
         \App\Models\ProductRating::updateOrCreate(
             ['user_id' => $userId, 'product_id' => $recordId],
-            ['rating' => $newRating, 'status' => $status]
+            ['rating' => $newRating, 'comment' => $comment, 'status' => $status]
         );
 
         // Update fake average rating only if there are approved ratings
@@ -137,26 +136,11 @@ class ProductActionsService
             $record->update(['fake_average_rating' => $averageRating]);
         }
 
-        // Save or update the comment if provided
-        if ($comment) {
-            \App\Models\CustomFilamentComment::updateOrCreate(
-                [
-                    'subject_type' => $record->getMorphClass(),
-                    'subject_id' => $recordId,
-                    'user_id' => $userId,
-                ],
-                [
-                    'comment' => $comment,
-                    'status' => $status,
-                    'is_visible' => $isAdmin,
-                ]
-            );
-        }
-
         Notification::make()
             ->title(__('product.rating.thank_you'))
             ->body(__('product.rating.saved', ['rating' => $newRating]))
             ->success()
             ->send();
     }
+
 }

@@ -105,11 +105,12 @@ class ProductRatingResource extends Resource
                     ->color('warning')
                     ->label(__('product_ratings.rating'))
                     ->sortable(),
-                Tables\Columns\TextColumn::make('user_comment')
+
+                Tables\Columns\TextColumn::make('comment')
+                    ->searchable()
                     ->placeholder('-')
                     ->label(__('comments.comment'))
-                    ->limit(50)
-                    ->sortable(),
+                    ->limit(50),
 
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
@@ -154,8 +155,6 @@ class ProductRatingResource extends Resource
                     )
                     ),
                 DateFilter::make('created_at')   ->label(__('Creation date')),
-
-
             ])
             ->actions([
                 Action::make('approve')
@@ -221,12 +220,6 @@ class ProductRatingResource extends Resource
     {
         // Mark the product rating as pending
         $record->update(['status' => 'pending']);
-
-        // Mark the related comment as pending
-        CustomFilamentComment::where('subject_id', $record->product_id)
-            ->where('subject_type', Product::class)
-            ->where('user_id', $record->user_id)
-            ->update(['status' => 'pending']);
     }
 
 
@@ -234,12 +227,6 @@ class ProductRatingResource extends Resource
     {
         // Approve the product rating
         $record->update(['status' => 'approved']);
-
-        // Approve the related comment
-        CustomFilamentComment::where('subject_id', $record->product_id)
-            ->where('subject_type', Product::class)
-            ->where('user_id', $record->user_id)
-            ->update(['status' => 'approved']);
 
         // Update product rating average
         $averageRating = ProductRating::where('product_id', $record->product_id)
@@ -252,31 +239,9 @@ class ProductRatingResource extends Resource
         ]);
     }
 
-    private static function rejectReview(ProductRating $record)
-    {
-        // Reject the product rating
-        $record->update(['status' => 'rejected']);
-
-        // Reject the related comment
-        CustomFilamentComment::where('subject_id', $record->product_id)
-            ->where('subject_type', Product::class)
-            ->where('user_id', $record->user_id)
-            ->update(['status' => 'rejected']);
-    }
-
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->select([
-                'product_ratings.*',
-                'filament_comments.comment as user_comment',
-                'filament_comments.status as comment_status',
-            ])
-            ->leftJoin('filament_comments', function ($join) {
-                $join->on('product_ratings.product_id', '=', 'filament_comments.subject_id')
-                    ->where('filament_comments.subject_type', Product::class)
-                    ->whereRaw('filament_comments.user_id = product_ratings.user_id');
-            })
             ->with(['product', 'user']);
     }
 

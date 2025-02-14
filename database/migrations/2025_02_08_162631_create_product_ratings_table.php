@@ -20,6 +20,8 @@ return new class extends Migration
             $table->unsignedTinyInteger('rating')
                 ->comment('Rating value between 1 and 5');
 
+            $table->text('comment')->nullable();
+
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
 
             $table->timestamps();
