@@ -524,7 +524,7 @@
                                             <span class="tooltiptext tooltip-top"></span>
                                         </div><!-- End .product-ratings -->
 
-                                        <a href="#" class="rating-link">( {{ $product->filamentComments()->count() }} Reviews )</a>
+                                        <a href="#" class="rating-link">( {{ $product->ratings()->count() }} Reviews )</a>
                                     </div><!-- End .ratings-container -->
 
                                     <hr class="short-divider">

@@ -8,7 +8,9 @@ use App\Services\ProductActionsService;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
@@ -219,6 +221,22 @@ class ProductResource extends Resource
                                     ->relationship('colors', 'name')
                                     ->searchable()
                                     ->preload(),
+
+                                Forms\Components\Section::make(__('Attributes'))
+                                    ->schema([
+                                        Select::make('attributes')
+                                            ->label(__('Select Predefined Attributes'))
+                                            ->multiple()
+                                            ->relationship('attributes', 'name')
+                                            ->preload()
+                                            ->createOptionForm([
+                                                TextInput::make('name')->label(__('Attribute Name'))->required(),
+                                            ]),
+
+                                        KeyValue::make('custom_attributes')
+                                            ->label(__('Custom Attributes'))
+                                            ->addActionLabel(__('Add Custom Attribute'))
+                                    ]),
                             ]),
 
                         // Media Tab
@@ -271,13 +289,13 @@ class ProductResource extends Resource
                             ]),
 
                         // Bundles Tab
-                        Tab::make(__('Bundles'))
+                        Tab::make(__('bundles.title'))
                             ->columns(2)
                             ->icon('heroicon-o-bolt')
                             ->schema([
                                 Select::make('bundles')
                                     ->columnSpanFull()
-                                    ->label(__('Select Bundles'))
+                                    ->label(__('bundles.select'))
                                     ->multiple()
                                     ->relationship('bundles', 'name')
                                     ->preload()
@@ -285,49 +303,47 @@ class ProductResource extends Resource
                                         Hidden::make('main_product_id')
                                             ->default(fn () => \App\Models\Product::where('slug', request()->route('record'))->value('id')),
 
-
                                         TextInput::make('name')
-                                            ->label(__('Bundle Name'))
+                                            ->label(__('bundles.name'))
                                             ->required(),
 
                                         Select::make('bundle_type')
-                                              ->live()
-                                            ->label(__('Bundle Type'))
+                                            ->live()
+                                            ->label(__('bundles.type'))
                                             ->options([
-                                                'fixed_price' => __('Fixed Price'),
-                                                'discount_percentage' => __('Discount Percentage'),
-                                                'buy_x_get_y' => __('Buy X Get Y Free'),
+                                                'fixed_price' => __('bundles.type.fixed_price'),
+                                                'discount_percentage' => __('bundles.type.discount_percentage'),
+                                                'buy_x_get_y' => __('bundles.type.buy_x_get_y'),
                                             ])
                                             ->required(),
 
                                         TextInput::make('discount_price')
-                                              ->live()
                                             ->live()
-                                            ->label(__('Discount Price'))
+                                            ->label(__('bundles.discount_price'))
                                             ->numeric()
                                             ->visible(fn ($get) => $get('bundle_type') == 'fixed_price'),
 
                                         TextInput::make('discount_percentage')
                                             ->live()
-                                            ->label(__('Discount Percentage'))
+                                            ->label(__('bundles.discount_percentage'))
                                             ->numeric()
                                             ->visible(fn ($get) => $get('bundle_type') == 'discount_percentage'),
 
                                         TextInput::make('buy_x')
-                                              ->live()
-                                            ->label(__('Buy X'))
+                                            ->live()
+                                            ->label(__('bundles.buy_x'))
                                             ->numeric()
                                             ->visible(fn ($get) => $get('bundle_type') === 'buy_x_get_y'),
 
                                         TextInput::make('get_y')
                                             ->live()
-                                            ->label(__('Get Y Free'))
+                                            ->label(__('bundles.get_y_free'))
                                             ->numeric()
                                             ->visible(fn ($get) => $get('bundle_type') === 'buy_x_get_y'),
 
                                         Select::make('products')
                                             ->visible(fn ($get) => $get('bundle_type') !== 'buy_x_get_y')
-                                            ->label(__('Products in Bundle'))
+                                            ->label(__('bundles.products'))
                                             ->multiple()
                                             ->relationship('products', 'name')
                                             ->preload(),
@@ -384,11 +400,13 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('id')->label(__('id')),
 
                 Tables\Columns\SpatieMediaLibraryImageColumn::make('main_product_image')
+                    ->placeholder('-')
                     ->collection('main_product_image')
                     ->label(__('products.Product Image')),
 
                 Tables\Columns\SpatieMediaLibraryImageColumn::make('sizes_image')
-                ->collection('sizes_image')
+                    ->placeholder('-')
+                    ->collection('sizes_image')
                     ->label(__('Sizes Image')),
 
                 SpatieMediaLibraryImageColumn::make('more_product_images')
@@ -417,6 +435,7 @@ class ProductResource extends Resource
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('summary')
+                    ->placeholder('-')
                     ->label(__('Small description'))
                     ->searchable(),
 
@@ -435,11 +454,13 @@ class ProductResource extends Resource
                     ->label(__('SKU')),
 
                 Tables\Columns\TextColumn::make('colors.name')
+                    ->placeholder('-')
                     ->label(__('Colors'))
                     ->limitList(2)
                     ->badge(),
 
                 Tables\Columns\TextColumn::make('sizes.name')
+                    ->placeholder('-')
                     ->label(__('Sizes'))
                     ->limitList(2)
                     ->badge(),

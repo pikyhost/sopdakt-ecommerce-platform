@@ -12,7 +12,7 @@ class ProductController extends Controller
     public function show($slug)
     {
         // Find product by slug and load relationships
-        $product = Product::where('slug', $slug)->with('filamentComments')->firstOrFail();
+        $product = Product::where('slug', $slug)->with('ratings')->firstOrFail();
 
         // Return view with product data
         return view('front.product-sticky-info', compact('product'));

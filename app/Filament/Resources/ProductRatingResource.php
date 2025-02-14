@@ -3,9 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Enums\Status;
-use App\Models\CustomFilamentComment;
 use App\Models\Product;
-use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Filters\Filter;
@@ -27,6 +25,8 @@ class ProductRatingResource extends Resource
     protected static ?string $model = ProductRating::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-star';
+
+    protected static ?string $slug = 'products-reviews';
 
     protected static ?int $navigationSort = 3;
 

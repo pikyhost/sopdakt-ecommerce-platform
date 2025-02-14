@@ -73,7 +73,7 @@ class ProductActionsService
                 ->color('gray')
                 ->icon('heroicon-m-eye')
                 ->openUrlInNewTab()
-                ->action(fn (Product $record) => redirect(url('/'))),
+                ->action(fn (Product $record) => redirect(route('product.show', ['slug' => $record->slug]))),
 
             Action::make('rate_and_comment')
                 ->color('primary')

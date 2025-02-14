@@ -28,7 +28,8 @@ class Product extends Model implements HasMedia
         'discount_start' => 'datetime',
         'discount_end' => 'datetime',
         'saved_at' => 'datetime',
-        'rating_status' => Status::class
+        'rating_status' => Status::class,
+        'custom_attributes' => 'array', // Cast
     ];
 
     protected $guarded = [];
@@ -75,11 +76,6 @@ class Product extends Model implements HasMedia
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function attributes()
-    {
-        return $this->hasMany(Attribute::class);
     }
 
     function shippingTypes()
@@ -211,5 +207,10 @@ class Product extends Model implements HasMedia
     public function bundles()
     {
         return $this->belongsToMany(Bundle::class, 'bundle_product')->withPivot('quantity');
+    }
+
+    public function attributes(): BelongsToMany
+    {
+        return $this->belongsToMany(Attribute::class)->withPivot('value');
     }
 }
