@@ -213,6 +213,14 @@
     "Video": "فيديو",
     "Alt Text": "النص البديل",
     "SEO": "تحسين محركات البحث",
+    "bundles": {
+        "label": "الباقات",
+        "navigation.label": "الباقات",
+        "navigation.group": "إدارة الباقات",
+        "model.label": "الباقة",
+        "model.plural_label": "الباقات",
+        "model.singular_label": "الباقة"
+    },
     "Meta Title": "عنوان الميتا",
     "Meta Description": "وصف الميتا",
     "Meta Keywords": "كلمات الميتا المفتاحية",

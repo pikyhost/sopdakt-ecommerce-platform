@@ -6,7 +6,6 @@ use App\Filament\Resources\ProductResource\Pages;
 use App\Models\Product;
 use App\Services\ProductActionsService;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
-use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
