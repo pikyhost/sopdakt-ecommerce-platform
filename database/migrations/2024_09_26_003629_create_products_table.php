@@ -32,7 +32,7 @@ return new class extends Migration
             $table->foreignId('label_id')->nullable()->constrained('labels')->nullOnDelete();
             $table->tinyText('summary')->nullable();
             $table->integer('quantity')->default(0); // Total stock available
-            $table->json('custom_attributes')->nullable();
+            $table->json('custom_attributes')->nullable(); // JSON for custom key-value attributes
 
             $table->boolean('is_published')->default(true);
             $table->boolean('is_featured')->default(false);

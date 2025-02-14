@@ -20,6 +20,7 @@ use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Tabs\Tab;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
@@ -230,7 +231,36 @@ class ProductResource extends Resource
                                             ->relationship('attributes', 'name')
                                             ->preload()
                                             ->createOptionForm([
-                                                TextInput::make('name')->label(__('Attribute Name'))->required(),
+                                                TextInput::make('name')
+                                                    ->label(__('Attribute Name'))
+                                                    ->required(),
+
+                                                Select::make('type')
+                                                    ->label(__('Attribute Type'))
+                                                    ->options([
+                                                        'boolean' => __('Boolean (Yes/No)'),
+                                                        'select' => __('Select (Dropdown)'),
+                                                        'text' => __('Text Input'),
+                                                    ])
+                                                    ->live()
+                                                    ->required(),
+
+                                                Toggle::make('default_value')
+                                                    ->label(__('Default Value (for Boolean)'))
+                                                    ->visible(fn ($get) => $get('type') === 'boolean'),
+
+                                                KeyValue::make('values')
+                                                    ->label(__('Attribute Values (for Select type)'))
+                                                    ->visible(fn ($get) => $get('type') === 'select')
+                                                    ->addActionLabel(__('Add Option')),
+
+                                                TextInput::make('default_value')
+                                                    ->label(__('Default Value (for Text)'))
+                                                    ->visible(fn ($get) => $get('type') === 'text'),
+
+                                                Textarea::make('description')
+                                                    ->label(__('Description'))
+                                                    ->nullable()
                                             ]),
 
                                         KeyValue::make('custom_attributes')

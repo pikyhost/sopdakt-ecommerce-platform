@@ -12,7 +12,11 @@ return new class extends Migration {
     {
         Schema::create('attributes', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->unique();
+            $table->json('name'); // Translatable attribute name
+            $table->string('description')->nullable(); // Translatable attribute description (Stored as string)
+            $table->enum('type', ['boolean', 'select', 'text']); // Attribute type
+            $table->json('values')->nullable(); // Store possible values for select type
+            $table->json('default_value')->nullable(); // Store default value dynamically
             $table->timestamps();
         });
 
@@ -20,7 +24,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->foreignId('attribute_id')->constrained()->cascadeOnDelete();
-            $table->string('value')->nullable();
+            $table->string('value')->nullable(); // Store attribute value
             $table->timestamps();
         });
     }
@@ -30,6 +34,7 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('atrributes');
+        Schema::dropIfExists('attribute_product');
+        Schema::dropIfExists('attributes');
     }
 };

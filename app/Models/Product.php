@@ -20,8 +20,7 @@ class Product extends Model implements HasMedia
         'summary',
         'meta_title',
         'meta_description',
-        'product_name',
-        'user_name'
+        'custom_attributes'
     ];
 
     protected $casts = [
