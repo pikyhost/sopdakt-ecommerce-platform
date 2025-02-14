@@ -54,7 +54,7 @@ class AdminPanelProvider extends PanelProvider
                     ->label(fn () => Filament::auth()->check() ? Filament::auth()->user()->name : 'ملف شخصي')
                     ->url(url('/admin/my-profile')) // Adjusted route helper here
                     ->icon('heroicon-m-user-circle'),
-                'logout' => MenuItem::make()->label('تسجيل الخروج'),
+                'logout' => MenuItem::make()->label(__('Log out')),
             ])
             ->brandName('Ｐｉｋｙ Ｈｏｓｔ')
             ->middleware([
