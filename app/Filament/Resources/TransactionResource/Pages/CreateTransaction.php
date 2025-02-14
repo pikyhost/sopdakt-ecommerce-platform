@@ -26,6 +26,7 @@ class CreateTransaction extends CreateRecord
                 'product_id' => $data['product_id'],
                 'type'       => $data['type'], // 'sale' or 'restock'
                 'quantity'   => $data['quantity'],
+                'notes'     => $data['notes'],
             ]);
 
             // Adjust stock based on transaction type
@@ -42,6 +43,8 @@ class CreateTransaction extends CreateRecord
         });
 
         $this->getCreatedNotification()?->send();
+
+        $this->getRedirectUrl();
     }
 
     protected function getRedirectUrl(): string
