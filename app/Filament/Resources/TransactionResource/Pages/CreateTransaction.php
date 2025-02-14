@@ -44,4 +44,8 @@ class CreateTransaction extends CreateRecord
         $this->getCreatedNotification()?->send();
     }
 
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
 }
