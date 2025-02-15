@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    @livewireStyles
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -11,8 +12,8 @@
     <meta name="description" content="Porto - Bootstrap eCommerce Template">
     <meta name="author" content="SW-THEMES">
 
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ asset('assets/images/icons/favicon.png') }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . \App\Models\Setting::getSetting('site_settings')['favicon'][app()->getLocale()]) }}">
+
 
     <!-- Ensure correct asset loading for dynamic routes -->
     <base href="{{ url('/') }}/">
@@ -77,18 +78,36 @@
 
 						<span class="separator"></span>
 
-						<div class="header-dropdown">
-							<a href="#"><i class="flag-us flag"></i>ENG</a>
-							<div class="header-menu">
-								<ul>
-									<li><a href="#"><i class="flag-us flag mr-2"></i>ENG</a>
-									</li>
-									<li><a href="#"><i class="flag-fr flag mr-2"></i>FRA</a></li>
-								</ul>
-							</div><!-- End .header-menu -->
-						</div><!-- End .header-dropown -->
+                        <div class="header-dropdown">
+                            <a href="#">
+                                <i class="flag-{{ app()->getLocale() === 'ar' ? 'eg' : 'us' }} flag"></i>
+                                {{ app()->getLocale() === 'ar' ? 'العربية' : 'English' }}
+                            </a>
+                            <div class="header-menu">
+                                <ul>
+                                    <li>
+                                        <a href="{{ LaravelLocalization::getLocalizedURL('en', null, [], true) }}">
+                                            <i class="flag-us flag mr-2"></i> English
+                                            @if (app()->getLocale() === 'en')
+                                                <i class="fas fa-check text-sm ml-1"></i>
+                                            @endif
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ LaravelLocalization::getLocalizedURL('ar', null, [], true) }}">
+                                            <i class="flag-eg flag mr-2"></i> العربية
+                                            @if (app()->getLocale() === 'ar')
+                                                <i class="fas fa-check text-sm ml-1"></i>
+                                            @endif
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div><!-- End .header-menu -->
+                        </div><!-- End .header-dropdown -->
 
-						<div class="header-dropdown mr-auto mr-sm-3 mr-md-0">
+
+
+                        <div class="header-dropdown mr-auto mr-sm-3 mr-md-0">
 							<a href="#">USD</a>
 							<div class="header-menu">
 								<ul>
@@ -111,16 +130,35 @@
 
 			<div class="header-middle sticky-header" data-sticky-options="{'mobile': true}">
 				<div class="container">
-					<div class="header-left col-lg-2 w-auto pl-0">
-						<button class="mobile-menu-toggler text-primary mr-2" type="button">
-							<i class="fas fa-bars"></i>
-						</button>
-						<a href="demo4.html" class="logo">
-							<img src="assets/images/logo.png" width="111" height="44" alt="Porto Logo">
-						</a>
-					</div><!-- End .header-left -->
+                    <div class="header-left col-lg-2 w-auto pl-0 d-flex flex-column align-items-center">
+                        <button class="mobile-menu-toggler text-primary mr-2" type="button">
+                            <i class="fas fa-bars"></i>
+                        </button>
 
-					<div class="header-right w-lg-max">
+                        <a href="demo4.html" class="logo">
+                            <img src="{{ asset('storage/' . \App\Models\Setting::getSetting('site_settings')['logo'][app()->getLocale()]) }}"
+                                 alt="Site Logo"
+                                 style="
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 3px solid #fff;
+                box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+                transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            "
+                                 onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0px 6px 12px rgba(0, 0, 0, 0.3)';"
+                                 onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0px 4px 8px rgba(0, 0, 0, 0.2)';"
+                            >
+                        </a>
+
+                        <p class="site-name mt-2 font-weight-bold text-dark text-center">
+                            {{ \App\Models\Setting::getSetting('site_settings')['name'][app()->getLocale()] }}
+                        </p>
+                    </div>
+
+
+                    <div class="header-right w-lg-max">
 						<div
 							class="header-icon header-search header-search-inline header-search-category w-lg-max text-right mt-0">
 							<a href="#" class="search-toggle" role="button"><i class="icon-search-3"></i></a>
@@ -169,7 +207,6 @@
 								<i class="minicart-icon"></i>
 								<span class="cart-count badge-circle">3</span>
 							</a>
-
 
 							<div class="cart-overlay"></div>
 
@@ -647,53 +684,20 @@
 
 									<hr class="divider mb-0 mt-0">
 
-                                    <a href="javascript:void(0);" class="btn-icon-wish wishlist-btn"
-                                       data-product-id="{{ $product->id }}">
-                                        <i class="icon-wishlist-2"></i>
-                                        <span class="wishlist-text">Add to Wishlist</span>
-                                    </a>
+                                    <livewire:wishlist-button :product-id="$product->id" />
 
-                                    <script>
-                                        document.addEventListener('DOMContentLoaded', function () {
-                                            const wishlistButton = document.querySelector('.wishlist-btn');
-                                            const productId = wishlistButton.getAttribute('data-product-id');
+                                    @if (session()->has('success'))
+                                        <div class="alert alert-success">
+                                            {{ session('success') }}
+                                        </div>
+                                    @endif
 
-                                            // Check if the product is already in wishlist
-                                            fetch(`/wishlist/check/${productId}`)
-                                                .then(response => response.json())
-                                                .then(data => {
-                                                    if (data.isWishlisted) {
-                                                        wishlistButton.classList.add('wishlisted');
-                                                        wishlistButton.querySelector('.wishlist-text').textContent = 'Remove from Wishlist';
-                                                    }
-                                                });
+                                    @if (session()->has('error'))
+                                        <div class="alert alert-danger">
+                                            {{ session('error') }}
+                                        </div>
+                                    @endif
 
-                                            wishlistButton.addEventListener('click', function () {
-                                                fetch('{{ url('/wishlist/toggle') }}', {
-                                                    method: 'POST',
-                                                    headers: {
-                                                        'Content-Type': 'application/json',
-                                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                                    },
-                                                    body: JSON.stringify({ product_id: productId })
-                                                })
-                                                    .then(response => response.json())
-                                                    .then(data => {
-                                                        alert(data.message);
-                                                        if (data.status === 'added') {
-                                                            wishlistButton.classList.add('wishlisted');
-                                                            wishlistButton.querySelector('.wishlist-text').textContent = 'Remove from Wishlist';
-                                                        } else {
-                                                            wishlistButton.classList.remove('wishlisted');
-                                                            wishlistButton.querySelector('.wishlist-text').textContent = 'Add to Wishlist';
-                                                        }
-                                                    })
-                                                    .catch(error => {
-                                                        alert('Something went wrong. Please try again.');
-                                                    });
-                                            });
-                                        });
-                                    </script>
 
                                 </div><!-- End .product-single-details -->
 							</div>
@@ -1807,6 +1811,7 @@
 
 	<!-- Main JS File -->
 	<script src="assets/js/main.min.js"></script>
+@livewireScripts
 </body>
 
 </html>

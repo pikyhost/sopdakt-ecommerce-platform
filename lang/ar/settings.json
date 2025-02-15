@@ -1,0 +1,17 @@
+{
+    "title": "الإعدادات",
+    "website_name_section": "اسم الموقع",
+    "website_name_description": "هذا القسم لإعداد اسم الموقع.",
+    "website_name_en": "اسم الموقع (إنجليزي)",
+    "website_name_ar": "اسم الموقع (عربي)",
+
+    "logo_section": "الشعار",
+    "logo_description": "هذا القسم لرفع شعار الموقع.",
+    "logo_en": "شعار الموقع (إنجليزي)",
+    "logo_ar": "شعار الموقع (عربي)",
+
+    "favicon_section": "الأيقونة المفضلة",
+    "favicon_description": "هذا القسم لرفع الأيقونة المفضلة للموقع.",
+    "favicon_en": "الأيقونة المفضلة (إنجليزي)",
+    "favicon_ar": "الأيقونة المفضلة (عربي)"
+}
