@@ -4,11 +4,13 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProductResource\Pages;
 use App\Models\Product;
+use App\Models\ProductColor;
 use App\Services\ProductActionsService;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Fieldset;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\MarkdownEditor;
@@ -201,10 +203,23 @@ class ProductResource extends Resource
                                     ])->columnSpanFull(),
                             ]),
                         Tab::make(__('Features'))
-                            ->columns(3)
+                            ->columns(2)
                             ->icon('heroicon-o-table-cells')
                             ->schema([
                                 Select::make('labels')
+                                    ->createOptionForm([
+                                        Forms\Components\TextInput::make('title')
+                                            ->label(__('fields.text_title'))
+                                            ->columnSpanFull(),
+                                        Forms\Components\TextInput::make('color')
+                                            ->label(__('fields.text_color')),
+                                        Forms\Components\ColorPicker::make('color_code')
+                                            ->label(__('fields.text_color_code')),
+                                        Forms\Components\TextInput::make('background_color')
+                                            ->label(__('fields.background_color')),
+                                        Forms\Components\ColorPicker::make('background_color_code')
+                                            ->label(__('fields.background_color_code')),
+                                    ])
                                     ->multiple()
                                     ->label(__('labels'))
                                     ->relationship('labels', 'title')
@@ -219,12 +234,21 @@ class ProductResource extends Resource
                                     ->searchable()
                                     ->preload(),
 
-                                Select::make('colors')
-                                    ->multiple()
+                                Repeater::make('colorsWithImages')
+                                    ->columnSpanFull()
+                                    ->relationship('colorsWithImages') // Uses the hasMany relationship
                                     ->label(__('Colors'))
-                                    ->relationship('colors', 'name')
-                                    ->searchable()
-                                    ->preload(),
+                                    ->schema([
+                                        Select::make('color_id')
+                                            ->label(__('Color'))
+                                            ->relationship('color', 'name') // Fetch color names
+                                            ->required(),
+
+                                        FileUpload::make('image')
+                                            ->label(__('Image_'))
+                                            ->required(),
+                                    ])
+                                    ->collapsible(),
 
                                 Forms\Components\Section::make(__('Attributes'))
                                     ->schema([
@@ -313,13 +337,6 @@ class ProductResource extends Resource
                                         'image/jpeg', 'image/png', 'image/webp'])
                                     ->imageEditor()
                                     ->reorderable(),
-
-//                                SpatieMediaLibraryFileUpload::make('video')
-//                                    ->label(__('Video'))
-//                                    ->collection('video') // Reference the media collection defined in the model
-//                                    ->maxSize(20000) // Max file size in KB (20MB)
-//                                    ->acceptedFileTypes(['video/mp4', 'video/mpeg', 'video/quicktime'])
-//                                    ->preserveFilenames(),
                             ]),
 
 

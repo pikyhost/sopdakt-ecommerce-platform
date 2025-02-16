@@ -72,6 +72,11 @@ class Product extends Model implements HasMedia
         return $this->belongsToMany(Color::class, 'product_colors');
     }
 
+    public function colorsWithImages()
+    {
+        return $this->hasMany(ProductColor::class);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -123,8 +128,6 @@ class Product extends Model implements HasMedia
     {
         return $this->hasMany(Transaction::class);
     }
-
-
 
     // Media Collections
     public function registerMediaCollections(): void

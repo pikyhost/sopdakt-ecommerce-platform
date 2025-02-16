@@ -30,7 +30,6 @@ Route::group(
     Route::get('/products/{slug}', [ProductController::class, 'show'])->name('product.show');
 });
 
-Route::get('/test', fn() => 'all working');
 
 Route::get('test', function () {
     $ip = request()->ip();
