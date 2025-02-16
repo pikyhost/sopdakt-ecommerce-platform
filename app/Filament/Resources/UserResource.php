@@ -207,7 +207,6 @@ class UserResource extends Resource
                     ->icon('heroicon-o-phone')
                     ->label(__('Phone'))
                     ->placeholder(__('No phone number saved'))
-                    ->formatStateUsing(fn ($state) => $state ? self::formatDisplayPhoneNumber($state) : null)
                     ->searchable(),
 
                 TextColumn::make('roles.name')

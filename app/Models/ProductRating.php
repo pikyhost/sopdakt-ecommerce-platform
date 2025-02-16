@@ -22,4 +22,9 @@ class ProductRating extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function scopeApproved($query)
+    {
+        return $query->where('status', 'approved');
+    }
 }

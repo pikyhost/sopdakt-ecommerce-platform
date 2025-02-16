@@ -12,7 +12,10 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
+use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use Parallax\FilamentComments\Policies\FilamentCommentPolicy;
 
 class AppServiceProvider extends ServiceProvider
@@ -30,8 +33,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::policy(CustomFilamentComment::class, CustomFilamentCommentPolicy::class);
-
         ProfileContactDetails::setSort(10);
 
         LanguageSwitch::configureUsing(function (LanguageSwitch $switch) {
@@ -49,6 +50,18 @@ class AppServiceProvider extends ServiceProvider
         $this->configureTextColumn();
         $this->configureTextInput();
         $this->configureTable();
+
+        // Configure Livewire update route
+        Livewire::setUpdateRoute(function ($handle) {
+            return Route::post(LaravelLocalization::setLocale() . '/livewire/update', $handle)
+                ->middleware(['web', 'localeSessionRedirect', 'localizationRedirect', 'localeViewPath']);
+        });
+
+        // Configure Livewire JavaScript route
+        Livewire::setScriptRoute(function ($handle) {
+            return Route::get(LaravelLocalization::setLocale() . '/livewire/livewire.js', $handle)
+                ->middleware(['web', 'localeSessionRedirect', 'localizationRedirect', 'localeViewPath']);
+        });
     }
 
     protected function configureTextColumn(): void
