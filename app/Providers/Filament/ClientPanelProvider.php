@@ -31,7 +31,8 @@ class ClientPanelProvider extends PanelProvider
             ->id('client')
             ->path('client')
             ->colors([
-                'primary' => Color::Red,
+                'primary' => Color::Indigo,
+                'gray' => Color::Slate,
             ])
             ->login()
             ->registration()

@@ -17,7 +17,7 @@ class LabelResource extends Resource
 
     protected static ?string $model = Label::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-at-symbol';
+    protected static ?string $navigationIcon = 'heroicon-o-tag';
 
     public static function getNavigationGroup(): ?string
     {
