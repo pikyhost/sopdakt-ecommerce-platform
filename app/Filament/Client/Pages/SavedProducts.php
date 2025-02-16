@@ -42,6 +42,7 @@ class SavedProducts extends Page implements HasForms, HasTable
     {
         return [
             SpatieMediaLibraryImageColumn::make('main_product_image')
+                ->circular()
                 ->label(__('Product Image'))
                 ->simpleLightbox()
                 ->toggleable(false)

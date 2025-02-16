@@ -9,27 +9,27 @@ trait HasTimestampsDetailsSection
 {
     private static function getTimestampsDetailsSection(): Section
     {
-        return Section::make('Timestamps Details')
+        return Section::make(__('__Timestamps Details__'))
             ->visible(fn ($record) => auth()->user()->can('view_timestamps_details_book'))
             ->schema([
                 TextEntry::make('created_at')
                     ->inlineLabel()
-                    ->label('Date Added to Library')
-                    ->dateTime('D, M j, Y \a\t g:i A')
+                    ->label(__('__Date Added to Library__'))
+                    ->dateTime(__('__D, M j, Y \a\t g:i A__'))
                     ->visible(fn ($record) => auth()->user()->can('view_timestamps_details_book')),
 
                 TextEntry::make('updated_at')
                     ->inlineLabel()
-                    ->label('Last Modified At')
-                    ->dateTime('D, M j, Y \a\t g:i A')
+                    ->label(__('__Last Modified At__'))
+                    ->dateTime(__('__D, M j, Y \a\t g:i A__'))
                     ->visible(fn ($record) => auth()->user()->can('view_timestamps_details_book')),
 
                 TextEntry::make('deleted_at')
                     ->inlineLabel()
-                    ->label('Deleted At')
+                    ->label(__('__Deleted At__'))
                     ->badge()
                     ->color('danger')
-                    ->dateTime('D, M j, Y \a\t g:i A')
+                    ->dateTime(__('__D, M j, Y \a\t g:i A__'))
                     ->visible(fn ($record) => $record->trashed() && auth()->user()->can('view_timestamps_details_book')),
             ]);
     }

@@ -10,26 +10,40 @@ use Illuminate\Database\Eloquent\Builder;
 
 trait HasCreatedAtFilter
 {
-    private static function getCreatedAtFilter(): Filter
+    public static function getCreatedAtFilter(): Filter
     {
         return Filter::make('created_at')
             ->indicator(__('Creation Date Range'))
             ->form([
                 DateTimePicker::make('created_from')
                     ->label(__('Creation date from'))
-                    ->afterStateUpdated(fn (HasForms $livewire, DateTimePicker $component) => $livewire->validateOnly($component->getStatePath()))
+                    ->native(false) // Ensures a proper date picker UI
+                    ->withoutSeconds() // Simplifies selection to minute precision
+                    ->maxDate(now()) // Prevents selecting future dates
+                    ->afterStateUpdated(fn (HasForms $livewire, DateTimePicker $component) =>
+                    $livewire->validateOnly($component->getStatePath())
+                    )
                     ->columnSpan(3),
 
                 DateTimePicker::make('created_until')
                     ->label(__('Creation date until'))
-                    ->afterOrEqual('created_from')
-                    ->afterStateUpdated(fn (HasForms $livewire, DateTimePicker $component) => $livewire->validateOnly($component->getStatePath()))
+                    ->native(false)
+                    ->withoutSeconds()
+                    ->maxDate(now())
+                    ->afterOrEqual('created_from') // Ensures proper range selection
+                    ->afterStateUpdated(fn (HasForms $livewire, DateTimePicker $component) =>
+                    $livewire->validateOnly($component->getStatePath())
+                    )
                     ->columnSpan(3),
             ])
             ->columns(['sm' => 6, 'lg' => null])
             ->query(fn (Builder $query, array $data) => $query
-                ->when($data['created_from'] ?? null, fn (Builder $query, $date) => $query->whereDate('created_at', '>=', $date))
-                ->when($data['created_until'] ?? null, fn (Builder $query, $date) => $query->whereDate('created_at', '<=', $date))
+                ->when(isset($data['created_from']) && !empty($data['created_from']), fn (Builder $query) =>
+                $query->where('created_at', '>=', Carbon::parse($data['created_from']))
+                )
+                ->when(isset($data['created_until']) && !empty($data['created_until']), fn (Builder $query) =>
+                $query->where('created_at', '<=', Carbon::parse($data['created_until']))
+                )
             )
             ->indicateUsing(function (array $data): ?string {
                 $from = $data['created_from'] ?? null;
@@ -57,5 +71,4 @@ trait HasCreatedAtFilter
                 return null;
             });
     }
-
 }

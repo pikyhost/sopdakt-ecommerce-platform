@@ -17,11 +17,11 @@ trait HasTimestampSection
     {
         $defaultPlaceholders = [
             Placeholder::make('created_at')
-                ->label('تم الانضمام')
+             ->label(__('Creation Date'))
                 ->content(fn (Model $record): ?string => $record->created_at?->diffForHumans()),
 
             Placeholder::make('updated_at')
-                ->label('اخر تعديل')
+                ->label(__('Last Modified At'))
                 ->content(fn (Model $record): ?string => $record->updated_at?->diffForHumans()),
         ];
 

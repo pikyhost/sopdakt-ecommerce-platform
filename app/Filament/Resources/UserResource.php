@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Services\PdfDownloadService;
 use App\Traits\HasCreatedAtFilter;
 use App\Traits\HasTimestampSection;
+use Closure;
+use Filament\Events\Auth\Registered;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -35,6 +37,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
+use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
+use Ysfkaya\FilamentPhoneInput\PhoneInputNumberType;
+use Ysfkaya\FilamentPhoneInput\Tables\PhoneColumn;
 
 class UserResource extends Resource
 {
@@ -112,27 +117,39 @@ class UserResource extends Resource
                 ->required()
                 ->maxLength(255)
                 ->dehydrateStateUsing(fn (string $state): string => ucwords($state)),
-
-            Forms\Components\TextInput::make('email')
+            TextInput::make('email')
                 ->label(__('Email address'))
                 ->required()
-                ->unique(ignoreRecord: true)
                 ->email()
                 ->rules(['email:rfc,dns'])
-                ->maxLength(255),
+                ->maxLength(255)
+                ->unique(ignoreRecord: true)
+                ->afterStateUpdated(function ($state, $livewire) {
+                    if ($livewire->record && $livewire->record->email !== $state) {
+                        event(new Registered($livewire->record)); // Send email verification
+                    }
+                }),
 
             TextInput::make('phone')
-                ->label(__('Phone number'))
-                ->nullable()
-                ->tel()
-                ->formatStateUsing(fn ($record) => $record->phone ?? ''),
+                ->label(__('Phone Number'))
+                ->rules([
+                    fn (): Closure => function (string $attribute, $value, Closure $fail) {
+                        if (!preg_match('/^\d{9,15}$/', $value)) {
+                            $fail(__('The :attribute must be between 9 and 15 digits.'));
+                        }
+                    },
+                ])
+                ->validationMessages([
+                    'required' => __('The :attribute is required.'),
+                ])
+                ->required(),
 
-            Forms\Components\Select::make('roles')
-                ->label(__('roles'))
-                ->multiple()
-                ->searchable()
-                ->searchDebounce(50)
+        Forms\Components\Select::make('roles')
                 ->preload()
+                ->maxItems(1)
+                ->multiple()
+                ->label(__('roles'))
+                ->native(false)
                 ->relationship('roles', 'name'),
 
             Forms\Components\TextInput::make('password')
@@ -202,7 +219,8 @@ class UserResource extends Resource
                     ->iconColor('primary')
                     ->icon('heroicon-o-envelope'),
 
-                TextColumn::make('phone')
+                PhoneColumn::make('phone')
+                    ->displayFormat(PhoneInputNumberType::NATIONAL)
                     ->iconColor('primary')
                     ->icon('heroicon-o-phone')
                     ->label(__('Phone'))

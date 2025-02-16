@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Filament\Facades\Filament;
+ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
@@ -17,7 +18,7 @@ use Spatie\Permission\Traits\HasPermissions;
 use Spatie\Permission\Traits\HasRoles;
 use Spatie\Translatable\HasTranslations;
 
-class User extends Authenticatable implements FilamentUser, HasAvatar
+class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerifyEmail
 {
     use HasFactory, Notifiable, HasRoles, HasPermissions,HasApiTokens, HasTranslations;
 
@@ -81,5 +82,4 @@ class User extends Authenticatable implements FilamentUser, HasAvatar
         return $this->belongsToMany(Product::class, 'saved_products')
             ->withTimestamps();
     }
-
 }

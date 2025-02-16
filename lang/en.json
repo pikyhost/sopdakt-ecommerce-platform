@@ -102,7 +102,10 @@
     "actions.bulk_delete": "Bulk Delete",
     "comments.user": "User",
     "comments.comment": "Comment",
-
+    "Timestamps Details": "Timestamps Details",
+    "Date Added to Library": "Date Added to Library",
+    "Last Modified At": "Last Modified At",
+    "Deleted At": "Deleted At",
     "Creation Date Range": "Creation Date Range",
     "Upload avatar image": "Upload avatar image",
     "Leave blank if you do not wish to change your current password": "Leave blank if you do not wish to change your current password",

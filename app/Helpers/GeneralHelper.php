@@ -20,7 +20,7 @@ class GeneralHelper
         // Fetch the country ID once per request
         if (is_null($countryId)) {
             $ip = app()->isLocal() ? '82.205.219.30' : request()->ip(); // EGYPT IP Example
-            $countryCode = geoip($ip)['country_code2'] ?? 'US'; // Default to 'US' if geoip fails
+            $countryCode = geoip($ip)['country_code2'] ?? 'US'; // Default to 'US' if geoip fails GB
             $countryId = Country::where('code', $countryCode)->value('id') ?? null;
         }
 
