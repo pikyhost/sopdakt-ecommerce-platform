@@ -33,7 +33,7 @@ Route::group(
 Route::get('/test', fn() => 'all working');
 
 Route::get('test', function () {
-    $ip = app()->isLocal() ? '156.221.68.3' : request()->ip();
+    $ip = request()->ip();
     try {
         $location = geoip($ip);
         return response()->json($location->toArray());
