@@ -26,7 +26,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-//        $this->app->bind(SendEmailVerificationNotification::class, );
+        $this->app->bind(SendEmailVerificationNotification::class, \App\Listeners\SendEmailVerificationNotification::class);
     }
 
     /**
