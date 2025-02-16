@@ -705,24 +705,26 @@
 					</div>
 
 					<div class="row align-items-start">
-						<div class="widget widget-info col-md-9 col-xl-6 pb-4 pb-md-0">
-							<ul class="promote">
-								<li>
-									<i class="icon-shipped"></i>
-									<h4>FREE<br>SHIPPING</h4>
-								</li>
-								<li>
-									<i class="icon-us-dollar"></i>
-									<h4>100% MONEY<br>BACK GUARANTEE</h4>
-								</li>
-								<li>
-									<i class="icon-online-support"></i>
-									<h4>ONLINE<br>SUPPORT 24/7</h4>
-								</li>
-							</ul>
-						</div><!-- End .widget -->
+                        <div class="row justify-content-center">
+                            <div class="col-md-6 col-xl-5 col-lg-5">
+                                @forelse($product->labels as $label)
+                                    <h4 class="mb-1 coupon-sale-text text-uppercase shadow-sm px-4 py-3 rounded text-center"
+                                        style="background-color: {{ $label->background_color_code }};
+                       color: {{ $label->color_code }};
+                       font-size: 18px;
+                       font-weight: bold;">
+                                        {{ $label->getTranslation('title', app()->getLocale()) }}
+                                    </h4>
+                                @empty
+                                    <h4 class="mb-1 coupon-sale-text bg-light text-dark text-uppercase shadow-sm px-4 py-3 rounded text-center">
+                                        No Labels Assigned
+                                    </h4>
+                                @endforelse
+                            </div>
+                        </div>
 
-						<div
+
+                        <div
 							class="product-single-share col-md-3 col-xl-6 align-items-start justify-content-md-end mt-0">
 							<label class="sr-only">Share:</label>
 
@@ -779,70 +781,16 @@
 							</div><!-- End .product-desc-content -->
 						</div><!-- End .tab-pane -->
 
-						<div class="tab-pane fade" id="product-size-content" role="tabpanel"
-							aria-labelledby="product-tab-size">
-							<div class="product-size-content">
-								<div class="row">
-									<div class="col-md-4">
-										<img src="assets/images/products/single/body-shape.png" alt="body shape"
-											width="217" height="398">
-									</div><!-- End .col-md-4 -->
+                        <div class="tab-pane fade" id="product-size-content" role="tabpanel" aria-labelledby="product-tab-size">
+                            <div class="text-center">
+                                <img src="{{ $product->getProductSizeImageUrl() ?? asset('assets/images/products/default-size.png') }}"
+                                     alt="Size Guide"
+                                     class="img-fluid rounded shadow-lg">
+                            </div>
+                        </div>
 
-									<div class="col-md-8">
-										<table class="table table-size">
-											<thead>
-												<tr>
-													<th>SIZE</th>
-													<th>CHEST (in.)</th>
-													<th>WAIST (in.)</th>
-													<th>HIPS (in.)</th>
-												</tr>
-											</thead>
-											<tbody>
-												<tr>
-													<td>XS</td>
-													<td>34-36</td>
-													<td>27-29</td>
-													<td>34.5-36.5</td>
-												</tr>
-												<tr>
-													<td>S</td>
-													<td>36-38</td>
-													<td>29-31</td>
-													<td>36.5-38.5</td>
-												</tr>
-												<tr>
-													<td>M</td>
-													<td>38-40</td>
-													<td>31-33</td>
-													<td>38.5-40.5</td>
-												</tr>
-												<tr>
-													<td>L</td>
-													<td>40-42</td>
-													<td>33-36</td>
-													<td>40.5-43.5</td>
-												</tr>
-												<tr>
-													<td>XL</td>
-													<td>42-45</td>
-													<td>36-40</td>
-													<td>43.5-47.5</td>
-												</tr>
-												<tr>
-													<td>XLL</td>
-													<td>45-48</td>
-													<td>40-44</td>
-													<td>47.5-51.5</td>
-												</tr>
-											</tbody>
-										</table>
-									</div>
-								</div><!-- End .row -->
-							</div><!-- End .product-size-content -->
-						</div><!-- End .tab-pane -->
 
-						<div class="tab-pane fade" id="product-reviews-content" role="tabpanel"
+                        <div class="tab-pane fade" id="product-reviews-content" role="tabpanel"
 							aria-labelledby="product-tab-reviews">
 							<div class="product-reviews-content">
 								<h3 class="reviews-title">1 review for Men Black Sports Shoes</h3>

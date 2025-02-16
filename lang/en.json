@@ -123,6 +123,8 @@
     "transaction.sale": "Sale",
     "transaction.restock": "Restock",
 
+    "Stock Management":  "Inventory Management",
+
     "user_experience": "Users Experience",
     "Product" : "Product",
     "Quantity" : "Quantity",

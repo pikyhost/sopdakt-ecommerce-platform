@@ -204,10 +204,13 @@ class ProductResource extends Resource
                             ->columns(3)
                             ->icon('heroicon-o-table-cells')
                             ->schema([
-                                Select::make('label_id')
-                                    ->label(__('label'))
-                                    ->nullable()
-                                    ->relationship('label', 'title'),
+                                Select::make('labels')
+                                    ->multiple()
+                                    ->label(__('labels'))
+                                    ->relationship('labels', 'title')
+                                    ->searchable()
+                                    ->preload()
+                                    ->nullable(),
 
                                 Select::make('sizes')
                                     ->multiple()

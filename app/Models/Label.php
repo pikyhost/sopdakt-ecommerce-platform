@@ -12,4 +12,9 @@ class Label extends Model
     public $translatable = ['title', 'color', 'background_color'];
 
     protected $guarded = [];
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'label_product');
+    }
 }

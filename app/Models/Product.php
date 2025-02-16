@@ -57,9 +57,9 @@ class Product extends Model implements HasMedia
         return $this->belongsTo(Category::class);
     }
 
-    public function label()
+    public function labels()
     {
-        return $this->belongsTo(Label::class);
+        return $this->belongsToMany(Label::class, 'label_product');
     }
 
     public function sizes()
@@ -172,6 +172,14 @@ class Product extends Model implements HasMedia
         return $this->getFirstMediaUrl('main_product_image') ?: null;
     }
 
+    /**
+     * Get the URL for the 'main_author_image' .
+     */
+    public function getProductSizeImageUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('sizes_image') ?: null;
+    }
+
 
     public function getMoreProductImagesUrls(string $conversion = 'medium'): array
     {
@@ -179,7 +187,6 @@ class Product extends Model implements HasMedia
             ->map(fn ($media) => $media->getUrl($conversion))
             ->toArray();
     }
-
 
     public function usersWhoSaved(): BelongsToMany
     {
