@@ -7,6 +7,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Jeffgreco13\FilamentBreezy\Livewire\MyProfileComponent;
+use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 
 class ProfileContactDetails extends MyProfileComponent
 {
@@ -34,11 +35,12 @@ class ProfileContactDetails extends MyProfileComponent
     {
         return $form
             ->schema([
-                TextInput::make('phone')
+                PhoneInput::make('phone')
                     ->unique(ignoreRecord: true)
                     ->label(__('profile.phone'))
                     ->nullable()
-                    ->tel(),
+                    ->label(__('Phone Number')),
+
                 TextArea::make('address')
                     ->label(__('profile.address'))
                     ->nullable(),

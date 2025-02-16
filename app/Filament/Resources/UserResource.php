@@ -38,6 +38,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
+use Ysfkaya\FilamentPhoneInput\Infolists\PhoneEntry;
 use Ysfkaya\FilamentPhoneInput\PhoneInputNumberType;
 use Ysfkaya\FilamentPhoneInput\Tables\PhoneColumn;
 
@@ -279,9 +280,11 @@ class UserResource extends Resource
                                 ->label(__('ID')),
                             TextEntry::make('name')->label(__('name')),
 
-                            TextEntry::make('phone')
+
+                            PhoneEntry::make('phone')
                                 ->placeholder(__('No phone number saved'))
-                                ->label(__('Phone number')),
+                                ->label(__('Phone number'))
+                                ->countryColumn('phone_country'),
 
                             TextEntry::make('created_at')
                                 ->label(__('Creation date'))
