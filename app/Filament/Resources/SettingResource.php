@@ -21,6 +21,11 @@ class SettingResource extends Resource
         return __('Settings');
     }
 
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Settings Management'); //Products Management
+    }
+
     public static function getModelLabel(): string
     {
         return __('Settings');
@@ -28,7 +33,7 @@ class SettingResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return __('Settings');
+        return __('Global Settings');
     }
 
     public static function getPluralLabel(): string

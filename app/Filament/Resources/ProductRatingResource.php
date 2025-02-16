@@ -222,6 +222,12 @@ class ProductRatingResource extends Resource
         $record->update(['status' => 'pending']);
     }
 
+    private static function rejectReview(ProductRating $record)
+    {
+        // Mark the product rating as pending
+        $record->update(['status' => 'rejected']);
+    }
+
 
     private static function approveReview(ProductRating $record)
     {

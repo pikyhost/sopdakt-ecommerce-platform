@@ -124,52 +124,43 @@ class Product extends Model implements HasMedia
         return $this->hasMany(Transaction::class);
     }
 
-    /**
-     * Get the URL for the 'main_author_image' .
-     */
-    public function getMainCategoryImageUrl(): ?string
-    {
-        return $this->getFirstMediaUrl('main_category_image') ?: null;
-    }
+
 
     // Media Collections
     public function registerMediaCollections(): void
     {
         $this
-            ->addMediaCollection('main_product_image')
+            ->addMediaCollection('feature_product_image')
             ->singleFile()
-            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp'])
-            ->registerMediaConversions(function () {
-                $this->addMediaConversion('thumb')
-                    ->width(150)
-                    ->height(150)
-                    ->sharpen(10)
-                    ->nonQueued();
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
 
-                $this->addMediaConversion('medium')
-                    ->width(400)
-                    ->height(400)
-                    ->nonQueued();
-            });
+        $this
+            ->addMediaCollection('second_feature_product_image')
+            ->singleFile()
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
 
         $this
             ->addMediaCollection('sizes_image')
             ->singleFile();
 
         $this
-            ->addMediaCollection('more_product_images')
-            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
-
-        $this->addMediaCollection('video')
-            ->singleFile();
+            ->addMediaCollection('more_product_images_and_videos')
+            ->acceptsMimeTypes(['video/mp4', 'video/mpeg', 'video/quicktime',
+                'image/jpeg', 'image/png', 'image/webp']);
     }
+
+    public function getFeatureProductImageUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('feature_product_image') ?: null;
+    }
+
 
     /**
      * Get the URL for the 'main_author_image' .
      */
-    public function getMainProductImageUrl(): ?string
+    public function getSecondFeatureProductImageUrl(): ?string
     {
-        return $this->getFirstMediaUrl('main_product_image') ?: null;
+        return $this->getFirstMediaUrl('second_feature_product_image') ?: null;
     }
 
     /**
@@ -181,9 +172,9 @@ class Product extends Model implements HasMedia
     }
 
 
-    public function getMoreProductImagesUrls(string $conversion = 'medium'): array
+    public function getMoreProductImagesAndVideosUrls(string $conversion = 'medium'): array
     {
-        return $this->getMedia('more_product_images')
+        return $this->getMedia('more_product_images_and_videos')
             ->map(fn ($media) => $media->getUrl($conversion))
             ->toArray();
     }

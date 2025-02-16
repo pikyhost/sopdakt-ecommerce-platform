@@ -78,7 +78,8 @@
 
     "bundles.title": "Bundles",
     "bundles.select": "Select Bundles",
-    "bundles.name": "Bundle Name",
+    "bundles.name": "Name at frontend",
+    "bundles.name_for_admin": "Name at dashboard",
     "bundles.type": "Bundle Type",
     "bundles.type.fixed_price": "Fixed Price",
     "bundles.type.discount_percentage": "Discount Percentage",
@@ -86,8 +87,8 @@
     "bundles.discount_price": "Discount Price",
     "bundles.discount_percentage": "Discount Percentage",
     "bundles.buy_x": "Buy X",
-    "bundles.get_y_free": "Get Y Free",
-    "bundles.products": "Products in Bundle",
+    "bundles.get_y_free": "Get Y",
+    "bundles.products": "Products",
 
     "fields.title": "Title",
     "fields.color": "Color",

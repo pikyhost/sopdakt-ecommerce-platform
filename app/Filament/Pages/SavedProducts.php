@@ -42,7 +42,6 @@ class SavedProducts extends Page implements HasForms, HasTable
         return __('user_experience'); // User Experience
     }
 
-
     public static function getModelLabel(): string
     {
         return __('Wishlists');

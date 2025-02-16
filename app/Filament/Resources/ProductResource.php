@@ -36,7 +36,7 @@ class ProductResource extends Resource
 
     protected static ?string $model = Product::class;
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
 
@@ -282,35 +282,44 @@ class ProductResource extends Resource
                         Tab::make(__('Media'))
                             ->icon('heroicon-o-photo')
                             ->schema([
-                                SpatieMediaLibraryFileUpload::make('main_product_image')
-                                    ->label(__('Main Image'))
+                                SpatieMediaLibraryFileUpload::make('feature_product_image')
+                                    ->label(__('Feature Image'))
                                     ->required()
-                                    ->collection('main_product_image')
+                                    ->collection('feature_product_image')
+                                    ->image()
+                                    ->maxSize(5120),
+
+                                SpatieMediaLibraryFileUpload::make('second_feature_product_image')
+                                    ->label(__('Second Feature Image'))
+                                    ->required()
+                                    ->collection('second_feature_product_image')
                                     ->image()
                                     ->maxSize(5120),
 
                                 SpatieMediaLibraryFileUpload::make('sizes_image')
-                                    ->label(__('Sizes Image'))
+                                    ->label(__('Size Guide Image'))
                                     ->required()
                                     ->collection('sizes_image')
                                     ->image()
                                     ->maxSize(5120),
 
-                                SpatieMediaLibraryFileUpload::make('more_product_images')
-                                    ->label(__('Extra Images'))
+                                SpatieMediaLibraryFileUpload::make('more_product_images_and_videos')
+                                    ->maxFiles(20)
+                                    ->label(__('Extra Images and Videos'))
                                     ->columnSpanFull()
-                                    ->collection('more_product_images')
+                                    ->collection('more_product_images_and_videos')
                                     ->multiple()
-                                    ->image()
+                                    ->acceptedFileTypes(['video/mp4', 'video/mpeg', 'video/quicktime',
+                                        'image/jpeg', 'image/png', 'image/webp'])
                                     ->imageEditor()
                                     ->reorderable(),
 
-                                SpatieMediaLibraryFileUpload::make('video')
-                                    ->label(__('Video'))
-                                    ->collection('video') // Reference the media collection defined in the model
-                                    ->maxSize(20000) // Max file size in KB (20MB)
-                                    ->acceptedFileTypes(['video/mp4', 'video/mpeg', 'video/quicktime'])
-                                    ->preserveFilenames(),
+//                                SpatieMediaLibraryFileUpload::make('video')
+//                                    ->label(__('Video'))
+//                                    ->collection('video') // Reference the media collection defined in the model
+//                                    ->maxSize(20000) // Max file size in KB (20MB)
+//                                    ->acceptedFileTypes(['video/mp4', 'video/mpeg', 'video/quicktime'])
+//                                    ->preserveFilenames(),
                             ]),
 
 
@@ -343,6 +352,10 @@ class ProductResource extends Resource
                                             ->label(__('bundles.name'))
                                             ->required(),
 
+                                        TextInput::make('name_for_admin')
+                                            ->label(__('bundles.name_for_admin'))
+                                            ->required(),
+
                                         Select::make('bundle_type')
                                             ->live()
                                             ->label(__('bundles.type'))
@@ -357,7 +370,7 @@ class ProductResource extends Resource
                                             ->live()
                                             ->label(__('bundles.discount_price'))
                                             ->numeric()
-                                            ->visible(fn ($get) => $get('bundle_type') == 'fixed_price'),
+                                            ->visible(fn ($get) => $get('bundle_type') == 'fixed_price' || 'buy_x_get_y'),
 
                                         TextInput::make('discount_percentage')
                                             ->live()
@@ -375,10 +388,10 @@ class ProductResource extends Resource
                                             ->live()
                                             ->label(__('bundles.get_y_free'))
                                             ->numeric()
-                                            ->visible(fn ($get) => $get('bundle_type') === 'buy_x_get_y'),
+                                            ->visible(fn ($get) => $get('bundle_type') === 'buy_x_get_y'  &&
+                                                !$get('discount_price')),
 
                                         Select::make('products')
-                                            ->visible(fn ($get) => $get('bundle_type') !== 'buy_x_get_y')
                                             ->label(__('bundles.products'))
                                             ->multiple()
                                             ->relationship('products', 'name')

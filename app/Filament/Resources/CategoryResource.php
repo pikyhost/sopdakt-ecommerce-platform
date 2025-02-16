@@ -40,7 +40,7 @@ class CategoryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-at-symbol';
 
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 7;
 
     public static function getNavigationLabel(): string
     {

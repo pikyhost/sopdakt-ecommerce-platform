@@ -50,6 +50,15 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
             ])
+            ->collapsibleNavigationGroups(true)
+         ->sidebarCollapsibleOnDesktop()
+            ->navigationGroups([
+                __('Products Management'),
+                __('Stock Management'),
+                __('Countries Management'),
+                __('user_experience'),
+                __('Settings Management'),
+            ])
             ->userMenuItems([
                 'profile' => MenuItem::make()
                     ->visible(fn () => Filament::auth()->check())

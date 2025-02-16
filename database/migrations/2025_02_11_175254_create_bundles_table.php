@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('bundles', function (Blueprint $table) {
             $table->id();
             $table->string('name'); // Bundle name
+            $table->string('name_for_admin')->nullable();
             $table->foreignId('main_product_id')->nullable()->constrained('products')->onDelete('cascade');
             $table->enum('bundle_type', ['fixed_price', 'discount_percentage', 'buy_x_get_y'])->nullable(); // Bundle type for discount bundles
             $table->integer('discount_price')->nullable(); // Fixed bundle price
