@@ -2,9 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Filament\Facades\Filament;
- use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;

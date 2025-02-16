@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Client\Pages\Auth\EmailVerification;
 use App\Livewire\ProfileContactDetails;
 use CharrafiMed\GlobalSearchModal\GlobalSearchModalPlugin;
 use Filament\Http\Middleware\Authenticate;
@@ -11,7 +12,6 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
-use Filament\SpatieLaravelTranslatablePlugin;
 use Filament\Support\Colors\Color;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -37,7 +37,7 @@ class ClientPanelProvider extends PanelProvider
             ->login()
             ->registration()
             ->passwordReset()
-            ->emailVerification()
+            ->emailVerification(EmailVerification::class)
             ->discoverResources(in: app_path('Filament/Client/Resources'), for: 'App\\Filament\\Client\\Resources')
             ->discoverPages(in: app_path('Filament/Client/Pages'), for: 'App\\Filament\\Client\\Pages')
             ->pages([
