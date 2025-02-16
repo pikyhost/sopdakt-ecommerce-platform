@@ -207,6 +207,7 @@ class ProductResource extends Resource
                             ->icon('heroicon-o-table-cells')
                             ->schema([
                                 Select::make('labels')
+                                    ->label(__('labels.plural_label'))
                                     ->createOptionForm([
                                         Forms\Components\TextInput::make('title')
                                             ->label(__('fields.text_title'))
@@ -482,6 +483,7 @@ class ProductResource extends Resource
                             ->icon('heroicon-o-plus-circle')
                             ->schema([
                                 Rating::make('fake_average_rating')
+                                   ->required()
                                     ->columnSpanFull()
                                     ->live()
                                     ->allowZero()
@@ -525,9 +527,9 @@ class ProductResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('id')->label(__('id')),
 
-                Tables\Columns\SpatieMediaLibraryImageColumn::make('main_product_image')
+                Tables\Columns\SpatieMediaLibraryImageColumn::make('feature_product_image')
                     ->placeholder('-')
-                    ->collection('main_product_image')
+                    ->collection('feature_product_image')
                     ->label(__('products.Product Image')),
 
                 Tables\Columns\SpatieMediaLibraryImageColumn::make('sizes_image')
@@ -535,9 +537,9 @@ class ProductResource extends Resource
                     ->collection('sizes_image')
                     ->label(__('Sizes Image')),
 
-                SpatieMediaLibraryImageColumn::make('more_product_images')
+                SpatieMediaLibraryImageColumn::make('second_feature_product_image')
                     ->placeholder('-')
-                    ->label('المزيد من الصور')
+                    ->label(__('Second Feature Image'))
                     ->simpleLightbox()
                     ->circular()
                     ->stacked()
