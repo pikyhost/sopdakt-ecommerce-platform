@@ -6,7 +6,7 @@
 
             <div class="text-right">
                 <x-filament::button type="submit">
-                    {{ __('profile.save') }}
+                    {{ __('Update') }}
                 </x-filament::button>
             </div>
         </form>

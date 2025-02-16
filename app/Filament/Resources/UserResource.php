@@ -137,6 +137,7 @@ class UserResource extends Resource
                 }),
 
             PhoneInput::make('phone')
+                ->unique(ignoreRecord: true)
                 ->label(__('Phone Number')),
 
         Forms\Components\Select::make('roles')

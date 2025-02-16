@@ -31,3 +31,13 @@ Route::group(
 
 Route::get('/test', fn() => 'all working');
 
+Route::get('test', function (){
+    $ip = app()->isLocal() ? '156.221.68.3' : request()->ip();  // Egypt ip
+
+    $location = geoip($ip);
+
+    // Log the entire location data
+    Log::info('GeoIP Location Data:', $location->toArray());
+
+    return $location['country_code2'] ?? 'US';
+});
