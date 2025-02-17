@@ -21,27 +21,31 @@ class UsersWithRolesSeeder extends Seeder
                 'email' => 'super@gmail.com',
                 'password' => Hash::make('password'),
                 'role' => UserRole::SuperAdmin,
+                'email_verified_at' => now(),
             ],
             [
                 'name' => 'Admin User',
                 'email' => 'admin@gmail.com',
                 'password' => Hash::make('password'),
                 'role' => UserRole::Admin,
+                'email_verified_at' => now(),
             ],
             [
                 'name' => 'Client User',
                 'email' => 'client@gmail.com',
                 'password' => Hash::make('password'),
                 'role' => UserRole::Client,
+                'email_verified_at' => now(),
             ],
         ];
 
         foreach ($users as $userData) {
-            $user = User::firstOrCreate(
+            $user = User::updateOrCreate(
                 ['email' => $userData['email']],
                 [
                     'name' => $userData['name'],
                     'password' => $userData['password'],
+                    'email_verified_at' => $userData['email_verified_at'], // Ensure this is updated
                 ]
             );
 
@@ -51,6 +55,7 @@ class UsersWithRolesSeeder extends Seeder
                 $user->assignRole($role);
             }
         }
+
 
         $this->command->info('Users with roles seeded successfully.');
     }

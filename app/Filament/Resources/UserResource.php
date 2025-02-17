@@ -2,8 +2,10 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\Status;
 use App\Enums\UserRole;
 use App\Filament\Resources\UserResource\Pages;
+use App\Models\ProductRating;
 use App\Models\User;
 use App\Services\PdfDownloadService;
 use App\Traits\HasCreatedAtFilter;
@@ -26,10 +28,12 @@ use Filament\Resources\Pages\Page;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\ActionSize;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -37,6 +41,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
+use Webbingbrasil\FilamentAdvancedFilter\Filters\BooleanFilter;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use Ysfkaya\FilamentPhoneInput\Infolists\PhoneEntry;
 use Ysfkaya\FilamentPhoneInput\PhoneInputNumberType;
@@ -230,7 +235,12 @@ class UserResource extends Resource
                     ->badge()
                     ->color(fn (string $state) => UserRole::getColorFor($state)),
 
+                Tables\Columns\IconColumn::make('is_active')
+                    ->boolean()
+                    ->label(__("Is Active?")),
+
                 TextColumn::make('created_at')
+                    ->label(__('created_at'))
                     ->toggleable(true, true)
                     ->dateTime(),
             ])
@@ -245,6 +255,7 @@ class UserResource extends Resource
                         modifyQueryUsing: fn (Builder $query) => $query->where('name', '!=', 'panel_user'))
                     ->columnSpan(['sm' => 2, 'md' => 2, 'lg' => 2, 'xl' => 2, '2xl' => 2, 'default' => 2]),
                 self::getCreatedAtFilter()->columnSpan(['sm' => 4, 'md' => 4, 'lg' => 4, 'xl' => 4, '2xl' => 4, 'default' => 4]),
+                Filter::make('is_active')->toggle()->label(__("Is Active?"))->columnSpanFull(),
             ])
             ->filtersFormColumns(6)
             ->actions([
@@ -252,20 +263,65 @@ class UserResource extends Resource
                     Tables\Actions\ViewAction::make()->label(__('View')),
                     Tables\Actions\EditAction::make()->color('primary')->label(__('Edit')),
                     Tables\Actions\DeleteAction::make()->label(__('Delete')),
+
+                    Action::make('active')
+                        ->hidden(fn($record) => $record->is_active) // Use enum comparison
+                        ->label(__('Activate'))
+                        ->icon('heroicon-o-check')
+                        ->color('success')
+                        ->action(fn ($record) => self::activeUser($record)),
+
+                    Action::make('block')
+                        ->hidden(fn($record) => !$record->is_active) // Use enum comparison
+                        ->label(__('Block'))
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->action(fn ($record) => self::blockUser($record)),
                 ])
                     ->label(__('Actions'))
                     ->icon('heroicon-m-ellipsis-vertical')
                     ->size(ActionSize::Small)
                     ->color('primary')
                     ->button(),
+
+
             ])
             ->bulkActions([
                 BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+
+                    \Filament\Tables\Actions\BulkAction::make('active')
+                        ->label(__('Activate Selected'))
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->action(function ($records) {
+                            $records->each(fn ($record) => self::activeUser($record));
+                        }),
+
+                    \Filament\Tables\Actions\BulkAction::make('block')
+                        ->label(__('Block Selected'))
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->action(function ($records) {
+                            $records->each(fn ($record) => self::blockUser($record));
+                        }),
+
                 ]),
             ])
             ->recordUrl(fn () => '')
             ->defaultSort('id', 'desc');
+    }
+
+    private static function activeUser(User $record)
+    {
+        $record->update(['is_active' => true]);
+    }
+
+    private static function blockUser(User $record)
+    {
+        $record->update(['is_active' => false]);
     }
 
     public static function infolist(Infolist $infolist): Infolist
@@ -336,19 +392,6 @@ class UserResource extends Resource
     public static function getGlobalSearchResultUrl(Model $record): string
     {
         return UserResource::getUrl('view', ['record' => $record]);
-    }
-
-    public static function getEloquentQuery(): Builder
-    {
-        $query = parent::getEloquentQuery()
-            ->select(['id', 'avatar_url', 'name', 'email', 'phone', 'created_at'])
-            ->with('roles:id,name');
-
-        $query->when(request()->is('admin/users/*') && ! request()->is('admin/users'), function (Builder $query) {
-            return $query->addSelect(['updated_at']);
-        });
-
-        return $query;
     }
 
     public static function getPages(): array

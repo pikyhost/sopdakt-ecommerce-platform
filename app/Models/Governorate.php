@@ -2,22 +2,26 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Translatable\HasTranslations;
 
 class Governorate extends Model
 {
-    use HasFactory;
+    use HasTranslations;
+
+    public $translatable = ['name'];
 
     protected $guarded = [];
 
-    public function regions()
+
+    public function country()
     {
-        return $this->hasMany(Region::class);
+        return $this->belongsTo(Country::class);
     }
 
-    public function zone()
+    public function shippingZones()
     {
-        return $this->hasOneThrough(Zone::class, ZoneGovernorate::class, 'governorate_id', 'id', 'id', 'zone_id');
+        return $this->belongsToMany(ShippingZone::class, 'governorate_shipping_zone');
     }
+
 }

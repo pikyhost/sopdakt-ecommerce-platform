@@ -13,9 +13,7 @@ return new class extends Migration {
         Schema::create('labels', function (Blueprint $table) {
             $table->id();
             $table->longText('title')->nullable();
-            $table->string('color')->nullable();
             $table->string('color_code')->nullable();
-            $table->string('background_color')->nullable();
             $table->string('background_color_code')->nullable();
             $table->timestamps();
         });

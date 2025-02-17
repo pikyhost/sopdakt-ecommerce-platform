@@ -62,15 +62,11 @@ class LabelResource extends Resource
                     Forms\Components\TextInput::make('title')
                         ->label(__('fields.text_title'))
                         ->columnSpanFull(),
-                    Forms\Components\TextInput::make('color')
-                        ->label(__('fields.text_color')),
                     Forms\Components\ColorPicker::make('color_code')
                         ->label(__('fields.text_color_code')),
-                    Forms\Components\TextInput::make('background_color')
-                        ->label(__('fields.background_color')),
                     Forms\Components\ColorPicker::make('background_color_code')
                         ->label(__('fields.background_color_code')),
-                ])->columns(2)
+                ])->columns(1)
             ]);
     }
 
@@ -81,14 +77,8 @@ class LabelResource extends Resource
                 Tables\Columns\TextColumn::make('title')
                     ->label(__('fields.text_title'))
                     ->columnSpanFull(),
-                Tables\Columns\TextColumn::make('color')
-                    ->label(__('fields.text_color'))
-                    ->searchable(),
                 Tables\Columns\ColorColumn::make('color_code')
                     ->label(__('fields.text_color_code'))
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('background_color')
-                    ->label(__('fields.background_color'))
                     ->searchable(),
                 Tables\Columns\ColorColumn::make('background_color_code')
                     ->label(__('fields.background_color_code'))

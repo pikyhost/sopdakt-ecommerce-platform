@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Client\Pages\Auth\ClientLogin;
 use App\Filament\Client\Pages\Auth\EmailVerification;
 use App\Livewire\ProfileContactDetails;
 use CharrafiMed\GlobalSearchModal\GlobalSearchModalPlugin;
@@ -34,7 +35,7 @@ class ClientPanelProvider extends PanelProvider
                 'primary' => Color::Indigo,
                 'gray' => Color::Slate,
             ])
-            ->login()
+            ->login(ClientLogin::class)
             ->registration()
             ->passwordReset()
             ->emailVerification()

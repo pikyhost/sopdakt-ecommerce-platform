@@ -13,13 +13,10 @@ return new class extends Migration
     {
         Schema::create('landing_page_shipping_zones', function (Blueprint $table) {
             $table->foreignIdFor(\App\Models\LandingPage::class)->constrained()->cascadeOnDelete();
-            $table->foreignIdFor(\App\Models\Zone::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(\App\Models\ShippingZone ::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(\App\Models\ShippingType::class)->constrained()->cascadeOnDelete();
             $table->decimal('shipping_cost')->nullable();
             $table->tinyInteger('status')->default(1);
-            $table->primary(['landing_page_id', 'zone_id', 'shipping_type_id'], 'primary_landing_page_zone_shipping_type');
-            $table->unique(['landing_page_id', 'zone_id', 'shipping_type_id'], 'unique_landing_page_zone_shipping_type');
-            $table->index(['landing_page_id', 'zone_id', 'shipping_type_id'], 'index_landing_page_zone_shipping_type');
             $table->timestamps();
         });
     }

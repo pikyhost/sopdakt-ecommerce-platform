@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('phone');
             $table->string('address');
             $table->foreignIdFor(\App\Models\Governorate::class)->constrained()->cascadeOnDelete();
-            $table->foreignIdFor(\App\Models\Region::class)->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(\App\Models\Country::class)->nullable()->constrained()->cascadeOnDelete();
             $table->foreignIdFor(\App\Models\Color::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(\App\Models\Size::class)->constrained()->cascadeOnDelete();
             $table->integer('quantity');

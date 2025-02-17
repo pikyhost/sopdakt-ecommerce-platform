@@ -5,16 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Translatable\HasTranslations;
 
-class Label extends Model
+class City extends Model
 {
     use HasTranslations;
 
-    public $translatable = ['title'];
+    public $translatable = ['name'];
 
     protected $guarded = [];
 
-    public function products()
+    public function governorate()
     {
-        return $this->belongsToMany(Product::class, 'label_product');
+        return $this->belongsTo(Governorate::class);
     }
 }

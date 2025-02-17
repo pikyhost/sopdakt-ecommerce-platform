@@ -55,6 +55,7 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
                 __('Products Management'),
                 __('Stock Management'),
+                __('Shipping Management'),
                 __('Countries Management'),
                 __('user_experience'),
                 __('Settings Management'),
