@@ -11,6 +11,7 @@ use Filament\Infolists\Infolist;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\ActionSize;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
@@ -42,7 +43,7 @@ class CountryResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('Countries Management'); //Products Attributes Management
+        return __('Shipping & Countries'); //Products Attributes Management
     }
 
     /**
@@ -72,7 +73,26 @@ class CountryResource extends Resource
                 ->required()
                 ->unique(ignoreRecord: true)
                 ->maxLength(255),
-        ]);
+
+            TextInput::make('code')
+                ->columnSpanFull()
+                ->label(__('code'))
+                ->required()
+                ->unique(ignoreRecord: true)
+                ->maxLength(255),
+
+            TextInput::make('cost')
+                ->label(__('shipping_cost.cost'))
+                ->required()
+                ->numeric()
+                ->default(0),
+
+            TextInput::make('shipping_estimate_time')
+                ->label(__('shipping_cost.shipping_estimate_time'))
+                ->required()
+                ->maxLength(255)
+                ->default('0-0'),
+        ])->columns(1);
     }
 
     public static function table(Table $table): Table
@@ -87,6 +107,8 @@ class CountryResource extends Resource
     {
         return [
             TextColumn::make('id')
+                ->toggleable(true, true)
+                ->weight(FontWeight::Bold)
                 ->label(__('id'))
                 ->searchable()
                 ->sortable(),
@@ -95,6 +117,20 @@ class CountryResource extends Resource
                 ->label(__('name'))
                 ->searchable()
                 ->sortable(),
+
+            TextColumn::make('code')
+                ->badge()
+                ->label(__('code'))
+                ->searchable()
+                ->sortable(),
+
+            TextColumn::make('cost')
+                ->label(__('shipping_cost.cost'))
+                ->sortable(),
+
+            TextColumn::make('shipping_estimate_time')
+                ->label(__('shipping_cost.shipping_estimate_time'))
+                ->searchable(),
 
             TextColumn::make('created_at')
                 ->label(__('category.created_at'))
@@ -112,7 +148,6 @@ class CountryResource extends Resource
     private static function getTableActions(): array
     {
         return [
-                ViewAction::make(),
                 EditAction::make()->color('primary'),
                 DeleteAction::make(),
         ];
@@ -124,21 +159,6 @@ class CountryResource extends Resource
             BulkActionGroup::make([
                 DeleteBulkAction::make(),
             ]),
-        ];
-    }
-
-    public static function infolist(Infolist $infolist): Infolist
-    {
-        return $infolist->schema(self::getInfolistSchema())->columns(1)->inlineLabel();
-    }
-
-    private static function getInfolistSchema(): array
-    {
-        return [
-            TextEntry::make('id')->label(__('id')),
-            TextEntry::make('name')->label(__('name')),
-            TextEntry::make('created_at')->label(__('category.created_at'))->dateTime(),
-            TextEntry::make('updated_at')->label(__('category.updated_at'))->dateTime(),
         ];
     }
 

@@ -6,6 +6,7 @@ use App\Filament\Resources\ShippingZoneResource\Pages;
 use App\Models\ShippingZone;
 use Filament\Forms;
 use Filament\Forms\Components\MarkdownEditor;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
@@ -27,7 +28,7 @@ class ShippingZoneResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('Countries Management'); //Products Attributes Management
+        return __('Shipping & Countries'); //Products Attributes Management
     }
 
     public static function getModelLabel(): string
@@ -45,7 +46,7 @@ class ShippingZoneResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
-                    ->label(__('shipping_zone.name'))
+                    ->label(__('name'))
                     ->required()
                     ->maxLength(255),
 
@@ -54,6 +55,18 @@ class ShippingZoneResource extends Resource
                     ->label(__('governorates'))
                     ->relationship('governorates', 'name')
                     ->multiple(),
+
+                TextInput::make('cost')
+                    ->label(__('shipping_cost.cost'))
+                    ->required()
+                    ->numeric()
+                    ->default(0),
+
+                TextInput::make('shipping_estimate_time')
+                    ->label(__('shipping_cost.shipping_estimate_time'))
+                    ->required()
+                    ->maxLength(255)
+                    ->default('0-0'),
 
                 Forms\Components\Textarea::make('description')
                     ->nullable()

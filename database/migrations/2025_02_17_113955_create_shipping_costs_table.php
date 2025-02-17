@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('shipping_costs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_id')->nullable()->constrained('products')->cascadeOnDelete();
-            $table->foreignId('shipping_type_id')->constrained('shipping_types')->cascadeOnDelete();
+            $table->foreignId('shipping_type_id')->nullable()->constrained('shipping_types')->cascadeOnDelete();
             $table->foreignId('city_id')->nullable()->constrained('cities')->cascadeOnDelete();
             $table->foreignId('governorate_id')->nullable()->constrained('governorates')->cascadeOnDelete();
             $table->foreignId('shipping_zone_id')->nullable()->constrained('shipping_zones')->cascadeOnDelete();

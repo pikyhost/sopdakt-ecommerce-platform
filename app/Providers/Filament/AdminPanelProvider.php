@@ -55,8 +55,7 @@ class AdminPanelProvider extends PanelProvider
             ->navigationGroups([
                 __('Products Management'),
                 __('Stock Management'),
-                __('Shipping Management'),
-                __('Countries Management'),
+                __('Shipping & Countries'),
                 __('user_experience'),
                 __('Settings Management'),
             ])
@@ -84,6 +83,10 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->spa()
+            ->spaUrlExceptions([
+                '*/admin/products/*/edit',
+                '*/admin/categories/*/edit',
+            ])
             ->plugins([
                 SimpleLightBoxPlugin::make(),
                 SpatieLaravelTranslatablePlugin::make()->defaultLocales(['en', 'ar']),

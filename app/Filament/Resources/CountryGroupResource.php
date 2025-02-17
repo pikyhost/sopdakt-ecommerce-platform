@@ -23,7 +23,7 @@ class CountryGroupResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('Countries Management'); //Products Attributes Management
+        return __('Shipping & Countries'); //Products Attributes Management
     }
 
     public static function getNavigationLabel(): string
@@ -70,6 +70,18 @@ class CountryGroupResource extends Resource
                         ->multiple()
                         ->searchable()
                         ->preload(),
+
+                    Forms\Components\TextInput::make('cost')
+                        ->label(__('shipping_cost.cost'))
+                        ->required()
+                        ->numeric()
+                        ->default(0),
+
+                    Forms\Components\TextInput::make('shipping_estimate_time')
+                        ->label(__('shipping_cost.shipping_estimate_time'))
+                        ->required()
+                        ->maxLength(255)
+                        ->default('0-0'),
                 ])
             ]);
     }
@@ -85,6 +97,13 @@ class CountryGroupResource extends Resource
                     ->limitList(5)
                     ->label(__('countries'))
                     ->badge(),
+                Tables\Columns\TextColumn::make('cost')
+                    ->label(__('shipping_cost.cost'))
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('shipping_estimate_time')
+                    ->label(__('shipping_cost.shipping_estimate_time'))
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

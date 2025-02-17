@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->foreignId('governorate_id')->constrained('governorates')->cascadeOnDelete();
+            $table->integer('cost')->default(0);
+            $table->string('shipping_estimate_time')->default('0-0');
             $table->timestamps();
         });
     }

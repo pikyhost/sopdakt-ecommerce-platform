@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('sku')->unique(); // Unique identifier for the product
             $table->integer('price');
+            $table->integer('cost')->nullable();
+            $table->string('shipping_estimate_time')->nullable();
             $table->text('description');
             $table->string('slug')->unique();
             $table->string('meta_title')->nullable();

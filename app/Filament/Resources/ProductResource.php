@@ -82,7 +82,7 @@ class ProductResource extends Resource
                 Tabs::make('Product Tabs')
                     ->tabs([
                         // General Information Tab
-                        Tab::make(__('General Information'))
+                        Tab::make(__('General Info'))
                             ->icon('heroicon-o-information-circle')
                             ->schema([
                                 SelectTree::make('category_id')
@@ -349,10 +349,10 @@ class ProductResource extends Resource
                                 TextInput::make('meta_title')
                                     ->label(__('Meta Title'))
                                     ->maxLength(255),
-                                TextInput::make('meta_description')
+                                Textarea::make('meta_description')
                                     ->label(__('Meta Description'))
                                     ->maxLength(255),
-                            ]),
+                            ])->columns(1),
 
                         // Bundles Tab
                         Tab::make(__('bundles.title'))
@@ -475,6 +475,74 @@ class ProductResource extends Resource
                                                     ->nullable(),
                                             ])->columnSpanFull(),
                                     ]),
+                            ]),
+
+                        Tabs\Tab::make(__('Shipping'))
+                            ->icon('heroicon-o-truck')
+                            ->schema([
+                               Forms\Components\Section::make()->schema([
+                                   Forms\Components\TextInput::make('shipping_cost')
+                                       ->numeric()
+                                       ->label(__('Shipping cost worldwide'))
+                                       ->required(),
+
+                                   Forms\Components\TextInput::make('shipping_estimate_time')
+                                       ->label(__('Shipping estimate time worldwide'))
+                                       ->required(),
+                               ])->columns(2),
+                                Repeater::make('shipping_costs')
+                                    ->label(__('Shipping Costs'))
+                                    ->relationship('shippingCosts') // Define the relationship
+                                    ->schema([
+                                        Forms\Components\Select::make('city_id')
+                                            ->label(__('shipping_cost.city'))
+                                            ->relationship('city', 'name')
+                                            ->nullable()
+                                            ->live()
+                                            ->hidden(fn ($get) => $get('governorate_id') || $get('shipping_zone_id') || $get('country_id') || $get('country_group_id')),
+
+                                        Forms\Components\Select::make('governorate_id')
+                                            ->label(__('shipping_cost.governorate'))
+                                            ->relationship('governorate', 'name')
+                                            ->nullable()
+                                            ->live()
+                                            ->hidden(fn ($get) => $get('city_id') || $get('shipping_zone_id') || $get('country_id') || $get('country_group_id')),
+
+                                        Forms\Components\Select::make('shipping_zone_id')
+                                            ->label(__('shipping_zone.name'))
+                                            ->relationship('shippingZone', 'name')
+                                            ->nullable()
+                                            ->live()
+                                            ->hidden(fn ($get) => $get('city_id') || $get('governorate_id') || $get('country_id') || $get('country_group_id')),
+
+                                        Forms\Components\Select::make('country_id')
+                                            ->label(__('shipping_cost.country'))
+                                            ->relationship('country', 'name')
+                                            ->nullable()
+                                            ->live()
+                                            ->hidden(fn ($get) => $get('city_id') || $get('governorate_id') || $get('shipping_zone_id') || $get('country_group_id')),
+
+                                        Forms\Components\Select::make('country_group_id')
+                                            ->label(__('shipping_cost.country_group'))
+                                            ->relationship('countryGroup', 'name')
+                                            ->nullable()
+                                            ->live()
+                                            ->hidden(fn ($get) => $get('city_id') || $get('governorate_id') || $get('shipping_zone_id') || $get('country_id')),
+
+                                        Forms\Components\TextInput::make('cost')
+                                            ->label(__('shipping_cost.cost'))
+                                            ->required()
+                                            ->numeric()
+                                            ->default(0),
+
+                                        Forms\Components\TextInput::make('shipping_estimate_time')
+                                            ->label(__('shipping_cost.shipping_estimate_time'))
+                                            ->required()
+                                            ->maxLength(255)
+                                            ->default('0-0'),
+                                    ])
+                                    ->columns(2) // Two columns for better layout
+                                    ->defaultItems(1), // At least one shipping cost entry
                             ]),
 
                         // Additional Info Tab

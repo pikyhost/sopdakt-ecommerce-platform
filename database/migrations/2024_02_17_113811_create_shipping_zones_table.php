@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->text('description');
+            $table->integer('cost')->default(0);
+            $table->string('shipping_estimate_time')->default('0-0');
             $table->timestamps();
         });
     }

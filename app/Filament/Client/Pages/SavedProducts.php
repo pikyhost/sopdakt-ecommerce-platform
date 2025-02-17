@@ -2,7 +2,6 @@
 
 namespace App\Filament\Client\Pages;
 
-use App\Helpers\GeneralHelper;
 use App\Models\Product;
 use App\Services\ProductActionsService;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -41,12 +40,12 @@ class SavedProducts extends Page implements HasForms, HasTable
     protected static function getTableColumns(): array
     {
         return [
-            SpatieMediaLibraryImageColumn::make('main_product_image')
+            SpatieMediaLibraryImageColumn::make('feature_product_image')
                 ->circular()
                 ->label(__('Product Image'))
                 ->simpleLightbox()
                 ->toggleable(false)
-                ->collection('main_product_image'),
+                ->collection('feature_product_image'),
 
             TextColumn::make('name')
                 ->toggleable(false)
@@ -112,7 +111,6 @@ class SavedProducts extends Page implements HasForms, HasTable
             ])
             ->orderByDesc('saved_at');
     }
-
 
     public static function canAccess(): bool
     {

@@ -213,4 +213,9 @@ class Product extends Model implements HasMedia
     {
         return $this->belongsToMany(Attribute::class)->withPivot('value');
     }
+
+    public function shippingCosts()
+    {
+        return $this->hasMany(ShippingCost::class);
+    }
 }

@@ -39,7 +39,7 @@ class GovernorateResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('Countries Management'); //Products Attributes Management
+        return __('Shipping & Countries'); //Products Attributes Management
     }
 
     public static function getLabel(): ?string
@@ -66,6 +66,18 @@ class GovernorateResource extends Resource
                     ->relationship('country', 'name')
                     ->required()
                     ->label(__('country_name')),
+
+                Forms\Components\TextInput::make('cost')
+                    ->label(__('shipping_cost.cost'))
+                    ->required()
+                    ->numeric()
+                    ->default(0),
+
+                Forms\Components\TextInput::make('shipping_estimate_time')
+                    ->label(__('shipping_cost.shipping_estimate_time'))
+                    ->required()
+                    ->maxLength(255)
+                    ->default('0-0'),
             ])
             ->columns(1);
     }
@@ -80,6 +92,14 @@ class GovernorateResource extends Resource
                 Tables\Columns\TextColumn::make('country.name')
                     ->searchable()
                     ->label(__('country_name')),
+
+                Tables\Columns\TextColumn::make('cost')
+                    ->label(__('shipping_cost.cost'))
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('shipping_estimate_time')
+                    ->label(__('shipping_cost.shipping_estimate_time'))
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

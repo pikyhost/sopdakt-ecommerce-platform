@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('country_groups', function (Blueprint $table) {
             $table->id();
             $table->string('name'); // Translatable group name
+            $table->integer('cost')->default(0);
+            $table->string('shipping_estimate_time')->default('0-0');
             $table->timestamps();
         });
 

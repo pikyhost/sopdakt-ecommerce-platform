@@ -26,7 +26,6 @@ class SavedProducts extends Page implements HasForms, HasTable
 {
     use InteractsWithForms, InteractsWithTable;
 
-
     protected static ?string $navigationIcon = 'heroicon-o-heart';
     protected static string $view = 'filament.pages.saved-products';
     protected static ?string $slug = 'wishlists';
@@ -75,12 +74,12 @@ class SavedProducts extends Page implements HasForms, HasTable
     protected static function getTableColumns(): array
     {
         return [
-            SpatieMediaLibraryImageColumn::make('main_product_image')
+            SpatieMediaLibraryImageColumn::make('feature_product_image')
                 ->simpleLightbox()
                 ->circular()
                 ->label(__('Product Image'))
                 ->toggleable(false)
-                ->collection('main_product_image'),
+                ->collection('feature_product_image'),
 
             TextColumn::make('name')
                 ->toggleable(false)
@@ -209,11 +208,6 @@ class SavedProducts extends Page implements HasForms, HasTable
             ->recordUrl(fn ($record) => url('/'));
     }
 
-    public static function canAccess(): bool
-    {
-        return 1;
-    }
-
     protected static function getQuery()
     {
         return Product::query()
@@ -223,7 +217,5 @@ class SavedProducts extends Page implements HasForms, HasTable
             ->orderByDesc('saved_at')
             ->addSelect(['saved_at' => DB::raw('CAST(saved_products.created_at AS DATETIME)')]); // Ensure it's treated as a DateTime
     }
-
-
 
 }

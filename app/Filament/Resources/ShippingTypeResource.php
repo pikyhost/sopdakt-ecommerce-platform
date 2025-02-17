@@ -19,6 +19,8 @@ class ShippingTypeResource extends Resource
 
     protected static ?string $model = ShippingType::class;
 
+    protected static ?int $navigationSort = -200;
+
     protected static ?string $navigationIcon = 'heroicon-o-bars-3';
 
     public static function getNavigationLabel(): string
@@ -28,7 +30,7 @@ class ShippingTypeResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('Shipping Management'); //Products Management
+        return __('Shipping & Countries'); //Products Attributes Management
     }
 
     public static function getModelLabel(): string

@@ -7,7 +7,7 @@ use App\Models\Category;
 use Closure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms\Components\Checkbox;
-use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -30,8 +30,9 @@ use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Table;
+use Illuminate\Validation\Rule;
 
-class CategoryResource extends Resource
+class ACategoryResource extends Resource
 {
     use Translatable;
 
@@ -77,56 +78,54 @@ class CategoryResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Section::make()->schema([
-                SpatieMediaLibraryFileUpload::make('main_category_image')
-                    ->label(__('image'))
-                    ->columnSpanFull()
-                    ->collection('main_category_image'),
-                TextInput::make('name')
-                    ->label(__('category.name'))
-                    ->required()
-                    ->unique(ignoreRecord: true)
-                    ->maxLength(255),
+            SpatieMediaLibraryFileUpload::make('main_category_image')
+                ->label(__('image'))
+                ->columnSpanFull()
+                ->collection('main_category_image'),
+            TextInput::make('name')
+                ->label(__('category.name'))
+                ->required()
+                ->unique(ignoreRecord: true)
+                ->maxLength(255),
 
-                TextInput::make('slug')
-                    ->label(__('category.slug'))
-                    ->unique(ignoreRecord: true)
-                    ->maxLength(255),
+            TextInput::make('slug')
+                ->label(__('category.slug'))
+                ->unique(ignoreRecord: true)
+                ->maxLength(255),
 
-                // SelectTree field for selecting parent category
-                SelectTree::make('parent_id')
-                    ->enableBranchNode()
-                    ->label(__('category.parent'))
-                    ->relationship('parent', 'name', 'parent_id')
-                    ->placeholder(__('Please select a main category'))
-                    ->enableBranchNode()
-                    ->rules([
-                        fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
-                            if ($value === $get('id')) {
-                                $fail(__('A category cannot be its own main.'));
-                            }
-                        },
-                    ])
-                    ->validationAttribute(__('Parent Category')),
+            // SelectTree field for selecting parent category
+            SelectTree::make('parent_id')
+                ->enableBranchNode()
+                ->label(__('category.parent'))
+                ->relationship('parent', 'name', 'parent_id')
+                ->placeholder(__('Please select a main category'))
+                ->enableBranchNode()
+                ->rules([
+                    fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                        if ($value === $get('id')) {
+                            $fail(__('A category cannot be its own main.'));
+                        }
+                    },
+                ])
+                ->validationAttribute(__('Parent Category')),
 
-                TextInput::make('meta_title')
-                    ->label(__('category.meta_title'))
-                    ->maxLength(255),
+            TextInput::make('meta_title')
+                ->label(__('category.meta_title'))
+                ->maxLength(255),
 
-                Textarea::make('meta_description')
-                    ->columnSpanFull()
-                    ->label(__('category.meta_description'))
-                    ->maxLength(500),
+            TextInput::make('meta_description')
+                ->columnSpanFull()
+                ->label(__('category.meta_description'))
+                ->maxLength(500),
 
-                Textarea::make('description')
-                    ->label(__('category.description'))
-                    ->columnSpanFull()
-                    ->maxLength(500),
+            Textarea::make('description')
+                ->label(__('category.description'))
+                ->columnSpanFull()
+                ->maxLength(500),
 
-                Checkbox::make('is_published')
-                    ->default(true)
-                    ->label(__('category.is_published')),
-            ])->columns(2)
+            Checkbox::make('is_published')
+                ->default(true)
+                ->label(__('category.is_published')),
         ]);
     }
 
@@ -245,9 +244,7 @@ class CategoryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListCategories::route('/'),
-            'create' => Pages\CreateCategory::route('/create'),
-            'edit' => Pages\EditCategory::route('/{record}/edit'),
+            'index' => Pages\ManageCategories::route('/'),
         ];
     }
 }

@@ -6,7 +6,6 @@ use App\Filament\Resources\ShippingCostResource\Pages;
 use App\Models\ShippingCost;
 use Filament\Forms;
 use Filament\Forms\Form;
-use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -14,6 +13,8 @@ use Filament\Tables\Table;
 class ShippingCostResource extends Resource
 {
     protected static ?string $model = ShippingCost::class;
+
+    protected static ?int $navigationSort = -199;
 
     protected static ?string $navigationIcon = 'heroicon-o-truck';
 
@@ -24,7 +25,7 @@ class ShippingCostResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('Shipping Management'); //Products Management
+        return __('Shipping & Countries'); //Products Attributes Management
     }
 
     public static function getModelLabel(): string
