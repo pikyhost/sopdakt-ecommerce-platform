@@ -219,8 +219,7 @@ class UserResource extends Resource
                     ->iconColor('primary')
                     ->icon('heroicon-o-envelope'),
 
-                PhoneColumn::make('phone')
-                    ->displayFormat(PhoneInputNumberType::NATIONAL)
+                TextColumn::make('phone')
                     ->iconColor('primary')
                     ->icon('heroicon-o-phone')
                     ->label(__('Phone'))

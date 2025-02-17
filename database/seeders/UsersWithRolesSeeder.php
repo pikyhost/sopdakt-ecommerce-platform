@@ -43,11 +43,12 @@ class UsersWithRolesSeeder extends Seeder
             $user = User::updateOrCreate(
                 ['email' => $userData['email']],
                 [
-                    'name' => $userData['name'],
+                    'name' => $userData['name'], // Ensure this is a plain string
                     'password' => $userData['password'],
-                    'email_verified_at' => $userData['email_verified_at'], // Ensure this is updated
+                    'email_verified_at' => $userData['email_verified_at'],
                 ]
             );
+
 
             // Assign role
             $role = Role::where('name', $userData['role']->value)->first();

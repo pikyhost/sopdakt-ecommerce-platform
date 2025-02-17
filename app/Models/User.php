@@ -15,7 +15,6 @@ use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasPermissions;
 use Spatie\Permission\Traits\HasRoles;
-use Spatie\Translatable\HasTranslations;
 
 class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerifyEmail
 {
