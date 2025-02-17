@@ -9,16 +9,12 @@ use Filament\Resources\Pages\ViewRecord;
 
 class ViewUser extends ViewRecord
 {
-    use HasPdfDownloadAction;
-    use ViewRecord\Concerns\Translatable;
-
     protected static string $resource = UserResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
             Actions\DeleteAction::make(),
-            Actions\LocaleSwitcher::make(),
         ];
     }
 

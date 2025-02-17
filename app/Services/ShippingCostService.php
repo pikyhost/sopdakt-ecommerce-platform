@@ -2,37 +2,25 @@
 
 namespace App\Services;
 
-use App\Models\ShippingCost;
+use App\Models\Product;
+use App\Models\City;
+use App\Models\Governorate;
 use App\Models\ShippingZone;
+use App\Models\Country;
+use App\Models\CountryGroup;
 
 class ShippingCostService
 {
-    /**
-     * Get the nearest applicable shipping cost for a product based on the priority:
-     * City → Governorate → Shipping Zone → Country → Country Group.
-     *
-     * @param int $productId The product to get the shipping cost for.
-     * @param int|null $cityId The city ID of the destination.
-     * @param int|null $governorateId The governorate ID of the destination.
-     * @param int|null $countryId The country ID of the destination.
-     * @param int|null $countryGroupId The country group ID of the destination.
-     * @return ShippingCost|null The best available shipping cost or null if none found.
-     */
-    public function getBestShippingCost(int $productId, ?int $cityId, ?int $governorateId, ?int $countryId, ?int $countryGroupId): ?ShippingCost
+    public function getShippingCost(Product $product, ?int $cityId, ?int $governorateId, ?int $shippingZoneId, ?int $countryId, ?int $countryGroupId): array
     {
-        return ShippingCost::where('product_id', $productId)
-            ->where(function ($query) use ($cityId, $governorateId, $countryId, $countryGroupId) {
-                $query->when($cityId, fn($q) => $q->orWhere('city_id', $cityId))
-                    ->when($governorateId, fn($q) => $q->orWhere('governorate_id', $governorateId))
-                    ->when($countryId, fn($q) => $q->orWhere('country_id', $countryId))
-                    ->when($countryGroupId, fn($q) => $q->orWhere('country_group_id', $countryGroupId));
-
-                // Check Shipping Zones linked to Governorates
-                if ($governorateId) {
-                    $query->orWhereHas('shippingZone', function ($q) use ($governorateId) {
-                        $q->whereHas('governorates', fn($q2) => $q2->where('id', $governorateId));
-                    });
-                }
+        // 1 - Check shippingCosts table for the product based on priority
+        $shippingCost = $product->shippingCosts()
+            ->where(function ($query) use ($cityId, $governorateId, $shippingZoneId, $countryId, $countryGroupId) {
+                $query->when($cityId, fn($q) => $q->where('city_id', $cityId))
+                    ->when($governorateId, fn($q) => $q->where('governorate_id', $governorateId))
+                    ->when($shippingZoneId, fn($q) => $q->where('shipping_zone_id', $shippingZoneId))
+                    ->when($countryId, fn($q) => $q->where('country_id', $countryId))
+                    ->when($countryGroupId, fn($q) => $q->where('country_group_id', $countryGroupId));
             })
             ->orderByRaw("
                 CASE
@@ -45,5 +33,64 @@ class ShippingCostService
                 END
             ")
             ->first();
+
+        if ($shippingCost) {
+            return [
+                'cost' => $shippingCost->cost,
+                'shipping_estimate_time' => $shippingCost->shipping_estimate_time,
+            ];
+        }
+
+        // 2- Fallback: Use product's own cost fields
+        if (!is_null($product->cost) && !is_null($product->shipping_estimate_time)) {
+            return [
+                'cost' => $product->cost,
+                'shipping_estimate_time' => $product->shipping_estimate_time,
+            ];
+        }
+
+        // 3- Fallback: Retrieve values from the place's table
+        return $this->getFallbackLocationCost($cityId, $governorateId, $shippingZoneId, $countryId, $countryGroupId);
+    }
+
+    private function getFallbackLocationCost(?int $cityId, ?int $governorateId, ?int $shippingZoneId, ?int $countryId, ?int $countryGroupId): array
+    {
+        if ($cityId) {
+            $city = City::find($cityId);
+            if ($city && !is_null($city->cost) && !is_null($city->shipping_estimate_time)) {
+                return ['cost' => $city->cost, 'shipping_estimate_time' => $city->shipping_estimate_time];
+            }
+        }
+
+        if ($governorateId) {
+            $governorate = Governorate::find($governorateId);
+            if ($governorate && !is_null($governorate->cost) && !is_null($governorate->shipping_estimate_time)) {
+                return ['cost' => $governorate->cost, 'shipping_estimate_time' => $governorate->shipping_estimate_time];
+            }
+        }
+
+        if ($shippingZoneId) {
+            $shippingZone = ShippingZone::find($shippingZoneId);
+            if ($shippingZone && !is_null($shippingZone->cost) && !is_null($shippingZone->shipping_estimate_time)) {
+                return ['cost' => $shippingZone->cost, 'shipping_estimate_time' => $shippingZone->shipping_estimate_time];
+            }
+        }
+
+        if ($countryId) {
+            $country = Country::find($countryId);
+            if ($country && !is_null($country->cost) && !is_null($country->shipping_estimate_time)) {
+                return ['cost' => $country->cost, 'shipping_estimate_time' => $country->shipping_estimate_time];
+            }
+        }
+
+        if ($countryGroupId) {
+            $countryGroup = CountryGroup::find($countryGroupId);
+            if ($countryGroup && !is_null($countryGroup->cost) && !is_null($countryGroup->shipping_estimate_time)) {
+                return ['cost' => $countryGroup->cost, 'shipping_estimate_time' => $countryGroup->shipping_estimate_time];
+            }
+        }
+
+        // Default fallback if all else fails
+        return ['cost' => 0, 'shipping_estimate_time' => '0-0'];
     }
 }

@@ -8,8 +8,6 @@ use Filament\Actions;
 
 class CreateUser extends CreateRecord
 {
-    use CreateRecord\Concerns\Translatable;
-
     protected static string $resource = UserResource::class;
 
     protected function getRedirectUrl(): string
@@ -20,7 +18,6 @@ class CreateUser extends CreateRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\LocaleSwitcher::make(),
         ];
     }
 }

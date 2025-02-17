@@ -50,7 +50,6 @@ use Ysfkaya\FilamentPhoneInput\Tables\PhoneColumn;
 class UserResource extends Resource
 {
     use HasCreatedAtFilter, HasTimestampSection;
-    use Translatable;
 
     protected static ?string $model = User::class;
 

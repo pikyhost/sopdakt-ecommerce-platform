@@ -18,8 +18,6 @@ use Spatie\Permission\Models\Role;
 
 class ListUsers extends ListRecords
 {
-    use ListRecords\Concerns\Translatable;
-
     protected static string $resource = UserResource::class;
 
     protected function getHeaderActions(): array
@@ -63,8 +61,6 @@ class ListUsers extends ListRecords
                         ->success()
                         ->send();
                 }),
-
-            Actions\LocaleSwitcher::make(),
         ];
     }
 

@@ -103,9 +103,12 @@
     "fields.text_title": "Text title",
     "fields.text_color": "Text title color",
     "fields.text_color_code": "Text title color code",
-
+    "custom.terms_and_conditions": "By continuing, you agree to our {terms} and {privacy}.",
+    "custom.terms_link": "Terms and Conditions",
+    "custom.privacy_link": "Privacy Policy",
     "messages.select_country_or_group": "You must select either a Country or a Country Group, but not both.",
     "country_or_group_info": "Country or a Country Group",
+    "shipping_zone.name": "Zone",
 
     "fields.select_country": "Select Country",
     "fields.select_country_group": "Select Country Group",

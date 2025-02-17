@@ -3,7 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Client\Pages\Auth\ClientLogin;
-use App\Filament\Client\Pages\Auth\EmailVerification;
+use App\Filament\Client\Pages\Auth\ClientRegister;
 use App\Livewire\ProfileContactDetails;
 use CharrafiMed\GlobalSearchModal\GlobalSearchModalPlugin;
 use Filament\Http\Middleware\Authenticate;
@@ -36,7 +36,7 @@ class ClientPanelProvider extends PanelProvider
                 'gray' => Color::Slate,
             ])
             ->login(ClientLogin::class)
-            ->registration()
+            ->registration(ClientRegister::class)
             ->passwordReset()
             ->emailVerification()
             ->discoverResources(in: app_path('Filament/Client/Resources'), for: 'App\\Filament\\Client\\Resources')
