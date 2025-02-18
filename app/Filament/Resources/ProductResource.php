@@ -481,7 +481,7 @@ class ProductResource extends Resource
                             ->icon('heroicon-o-truck')
                             ->schema([
                                Forms\Components\Section::make()->schema([
-                                   Forms\Components\TextInput::make('shipping_cost')
+                                   Forms\Components\TextInput::make('cost')
                                        ->numeric()
                                        ->label(__('Shipping cost worldwide'))
                                        ->required(),

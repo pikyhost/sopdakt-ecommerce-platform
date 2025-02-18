@@ -85,6 +85,7 @@ class AdminPanelProvider extends PanelProvider
             ->spaUrlExceptions([
                 '*/admin/products/*/edit',
                 '*/admin/categories/*/edit',
+                '*/admin/products/create',
             ])
             ->plugins([
                 SimpleLightBoxPlugin::make(),
