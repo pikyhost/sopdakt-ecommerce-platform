@@ -16,7 +16,6 @@ return new class extends Migration
             $table->foreignIdFor(\App\Models\Product::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(\App\Models\Color::class)->constrained()->cascadeOnDelete();
             $table->string('image')->nullable(); // Store image path
-            $table->primary(['product_id', 'color_id']);
             $table->timestamps();
         });
     }
