@@ -4,7 +4,6 @@ namespace App\Enums;
 
 use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
-use Illuminate\Support\Str;
 
 enum Status: string implements HasColor, HasLabel
 {
@@ -17,11 +16,7 @@ enum Status: string implements HasColor, HasLabel
      */
     public function getLabel(): string
     {
-        return match ($this) {
-            self::Pending => __('status.pending'),
-            self::Approved => __('status.approved'),
-            self::Rejected => __('status.rejected'),
-        };
+        return __('status.' . $this->value);
     }
 
     /**
@@ -38,7 +33,7 @@ enum Status: string implements HasColor, HasLabel
 
     public static function getLabelFor(string $status): string
     {
-        return self::tryFrom($status)?->getLabel() ?? Str::headline($status);
+        return self::tryFrom($status)?->getLabel() ?? ucfirst((string) $status);
     }
 
     public static function getColorFor(string $status): string

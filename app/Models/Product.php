@@ -87,19 +87,9 @@ class Product extends Model implements HasMedia
         return $this->belongsToMany(ShippingType::class)->withPivot(['shipping_cost', 'status']);
     }
 
-    function shippingZones()
-    {
-        return $this->belongsToMany(Zone::class,'product_shipping_zone')->withPivot(['shipping_cost', 'status']);
-    }
-
     function shippingGovernorates()
     {
         return $this->belongsToMany(Governorate::class,'product_governorate')->withPivot(['shipping_cost', 'status']);
-    }
-
-    function shippingRegions()
-    {
-        return $this->belongsToMany(Region::class,'product_region')->withPivot(['shipping_cost', 'status']);
     }
 
     public function specialPrices()
@@ -121,6 +111,11 @@ class Product extends Model implements HasMedia
     public function ratings()
     {
         return $this->hasMany(ProductRating::class);
+    }
+
+    public function getAverageRatingAttribute()
+    {
+        return $this->fake_average_rating ?? $this->ratings()->avg('rating');
     }
 
 
@@ -157,7 +152,6 @@ class Product extends Model implements HasMedia
         return $this->getFirstMediaUrl('feature_product_image') ?: null;
     }
 
-
     /**
      * Get the URL for the 'main_author_image' .
      */
@@ -175,10 +169,12 @@ class Product extends Model implements HasMedia
     }
 
 
-    public function getMoreProductImagesAndVideosUrls(string $conversion = 'medium'): array
+    public function getMoreProductImagesAndVideosUrls(string $conversion = null): array
     {
         return $this->getMedia('more_product_images_and_videos')
-            ->map(fn ($media) => $media->getUrl($conversion))
+            ->map(fn ($media) => $conversion && $media->hasGeneratedConversion($conversion)
+                ? $media->getUrl($conversion)
+                : $media->getUrl())
             ->toArray();
     }
 
@@ -214,8 +210,24 @@ class Product extends Model implements HasMedia
         return $this->belongsToMany(Attribute::class)->withPivot('value');
     }
 
+    public function types()
+    {
+        return $this->hasMany(ProductType::class);
+    }
+
     public function shippingCosts()
     {
         return $this->hasMany(ShippingCost::class);
     }
+
+    public function getRatingPercentage()
+    {
+        if ($this->fake_average_rating !== null) {
+            return ($this->fake_average_rating / 5) * 100; // Convert to percentage
+        }
+
+        $averageRating = $this->ratings()->avg('rating') ?? 0;
+        return ($averageRating / 5) * 100;
+    }
+
 }

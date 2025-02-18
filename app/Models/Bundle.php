@@ -20,6 +20,7 @@ class Bundle extends Model
         'discount_price', 'buy_x', 'get_y', 'discount_percentage', 'name_for_admin'
     ];
 
+
     protected $casts = [
         'bundle_type' => BundleType::class,
     ];

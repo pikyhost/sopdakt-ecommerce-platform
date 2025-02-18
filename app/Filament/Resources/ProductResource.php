@@ -212,12 +212,8 @@ class ProductResource extends Resource
                                         Forms\Components\TextInput::make('title')
                                             ->label(__('fields.text_title'))
                                             ->columnSpanFull(),
-                                        Forms\Components\TextInput::make('color')
-                                            ->label(__('fields.text_color')),
                                         Forms\Components\ColorPicker::make('color_code')
                                             ->label(__('fields.text_color_code')),
-                                        Forms\Components\TextInput::make('background_color')
-                                            ->label(__('fields.background_color')),
                                         Forms\Components\ColorPicker::make('background_color_code')
                                             ->label(__('fields.background_color_code')),
                                     ])
@@ -250,6 +246,24 @@ class ProductResource extends Resource
                                             ->required(),
                                     ])
                                     ->collapsible(),
+
+                                Repeater::make('types')
+                                    ->label(__('Types'))
+                                    ->columnSpanFull()
+                                    ->relationship('types') // Defines the relationship with ProductType model
+                                    ->schema([
+                                        TextInput::make('name')
+                                            ->required()
+                                            ->label(__('name')),
+
+                                        FileUpload::make('image')
+                                            ->label(__('Image_'))
+                                            ->image()
+                                            ->required(),
+                                    ])
+                                    ->minItems(1) // Ensure at least one type is added
+                                    ->collapsible() // Allow collapsing sections
+                                    ->addActionLabel('Add Product Type'), // Custom button label
 
                                 Forms\Components\Section::make(__('Attributes'))
                                     ->schema([

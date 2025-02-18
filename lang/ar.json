@@ -352,9 +352,10 @@
     "sizes.label": "الاحجام",
     "SKU": "كود المخزون",
     "Main Image": "الصورة الرئيسية",
-    "Features": "الخصائص",
+    "Features": "الخصائص و الأنواع",
     "_category": "الفئة",
     "Please select a category": "يرجى اختيار فئة",
+
     "name": "الاسم",
     "code": "الكود",
     "colors.label": "الألوان",

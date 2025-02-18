@@ -3,94 +3,112 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Models\ProductRating;
 use App\Models\Product;
 use Illuminate\Support\Facades\Auth;
 
 class ProductReviews extends Component
 {
+    use WithPagination;
+
     public $product;
-    public $reviews;
     public $rating;
     public $comment;
-    public $editingReviewId;
-    public $name;
-    public $email;
+    public $userReview;
 
     protected $rules = [
         'rating' => 'required|integer|min:1|max:5',
-        'comment' => 'required|string|max:500',
-        'name' => 'required|string|max:255',
-        'email' => 'required|email|max:255',
+        'comment' => 'required|string|min:1',
     ];
 
     public function mount(Product $product)
     {
         $this->product = $product;
-        $this->loadReviews();
+
+        // Fetch user's existing review
+        $this->loadUserReview();
     }
 
-    public function loadReviews()
+    private function loadUserReview()
     {
-        $this->reviews = ProductRating::where('product_id', $this->product->id)
-            ->latest()
-            ->get();
+        $this->userReview = ProductRating::where('product_id', $this->product->id)
+            ->where('user_id', Auth::id())
+            ->first();
+
+        if ($this->userReview) {
+            $this->rating = $this->userReview->rating;
+            $this->comment = $this->userReview->comment;
+        }
     }
 
     public function addReview()
     {
         $this->validate();
 
-        ProductRating::create([
-            'product_id' => $this->product->id,
-            'user_id' => Auth::id(),
-            'rating' => $this->rating,
-            'comment' => $this->comment,
-            'name' => $this->name,
-            'email' => $this->email,
-        ]);
+        $user = Auth::user();
+        $isAdmin = $user->hasRole(['admin', 'super_admin']);
+        $status = $isAdmin ? 'approved' : 'pending';
 
-        $this->reset(['rating', 'comment', 'name', 'email']);
-        $this->loadReviews();
-        session()->flash('message', 'Review added successfully.');
-    }
+        // Update or create the review
+        ProductRating::updateOrCreate(
+            [
+                'product_id' => $this->product->id,
+                'user_id' => $user->id,
+            ],
+            [
+                'rating' => $this->rating,
+                'comment' => $this->comment,
+                'status' => $status,
+            ]
+        );
 
-    public function editReview($reviewId)
-    {
-        $review = ProductRating::findOrFail($reviewId);
-        $this->editingReviewId = $review->id;
-        $this->rating = $review->rating;
-        $this->comment = $review->comment;
-        $this->name = $review->name;
-        $this->email = $review->email;
-    }
+        $message = __($isAdmin ? 'messages.review_saved' : 'messages.review_pending');
 
-    public function updateReview()
-    {
-        $this->validate();
+        // Ensure correct notification structure
+        $this->dispatch('notify', message: $message, type: 'success');
 
-        $review = ProductRating::findOrFail($this->editingReviewId);
-        $review->update([
-            'rating' => $this->rating,
-            'comment' => $this->comment,
-            'name' => $this->name,
-            'email' => $this->email,
-        ]);
-
-        $this->reset(['editingReviewId', 'rating', 'comment', 'name', 'email']);
-        $this->loadReviews();
-        session()->flash('message', 'Review updated successfully.');
+        // Reload user review without resetting fields
+        $this->loadUserReview();
     }
 
     public function deleteReview($reviewId)
     {
-        ProductRating::findOrFail($reviewId)->delete();
-        $this->loadReviews();
-        session()->flash('message', 'Review deleted successfully.');
+        $review = ProductRating::findOrFail($reviewId);
+
+        if ($review->user_id !== Auth::id() && !Auth::user()->hasRole(['admin', 'super_admin'])) {
+            abort(403);
+        }
+
+        $review->delete();
+
+        $this->dispatch('notify', message: __('messages.review_deleted'), type: 'success');
+
+        // Reset user review data
+        $this->userReview = null;
+        $this->rating = null;
+        $this->comment = null;
     }
 
     public function render()
     {
-        return view('livewire.product-reviews');
+        $user = Auth::user();
+        $isAdmin = $user->hasRole(['admin', 'super_admin']);
+
+        return view('livewire.product-reviews', [
+            'reviews' => ProductRating::where('product_id', $this->product->id)
+                ->where(function ($query) use ($user, $isAdmin) {
+                    $query->where('status', 'approved')
+                        ->orWhere(function ($subQuery) use ($user) {
+                            $subQuery->where('status', 'pending')->where('user_id', $user->id);
+                        });
+
+                    if ($isAdmin) {
+                        $query->orWhereNotNull('id'); // Admin sees all reviews
+                    }
+                })
+                ->latest()
+                ->paginate(5)
+        ]);
     }
 }
