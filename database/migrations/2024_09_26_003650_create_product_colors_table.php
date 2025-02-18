@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('product_colors', function (Blueprint $table) {
+            $table->id();
             $table->foreignIdFor(\App\Models\Product::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(\App\Models\Color::class)->constrained()->cascadeOnDelete();
             $table->string('image')->nullable(); // Store image path
