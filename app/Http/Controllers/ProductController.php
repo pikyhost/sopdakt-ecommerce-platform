@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
@@ -17,7 +16,7 @@ class ProductController extends Controller
                 'labels',
                 'media',
                 'ratings' => function ($query) {
-                    $query->approved()->with('user');
+                    $query->with('user');
                 },
                 'attributes',
                 'types',
@@ -33,28 +32,8 @@ class ProductController extends Controller
         $subcategoryId = $product->category_id;
         $parentCategoryId = $product->category->parent_id ?? null;
 
-        // Fetch related products in one optimized query
-        $relatedProducts = Product::where('category_id', $subcategoryId)
-            ->where('id', '!=', $product->id)
-            ->with('media')
-            ->inRandomOrder()
-            ->limit(8)
-            ->get();
-
-        // If not enough products, fetch additional from parent category
-        if ($relatedProducts->count() < 8 && $parentCategoryId) {
-            $additionalProducts = Product::where('category_id', $parentCategoryId)
-                ->where('id', '!=', $product->id)
-                ->with('media')
-                ->inRandomOrder()
-                ->limit(8 - $relatedProducts->count())
-                ->get();
-
-            $relatedProducts = $relatedProducts->merge($additionalProducts);
-        }
-
-        // Fetch featured, best-selling, latest, and top-rated products in one query
-        $otherProducts = Product::where(function ($query) use ($subcategoryId, $parentCategoryId) {
+        // Fetch products once and filter them in PHP
+        $allProducts = Product::where(function ($query) use ($subcategoryId, $parentCategoryId) {
             $query->where('category_id', $subcategoryId);
             if ($parentCategoryId) {
                 $query->orWhere('category_id', $parentCategoryId);
@@ -64,13 +43,16 @@ class ProductController extends Controller
             ->with('media', 'ratings')
             ->get();
 
-        // Filter the collections
-        $featuredProducts = $otherProducts->where('is_featured', true)->shuffle()->take(3);
-        $bestSellingProducts = $otherProducts->sortByDesc('sales')->take(3);
-        $latestProducts = $otherProducts->sortByDesc('created_at')->take(3);
+        // Extract related products (first 8 random)
+        $relatedProducts = $allProducts->shuffle()->take(8);
+
+        // Filter featured, best-selling, latest, and top-rated products from the same collection
+        $featuredProducts = $allProducts->where('is_featured', true)->shuffle()->take(3);
+        $bestSellingProducts = $allProducts->sortByDesc('sales')->take(3);
+        $latestProducts = $allProducts->sortByDesc('created_at')->take(3);
 
         // Calculate top-rated products
-        $topRatedProducts = $otherProducts->map(function ($p) {
+        $topRatedProducts = $allProducts->map(function ($p) {
             $p->final_average_rating = $p->fake_average_rating ?? $p->ratings->avg('rating');
             return $p;
         })->sortByDesc('final_average_rating')->take(3);
