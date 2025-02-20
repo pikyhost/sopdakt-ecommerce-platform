@@ -1055,7 +1055,7 @@
                                 </figure>
                                 <div class="product-details">
                                     <div class="category-list">
-                                        <a href="#" class="product-category">
+                                        <a href="{{ route('category.products',$relatedProduct->category->slug ) }}" class="product-category">
                                             {{ $relatedProduct->category->name }}
                                         </a>
                                     </div>

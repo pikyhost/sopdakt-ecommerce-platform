@@ -10,7 +10,7 @@
     </span>
 
     <!-- Quick View -->
-    <a href="{{ route('product.show', $product->slug) }}" class="btn-quickview" title="Quick View">
+    <a wire:navigate href="{{ route('product.show', $product->slug) }}" class="btn-quickview" title="Quick View">
         <i class="fas fa-external-link-alt"></i>
     </a>
 </div>
