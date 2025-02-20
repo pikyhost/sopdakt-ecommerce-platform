@@ -82,10 +82,10 @@ class CategoryProducts extends Component
         // Sorting Logic
         switch ($this->sortBy) {
             case 'popularity':
-                $query->orderBy('views_count', 'desc'); // Assuming you track product views
+                $query->orderBy('views_count', 'desc');
                 break;
             case 'rating':
-                $query->orderBy('ratings_avg_rating', 'desc');
+                $query->orderByRaw('COALESCE(fake_average_rating, ratings_avg_rating, 0) DESC');
                 break;
             case 'date':
                 $query->orderBy('created_at', 'desc');
@@ -97,9 +97,10 @@ class CategoryProducts extends Component
                 $query->orderByRaw('CASE WHEN after_discount_price IS NOT NULL THEN after_discount_price ELSE price END DESC');
                 break;
             default:
-                $query->orderBy('created_at', 'desc'); // Default: Latest products
+                $query->orderBy('created_at', 'desc');
         }
 
+        // Fetch paginated products
         $products = $query->paginate($this->perPage)->through(function ($p) {
             $p->final_average_rating = $p->fake_average_rating ?? $p->ratings_avg_rating;
             return $p;
