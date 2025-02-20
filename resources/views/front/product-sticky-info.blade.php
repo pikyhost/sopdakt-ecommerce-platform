@@ -1078,7 +1078,7 @@
                                         @endif
                                         <span class="product-price">${{ $relatedProduct->discount_price_for_current_country }}</span>
                                     </div>
-                                    <livewire:category-products :slug="$slug" />
+                                    <livewire:product-actions :product="$product" />
                                 </div>
                             </div>
                         @endforeach
