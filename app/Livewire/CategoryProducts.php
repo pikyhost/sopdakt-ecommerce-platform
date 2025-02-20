@@ -32,10 +32,9 @@ class CategoryProducts extends Component
         'perPage' => ['except' => 1],
     ];
 
-    public function mount($slug)
+    public function mount(Category $category)
     {
-        $this->slug = $slug;
-        $this->category = Category::where('slug', $slug)->firstOrFail();
+        $this->category = $category;
         $this->colors = Color::pluck('name', 'id');
         $this->sizes = Size::pluck('name', 'id');
     }

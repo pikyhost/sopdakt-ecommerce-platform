@@ -549,7 +549,8 @@
                         </li>
                     </ol>
                 </nav>
-                <livewire:category-products :slug="$slug" />
+                <livewire:category-products :category="$category" />
+
             </div><!-- End .container -->
 
 			<div class="mb-4"></div><!-- margin -->

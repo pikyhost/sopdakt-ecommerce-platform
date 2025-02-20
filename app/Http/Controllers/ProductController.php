@@ -9,13 +9,13 @@ class ProductController extends Controller
 {
     public function show($slug)
     {
-        // Find product and load necessary relationships
+        // Fetch product with necessary relationships
         $product = Product::where('slug', $slug)
             ->with([
                 'colorsWithImages',
                 'sizes',
                 'labels',
-                'media',
+                'media', // Eager load media here
                 'ratings' => function ($query) {
                     $query->approved()->with('user');
                 },
@@ -26,7 +26,7 @@ class ProductController extends Controller
             ])
             ->firstOrFail();
 
-        // Get translations of custom attributes (Fix TypeError)
+        // Get translations of custom attributes
         $customAttributes = $product->getTranslations('custom_attributes');
 
         $bundles = $product->bundles()->with('products')->get();
@@ -35,9 +35,8 @@ class ProductController extends Controller
         $subcategoryId = $product->category_id;
         $parentCategoryId = $product->category->parent_id ?? null;
 
-        // Fetch 8 related products from the same subcategory (excluding the current product)
+        // Fetch related products (limit 8)
         $relatedProducts = Product::where('category_id', $subcategoryId)
-            ->with('media')
             ->where('id', '!=', $product->id)
             ->inRandomOrder()
             ->limit(8)
@@ -54,55 +53,22 @@ class ProductController extends Controller
             $relatedProducts = $relatedProducts->merge($additionalProducts);
         }
 
-        // Fetch 3 featured products from the same subcategory or parent category
-        $featuredProducts = Product::where('is_featured', true)
-            ->with('media')
-            ->where(function ($query) use ($subcategoryId, $parentCategoryId) {
-                $query->where('category_id', $subcategoryId);
-                if ($parentCategoryId) {
-                    $query->orWhere('category_id', $parentCategoryId);
-                }
-            })
-            ->where('id', '!=', $product->id)
-            ->inRandomOrder()
-            ->limit(3)
-            ->get();
-
-        // Fetch 3 best-selling products from the same subcategory or parent category
-        $bestSellingProducts = Product::with('media')
-            ->where(function ($query) use ($subcategoryId, $parentCategoryId) {
+        // Fetch featured, best-selling, latest, and top-rated products
+        $otherProducts = Product::where(function ($query) use ($subcategoryId, $parentCategoryId) {
             $query->where('category_id', $subcategoryId);
             if ($parentCategoryId) {
                 $query->orWhere('category_id', $parentCategoryId);
             }
         })
             ->where('id', '!=', $product->id)
-            ->orderByDesc('sales') // Order by most sales
-            ->limit(3)
             ->get();
 
-        // Fetch 3 latest products from the same subcategory or parent category
-        $latestProducts = Product::with('media')->where(function ($query) use ($subcategoryId, $parentCategoryId) {
-            $query->where('category_id', $subcategoryId);
-            if ($parentCategoryId) {
-                $query->orWhere('category_id', $parentCategoryId);
-            }
-        })
-            ->where('id', '!=', $product->id)
-            ->latest() // Order by latest created_at
-            ->limit(3)
-            ->get();
-
-        // Fetch top 3 rated products from the same subcategory or parent category
-        $topRatedProducts = Product::with('media')->where(function ($query) use ($subcategoryId, $parentCategoryId) {
-            $query->where('category_id', $subcategoryId);
-            if ($parentCategoryId) {
-                $query->orWhere('category_id', $parentCategoryId);
-            }
-        })
-            ->where('id', '!=', $product->id)
-            ->withAvg('ratings', 'rating') // Calculate average rating
-            ->get()
+        // Extract product collections
+        $featuredProducts = $otherProducts->where('is_featured', true)->shuffle()->take(3);
+        $bestSellingProducts = $otherProducts->sortByDesc('sales')->take(3);
+        $latestProducts = $otherProducts->sortByDesc('created_at')->take(3);
+        $topRatedProducts = $otherProducts
+            ->loadAvg('ratings', 'rating') // Load ratings once
             ->map(function ($p) {
                 $p->final_average_rating = $p->fake_average_rating ?? $p->ratings_avg_rating;
                 return $p;
@@ -110,10 +76,17 @@ class ProductController extends Controller
             ->sortByDesc('final_average_rating')
             ->take(3);
 
+        // Load media for all related products in one query
+        $relatedProducts->load('media');
+        $featuredProducts->load('media');
+        $bestSellingProducts->load('media');
+        $latestProducts->load('media');
+        $topRatedProducts->load('media');
 
         return view('front.product-sticky-info',
             compact('product', 'relatedProducts', 'bundles', 'customAttributes',
                 'featuredProducts', 'bestSellingProducts', 'latestProducts', 'topRatedProducts'));
     }
+
 
 }
