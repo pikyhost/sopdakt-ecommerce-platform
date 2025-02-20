@@ -9,24 +9,26 @@ use Illuminate\Support\Facades\DB;
 class ProductActions extends Component
 {
     public $product;
-    public bool $isLoved = false;
+    public $isLoved;
 
     public function mount($product)
     {
         $this->product = $product;
+        $this->loadLoveStatus();
+    }
 
-        if (Auth::check()) {
-            $this->isLoved = DB::table('saved_products')
+    public function loadLoveStatus()
+    {
+        $this->isLoved = Auth::check() && DB::table('saved_products')
                 ->where('user_id', Auth::id())
                 ->where('product_id', $this->product->id)
                 ->exists();
-        }
     }
 
     public function toggleLove()
     {
         if (!Auth::check()) {
-            return redirect()->route('login'); // Redirect if not logged in
+            return redirect()->to('/client/login');
         }
 
         $exists = DB::table('saved_products')
@@ -35,24 +37,21 @@ class ProductActions extends Component
             ->exists();
 
         if ($exists) {
-            // Remove from wishlist
             DB::table('saved_products')
                 ->where('user_id', Auth::id())
                 ->where('product_id', $this->product->id)
                 ->delete();
-
-            $this->isLoved = false;
         } else {
-            // Add to wishlist
             DB::table('saved_products')->insert([
                 'user_id' => Auth::id(),
                 'product_id' => $this->product->id,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-
-            $this->isLoved = true;
         }
+
+        // Refresh love status after toggling
+        $this->loadLoveStatus();
     }
 
     public function render()

@@ -1,7 +1,7 @@
 <div class="product-action">
-    <!-- Wishlist Button (Toggle Love) -->
+    <!-- Wishlist Button -->
     <a wire:click="toggleLove" class="btn-icon-wish" title="Wishlist" style="cursor: pointer;">
-        <i class="icon-heart {{ $isLoved ? 'text-danger' : 'text-secondary' }}"></i>
+        <i class="icon-heart" style="color: {{ $isLoved ? 'red' : 'gray' }};"></i>
     </a>
 
     <!-- View Product Details -->
