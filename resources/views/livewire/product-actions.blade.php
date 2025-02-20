@@ -10,7 +10,7 @@
     </a>
 
     <!-- Quick View -->
-    <a href="javascript:void(0);" wire:click="$emit('openQuickView', {{ $product->id }})" class="btn-quickview" title="Quick View">
+    <a href="javascript:void(0);" wire:click="$dispatch('openQuickView', {{ $product->id }})" class="btn-quickview" title="Quick View">
         <i class="fas fa-external-link-alt"></i>
     </a>
 </div>

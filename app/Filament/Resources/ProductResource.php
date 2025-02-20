@@ -610,16 +610,21 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('id')->label(__('id')),
 
                 Tables\Columns\SpatieMediaLibraryImageColumn::make('feature_product_image')
+                    ->circular()
+                    ->simpleLightbox()
                     ->placeholder('-')
                     ->collection('feature_product_image')
                     ->label(__('products.Product Image')),
 
                 Tables\Columns\SpatieMediaLibraryImageColumn::make('sizes_image')
+                    ->circular()
+                    ->simpleLightbox()
                     ->placeholder('-')
                     ->collection('sizes_image')
                     ->label(__('Sizes Image')),
 
                 SpatieMediaLibraryImageColumn::make('second_feature_product_image')
+                    ->circular()
                     ->placeholder('-')
                     ->label(__('Second Feature Image'))
                     ->simpleLightbox()
