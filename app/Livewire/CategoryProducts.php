@@ -82,7 +82,7 @@ class CategoryProducts extends Component
         // Sorting Logic
         switch ($this->sortBy) {
             case 'popularity':
-                $query->orderBy('views', 'desc');
+                $query->orderByRaw('COALESCE(views, 0) DESC');
                 break;
             case 'rating':
                 $query->orderByRaw('COALESCE(fake_average_rating, ratings_avg_rating, 0) DESC');
@@ -99,6 +99,7 @@ class CategoryProducts extends Component
             default:
                 $query->orderBy('created_at', 'desc');
         }
+
 
         // Fetch paginated products
         $products = $query->paginate($this->perPage)->through(function ($p) {
