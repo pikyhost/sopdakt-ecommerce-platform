@@ -70,7 +70,7 @@
                 </aside>
 
                 <div class="toolbox-item toolbox-sort select-custom">
-                    <select name="orderby" class="form-control" wire:model.live="sortBy">
+                    <select wire:model.live="sortBy" class="form-control">
                         <option value="latest">Default sorting</option>
                         <option value="popularity">Sort by popularity</option>
                         <option value="rating">Sort by average rating</option>
@@ -78,19 +78,20 @@
                         <option value="price_asc">Sort by price: low to high</option>
                         <option value="price_desc">Sort by price: high to low</option>
                     </select>
-                </div><!-- End .toolbox-item -->
+                </div>
 
                 <div class="toolbox-item toolbox-show ml-auto">
                     <label>Show:</label>
 
                     <div class="select-custom">
-                        <select wire:model.live="perPage" class="form-control">
-                            <option value="{{ $perPage }}">Default ({{ $perPage }})</option>
+                        <select wire:model="perPage" class="form-control">
+                            <option value="1">Default (1)</option>
                             <option value="20">20</option>
                             <option value="30">30</option>
                             <option value="40">40</option>
                             <option value="50">50</option>
                         </select>
+
                     </div><!-- End .select-custom -->
                 </div><!-- End .toolbox-item -->
 
@@ -145,81 +146,20 @@
         </nav>
     </div>
 
-    <!-- JavaScript for Handling Dropdowns & Clear All -->
     <script>
         function toggleDropdown(id) {
             let dropdown = document.getElementById(id);
             let isVisible = dropdown.style.display === 'block';
 
-            // Hide all dropdowns
+            // Hide all dropdowns first
             document.querySelectorAll('.dropdown').forEach(el => el.style.display = 'none');
 
-            // Toggle current dropdown
+            // Toggle only the clicked dropdown
             dropdown.style.display = isVisible ? 'none' : 'block';
         }
 
         function clearFilter(filterName) {
-        @this.set(filterName, []); // Resets the Livewire model
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            document.addEventListener("click", function (event) {
-                let isDropdown = event.target.closest(".toolbox-item");
-
-                if (!isDropdown) {
-                    document.querySelectorAll('.dropdown').forEach(el => el.style.display = 'none');
-                }
-            });
-
-            document.addEventListener("livewire:load", () => {
-                Livewire.hook('message.processed', (message, component) => {
-                    setTimeout(() => {
-                        document.querySelectorAll('.dropdown').forEach(el => el.style.display = 'none');
-                    }, 10);
-                });
-            });
-        });
-    </script>
-
-    <!-- CSS to Style the Dropdowns -->
-    <style>
-        .dropdown {
-            display: none;
-            position: absolute;
-            background: white;
-            border: 1px solid #ccc;
-            padding: 10px;
-            list-style: none;
-            z-index: 100;
-        }
-        .dropdown li {
-            padding: 5px 0;
-        }
-        .cursor-pointer {
-            cursor: pointer;
-        }
-        .clear-btn {
-            display: block;
-            width: 100%;
-            background: #f44336;
-            color: white;
-            border: none;
-            padding: 5px;
-            cursor: pointer;
-            text-align: center;
-        }
-        .clear-btn:hover {
-            background: #d32f2f;
-        }
-    </style>
-
-    <script>
-        function toggleDropdown(id) {
-            let dropdown = document.getElementById(id);
-            let isVisible = dropdown.style.display === 'block';
-
-            document.querySelectorAll('.dropdown').forEach(el => el.style.display = 'none');
-            dropdown.style.display = isVisible ? 'none' : 'block';
+            Livewire.emit('clearFilter', filterName); // Emit event to Livewire to clear the filter
         }
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -233,31 +173,11 @@
 
             // Ensure dropdowns stay open after Livewire updates
             Livewire.hook('message.processed', (message, component) => {
-                let priceFilter = document.getElementById('priceFilter');
-                let colorFilter = document.getElementById('colorFilter');
-
-                if (priceFilter && priceFilter.style.display === 'block') {
-                    priceFilter.style.display = 'block';
-                }
-
-                if (colorFilter && colorFilter.style.display === 'block') {
-                    colorFilter.style.display = 'block';
-                }
-            });
-        });
-
-
-        function clearFilter(filterName) {
-            Livewire.emit('clearFilter', filterName);
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            document.addEventListener("click", function (event) {
-                let isDropdown = event.target.closest(".toolbox-item");
-
-                if (!isDropdown) {
-                    document.querySelectorAll('.dropdown').forEach(el => el.style.display = 'none');
-                }
+                document.querySelectorAll('.dropdown').forEach(el => {
+                    if (el.dataset.keepOpen === "true") {
+                        el.style.display = 'block';
+                    }
+                });
             });
         });
     </script>
@@ -272,7 +192,9 @@
             list-style: none;
             z-index: 100;
         }
+
         .cursor-pointer { cursor: pointer; }
+
         .clear-btn {
             display: block;
             width: 100%;
@@ -281,9 +203,9 @@
             border: none;
             padding: 5px;
             cursor: pointer;
+            text-align: center;
         }
+
         .clear-btn:hover { background: #d32f2f; }
     </style>
-
-
 </div>

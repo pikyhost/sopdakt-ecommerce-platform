@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Category;
 use App\Models\Color;
 use App\Models\Size;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -18,17 +19,17 @@ class CategoryProducts extends Component
     public $sizes;
     public $selectedColors = [];
     public $selectedSizes = [];
-    public $sortBy = 'latest';
     public $minPrice;
     public $maxPrice;
+    public string $sortBy = 'latest';
     public int $perPage = 1;
 
     protected $queryString = [
         'selectedColors' => ['except' => []],
         'selectedSizes' => ['except' => []],
-        'sortBy' => ['except' => 'latest'],
         'minPrice' => ['except' => null],
         'maxPrice' => ['except' => null],
+        'sortBy' => ['except' => ['latest']],
         'perPage' => ['except' => 1],
     ];
 
@@ -39,11 +40,6 @@ class CategoryProducts extends Component
         $this->sizes = Size::pluck('name', 'id');
     }
 
-    public function updating($property)
-    {
-        $this->resetPage();
-    }
-
     public function resetPriceFilter()
     {
         $this->minPrice = null;
@@ -51,26 +47,39 @@ class CategoryProducts extends Component
         $this->resetPage();
     }
 
+    public function updatedSortBy()
+    {
+        $this->resetPage(); // Reset pagination when sorting changes
+    }
+
+    public function updatedPerPage($value)
+    {
+        $this->perPage = (int) $value; // Convert the string to an integer
+        $this->resetPage(); // Reset pagination
+    }
+
     public function render()
     {
         $query = $this->category->products()
-            ->with('media')
+            ->with(['media', 'colorsWithImages'])
             ->where('is_published', 1)
-            ->with(['colorsWithImages'])
             ->withAvg('ratings', 'rating');
 
+        // Filter by selected colors
         if (!empty($this->selectedColors)) {
             $query->whereHas('colorsWithImages', function ($q) {
                 $q->whereIn('color_id', $this->selectedColors);
             });
         }
 
+        // Filter by selected sizes
         if (!empty($this->selectedSizes)) {
             $query->whereHas('sizes', function ($q) {
                 $q->whereIn('sizes.id', $this->selectedSizes);
             });
         }
 
+        // Price filtering
         if (!is_null($this->minPrice)) {
             $query->whereRaw('(CASE WHEN after_discount_price IS NOT NULL THEN after_discount_price ELSE price END) >= ?', [$this->minPrice]);
         }
@@ -91,15 +100,14 @@ class CategoryProducts extends Component
                 $query->orderBy('created_at', 'desc');
                 break;
             case 'price_asc':
-                $query->orderByRaw('CASE WHEN after_discount_price IS NOT NULL THEN after_discount_price ELSE price END ASC');
+                $query->orderByRaw('COALESCE(after_discount_price, price, 0) ASC');
                 break;
             case 'price_desc':
-                $query->orderByRaw('CASE WHEN after_discount_price IS NOT NULL THEN after_discount_price ELSE price END DESC');
+                $query->orderByRaw('COALESCE(after_discount_price, price, 0) DESC');
                 break;
             default:
                 $query->orderBy('created_at', 'desc');
         }
-
 
         // Fetch paginated products
         $products = $query->paginate($this->perPage)->through(function ($p) {
@@ -109,5 +117,4 @@ class CategoryProducts extends Component
 
         return view('livewire.category-products', compact('products'));
     }
-
 }

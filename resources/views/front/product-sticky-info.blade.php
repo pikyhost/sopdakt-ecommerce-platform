@@ -8,10 +8,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <title>Porto - Bootstrap eCommerce Template</title>
+    <title>X - Bootstrap eCommerce Template</title>
 
     <meta name="keywords" content="HTML5 Template">
-    <meta name="description" content="Porto - Bootstrap eCommerce Template">
+    <meta name="description" content="X - Bootstrap eCommerce Template">
     <meta name="author" content="SW-THEMES">
 
     <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . \App\Models\Setting::getSetting('site_settings')['favicon'][app()->getLocale()]) }}">
@@ -458,7 +458,7 @@
 							</li>
 							<li><a href="contact.html">Contact Us</a></li>
 							<li class="float-right"><a href="https://1.envato.market/DdLk5" class="pl-5"
-									target="_blank">Buy Porto!</a></li>
+									target="_blank">Buy X!</a></li>
 							<li class="float-right"><a href="#" class="pl-5">Special Offer!</a></li>
 						</ul>
 					</nav>
@@ -627,7 +627,7 @@
 										<li>
 											CATEGORY:
 											<strong>
-												<a href="#" class="product-category">
+												<a href="{{ route('category.products', $product->category->slug) }}" class="product-category">
                                                     {{ $product->category->name }}
                                                 </a>
 											</strong>
@@ -865,7 +865,7 @@
                                                                     <p class="bundle-text">{{ __('Buy :x with a discount price of :price', ['x' => $bundle->buy_x, 'price' => number_format($bundle->discount_price, 2)]) }}</p>
                                                                 @endif
                                                             @elseif ($bundle->bundle_type === \App\Enums\BundleType::FIXED_PRICE)
-                                                                <p class="bundle-text">{{ __('Get this bundle for :price instead of :original', ['price' => number_format($bundle->discount_price, 2), 'original' => number_format($bundle->products->sum('price'), 2)]) }}</p>
+                                                                <p class="bundle-text">{{ __('Get this bundle for :price instead of :original', ['price' => number_format($bundle->discount_price, 2), 'original' => number_format($bundle->products->sum('after_discount_price'), 2)]) }}</p>
                                                             @elseif ($bundle->bundle_type === \App\Enums\BundleType::DISCOUNT_PERCENTAGE)
                                                                 <p class="bundle-text">{{ __('Buy this bundle and save :discount%', ['discount' => $bundle->discount_percentage]) }}</p>
                                                             @endif
@@ -1337,7 +1337,7 @@
 				<div class="footer-bottom">
 					<div class="container d-sm-flex align-items-center">
 						<div class="footer-left">
-							<span class="footer-copyright">© Porto eCommerce. 2021. All Rights Reserved</span>
+							<span class="footer-copyright">© Piky Host eCommerce. 2021. All Rights Reserved</span>
 						</div>
 
 						<div class="footer-right ml-auto mt-1 mt-sm-0">
@@ -1481,7 +1481,7 @@
 					</li>
 					<li class="border-0">
 						<a href="#" target="_blank">
-							Buy Porto!
+							Buy X!
 							<span class="tip tip-hot">Hot</span>
 						</a>
 					</li>
@@ -1515,12 +1515,12 @@
 
 	<div class="sticky-navbar">
 		<div class="sticky-info">
-			<a href="demo4.html">
+			<a href="/">
 				<i class="icon-home"></i>Home
 			</a>
 		</div>
 		<div class="sticky-info">
-			<a href="category.html" class="">
+			<a href="/categoires" class="">
 				<i class="icon-bars"></i>Categories
 			</a>
 		</div>
