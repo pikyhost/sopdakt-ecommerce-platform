@@ -55,6 +55,7 @@ class CategoryProducts extends Component
     public function render()
     {
         $query = $this->category->products()
+            ->with('media')
             ->where('is_published', 1)
             ->with(['colorsWithImages'])
             ->withAvg('ratings', 'rating');
@@ -82,7 +83,7 @@ class CategoryProducts extends Component
         // Sorting Logic
         switch ($this->sortBy) {
             case 'popularity':
-                $query->orderBy('views_count', 'desc');
+                $query->orderBy('views', 'desc');
                 break;
             case 'rating':
                 $query->orderByRaw('COALESCE(fake_average_rating, ratings_avg_rating, 0) DESC');

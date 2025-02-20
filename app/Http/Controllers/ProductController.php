@@ -37,6 +37,7 @@ class ProductController extends Controller
 
         // Fetch 8 related products from the same subcategory (excluding the current product)
         $relatedProducts = Product::where('category_id', $subcategoryId)
+            ->with('media')
             ->where('id', '!=', $product->id)
             ->inRandomOrder()
             ->limit(8)
@@ -55,6 +56,7 @@ class ProductController extends Controller
 
         // Fetch 3 featured products from the same subcategory or parent category
         $featuredProducts = Product::where('is_featured', true)
+            ->with('media')
             ->where(function ($query) use ($subcategoryId, $parentCategoryId) {
                 $query->where('category_id', $subcategoryId);
                 if ($parentCategoryId) {
@@ -67,7 +69,8 @@ class ProductController extends Controller
             ->get();
 
         // Fetch 3 best-selling products from the same subcategory or parent category
-        $bestSellingProducts = Product::where(function ($query) use ($subcategoryId, $parentCategoryId) {
+        $bestSellingProducts = Product::with('media')
+            ->where(function ($query) use ($subcategoryId, $parentCategoryId) {
             $query->where('category_id', $subcategoryId);
             if ($parentCategoryId) {
                 $query->orWhere('category_id', $parentCategoryId);
@@ -79,7 +82,7 @@ class ProductController extends Controller
             ->get();
 
         // Fetch 3 latest products from the same subcategory or parent category
-        $latestProducts = Product::where(function ($query) use ($subcategoryId, $parentCategoryId) {
+        $latestProducts = Product::with('media')->where(function ($query) use ($subcategoryId, $parentCategoryId) {
             $query->where('category_id', $subcategoryId);
             if ($parentCategoryId) {
                 $query->orWhere('category_id', $parentCategoryId);
@@ -91,7 +94,7 @@ class ProductController extends Controller
             ->get();
 
         // Fetch top 3 rated products from the same subcategory or parent category
-        $topRatedProducts = Product::where(function ($query) use ($subcategoryId, $parentCategoryId) {
+        $topRatedProducts = Product::with('media')->where(function ($query) use ($subcategoryId, $parentCategoryId) {
             $query->where('category_id', $subcategoryId);
             if ($parentCategoryId) {
                 $query->orWhere('category_id', $parentCategoryId);
