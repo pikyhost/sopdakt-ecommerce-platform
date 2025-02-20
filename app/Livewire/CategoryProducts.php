@@ -5,7 +5,6 @@ namespace App\Livewire;
 use App\Models\Category;
 use App\Models\Color;
 use App\Models\Size;
-use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -22,7 +21,6 @@ class CategoryProducts extends Component
     public $minPrice;
     public $maxPrice;
     public string $sortBy = 'latest';
-    public int $perPage = 1;
 
     protected $queryString = [
         'selectedColors' => ['except' => []],
@@ -30,7 +28,6 @@ class CategoryProducts extends Component
         'minPrice' => ['except' => null],
         'maxPrice' => ['except' => null],
         'sortBy' => ['except' => ['latest']],
-        'perPage' => ['except' => 1],
     ];
 
     public function mount(Category $category)
@@ -50,12 +47,6 @@ class CategoryProducts extends Component
     public function updatedSortBy()
     {
         $this->resetPage(); // Reset pagination when sorting changes
-    }
-
-    public function updatedPerPage($value)
-    {
-        $this->perPage = (int) $value; // Convert the string to an integer
-        $this->resetPage(); // Reset pagination
     }
 
     public function render()
@@ -110,7 +101,7 @@ class CategoryProducts extends Component
         }
 
         // Fetch paginated products
-        $products = $query->paginate($this->perPage)->through(function ($p) {
+        $products = $query->paginate(20)->through(function ($p) {
             $p->final_average_rating = $p->fake_average_rating ?? $p->ratings_avg_rating;
             return $p;
         });
