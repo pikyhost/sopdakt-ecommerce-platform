@@ -11,33 +11,30 @@ use Illuminate\Support\Facades\DB;
 
 class GeneralHelper
 {
-    protected static ?int $countryId = null;
-    protected static array $specialPrices = [];
-    protected static array $specialPricesWithDiscount = [];
-
-    protected static function getCountryId(): ?int
-    {
-        if (is_null(self::$countryId)) {
-            $ip = app()->isLocal() ? '82.205.219.30' : request()->ip(); // EGYPT IP Example
-            $countryCode = geoip($ip)['country_code2'] ?? 'US'; // Default to 'US' if geoip fails
-            self::$countryId = Country::where('code', $countryCode)->value('id') ?? null;
-        }
-
-        return self::$countryId;
-    }
-
     public static function getPriceForCountry(Product $product): string
     {
-        $countryId = self::getCountryId();
+        static $countryId = null;
+        static $currencyCache = []; // Store currency codes in memory
+        static $specialPrices = []; // Store special prices and currencies in memory
 
+        // Fetch the country ID once per request
+        if (is_null($countryId)) {
+            $ip = app()->isLocal() ? '82.205.219.30' : request()->ip(); // EGYPT IP Example
+            $countryCode = geoip($ip)['country_code2'] ?? 'US'; // Default to 'US' if geoip fails
+            $countryId = Country::where('code', $countryCode)->value('id') ?? null;
+        }
+
+        // If no country ID is found, return the default product price with currency
         if (!$countryId) {
-            return number_format($product->price, 2) . ' ' . ($product->currency->code ?? 'USD');
+            return number_format($product->price, 2) . ' ' . self::getCurrencyCode($product->currency_id);
         }
 
-        if (isset(self::$specialPrices[$product->id])) {
-            return self::$specialPrices[$product->id];
+        // Check if the special price for this product and country is already fetched
+        if (isset($specialPrices[$product->id])) {
+            return $specialPrices[$product->id];
         }
 
+        // Fetch the special price and currency
         $specialPriceData = ProductSpecialPrice::where('product_id', $product->id)
             ->where(function ($query) use ($countryId) {
                 $query->where('country_id', $countryId)
@@ -54,27 +51,36 @@ class GeneralHelper
             ->orderByRaw('CASE WHEN country_id IS NOT NULL THEN 1 ELSE 2 END')
             ->first(['special_price', 'currency_id']);
 
-        $currencyCode = $specialPriceData?->currency_id
-            ? Currency::where('id', $specialPriceData->currency_id)->value('code')
-            : ($product->currency->code ?? 'USD');
+        // Fetch currency code from cache or database
+        $currencyCode = self::getCurrencyCode($specialPriceData?->currency_id ?? $product->currency_id);
 
+        // Format the price with currency
         $formattedPrice = number_format($specialPriceData->special_price ?? $product->price, 2) . ' ' . $currencyCode;
 
-        self::$specialPrices[$product->id] = $formattedPrice;
+        // Store in memory to prevent redundant queries
+        $specialPrices[$product->id] = $formattedPrice;
 
         return $formattedPrice;
     }
 
     public static function getPriceForCountryWithDiscount(Product $product): string
     {
-        $countryId = self::getCountryId();
+        static $countryId = null;
+        static $currencyCache = []; // Store currency codes in memory
+        static $specialPrices = []; // Store special prices in memory
 
-        if (!$countryId) {
-            return number_format($product->after_discount_price ?? $product->price, 2) . ' ' . ($product->currency->code ?? 'USD');
+        if (is_null($countryId)) {
+            $ip = app()->isLocal() ? '82.205.219.30' : request()->ip(); // EGYPT IP Example
+            $countryCode = geoip($ip)['country_code2'] ?? 'US'; // Default to 'US' if geoip fails
+            $countryId = Country::where('code', $countryCode)->value('id') ?? null;
         }
 
-        if (isset(self::$specialPricesWithDiscount[$product->id])) {
-            return self::$specialPricesWithDiscount[$product->id];
+        if (!$countryId) {
+            return number_format($product->after_discount_price ?? $product->price, 2) . ' ' . self::getCurrencyCode($product->currency_id);
+        }
+
+        if (isset($specialPrices[$product->id])) {
+            return $specialPrices[$product->id];
         }
 
         $specialPriceData = ProductSpecialPrice::where('product_id', $product->id)
@@ -95,17 +101,32 @@ class GeneralHelper
 
         $finalPrice = $specialPriceData?->special_price_after_discount ?? $specialPriceData?->special_price ?? $product->after_discount_price ?? $product->price;
 
-        $currencyCode = $specialPriceData?->currency_id
-            ? Currency::where('id', $specialPriceData->currency_id)->value('code')
-            : ($product->currency->code ?? 'USD');
+        $currencyCode = self::getCurrencyCode($specialPriceData?->currency_id ?? $product->currency_id);
 
         $formattedPrice = number_format($finalPrice, 2) . ' ' . $currencyCode;
 
-        self::$specialPricesWithDiscount[$product->id] = $formattedPrice;
+        $specialPrices[$product->id] = $formattedPrice;
 
         return $formattedPrice;
     }
 
+    /**
+     * Helper function to fetch currency code efficiently.
+     */
+    private static function getCurrencyCode(?int $currencyId): string
+    {
+        static $currencyCache = [];
+
+        if (!$currencyId) {
+            return 'USD';
+        }
+
+        if (!isset($currencyCache[$currencyId])) {
+            $currencyCache[$currencyId] = Currency::where('id', $currencyId)->value('code') ?? 'USD';
+        }
+
+        return $currencyCache[$currencyId];
+    }
 
     /**
      * @throws \Exception
