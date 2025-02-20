@@ -1078,15 +1078,7 @@
                                         @endif
                                         <span class="product-price">${{ $relatedProduct->discount_price_for_current_country }}</span>
                                     </div>
-                                    <div class="product-action">
-                                        <a href="wishlist.html" title="Wishlist" class="btn-icon-wish"><i class="icon-heart"></i></a>
-                                        <a href="{{ route('product.show', $relatedProduct->slug) }}" class="btn-icon btn-add-cart">
-                                            <i class="fa fa-arrow-right"></i><span>SELECT OPTIONS</span>
-                                        </a>
-                                        <a href="ajax/product-quick-view.html" class="btn-quickview" title="Quick View">
-                                            <i class="fas fa-external-link-alt"></i>
-                                        </a>
-                                    </div>
+                                    <livewire:category-products :slug="$slug" />
                                 </div>
                             </div>
                         @endforeach
