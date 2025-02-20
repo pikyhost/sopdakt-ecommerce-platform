@@ -845,6 +845,7 @@
                                         }
 
                                     </style>
+                                    <br>
 
                                     @if($product->bundles->isNotEmpty())
                                         <div class="product-bundles">
