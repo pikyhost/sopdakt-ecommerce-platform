@@ -16,6 +16,8 @@ class Category extends Model implements HasMedia
 
     public $translatable = [
         'name',
+        'title_banner_text',
+        'cta_banner_text',
         'description',
         'meta_title',
         'meta_description',
@@ -39,6 +41,12 @@ class Category extends Model implements HasMedia
         return $this->hasMany(Category::class, 'parent_id');
     }
 
+    public function labels()
+    {
+        return $this->belongsToMany(Label::class, 'label_category');
+    }
+
+
     /**
      * Get the books that belong to this series.
      */
@@ -53,7 +61,6 @@ class Category extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('main_category_image')->singleFile();
-
     }
 
     /**
@@ -62,5 +69,10 @@ class Category extends Model implements HasMedia
     public function getMainCategoryImageUrl(): ?string
     {
         return $this->getFirstMediaUrl('main_category_image') ?: null;
+    }
+
+    public function getRouteKeyName()
+    {
+        return 'slug'; // This allows Laravel to automatically resolve routes by slug instead of ID
     }
 }

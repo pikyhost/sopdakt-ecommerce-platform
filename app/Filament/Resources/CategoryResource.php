@@ -7,14 +7,14 @@ use App\Models\Category;
 use Closure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
-use Filament\Infolists\Components\SpatieMediaLibraryImageEntry;
-use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
@@ -25,6 +25,7 @@ use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
+use Filament\Tables\Columns\ColorColumn;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -109,7 +110,43 @@ class CategoryResource extends Resource
                     ])
                     ->validationAttribute(__('Parent Category')),
 
+                Select::make('labels')
+                    ->label(__('labels.plural_label'))
+                    ->createOptionForm([
+                        TextInput::make('title')
+                            ->label(__('fields.text_title'))
+                            ->columnSpanFull(),
+                        ColorPicker::make('color_code')
+                            ->label(__('fields.text_color_code')),
+                        ColorPicker::make('background_color_code')
+                            ->label(__('fields.background_color_code')),
+                    ])
+                    ->multiple()
+                    ->label(__('labels'))
+                    ->relationship('labels', 'title')
+                    ->searchable()
+                    ->preload()
+                    ->nullable(),
+
+                TextInput::make('title_banner_text')
+                    ->label(__('category.title_banner_text'))
+                    ->maxLength(255),
+
+                ColorPicker::make('title_banner_color')
+                    ->label(__('category.title_banner_color')),
+
+                TextInput::make('cta_banner_text')
+                    ->label(__('category.cta_banner_text'))
+                    ->maxLength(255),
+
+                ColorPicker::make('cta_banner_text_color')
+                    ->label(__('category.cta_banner_text_color')),
+
+                ColorPicker::make('cta_banner_background_color')
+                    ->label(__('category.cta_banner_background_color')),
+
                 TextInput::make('meta_title')
+                    ->columns()
                     ->label(__('category.meta_title'))
                     ->maxLength(255),
 
@@ -166,6 +203,23 @@ class CategoryResource extends Resource
                 ->label(__('category.parent'))
                 ->searchable(),
 
+            TextColumn::make('title_banner_text')
+                ->label(__('category.title_banner_text'))
+               ->searchable(),
+
+            ColorColumn::make('title_banner_color')
+                ->label(__('category.title_banner_color')),
+
+            TextColumn::make('cta_banner_text')
+                ->label(__('category.cta_banner_text'))
+                ->searchable(),
+
+            ColorColumn::make('cta_banner_text_color')
+                ->label(__('category.cta_banner_text_color')),
+
+            ColorColumn::make('cta_banner_background_color')
+                ->label(__('category.cta_banner_background_color')),
+
             TextColumn::make('description')
                 ->label(__('category.description'))
                 ->limit(20),
@@ -218,29 +272,6 @@ class CategoryResource extends Resource
         return $infolist->schema(self::getInfolistSchema())->columns(1)->inlineLabel();
     }
 
-    private static function getInfolistSchema(): array
-    {
-        return [
-            SpatieMediaLibraryImageEntry::make('main_category_image')
-                ->hidden(fn($record) => !$record || !$record->getMainCategoryImageUrl())
-                ->collection('main_category_image'),
-
-            TextEntry::make('id')->label(__('category.id')),
-            TextEntry::make('name')->label(__('category.name')),
-            TextEntry::make('slug')->label(__('category.slug')),
-            TextEntry::make('parent.name')->label(__('category.parent')),
-            TextEntry::make('description')->label(__('category.description')),
-            TextEntry::make('meta_title')->label(__('category.meta_title')),
-            TextEntry::make('meta_description')->label(__('category.meta_description')),
-            TextEntry::make('meta_keywords')->label(__('category.meta_keywords')),
-            TextEntry::make('meta_robots')->label(__('category.meta_robots')),
-            TextEntry::make('is_published')
-                ->label(__('category.is_published')),
-
-            TextEntry::make('created_at')->label(__('category.created_at'))->dateTime(),
-            TextEntry::make('updated_at')->label(__('category.updated_at'))->dateTime(),
-        ];
-    }
 
     public static function getPages(): array
     {

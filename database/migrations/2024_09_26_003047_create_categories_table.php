@@ -23,6 +23,12 @@ return new class extends Migration {
             $table->string('meta_title')->nullable();
             $table->string('meta_description')->nullable();
             $table->boolean('is_published')->default(false);
+
+            $table->string('title_banner_text')->nullable();
+            $table->string('title_banner_color')->nullable();
+            $table->string('cta_banner_text')->nullable();
+            $table->string('cta_banner_text_color')->nullable();
+            $table->string('cta_banner_background_color')->nullable();
             $table->timestamps();
         });
     }

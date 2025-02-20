@@ -92,6 +92,7 @@ class AdminPanelProvider extends PanelProvider
                 '*/admin/products/*/edit',
                 '*/admin/categories/*/edit',
                 '*/admin/products/create',
+                '*/admin/categories/create',
             ])
             ->plugins([
                 SimpleLightBoxPlugin::make(),

@@ -93,15 +93,18 @@ class ProductReviews extends Component
     public function render()
     {
         $user = Auth::user();
-        $isAdmin = $user->hasRole(['admin', 'super_admin']);
+        $isAdmin = $user && $user->hasRole(['admin', 'super_admin']);
 
         return view('livewire.product-reviews', [
             'reviews' => ProductRating::where('product_id', $this->product->id)
                 ->where(function ($query) use ($user, $isAdmin) {
-                    $query->where('status', 'approved')
-                        ->orWhere(function ($subQuery) use ($user) {
+                    $query->where('status', 'approved');
+
+                    if ($user) { // Ensure user is authenticated before checking user_id
+                        $query->orWhere(function ($subQuery) use ($user) {
                             $subQuery->where('status', 'pending')->where('user_id', $user->id);
                         });
+                    }
 
                     if ($isAdmin) {
                         $query->orWhereNotNull('id'); // Admin sees all reviews
@@ -111,4 +114,5 @@ class ProductReviews extends Component
                 ->paginate(5)
         ]);
     }
+
 }

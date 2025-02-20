@@ -327,7 +327,7 @@
 												<li><a href="category-off-canvas.html">Off Canvas Filter</a></li>
 												<li><a href="category-horizontal-filter1.html">Horizontal Filter1</a>
 												</li>
-												<li><a href="category-horizontal-filter2.html">Horizontal Filter2</a>
+												<li><a href="category-horizontal-filter2.blade.php">Horizontal Filter2</a>
 												</li>
 											</ul>
 										</div>
@@ -1378,7 +1378,7 @@
 	<div class="mobile-menu-container">
 		<div class="mobile-menu-wrapper">
 			<span class="mobile-menu-close"><i class="fa fa-times"></i></span>
-			<nav class="mobile-nav">
+			<nav class="mobile-nav">$
 				<ul class="mobile-menu">
 					<li><a href="demo4.html">Home</a></li>
 					<li>
@@ -1391,7 +1391,7 @@
 							<li><a href="category-sidebar-right.html">Right Sidebar</a></li>
 							<li><a href="category-off-canvas.html">Off Canvas Filter</a></li>
 							<li><a href="category-horizontal-filter1.html">Horizontal Filter 1</a></li>
-							<li><a href="category-horizontal-filter2.html">Horizontal Filter 2</a></li>
+							<li><a href="category-horizontal-filter2.blade.php">Horizontal Filter 2</a></li>
 							<li><a href="#">List Types</a></li>
 							<li><a href="category-infinite-scroll.html">Ajax Infinite Scroll<span
 										class="tip tip-new">New</span></a></li>
