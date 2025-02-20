@@ -13,10 +13,18 @@ class Setting extends Model
         'value' => 'array',
     ];
 
+    // Static property to hold already fetched settings in memory
+    protected static array $settingsCache = [];
+
     public static function get($key, $locale = null)
     {
-        $setting = self::where('key', $key)->first();
-        $value = $setting?->value;
+        // Check if the setting is already loaded in memory
+        if (!isset(self::$settingsCache[$key])) {
+            $setting = self::where('key', $key)->first();
+            self::$settingsCache[$key] = $setting?->value ?? null;
+        }
+
+        $value = self::$settingsCache[$key];
 
         if ($locale && is_array($value)) {
             return $value[$locale] ?? null;
@@ -27,7 +35,9 @@ class Setting extends Model
 
     public static function set($key, $value)
     {
-        return self::updateOrCreate(['key' => $key], ['value' => $value]);
+        $setting = self::updateOrCreate(['key' => $key], ['value' => $value]);
+        self::$settingsCache[$key] = $value; // Update static cache to prevent re-querying
+        return $setting;
     }
 
     public function value(): Attribute
@@ -40,14 +50,6 @@ class Setting extends Model
 
     public static function getSetting($key, $locale = null)
     {
-        $setting = self::where('key', $key)->first();
-        $value = $setting?->value;
-
-        if ($locale && is_array($value)) {
-            return $value[$locale] ?? null;
-        }
-
-        return $value;
+        return self::get($key, $locale); // Reuse the optimized `get` method
     }
-
 }
