@@ -5,12 +5,12 @@
     </a>
 
     <!-- View Product Details -->
-    <a href="{{ route('product.show', $product->slug) }}" class="btn-icon btn-add-cart">
+    <span class="btn-icon btn-add-cart">
         <i class="fa fa-arrow-right"></i><span>SELECT OPTIONS</span>
-    </a>
+    </span>
 
     <!-- Quick View -->
-    <a href="javascript:void(0);" wire:click="$dispatch('openQuickView', {{ $product->id }})" class="btn-quickview" title="Quick View">
+    <a href="{{ route('product.show', $product->slug) }}" class="btn-quickview" title="Quick View">
         <i class="fas fa-external-link-alt"></i>
     </a>
 </div>
