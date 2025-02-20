@@ -13,6 +13,8 @@ class ProductActions extends Component
 
     public function mount($product)
     {
+        $this->product = $product;
+
         if (Auth::check()) {
             $this->isLoved = DB::table('saved_products')
                 ->where('user_id', Auth::id())
@@ -24,10 +26,16 @@ class ProductActions extends Component
     public function toggleLove()
     {
         if (!Auth::check()) {
-            return redirect()->to('/client/login'); // Redirect if not logged in
+            return redirect()->route('login'); // Redirect if not logged in
         }
 
-        if ($this->isLoved) {
+        $exists = DB::table('saved_products')
+            ->where('user_id', Auth::id())
+            ->where('product_id', $this->product->id)
+            ->exists();
+
+        if ($exists) {
+            // Remove from wishlist
             DB::table('saved_products')
                 ->where('user_id', Auth::id())
                 ->where('product_id', $this->product->id)
@@ -35,6 +43,7 @@ class ProductActions extends Component
 
             $this->isLoved = false;
         } else {
+            // Add to wishlist
             DB::table('saved_products')->insert([
                 'user_id' => Auth::id(),
                 'product_id' => $this->product->id,
