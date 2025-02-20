@@ -846,11 +846,11 @@
 
                                     </style>
 
-                                    @if($bundles->isNotEmpty())
+                                    @if($product->bundles->isNotEmpty())
                                         <div class="product-bundles">
                                             <h3 class="bundle-title">{{ __('Available Bundles') }}</h3>
                                             <ul class="bundle-list">
-                                                @foreach ($bundles as $bundle)
+                                                @foreach ($product->bundles as $bundle)
                                                     <li class="bundle-item">
                                                         <div class="bundle-header">
                                                             <strong class="bundle-name">{{ $bundle->getTranslation('name', app()->getLocale()) }}</strong>
