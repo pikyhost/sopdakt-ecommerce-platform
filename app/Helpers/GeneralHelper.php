@@ -13,16 +13,10 @@ class GeneralHelper
 {
     public static function getPriceForCountry(Product $product): string
     {
-        static $countryId = null;
         static $currencyCache = []; // Store currency codes in memory
         static $specialPrices = []; // Store special prices and currencies in memory
 
-        // Fetch the country ID once per request
-        if (is_null($countryId)) {
-            $ip = app()->isLocal() ? '82.205.219.30' : request()->ip(); // EGYPT IP Example
-            $countryCode = geoip($ip)['country_code2'] ?? 'US'; // Default to 'US' if geoip fails
-            $countryId = Country::where('code', $countryCode)->value('id') ?? null;
-        }
+        $countryId = self::getCountryId();
 
         // If no country ID is found, return the default product price with currency
         if (!$countryId) {
@@ -65,15 +59,10 @@ class GeneralHelper
 
     public static function getPriceForCountryWithDiscount(Product $product): string
     {
-        static $countryId = null;
         static $currencyCache = []; // Store currency codes in memory
         static $specialPrices = []; // Store special prices in memory
 
-        if (is_null($countryId)) {
-            $ip = app()->isLocal() ? '82.205.219.30' : request()->ip(); // EGYPT IP Example
-            $countryCode = geoip($ip)['country_code2'] ?? 'US'; // Default to 'US' if geoip fails
-            $countryId = Country::where('code', $countryCode)->value('id') ?? null;
-        }
+        $countryId = self::getCountryId();
 
         if (!$countryId) {
             return number_format($product->after_discount_price ?? $product->price, 2) . ' ' . self::getCurrencyCode($product->currency_id);
@@ -111,7 +100,23 @@ class GeneralHelper
     }
 
     /**
-     * Helper function to fetch currency code efficiently.
+     * Helper function to efficiently fetch country ID and cache it.
+     */
+    private static function getCountryId(): ?int
+    {
+        static $countryId = null;
+
+        if (is_null($countryId)) {
+            $ip = app()->isLocal() ? '82.205.219.30' : request()->ip(); // EGYPT IP Example
+            $countryCode = geoip($ip)['country_code2'] ?? 'US'; // Default to 'US' if geoip fails
+            $countryId = Country::where('code', $countryCode)->value('id') ?? null;
+        }
+
+        return $countryId;
+    }
+
+    /**
+     * Helper function to efficiently fetch currency code and cache it.
      */
     private static function getCurrencyCode(?int $currencyId): string
     {
