@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\UserRole;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Filament\Facades\Filament;
 use Filament\Models\Contracts\FilamentUser;
@@ -63,11 +64,14 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     public function canAccessPanel(Panel $panel): bool
     {
         if (Filament::getCurrentPanel()->getId() === 'admin') {
-            return true;
+            return $this->hasAnyRole([
+                UserRole::SuperAdmin->value,
+                UserRole::Admin->value,
+            ]);
         }
 
         if (Filament::getCurrentPanel()->getId() === 'client') {
-            return true;
+            return $this->hasRole(UserRole::Client->value);
         }
 
         return false;
