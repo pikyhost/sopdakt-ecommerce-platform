@@ -787,7 +787,7 @@ class ProductResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with(['colors']) // Eager load only necessary relations
+            ->with(['colorsWithImages']) // Eager load only necessary relations
             ->withCount('media'); // Count media instead of loading full records
     }
 
