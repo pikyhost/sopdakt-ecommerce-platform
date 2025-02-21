@@ -145,6 +145,7 @@ class ProductResource extends Resource
                             ->icon('heroicon-o-flag') // banknotes
                             ->schema([
                                 Repeater::make('specialPrices')
+                                    ->defaultItems(0)
                                     ->label(__('tabs.special_prices'))
                                     ->relationship('specialPrices')
                                     ->columns(2)
@@ -233,6 +234,7 @@ class ProductResource extends Resource
                                     ->preload(),
 
                                 Repeater::make('colorsWithImages')
+                                    ->defaultItems(0)
                                     ->columnSpanFull()
                                     ->relationship('colorsWithImages') // Uses the hasMany relationship
                                     ->label(__('Colors'))
@@ -243,7 +245,7 @@ class ProductResource extends Resource
                                             ->required(),
 
                                         FileUpload::make('image')
-                                            ->label(__('Image_'))
+                                            ->label(__('image'))
                                             ->required(),
                                     ])
                                     ->collapsible(),
