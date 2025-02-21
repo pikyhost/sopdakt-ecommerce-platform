@@ -3,18 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ShippingCostResource\Pages;
-use App\Models\City;
-use App\Models\Governorate;
 use App\Models\ShippingCost;
-use App\Models\ShippingZone;
-use Closure;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Filters\QueryBuilder;
@@ -23,7 +17,6 @@ use Filament\Tables\Filters\QueryBuilder\Constraints\TextConstraint;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Unique;
 
 class ShippingCostResource extends Resource
 {
