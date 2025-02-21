@@ -20,7 +20,6 @@ class CreateProduct extends CreateRecord
         return $data;
     }
 
-
     protected function getHeaderActions(): array
     {
         return [

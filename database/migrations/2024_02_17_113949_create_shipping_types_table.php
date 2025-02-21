@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('shipping_types', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // Express, Standard, etc.
-            $table->text('description');
+            $table->string('name')->unique(); // Express, Standard, etc.
+            $table->text('description')->nullable();
             $table->boolean('status')->default(true);
             $table->integer('shipping_cost')->default(0);
             $table->string('shipping_estimate_time')->default('0-0');

@@ -249,6 +249,7 @@ class ProductResource extends Resource
                                     ->collapsible(),
 
                                 Repeater::make('types')
+                                    ->defaultItems(0)
                                     ->label(__('Types'))
                                     ->columnSpanFull()
                                     ->relationship('types') // Defines the relationship with ProductType model
@@ -262,7 +263,6 @@ class ProductResource extends Resource
                                             ->image()
                                             ->required(),
                                     ])
-                                    ->minItems(1) // Ensure at least one type is added
                                     ->collapsible() // Allow collapsing sections
                                     ->addActionLabel('Add Product Type'), // Custom button label
 
@@ -344,6 +344,7 @@ class ProductResource extends Resource
                                     ->maxSize(5120),
 
                                 SpatieMediaLibraryFileUpload::make('more_product_images_and_videos')
+                                    ->reorderable()
                                     ->maxFiles(20)
                                     ->label(__('Extra Images and Videos'))
                                     ->columnSpanFull()
@@ -498,14 +499,13 @@ class ProductResource extends Resource
                                Forms\Components\Section::make()->schema([
                                    Forms\Components\TextInput::make('cost')
                                        ->numeric()
-                                       ->label(__('Shipping cost worldwide'))
-                                       ->required(),
+                                       ->label(__('Shipping cost worldwide')),
 
                                    Forms\Components\TextInput::make('shipping_estimate_time')
-                                       ->label(__('Shipping estimate time worldwide'))
-                                       ->required(),
+                                       ->label(__('Shipping estimate time worldwide')),
                                ])->columns(2),
                                 Repeater::make('shipping_costs')
+                                    ->defaultItems(0)
                                     ->label(__('Shipping Costs'))
                                     ->relationship('shippingCosts') // Define the relationship
                                     ->schema([
@@ -566,7 +566,6 @@ class ProductResource extends Resource
                             ->icon('heroicon-o-plus-circle')
                             ->schema([
                                 Rating::make('fake_average_rating')
-                                   ->required()
                                     ->columnSpanFull()
                                     ->live()
                                     ->allowZero()

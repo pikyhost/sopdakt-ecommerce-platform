@@ -4,12 +4,17 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CityResource\Pages;
 use App\Models\City;
+use Closure;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Unique;
 
 class CityResource extends Resource
 {
@@ -57,10 +62,31 @@ class CityResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
-                    ->unique(ignoreRecord: true)
                     ->required()
                     ->maxLength(255)
-                    ->label(__('name')),
+                    ->label(__('name'))
+                    ->rules([
+                        fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                            $recordId = $get('id'); // Get the current record ID
+                            $governorateId = $get('governorate_id'); // Get the selected governorate ID
+
+                            // Check if any locale in the JSON `name` column contains the given value
+                            $exists = DB::table('cities')
+                                ->where(function ($query) use ($value) {
+                                    foreach (config('app.supported_locales') as $locale) {
+                                        $query->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$locale}\"')) = ?", [$value]);
+                                    }
+                                })
+                                ->where('governorate_id', $governorateId)
+                                ->when($recordId, fn ($query) => $query->where('id', '!=', $recordId)) // Ignore current record
+                                ->exists();
+
+                            if ($exists) {
+                                $fail(__('validation.unique', ['attribute' => Str::afterLast($attribute, '.')]));
+                            }
+                        },
+                    ]),
+
                 Forms\Components\Select::make('governorate_id')
                     ->relationship('governorate', 'name')
                     ->required()

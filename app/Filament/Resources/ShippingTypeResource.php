@@ -4,14 +4,17 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ShippingTypeResource\Pages;
 use App\Models\ShippingType;
+use Closure;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\DB;
 
 class ShippingTypeResource extends Resource
 {
@@ -48,6 +51,25 @@ class ShippingTypeResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
+                    ->rules([
+                        fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                            $recordId = $get('id'); // Get the current record ID
+
+                            // Check if any locale in the JSON `name` column contains the given value
+                            $exists = DB::table('shipping_types')
+                                ->where(function ($query) use ($value) {
+                                    foreach (config('app.supported_locales') as $locale) {
+                                        $query->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$locale}\"')) = ?", [$value]);
+                                    }
+                                })
+                                ->when($recordId, fn ($query) => $query->where('id', '!=', $recordId)) // Ignore current record
+                                ->exists();
+
+                            if ($exists) {
+                                $fail(__('validation.unique', ['attribute' => __('name')]));
+                            }
+                        },
+                    ])
                     ->label(__('shipping_type.name'))
                     ->required()
                     ->maxLength(255)
@@ -61,7 +83,7 @@ class ShippingTypeResource extends Resource
                     ->label(__('shipping_type.shipping_estimate_time'))
                     ->required(),
 
-                Forms\Components\TextInput::make('description')
+                Forms\Components\Textarea::make('description')
                     ->label(__('Description'))
                     ->nullable(),
 

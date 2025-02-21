@@ -4,8 +4,10 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CountryResource\Pages\ManageCountries;
 use App\Models\Country;
+use Closure;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Concerns\Translatable;
@@ -20,6 +22,7 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\DB;
 
 class CountryResource extends Resource
 {
@@ -71,7 +74,25 @@ class CountryResource extends Resource
                 ->columnSpanFull()
                 ->label(__('name'))
                 ->required()
-                ->unique(ignoreRecord: true)
+                ->rules([
+                    fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                        $recordId = $get('id'); // Get the current record ID
+
+                        // Check if any locale in the JSON `name` column contains the given value
+                        $exists = DB::table('countries')
+                            ->where(function ($query) use ($value) {
+                                foreach (config('app.supported_locales') as $locale) {
+                                    $query->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$locale}\"')) = ?", [$value]);
+                                }
+                            })
+                            ->when($recordId, fn ($query) => $query->where('id', '!=', $recordId)) // Ignore current record
+                            ->exists();
+
+                        if ($exists) {
+                            $fail(__('validation.unique', ['attribute' => __('name')]));
+                        }
+                    },
+                ])
                 ->maxLength(255),
 
             TextInput::make('code')

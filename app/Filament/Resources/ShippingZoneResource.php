@@ -4,14 +4,17 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ShippingZoneResource\Pages;
 use App\Models\ShippingZone;
+use Closure;
 use Filament\Forms;
 use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\DB;
 
 class ShippingZoneResource extends Resource
 {
@@ -48,7 +51,26 @@ class ShippingZoneResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->label(__('name'))
                     ->required()
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->rules([
+                        fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                            $recordId = $get('id'); // Get the current record ID
+
+                            // Check if any locale in the JSON `name` column contains the given value
+                            $exists = DB::table('shipping_zones')
+                                ->where(function ($query) use ($value) {
+                                    foreach (config('app.supported_locales') as $locale) {
+                                        $query->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$locale}\"')) = ?", [$value]);
+                                    }
+                                })
+                                ->when($recordId, fn ($query) => $query->where('id', '!=', $recordId)) // Ignore current record
+                                ->exists();
+
+                            if ($exists) {
+                                $fail(__('validation.unique', ['attribute' => __('shipping_zone.name')]));
+                            }
+                        },
+                    ]),
 
                 Forms\Components\Select::make('governorates')
                     ->preload()

@@ -13,7 +13,6 @@ class CategoryProducts extends Component
     use WithPagination;
 
     public $category;
-    public $slug;
     public $colors;
     public $sizes;
     public $selectedColors = [];
@@ -27,7 +26,7 @@ class CategoryProducts extends Component
         'selectedSizes' => ['except' => []],
         'minPrice' => ['except' => null],
         'maxPrice' => ['except' => null],
-        'sortBy' => ['except' => ['latest']],
+        'sortBy' => ['except' => 'latest'],
     ];
 
     public function mount(Category $category)
@@ -37,19 +36,19 @@ class CategoryProducts extends Component
         $this->sizes = Size::pluck('name', 'id');
     }
 
-    public function resetPriceFilter()
+    public function filterProducts()
     {
-        $this->minPrice = null;
-        $this->maxPrice = null;
-        $this->resetPage();
+        $this->resetPage(); // Reset pagination when filters change
     }
 
-    public function updatedSortBy()
+    public function updated($property)
     {
-        $this->resetPage(); // Reset pagination when sorting changes
+        if (in_array($property, ['selectedColors', 'selectedSizes', 'minPrice', 'maxPrice', 'sortBy'])) {
+            $this->filterProducts();
+        }
     }
 
-    public function render()
+    public function getProductsQuery()
     {
         $query = $this->category->products()
             ->with(['media', 'colorsWithImages'])
@@ -79,32 +78,33 @@ class CategoryProducts extends Component
             $query->whereRaw('(CASE WHEN after_discount_price IS NOT NULL THEN after_discount_price ELSE price END) <= ?', [$this->maxPrice]);
         }
 
-        // Sorting Logic
-        switch ($this->sortBy) {
-            case 'popularity':
-                $query->orderByRaw('COALESCE(views, 0) DESC');
-                break;
-            case 'rating':
-                $query->orderByRaw('COALESCE(fake_average_rating, ratings_avg_rating, 0) DESC');
-                break;
-            case 'date':
-                $query->orderBy('created_at', 'desc');
-                break;
-            case 'price_asc':
-                $query->orderByRaw('COALESCE(after_discount_price, price, 0) ASC');
-                break;
-            case 'price_desc':
-                $query->orderByRaw('COALESCE(after_discount_price, price, 0) DESC');
-                break;
-            default:
-                $query->orderBy('created_at', 'desc');
+        // Sorting logic
+        $sortOptions = [
+            'popularity' => 'COALESCE(views, 0) DESC',
+            'rating' => 'COALESCE(fake_average_rating, ratings_avg_rating, 0) DESC',
+            'date' => 'created_at DESC',
+            'price_asc' => 'COALESCE(after_discount_price, price, 0) ASC',
+            'price_desc' => 'COALESCE(after_discount_price, price, 0) DESC',
+            'latest' => 'created_at DESC',
+        ];
+
+        if (isset($sortOptions[$this->sortBy])) {
+            $query->orderByRaw($sortOptions[$this->sortBy]);
+        } else {
+            $query->orderBy('created_at', 'desc');
         }
 
-        // Fetch paginated products
-        $products = $query->paginate(20)->through(function ($p) {
-            $p->final_average_rating = $p->fake_average_rating ?? $p->ratings_avg_rating;
-            return $p;
-        });
+        return $query;
+    }
+
+    public function render()
+    {
+        $products = $this->getProductsQuery()
+            ->paginate(20)
+            ->through(function ($p) {
+                $p->final_average_rating = $p->fake_average_rating ?? $p->ratings_avg_rating;
+                return $p;
+            });
 
         return view('livewire.category-products', compact('products'));
     }

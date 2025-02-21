@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('governorates', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('name')->unique();
             $table->foreignId('country_id')->constrained('countries')->cascadeOnDelete();
             $table->integer('cost')->default(0);
             $table->string('shipping_estimate_time')->default('0-0');

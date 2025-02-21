@@ -10,7 +10,7 @@
 	<title>Piky Host</title>
 
 	<meta name="keywords" content="HTML5 Template" />
-	<meta name="description" content="X - Bootstrap eCommerce Template">
+	<meta name="description" content="Porto - Bootstrap eCommerce Template">
 	<meta name="author" content="SW-THEMES">
 
 	<!-- Favicon -->
@@ -454,7 +454,7 @@
                             </li>
                             <li><a href="contact.html">Contact Us</a></li>
                             <li class="float-right"><a href="https://1.envato.market/DdLk5" class="pl-5"
-                                                       target="_blank">Buy X!</a></li>
+                                                       target="_blank">Buy Porto!</a></li>
                             <li class="float-right"><a href="#" class="pl-5">Special Offer!</a></li>
                         </ul>
                     </nav>
@@ -550,7 +550,7 @@
                         </li>
                     </ol>
                 </nav>
-                <livewire:category-products :category="$category" />
+                <livewire:category-products-list :category="$category" />
 
             </div><!-- End .container -->
 
@@ -651,7 +651,7 @@
 				<div class="footer-bottom">
 					<div class="container d-sm-flex align-items-center">
 						<div class="footer-left">
-							<span class="footer-copyright">© X eCommerce. 2021. All Rights Reserved</span>
+							<span class="footer-copyright">© Piky Host eCommerce. 2021. All Rights Reserved</span>
 						</div>
 
 						<div class="footer-right ml-auto mt-1 mt-sm-0">
@@ -795,7 +795,7 @@
 					</li>
 					<li class="border-0">
 						<a href="#" target="_blank">
-							Buy X!
+							Buy Porto!
 							<span class="tip tip-hot">Hot</span>
 						</a>
 					</li>

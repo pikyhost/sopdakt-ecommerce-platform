@@ -4,12 +4,15 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CountryGroupResource\Pages;
 use App\Models\CountryGroup;
+use Closure;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\DB;
 
 class CountryGroupResource extends Resource
 {
@@ -58,32 +61,49 @@ class CountryGroupResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make()->schema([
-                    Forms\Components\TextInput::make('name')
-                        ->label(__('name'))
-                        ->required()
-                        ->maxLength(255),
+                Forms\Components\TextInput::make('name')
+                    ->label(__('name'))
+                    ->rules([
+                        fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                            $recordId = $get('id'); // Get the current record ID
 
-                    Forms\Components\Select::make('countries')
-                        ->label(__('countries'))
-                        ->relationship('countries', 'name')
-                        ->multiple()
-                        ->searchable()
-                        ->preload(),
+                            // Check if any locale in the JSON `name` column contains the given value
+                            $exists = DB::table('country_groups')
+                                ->where(function ($query) use ($value) {
+                                    foreach (config('app.supported_locales') as $locale) {
+                                        $query->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$locale}\"')) = ?", [$value]);
+                                    }
+                                })
+                                ->when($recordId, fn ($query) => $query->where('id', '!=', $recordId)) // Ignore current record
+                                ->exists();
 
-                    Forms\Components\TextInput::make('cost')
-                        ->label(__('shipping_cost.cost'))
-                        ->required()
-                        ->numeric()
-                        ->default(0),
+                            if ($exists) {
+                                $fail(__('validation.unique', ['attribute' => __('name')]));
+                            }
+                        },
+                    ])
+                    ->required()
+                    ->maxLength(255),
 
-                    Forms\Components\TextInput::make('shipping_estimate_time')
-                        ->label(__('shipping_cost.shipping_estimate_time'))
-                        ->required()
-                        ->maxLength(255)
-                        ->default('0-0'),
-                ])
-            ]);
+                Forms\Components\Select::make('countries')
+                    ->label(__('countries'))
+                    ->relationship('countries', 'name')
+                    ->multiple()
+                    ->searchable()
+                    ->preload(),
+
+                Forms\Components\TextInput::make('cost')
+                    ->label(__('shipping_cost.cost'))
+                    ->required()
+                    ->numeric()
+                    ->default(0),
+
+                Forms\Components\TextInput::make('shipping_estimate_time')
+                    ->label(__('shipping_cost.shipping_estimate_time'))
+                    ->required()
+                    ->maxLength(255)
+                    ->default('0-0'),
+            ])->columns(1);
     }
 
     public static function table(Table $table): Table

@@ -4,12 +4,15 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\GovernorateResource\Pages;
 use App\Models\Governorate;
+use Closure;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\DB;
 
 class GovernorateResource extends Resource
 {
@@ -59,6 +62,27 @@ class GovernorateResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('name')
                     // ->unique('cities', 'name', fn ($record) => $record) // Explicitly check the unique rule for the 'name' field
+                    ->rules([
+                        fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                            $recordId = $get('id'); // Get the current record ID
+                            $countryId = $get('country_id'); // Get the selected country ID
+
+                            // Check if any locale in the JSON `name` column contains the given value
+                            $exists = DB::table('governorates')
+                                ->where(function ($query) use ($value) {
+                                    foreach (config('app.supported_locales') as $locale) {
+                                        $query->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$locale}\"')) = ?", [$value]);
+                                    }
+                                })
+                                ->where('country_id', $countryId)
+                                ->when($recordId, fn($query) => $query->where('id', '!=', $recordId)) // Ignore current record
+                                ->exists();
+
+                            if ($exists) {
+                                $fail(__('validation.unique', ['attribute' => __('governorate.name')]));
+                            }
+                        },
+                    ])
                     ->required()
                     ->maxLength(255)
                     ->label(__('name')),
