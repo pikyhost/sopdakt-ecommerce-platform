@@ -850,59 +850,67 @@
 
                                     @if($product->bundles->isNotEmpty())
                                         <div x-data="{ showBundles: false }" class="product-bundles">
-                                            <h3 class="bundle-title">
-                                                {{ __('Available Bundles') }}
+                                            <!-- Bundle Title & Toggle Button -->
+                                            <div class="bundle-header">
+                                                <h3 class="bundle-title">{{ __('Available Bundles') }}</h3>
                                                 <button @click="showBundles = !showBundles" class="toggle-button">
-                                                    <span x-text="showBundles ? '{{ __('Hide') }}' : '{{ __('Show') }}'"></span>
+                                                    <span x-text="showBundles ? '{{ __('Hide Bundles') }}' : '{{ __('Show Bundles') }}'"></span>
+                                                    <svg x-show="!showBundles" class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                                                    </svg>
+                                                    <svg x-show="showBundles" class="icon rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                    </svg>
                                                 </button>
-                                            </h3>
+                                            </div>
 
+                                            <!-- Bundle List -->
                                             <ul class="bundle-list" x-show="showBundles" x-collapse>
                                                 @foreach ($product->bundles as $bundle)
                                                     <li class="bundle-item">
-                                                        <div class="bundle-header">
+                                                        <div class="bundle-content">
                                                             <strong class="bundle-name">{{ $bundle->getTranslation('name', app()->getLocale()) }}</strong>
-                                                        </div>
 
-                                                        <div class="bundle-details">
-                                                            @if ($bundle->bundle_type === \App\Enums\BundleType::BUY_X_GET_Y)
-                                                                @if (!is_null($bundle->buy_x) && !is_null($bundle->get_y))
-                                                                    <p class="bundle-text">{{ __('Buy :x and get :y free', ['x' => $bundle->buy_x, 'y' => $bundle->get_y]) }}</p>
-                                                                @elseif (!is_null($bundle->buy_x) && is_null($bundle->get_y) && !is_null($bundle->discount_price))
-                                                                    <p class="bundle-text">{{ __('Buy :x with a discount price of :price', ['x' => $bundle->buy_x, 'price' => number_format($bundle->discount_price, 2)]) }}</p>
+                                                            <div class="bundle-details">
+                                                                @if ($bundle->bundle_type === \App\Enums\BundleType::BUY_X_GET_Y)
+                                                                    @if (!is_null($bundle->buy_x) && !is_null($bundle->get_y))
+                                                                        <p class="bundle-text">{{ __('Buy :x and get :y free', ['x' => $bundle->buy_x, 'y' => $bundle->get_y]) }}</p>
+                                                                    @elseif (!is_null($bundle->buy_x) && is_null($bundle->get_y) && !is_null($bundle->discount_price))
+                                                                        <p class="bundle-text">{{ __('Buy :x with a discount price of :price', ['x' => $bundle->buy_x, 'price' => number_format($bundle->discount_price, 2)]) }}</p>
+                                                                    @endif
+                                                                @elseif ($bundle->bundle_type === \App\Enums\BundleType::FIXED_PRICE)
+                                                                    <p class="bundle-text">{{ __('Get this bundle for :price instead of :original', ['price' => number_format($bundle->discount_price, 2), 'original' => number_format($bundle->products->sum('after_discount_price'), 2)]) }}</p>
+                                                                @elseif ($bundle->bundle_type === \App\Enums\BundleType::DISCOUNT_PERCENTAGE)
+                                                                    <p class="bundle-text">{{ __('Buy this bundle and save :discount%', ['discount' => $bundle->discount_percentage]) }}</p>
                                                                 @endif
-                                                            @elseif ($bundle->bundle_type === \App\Enums\BundleType::FIXED_PRICE)
-                                                                <p class="bundle-text">{{ __('Get this bundle for :price instead of :original', ['price' => number_format($bundle->discount_price, 2), 'original' => number_format($bundle->products->sum('after_discount_price'), 2)]) }}</p>
-                                                            @elseif ($bundle->bundle_type === \App\Enums\BundleType::DISCOUNT_PERCENTAGE)
-                                                                <p class="bundle-text">{{ __('Buy this bundle and save :discount%', ['discount' => $bundle->discount_percentage]) }}</p>
-                                                            @endif
-                                                        </div>
+                                                            </div>
 
-                                                        <div class="bundle-products">
-                                                            @foreach ($bundle->products as $product)
-                                                                <div class="product-item">
-                                                                    <a href="{{ route('product.show', $product->slug) }}">
-                                                                        <img src="{{ $product->getFeatureProductImageUrl() }}" class="product-image" alt="{{ $product->name }}">
-                                                                    </a>
-                                                                    <div class="product-info">
-                                                                        <span class="product-name">{{ $product->name }}</span>
-
-                                                                        @if ($bundle->bundle_type !== \App\Enums\BundleType::BUY_X_GET_Y)
-                                                                            <span class="product-quantity">({{ __('Quantity:') }} {{ $product->pivot->quantity }})</span>
-                                                                        @endif
+                                                            <div class="bundle-products">
+                                                                @foreach ($bundle->products as $product)
+                                                                    <div class="product-item">
+                                                                        <a href="{{ route('product.show', $product->slug) }}">
+                                                                            <img src="{{ $product->getFeatureProductImageUrl() }}" class="product-image" alt="{{ $product->name }}">
+                                                                        </a>
+                                                                        <div class="product-info">
+                                                                            <span class="product-name">{{ $product->name }}</span>
+                                                                            @if ($bundle->bundle_type !== \App\Enums\BundleType::BUY_X_GET_Y)
+                                                                                <span class="product-quantity">({{ __('Quantity:') }} {{ $product->pivot->quantity }})</span>
+                                                                            @endif
+                                                                        </div>
                                                                     </div>
-                                                                </div>
-                                                            @endforeach
-                                                        </div>
+                                                                @endforeach
+                                                            </div>
 
-                                                        <div class="bundle-buy">
-                                                            <a href="#" class="buy-button">{{ __('Buy Now') }}</a>
+                                                            <div class="bundle-buy">
+                                                                <a href="#" class="buy-button">{{ __('Buy Now') }}</a>
+                                                            </div>
                                                         </div>
                                                     </li>
                                                 @endforeach
                                             </ul>
                                         </div>
                                     @endif
+
 
 
 
