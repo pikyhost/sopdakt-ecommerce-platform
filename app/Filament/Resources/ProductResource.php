@@ -261,7 +261,7 @@ class ProductResource extends Resource
                                             ->label(__('name')),
 
                                         FileUpload::make('image')
-                                            ->label(__('Image_'))
+                                            ->label(__('image'))
                                             ->image()
                                             ->required(),
                                     ])
@@ -558,8 +558,7 @@ class ProductResource extends Resource
                                             ->maxLength(255)
                                             ->default('0-0'),
                                     ])
-                                    ->columns(2) // Two columns for better layout
-                                    ->defaultItems(1), // At least one shipping cost entry
+                                    ->columns(2),
                             ]),
 
                         // Additional Info Tab

@@ -29,7 +29,7 @@ return new class extends Migration
             $table->dateTime('discount_end')->nullable();
             $table->integer('views')->default(0);
             $table->integer('sales')->default(0);
-            $table->integer('fake_average_rating')->default(0);
+            $table->integer('fake_average_rating')->nullable();
 
             $table->foreignId('label_id')->nullable()->constrained('labels')->nullOnDelete();
             $table->tinyText('summary')->nullable();
