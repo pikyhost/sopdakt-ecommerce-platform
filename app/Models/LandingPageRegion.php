@@ -6,7 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 
 class LandingPageRegion extends Model
 {
+    protected $primaryKey = null;
+    public $incrementing = false;
+
     protected $guarded = [];
+
+    protected $fillable = [
+        'landing_page_id',
+        'country_id',
+        'shipping_type_id',
+        'shipping_cost',
+        'status',
+        'created_at',
+        'updated_at',
+    ];
+
     public function landingPage()
     {
         return $this->belongsTo(LandingPage::class);

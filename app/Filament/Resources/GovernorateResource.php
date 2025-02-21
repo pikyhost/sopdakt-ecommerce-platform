@@ -58,7 +58,7 @@ class GovernorateResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
-                    ->unique('cities', 'name', fn ($record) => $record) // Explicitly check the unique rule for the 'name' field
+                    // ->unique('cities', 'name', fn ($record) => $record) // Explicitly check the unique rule for the 'name' field
                     ->required()
                     ->maxLength(255)
                     ->label(__('name')),
@@ -67,7 +67,7 @@ class GovernorateResource extends Resource
                     ->required()
                     ->label(__('country_name')),
 
-                Forms\Components\TextInput::make('cost')
+                Forms\Components\TextInput::make('shipping_cost')
                     ->label(__('shipping_cost.cost'))
                     ->required()
                     ->numeric()
@@ -93,7 +93,7 @@ class GovernorateResource extends Resource
                     ->searchable()
                     ->label(__('country_name')),
 
-                Tables\Columns\TextColumn::make('cost')
+                Tables\Columns\TextColumn::make('shipping_cost')
                     ->label(__('shipping_cost.cost'))
                     ->sortable(),
 
