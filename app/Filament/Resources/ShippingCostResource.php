@@ -235,7 +235,7 @@ class ShippingCostResource extends Resource
             ->filters([
                 SelectFilter::make('shipping_type_id')
                     ->relationship('shippingType', 'name')
-                    ->label(__('Select Shipping Type')),
+                    ->label(__('shipping_cost.shipping_type')),
                 SelectFilter::make('product_id')
                     ->relationship('product', 'name')
                     ->label(__('shipping_cost.product')),

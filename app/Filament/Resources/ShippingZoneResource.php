@@ -6,7 +6,6 @@ use App\Filament\Resources\ShippingZoneResource\Pages;
 use App\Models\ShippingZone;
 use Closure;
 use Filament\Forms;
-use Filament\Forms\Components\MarkdownEditor;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
