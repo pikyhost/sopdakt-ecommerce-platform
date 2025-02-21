@@ -7,7 +7,8 @@
     "Encrypted environment file not found.": "لم يتم العثور على ملف البيئة المشفرة.",
     "Environment file already exists.": "ملف البيئة موجود بالفعل.",
     "Environment file not found.": "لم يتم العثور على ملف البيئة.",
-
+    "messages.login_to_review": "يجب عليك تسجيل الدخول لترك مراجعة.",
+    "messages.login_here": "تسجيل الدخول هنا",
     "reviewed_products.title": "المنتجات التي تم تقييمها",
     "reviewed_products.navigation_label": "تقييمات المنتجات",
     "reviewed_products.navigation_group": "تجربة المستخدم",

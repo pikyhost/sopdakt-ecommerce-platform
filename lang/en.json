@@ -12,6 +12,9 @@
     "product.actions.view_details": "View details",
     "cities": "Cities",
     "governorate_name": "Governorate Name",
+
+    "messages.login_to_review": "You need to log in to leave a review.",
+    "messages.login_here": "Login here",
     "image": "Image",
     "Default sorting": "Default sorting",
     "Sort by popularity": "Sort by popularity",
