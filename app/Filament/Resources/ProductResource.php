@@ -240,13 +240,12 @@ class ProductResource extends Resource
                                     ->label(__('Colors'))
                                     ->schema([
                                         Select::make('color_id')
-                                            ->label(__('Color'))
+                                            ->label(__('name'))
                                             ->relationship('color', 'name') // Fetch color names
                                             ->required(),
 
                                         FileUpload::make('image')
                                             ->label(__('image'))
-                                            ->image()
                                             ->imageEditor()
                                             ->required(),
                                     ])
@@ -264,7 +263,6 @@ class ProductResource extends Resource
 
                                         FileUpload::make('image')
                                             ->label(__('image'))
-                                            ->image()
                                             ->imageEditor()
                                             ->required(),
                                     ])
