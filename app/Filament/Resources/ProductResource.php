@@ -580,11 +580,9 @@ class ProductResource extends Resource
                                     ->numeric()
                                     ->default(0),
 
-                                Textarea::make('summary')
-                                    ->rules([
-                                        'max:255'
-                                    ])
-                                    ->maxLength(255)
+                                TextArea::make('summary')
+                                    ->afterStateUpdated(fn ($state, callable $set) => $set('summary', substr($state, 0, 255))) // Truncate before saving
+                                    ->maxLength(255) // Restrict input in UI
                                     ->columnSpanFull()
                                     ->nullable()
                                     ->label(__('Small description')),
