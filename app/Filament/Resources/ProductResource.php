@@ -247,7 +247,6 @@ class ProductResource extends Resource
                                         FileUpload::make('image')
                                             ->label(__('image'))
                                             ->image()
-                                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                                             ->imageEditor()
                                             ->required(),
                                     ])
@@ -267,7 +266,6 @@ class ProductResource extends Resource
                                             ->label(__('image'))
                                             ->image()
                                             ->imageEditor()
-                                            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                                             ->required(),
                                     ])
                                     ->collapsible() // Allow collapsing sections
