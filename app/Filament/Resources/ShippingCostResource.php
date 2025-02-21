@@ -226,21 +226,21 @@ class ShippingCostResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('shipping_type_id')
-                    ->relationship('shippingType', 'name')
-                    ->label(__('shipping_cost.shipping_type')),
                 SelectFilter::make('product_id')
                     ->relationship('product', 'name')
                     ->label(__('shipping_cost.product')),
                 SelectFilter::make('shipping_type_id')
                     ->relationship('shippingType', 'name')
-                    ->label(__('shipping_zone.name')),
+                    ->label(__('shipping_cost.shipping_type')),
                 SelectFilter::make('country_group_id')
                     ->relationship('countryGroup', 'name')
                     ->label(__('shipping_cost.country_group')),
                 SelectFilter::make('country_id')
                     ->relationship('country', 'name')
                     ->label(__('shipping_cost.country')),
+                SelectFilter::make('shipping_zone_id')
+                    ->relationship('shippingZone', 'name')
+                    ->label(__('shipping_zone.name')),
                 SelectFilter::make('governorate_id')
                     ->relationship('governorate', 'name')
                     ->label(__('shipping_cost.governorate')),
