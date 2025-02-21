@@ -6,6 +6,7 @@ use App\Filament\Resources\ProductResource\Pages;
 use App\Models\Product;
 use App\Models\ProductColor;
 use App\Services\ProductActionsService;
+use Closure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Components\DateTimePicker;
@@ -582,16 +583,13 @@ class ProductResource extends Resource
 
                                 Textarea::make('summary')
                                     ->rules([
-                                        function ($attribute, $value, $fail) {
-                                            if (is_array($value)) {
-                                                foreach ($value as $lang => $text) {
-                                                    if (strlen($text) > 255) {
-                                                        $fail("The summary for language [$lang] must not exceed 255 characters.");
-                                                    }
-                                                }
+                                        fn (): Closure => function (string $attribute, $value, Closure $fail) {
+                                            if (strlen($value) > 255) {
+                                                $fail(__('validation.max.string', ['attribute' => __('Small description'), 'max' => 255]));
                                             }
-                                        }
+                                        },
                                     ])
+                                    ->maxLength(255)
                                     ->columnSpanFull()
                                     ->nullable()
                                     ->label(__('Small description')),
