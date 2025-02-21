@@ -849,9 +849,15 @@
                                     <br>
 
                                     @if($product->bundles->isNotEmpty())
-                                        <div class="product-bundles">
-                                            <h3 class="bundle-title">{{ __('Available Bundles') }}</h3>
-                                            <ul class="bundle-list">
+                                        <div x-data="{ showBundles: false }" class="product-bundles">
+                                            <h3 class="bundle-title">
+                                                {{ __('Available Bundles') }}
+                                                <button @click="showBundles = !showBundles" class="toggle-button">
+                                                    <span x-text="showBundles ? '{{ __('Hide') }}' : '{{ __('Show') }}'"></span>
+                                                </button>
+                                            </h3>
+
+                                            <ul class="bundle-list" x-show="showBundles" x-collapse>
                                                 @foreach ($product->bundles as $bundle)
                                                     <li class="bundle-item">
                                                         <div class="bundle-header">
@@ -897,6 +903,7 @@
                                             </ul>
                                         </div>
                                     @endif
+
 
 
                                 @if (session()->has('success'))
