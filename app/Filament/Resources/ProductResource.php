@@ -581,6 +581,9 @@ class ProductResource extends Resource
                                     ->default(0),
 
                                 Textarea::make('summary')
+                                    ->rules([
+                                        'max:255'
+                                    ])
                                     ->maxLength(255)
                                     ->columnSpanFull()
                                     ->nullable()
