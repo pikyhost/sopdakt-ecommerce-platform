@@ -580,9 +580,18 @@ class ProductResource extends Resource
                                     ->numeric()
                                     ->default(0),
 
-                                TextArea::make('summary')
-                                    ->afterStateUpdated(fn ($state, callable $set) => $set('summary', substr($state, 0, 255))) // Truncate before saving
-                                    ->maxLength(255) // Restrict input in UI
+                                Textarea::make('summary')
+                                    ->rules([
+                                        function ($attribute, $value, $fail) {
+                                            if (is_array($value)) {
+                                                foreach ($value as $lang => $text) {
+                                                    if (strlen($text) > 255) {
+                                                        $fail("The summary for language [$lang] must not exceed 255 characters.");
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    ])
                                     ->columnSpanFull()
                                     ->nullable()
                                     ->label(__('Small description')),
