@@ -529,24 +529,25 @@
                                 </div><!-- End .product-item -->
                             @endif
 
-                            @foreach ($product->getMoreProductImagesAndVideosUrls() as $mediaUrl)
-                                <div class="product-item">
-                                    <div class="inner">
-                                        @if (Str::endsWith($mediaUrl, ['.mp4', '.mpeg', '.mov', '.avi']))
-                                            <video width="480" height="480" controls>
-                                                <source src="{{ $mediaUrl }}" type="video/mp4">
-                                                Your browser does not support the video tag.
-                                            </video>
-                                        @else
-                                            <img src="{{ $mediaUrl }}" data-zoom-image="{{ $mediaUrl }}"
-                                                 width="480" height="480" alt="product-media">
-                                        @endif
-                                        <span class="prod-full-screen">
-                    <i class="icon-plus"></i>
-                </span>
-                                    </div>
-                                </div><!-- End .product-item -->
-                            @endforeach
+                                @foreach (array_reverse($product->getMoreProductImagesAndVideosUrls()) as $mediaUrl)
+                                    <div class="product-item">
+                                        <div class="inner">
+                                            @if (Str::endsWith($mediaUrl, ['.mp4', '.mpeg', '.mov', '.avi']))
+                                                <video width="480" height="480" controls>
+                                                    <source src="{{ $mediaUrl }}" type="video/mp4">
+                                                    Your browser does not support the video tag.
+                                                </video>
+                                            @else
+                                                <img src="{{ $mediaUrl }}" data-zoom-image="{{ $mediaUrl }}"
+                                                     width="480" height="480" alt="product-media">
+                                            @endif
+                                            <span class="prod-full-screen">
+                <i class="icon-plus"></i>
+            </span>
+                                        </div>
+                                    </div><!-- End .product-item -->
+                                @endforeach
+
                         </div><!-- End .col-md-5 -->
 
 

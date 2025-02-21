@@ -118,7 +118,7 @@ class ProductResource extends Resource
                                     ->label(__('Quantity'))
                                     ->required()
                                     ->numeric()
-                                    ->default(0),
+                                    ->default(1),
                                 TextInput::make('price')
                                     ->label(__('Price'))
                                     ->required()
@@ -347,7 +347,6 @@ class ProductResource extends Resource
                                     ->maxSize(5120),
 
                                 SpatieMediaLibraryFileUpload::make('more_product_images_and_videos')
-                                    ->reorderable()
                                     ->maxFiles(20)
                                     ->label(__('Extra Images and Videos'))
                                     ->columnSpanFull()
