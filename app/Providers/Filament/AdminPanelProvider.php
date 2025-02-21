@@ -94,6 +94,7 @@ class AdminPanelProvider extends PanelProvider
                 '*/admin/products/create',
                 '*/admin/categories/create',
             ])
+            ->unsavedChangesAlerts()
             ->plugins([
                 SimpleLightBoxPlugin::make(),
                 SpatieLaravelTranslatablePlugin::make()->defaultLocales(['en', 'ar']),

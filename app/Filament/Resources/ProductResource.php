@@ -375,6 +375,9 @@ class ProductResource extends Resource
 
                         // Bundles Tab
                         Tab::make(__('bundles.title'))
+                            ->visible(function (string $operation) {
+                                return $operation === 'edit';
+                            })
                             ->columns(2)
                             ->icon('heroicon-o-bolt')
                             ->schema([
