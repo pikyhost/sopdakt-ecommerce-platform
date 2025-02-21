@@ -571,6 +571,7 @@ class ProductResource extends Resource
                             ->icon('heroicon-o-plus-circle')
                             ->schema([
                                 Rating::make('fake_average_rating')
+                                    ->default(0)
                                     ->columnSpanFull()
                                     ->live()
                                     ->allowZero()
