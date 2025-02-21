@@ -845,7 +845,100 @@
                                             background: #0056b3;
                                         }
 
+                                        /* General Bundle Styles */
+                                        .product-bundles {
+                                            background: #fff;
+                                            padding: 20px;
+                                            border-radius: 8px;
+                                            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+                                            margin-bottom: 20px;
+                                        }
+
+                                        /* Header and Toggle Button */
+                                        .bundle-header {
+                                            display: flex;
+                                            justify-content: space-between;
+                                            align-items: center;
+                                            margin-bottom: 15px;
+                                        }
+
+                                        .bundle-title {
+                                            font-size: 20px;
+                                            font-weight: 600;
+                                        }
+
+                                        .toggle-button {
+                                            background: #007bff;
+                                            color: white;
+                                            border: none;
+                                            padding: 8px 16px;
+                                            font-size: 14px;
+                                            border-radius: 5px;
+                                            cursor: pointer;
+                                            display: flex;
+                                            align-items: center;
+                                            gap: 5px;
+                                            transition: background 0.3s ease-in-out;
+                                        }
+
+                                        .toggle-button:hover {
+                                            background: #0056b3;
+                                        }
+
+                                        /* Toggle Arrow Icons */
+                                        .icon {
+                                            width: 18px;
+                                            height: 18px;
+                                            transition: transform 0.3s ease;
+                                        }
+
+                                        .rotate-180 {
+                                            transform: rotate(180deg);
+                                        }
+
+                                        /* Bundle Items */
+                                        .bundle-list {
+                                            padding-left: 0;
+                                        }
+
+                                        .bundle-item {
+                                            list-style: none;
+                                            background: #f9f9f9;
+                                            padding: 15px;
+                                            border-radius: 6px;
+                                            margin-bottom: 10px;
+                                            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+                                        }
+
+                                        /* Product Images */
+                                        .product-image {
+                                            width: 60px;
+                                            height: 60px;
+                                            border-radius: 5px;
+                                            object-fit: cover;
+                                        }
+
+                                        /* Buy Button */
+                                        .buy-button {
+                                            display: inline-block;
+                                            background: #28a745;
+                                            color: white;
+                                            padding: 8px 12px;
+                                            text-decoration: none;
+                                            font-size: 14px;
+                                            border-radius: 4px;
+                                            margin-top: 10px;
+                                            transition: background 0.3s ease;
+                                        }
+
+                                        .buy-button:hover {
+                                            background: #218838;
+                                        }
+
+
                                     </style>
+
+
                                     <br>
 
                                     @if($product->bundles->isNotEmpty())
