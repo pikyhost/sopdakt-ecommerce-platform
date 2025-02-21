@@ -254,7 +254,7 @@ class ShippingCostResource extends Resource
                         NumberConstraint::make('cost')
                             ->label(__('shipping_cost.cost')),
                     ])->columnSpanFull(),
-            ])
+            ], Tables\Enums\FiltersLayout::AboveContentCollapsible)
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
