@@ -18,6 +18,7 @@ return [
     'submit' => 'Submit',
     'delete' => 'Delete',
     'pending' => 'Pending',
+    'rejected' => 'Rejected',
     'Available Bundles' => 'Available Bundles',
     'Buy :x and get :y free' => 'Buy :x and get :y free',
     'Buy :x with a discount price of :price' => 'Buy :x with a discount price of :price',

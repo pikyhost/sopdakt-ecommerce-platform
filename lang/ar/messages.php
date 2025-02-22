@@ -17,6 +17,7 @@ return [
     'your_review' => 'تقييمك',
     'submit' => 'إرسال',
     'delete' => 'حذف',
+    'rejected' => 'مرفوض',
 
     'Available Bundles' => 'الباقات المتاحة',
     'Buy :x and get :y free' => 'اشترِ :x واحصل على :y مجانًا',
