@@ -494,8 +494,9 @@
                                 @endphp
 
                                     <!-- Title -->
+                                <!-- Title -->
                                 <h3 style="color: {{ $titleColor }}; font-size: 32px; font-weight: bold; line-height: 1.2;">
-                                    Electronic <br> Deals
+                                    {!! nl2br(e($category->title_banner_text)) !!}
                                 </h3>
 
                                 <!-- CTA Button -->
@@ -514,26 +515,28 @@
                             </div>
 
                             <!-- Labels Section -->
-                            <div class="col-lg-4 col-md-5 col-sm-12 text-center mt-3">
-                                <div class="coupon-sale-content">
-                                    <!-- First Label: "Exclusive COUPON" -->
-                                    <h4 class="m-b-1 coupon-sale-text text-transform-none"
-                                        style="background-color: #ffffff;
-                            color: #000000;
-                            padding: 5px 10px;
-                            display: inline-block;
-                            font-weight: bold;
-                            border-radius: 3px;">
-                                        Exclusive COUPON
-                                    </h4>
-
-                                    <!-- Second Label: "$100 OFF" -->
-                                    <h5 class="mb-2 coupon-sale-text d-block ls-10 p-0"
-                                        style="font-size: 22px; font-weight: bold;">
-                                        <i class="ls-0">UP TO</i>
-                                        <b class="text-dark">$100</b> OFF
-                                    </h5>
-                                </div>
+                            <div class="coupon-sale-content">
+                                @foreach($category->labels as $index => $label)
+                                    @if($index === 0)
+                                        <!-- First Label: "Exclusive COUPON" -->
+                                        <h4 class="m-b-1 coupon-sale-text text-transform-none"
+                                            style="background-color: {{ $label->background_color_code ?? '#ffffff' }};
+                color: {{ $label->color_code ?? '#000000' }};
+                padding: 5px 10px;
+                display: inline-block;
+                font-weight: bold;
+                border-radius: 3px;">
+                                            {{ $label->getTranslation('title', app()->getLocale()) }}
+                                        </h4>
+                                    @elseif($index === 1)
+                                        <!-- Second Label: "$100 OFF" -->
+                                        <h5 class="mb-2 coupon-sale-text d-block ls-10 p-0"
+                                            style="font-size: 22px; font-weight: bold;">
+                                            <i class="ls-0">UP TO</i>
+                                            <b class="text-dark">{{ $label->getTranslation('title', app()->getLocale()) }}</b> OFF
+                                        </h5>
+                                    @endif
+                                @endforeach
                             </div>
 
                         </div>
