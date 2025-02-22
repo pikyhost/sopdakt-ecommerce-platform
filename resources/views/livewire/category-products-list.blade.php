@@ -115,6 +115,7 @@
                             @endif
                             <span class="product-price">${{ $product->discount_price_for_current_country }}</span>
                         </div>
+                        <livewire:product-actions :product="$relatedProduct" wire:key="relatedProduct-{{ $product->id }}" />
                     </div>
                 </div>
             </div>

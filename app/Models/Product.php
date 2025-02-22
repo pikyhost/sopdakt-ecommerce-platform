@@ -31,6 +31,8 @@ class Product extends Model implements HasMedia
         'custom_attributes' => 'array', // Cast
     ];
 
+    protected $with = 'media';
+
     protected $guarded = [];
 
     protected static function booted()

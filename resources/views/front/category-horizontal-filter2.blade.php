@@ -471,7 +471,6 @@
                     <div class="container position-relative">
                         <div class="row align-items-center">
 
-                            pl-lg-5 pb-5 pb-md-0 col-md-5 col-xl-4 col-lg-4 offset-
                             <!-- Banner Title & CTA Button -->
                             <div class="col-lg-5 col-md-6 col-sm-12 text-center text-md-left">
                                 @php
