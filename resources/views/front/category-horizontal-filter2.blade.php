@@ -532,8 +532,7 @@
                                         <!-- Second Label: "$100 OFF" -->
                                         <h5 class="mb-2 coupon-sale-text d-block ls-10 p-0"
                                             style="font-size: 22px; font-weight: bold;">
-                                            <i class="ls-0">UP TO</i>
-                                            <b class="text-dark">{{ $label->getTranslation('title', app()->getLocale()) }}</b> OFF
+                                            <b class="text-dark">{{ $label->getTranslation('title', app()->getLocale()) }}</b>
                                         </h5>
                                     @endif
                                 @endforeach
