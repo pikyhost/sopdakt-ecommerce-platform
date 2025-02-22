@@ -2,6 +2,8 @@
 
 namespace App\Helpers;
 
+use App\Models\Bundle;
+use App\Models\BundleSpecialPrice;
 use App\Models\Country;
 use App\Models\Currency;
 use App\Models\Product;
@@ -107,7 +109,7 @@ class GeneralHelper
         static $countryId = null;
 
         if (is_null($countryId)) {
-            $ip = app()->isLocal() ? '82.205.219.30' : request()->ip(); // EGYPT IP Example
+            $ip = app()->isLocal() ? '156.221.68.3' : request()->ip(); // EGYPT IP Example
             $countryCode = geoip($ip)['country_code2'] ?? 'US'; // Default to 'US' if geoip fails
             $countryId = Country::where('code', $countryCode)->value('id') ?? null;
         }
@@ -194,6 +196,101 @@ class GeneralHelper
         $formattedName = self::formatCategoryName($record);
 
         return strlen($formattedName) > 20 ? $formattedName : null;
+    }
+
+    public static function getBundlePriceForCountry(Bundle $bundle): float
+    {
+        static $specialPrices = [];
+
+        $countryId = self::getCountryId();
+
+        if (!$countryId) {
+            return (float) $bundle->price;
+        }
+
+        if (isset($specialPrices[$bundle->id])) {
+            return $specialPrices[$bundle->id];
+        }
+
+        $specialPriceData = BundleSpecialPrice::where('bundle_id', $bundle->id)
+            ->where(function ($query) use ($countryId) {
+                $query->where('country_id', $countryId)
+                    ->orWhere(function ($subQuery) use ($countryId) {
+                        $subQuery->whereNull('country_id')
+                            ->whereExists(function ($existsQuery) use ($countryId) {
+                                $existsQuery->select(DB::raw(1))
+                                    ->from('country_group_country')
+                                    ->whereRaw('bundle_special_prices.country_group_id = country_group_country.country_group_id')
+                                    ->where('country_group_country.country_id', $countryId);
+                            });
+                    });
+            })
+            ->orderByRaw('CASE WHEN country_id IS NOT NULL THEN 1 ELSE 2 END')
+            ->first(['special_price']);
+
+        $finalPrice = ($specialPriceData && $specialPriceData->special_price > 0)
+            ? (float) $specialPriceData->special_price
+            : (float) $bundle->discount_price; // Always fallback to bundle price
+
+        $specialPrices[$bundle->id] = $finalPrice;
+
+        return $finalPrice;
+    }
+
+    public static function getBundlePriceForCountryWithDiscount(Bundle $bundle): float
+    {
+        static $specialPrices = [];
+
+        $countryId = self::getCountryId();
+
+        if (!$countryId) {
+            return (float) ($bundle->after_discount_price ?? $bundle->price);
+        }
+
+        if (isset($specialPrices[$bundle->id])) {
+            return $specialPrices[$bundle->id];
+        }
+
+        $specialPriceData = BundleSpecialPrice::where('bundle_id', $bundle->id)
+            ->where(function ($query) use ($countryId) {
+                $query->where('country_id', $countryId)
+                    ->orWhere(function ($subQuery) use ($countryId) {
+                        $subQuery->whereNull('country_id')
+                            ->whereExists(function ($existsQuery) use ($countryId) {
+                                $existsQuery->select(DB::raw(1))
+                                    ->from('country_group_country')
+                                    ->whereRaw('bundle_special_prices.country_group_id = country_group_country.country_group_id')
+                                    ->where('country_group_country.country_id', $countryId);
+                            });
+                    });
+            })
+            ->orderByRaw('CASE WHEN country_id IS NOT NULL THEN 1 ELSE 2 END')
+            ->first(['special_price', 'special_price_after_discount']);
+
+        $finalPrice = ($specialPriceData && $specialPriceData->special_price_after_discount > 0)
+            ? (float) $specialPriceData->special_price_after_discount
+            : (($specialPriceData && $specialPriceData->special_price > 0)
+                ? (float) $specialPriceData->special_price
+                : (float) ($bundle->after_discount_price ?? $bundle->discount_price)); // Always fallback
+
+        $specialPrices[$bundle->id] = $finalPrice;
+
+        return $finalPrice;
+    }
+
+
+    public static function getBundlePriceForCountryFormatted(Bundle $bundle): string
+    {
+        $price = self::getBundlePriceForCountry($bundle);
+        $currencyCode = self::getCurrencyCode($bundle->currency_id);
+        return number_format($price, 2) . ' ' . $currencyCode;
+    }
+
+    public static function getBundlePriceForCountryWithDiscountFormatted(Bundle $bundle): string
+    {
+        $price = self::getBundlePriceForCountryWithDiscount($bundle);
+        $currencyCode = self::getCurrencyCode($bundle->currency_id);
+        return number_format($price, 2) . ' ' . $currencyCode;
     }
 }
 

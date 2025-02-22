@@ -968,11 +968,14 @@
                                                                 @if ($bundle->bundle_type === \App\Enums\BundleType::BUY_X_GET_Y)
                                                                     @if (!is_null($bundle->buy_x) && !is_null($bundle->get_y))
                                                                         <p class="bundle-text">{{ __('Buy :x and get :y free', ['x' => $bundle->buy_x, 'y' => $bundle->get_y]) }}</p>
-                                                                    @elseif (!is_null($bundle->buy_x) && is_null($bundle->get_y) && !is_null($bundle->discount_price))
-                                                                        <p class="bundle-text">{{ __('Buy :x with a discount price of :price', ['x' => $bundle->buy_x, 'price' => number_format($bundle->discount_price, 2)]) }}</p>
+                                                                    @elseif (!is_null($bundle->buy_x) && is_null($bundle->get_y) && !is_null($bundle->bundle_discount_price_for_current_country))
+                                                                        <p class="bundle-text">{{ __('Buy :x with a discount price of :price', ['x' => $bundle->buy_x, 'price' => number_format($bundle->bundle_discount_price_for_current_country, 2)]) }}</p>
                                                                     @endif
                                                                 @elseif ($bundle->bundle_type === \App\Enums\BundleType::FIXED_PRICE)
-                                                                    <p class="bundle-text">{{ __('Get this bundle for :price instead of :original', ['price' => number_format($bundle->discount_price, 2), 'original' => number_format($bundle->products->sum('after_discount_price'), 2)]) }}</p>
+                                                                    <p class="bundle-text">{{ __('Get this bundle for :price instead of :original', [
+                                    'price' => number_format($bundle->bundle_discount_price_for_current_country, 2),
+                                    'original' => number_format($bundle->bundle_price_for_current_country, 2)
+                                ]) }}</p>
                                                                 @elseif ($bundle->bundle_type === \App\Enums\BundleType::DISCOUNT_PERCENTAGE)
                                                                     <p class="bundle-text">{{ __('Buy this bundle and save :discount%', ['discount' => $bundle->discount_percentage]) }}</p>
                                                                 @endif
@@ -1003,7 +1006,6 @@
                                             </ul>
                                         </div>
                                     @endif
-
 
 
 

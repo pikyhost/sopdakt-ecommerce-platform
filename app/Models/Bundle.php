@@ -79,4 +79,15 @@ class Bundle extends Model
     {
         return $this->hasMany(BundleSpecialPrice::class);
     }
+
+    public function getBundlePriceForCurrentCountryAttribute()
+    {
+        return (float) \App\Helpers\GeneralHelper::getBundlePriceForCountry($this);
+    }
+
+    public function getBundleDiscountPriceForCurrentCountryAttribute()
+    {
+        return (float) \App\Helpers\GeneralHelper::getBundlePriceForCountryWithDiscount($this);
+    }
+
 }

@@ -27,5 +27,4 @@ class BundleSpecialPrice extends Model
     {
         return $this->belongsTo(Currency::class);
     }
-
 }
