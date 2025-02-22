@@ -27,6 +27,7 @@ return new class extends Migration {
             $table->string('title_banner_text')->nullable();
             $table->string('title_banner_color')->nullable();
             $table->string('cta_banner_text')->nullable();
+            $table->string('cta_banner_url')->nullable();
             $table->string('cta_banner_text_color')->nullable();
             $table->string('cta_banner_background_color')->nullable();
             $table->timestamps();
