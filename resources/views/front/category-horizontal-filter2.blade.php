@@ -471,6 +471,7 @@
                     <div class="container position-relative">
                         <div class="row align-items-center">
 
+                            pl-lg-5 pb-5 pb-md-0 col-md-5 col-xl-4 col-lg-4 offset-
                             <!-- Banner Title & CTA Button -->
                             <div class="col-lg-5 col-md-6 col-sm-12 text-center text-md-left">
                                 @php
@@ -493,11 +494,10 @@
                                     }
                                 @endphp
 
-                                    <!-- Title -->
-                                <!-- Title -->
-                                <h3 style="color: {{ $titleColor }}; font-size: 32px; font-weight: bold; line-height: 1.2;">
-                                    {!! nl2br(e($category->title_banner_text)) !!}
-                                </h3>
+                                    <!-- Dynamic Title -->
+                                    <h3 style="color: {{ $titleColor }}; font-size: 32px; font-weight: bold; line-height: 1.2;">
+                                        {!! nl2br(e($category->title_banner_text)) !!}
+                                    </h3>
 
                                 <!-- CTA Button -->
                                 <a href="{{ $ctaUrl }}"
