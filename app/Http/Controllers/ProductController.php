@@ -14,7 +14,6 @@ class ProductController extends Controller
                 'colorsWithImages',
                 'sizes',
                 'labels',
-                'media',
                 'ratings' => function ($query) {
                     $query->with('user');
                 },
