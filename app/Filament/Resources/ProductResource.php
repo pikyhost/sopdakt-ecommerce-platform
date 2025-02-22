@@ -516,6 +516,7 @@ class ProductResource extends Resource
                                     ->relationship('shippingCosts') // Define the relationship
                                     ->schema([
                                         Forms\Components\Select::make('city_id')
+                                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                                             ->label(__('shipping_cost.city'))
                                             ->relationship('city', 'name')
                                             ->nullable()
@@ -523,6 +524,7 @@ class ProductResource extends Resource
                                             ->hidden(fn ($get) => $get('governorate_id') || $get('shipping_zone_id') || $get('country_id') || $get('country_group_id')),
 
                                         Forms\Components\Select::make('governorate_id')
+                                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                                             ->label(__('shipping_cost.governorate'))
                                             ->relationship('governorate', 'name')
                                             ->nullable()
@@ -530,6 +532,7 @@ class ProductResource extends Resource
                                             ->hidden(fn ($get) => $get('city_id') || $get('shipping_zone_id') || $get('country_id') || $get('country_group_id')),
 
                                         Forms\Components\Select::make('shipping_zone_id')
+                                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                                             ->label(__('shipping_zone.name'))
                                             ->relationship('shippingZone', 'name')
                                             ->nullable()
@@ -537,6 +540,7 @@ class ProductResource extends Resource
                                             ->hidden(fn ($get) => $get('city_id') || $get('governorate_id') || $get('country_id') || $get('country_group_id')),
 
                                         Forms\Components\Select::make('country_id')
+                                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                                             ->label(__('shipping_cost.country'))
                                             ->relationship('country', 'name')
                                             ->nullable()
@@ -544,6 +548,7 @@ class ProductResource extends Resource
                                             ->hidden(fn ($get) => $get('city_id') || $get('governorate_id') || $get('shipping_zone_id') || $get('country_group_id')),
 
                                         Forms\Components\Select::make('country_group_id')
+                                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                                             ->label(__('shipping_cost.country_group'))
                                             ->relationship('countryGroup', 'name')
                                             ->nullable()
