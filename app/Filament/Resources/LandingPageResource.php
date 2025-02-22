@@ -4,9 +4,12 @@ namespace App\Filament\Resources;
 
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
+use Filament\Tables\Actions\Action;
 use App\Models\LandingPageVarieties;
 use Filament\Forms\{Get, Set, Form};
 use Filament\Forms\Components\Hidden;
+use Filament\Tables\Actions\LinkAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\{IconColumn, TextColumn};
 use Filament\Tables\Actions\{DeleteAction, EditAction, BulkActionGroup, DeleteBulkAction};
 use App\Models\{Size, Color, LandingPage, ShippingType, Region, ShippingZone, Governorate};
@@ -16,40 +19,9 @@ use Filament\Forms\Components\{Grid, Tabs, Select, Toggle, Section, Repeater, Te
 class LandingPageResource extends Resource
 {
     protected static ?string $model = LandingPage::class;
-
     protected static ?string $navigationIcon = 'heroicon-o-home';
-
-    protected static ?int $navigationSort = 1;
-
-    public static function getNavigationGroup(): ?string
-    {
-        return __('Products Management');
-    }
-
-    public static function getNavigationLabel(): string
-    {
-        return __('Landing Page');
-    }
-
-    public static function getModelLabel(): string
-    {
-        return __('Landing Page');
-    }
-
-    public static function getPluralLabel(): ?string
-    {
-        return __('Landing Page');
-    }
-
-    public static function getLabel(): ?string
-    {
-        return __('Landing Page');
-    }
-
-    public static function getPluralModelLabel(): string
-    {
-        return __('Landing Page');
-    }
+    protected static ?string $navigationGroup = 'Products Management';
+    protected static ?string $navigationLabel = 'Landing Page';
 
     public static function form(Form $form): Form
     {
@@ -61,7 +33,7 @@ class LandingPageResource extends Resource
                     self::baseDataSection(),
                     self::topBarItemsSection(),
                     self::productCriteriaSection(),
-                    self::productMediaSection(),
+                    // self::productMediaSection(),
                     self::productFeaturesSection(),
                     self::productBundlesSection(),
                     self::homeSection(),
@@ -131,6 +103,7 @@ class LandingPageResource extends Resource
                             Toggle::make('status')->label('Active'),
                             Hidden::make('shipping_zone_id'),
                             Hidden::make('landing_page_id'),
+                            Hidden::make('shipping_type_id'),
                         ])
                         ->afterStateHydrated(function ($state, $set, $record) {
                             $allShippingZone = ShippingZone::all();
@@ -138,6 +111,7 @@ class LandingPageResource extends Resource
                             if (!$record) {
                                 $set('shipping_zones', $allShippingZone->map(fn ($zone) => [
                                     'shipping_zone_id'  => $zone->id,
+                                    'shipping_type_id'  => $zone->shipping_type_id,
                                     'landing_page_id'   => null,
                                     'name'              => $zone->name,
                                     'governorates'      => $zone->governorates,
@@ -153,6 +127,7 @@ class LandingPageResource extends Resource
                                 'landing_page_id'   => $record->id,
                                 'name'              => $zone->name,
                                 'governorates'      => $zone->governorates,
+                                'shipping_type_id'  => $zone->shipping_type_id,
                                 'status'            => $existingShippingZones[$zone->id]->status ?? false,
                             ])->toArray());
                         })
@@ -174,6 +149,7 @@ class LandingPageResource extends Resource
                             Toggle::make('status')->label('Active'),
                             Hidden::make('governorate_id'),
                             Hidden::make('landing_page_id'),
+                            // Hidden::make('shipping_type_id'),
                         ])
                         ->afterStateHydrated(function ($state, $set, $record) {
                             $allGovernorates = Governorate::all();
@@ -181,6 +157,7 @@ class LandingPageResource extends Resource
                             if (!$record) {
                                 $set('shipping_governorates', $allGovernorates->map(fn ($governorate) => [
                                     'governorate_id'    => $governorate->id,
+                                    // 'shipping_type_id'  => $governorate->shipping_type_id,
                                     'landing_page_id'   => null,
                                     'name'              => $governorate->name,
                                     'shipping_cost'     => $governorate->shipping_cost,
@@ -193,6 +170,7 @@ class LandingPageResource extends Resource
 
                             $set('shipping_governorates', $allGovernorates->map(fn ($governorate) => [
                                 'governorate_id'    => $governorate->id,
+                                // 'shipping_type_id'  => $governorate->shipping_type_id,
                                 'landing_page_id'   => $record->id,
                                 'name'              => $governorate->name,
                                 'shipping_cost'     => $governorate->shipping_cost,
@@ -215,6 +193,7 @@ class LandingPageResource extends Resource
                             TextInput::make('governorate')->label('Governorate')->disabled(),
                             TextInput::make('shipping_cost')->label('Shipping Cost')->numeric(),
                             Toggle::make('status')->label('Active'),
+                            // Hidden::make('country_id'),
                             Hidden::make('region_id'),
                             Hidden::make('landing_page_id'),
                         ])
@@ -224,6 +203,7 @@ class LandingPageResource extends Resource
                             if (!$record) {
                                 $set('shipping_regions', $allRegions->map(fn ($region) => [
                                     'region_id'         => $region->id,
+                                    // 'country_id'        => $region->country_id,
                                     'landing_page_id'   => null,
                                     'name'              => $region->name,
                                     'governorate'       => $region->governorate->name ?? null,
@@ -237,6 +217,7 @@ class LandingPageResource extends Resource
 
                             $set('shipping_regions', $allRegions->map(fn ($region) => [
                                 'region_id'         => $region->id,
+                                // 'country_id'        => $region->country_id,
                                 'landing_page_id'   => $record->id,
                                 'name'              => $region->name,
                                 'governorate'       => $region->governorate->name ?? null,
@@ -712,7 +693,7 @@ class LandingPageResource extends Resource
 
     private static function loadExistingCombinations($record): array
     {
-        $existingCombinations = LandingPageVarieties::where('landing_page_id', $record->id)->get();
+        $existingCombinations = LandingPageVarieties::where('landing_page_id', $record?->id)->get();
 
         return $existingCombinations->map(fn ($variety) => [
             'combination_name' => "{$variety->color->name}_{$variety->size->name}",
@@ -767,6 +748,11 @@ class LandingPageResource extends Resource
                 TextColumn::make('updated_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->actions([
+                Action::make('view')
+                    ->url(fn ($record) => route('landing-page.show-by-slug', ['slug' => $record->slug]))
+                    ->color('success')
+                    ->icon('heroicon-o-eye')
+                    ->openUrlInNewTab(),
                 EditAction::make(),
                 DeleteAction::make(),
             ])

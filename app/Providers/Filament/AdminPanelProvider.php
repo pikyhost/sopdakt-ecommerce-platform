@@ -52,6 +52,7 @@ class AdminPanelProvider extends PanelProvider
             ->collapsibleNavigationGroups(true)
          ->sidebarCollapsibleOnDesktop()
             ->navigationGroups([
+                __('Orders'),
                 __('Products Management'),
                 __('Stock Management'),
                 __('Shipping & Countries'),

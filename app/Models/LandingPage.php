@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class LandingPage extends Model
 {
@@ -30,6 +31,26 @@ class LandingPage extends Model
         'header_image', 'contact_us_section_top_image', 'contact_us_section_bottom_image', 'is_contact_us_section_top_image', 'is_contact_us_section_bottom_image',
         'created_at', 'updated_at',
     ];
+
+    public static function boot()
+    {
+        parent::boot();
+
+        self::creating(function($model){
+            // dd(json_decode(request()->all()['components'][0]['snapshot'])->data->data[0]);
+
+            $model->slug = Str::slug($model->slug ?? $model->home_title);
+        });
+
+        self::updating(function($model){
+            $model->slug = Str::slug($model->slug ?? $model->home_title);
+        });
+
+        self::created(function($model){});
+        self::updated(function($model){});
+        self::deleting(function($model){});
+        self::deleted(function($model){});
+    }
 
     function media()
     {

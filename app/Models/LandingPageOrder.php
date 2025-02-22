@@ -10,6 +10,27 @@ class LandingPageOrder extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'id',
+        'landing_page_id',
+        'governorate_id',
+        'country_id',
+        'shipping_type_id',
+        'landing_page_bundle_id',
+        'name',
+        'phone',
+        'address',
+        'quantity',
+        'subtotal',
+        'total',
+        'status',
+        'notes',
+        'shipping_cost',
+        'another_phone',
+        'created_at',
+        'updated_at',
+    ];
+
     function landingPage()
     {
         return $this->belongsTo(LandingPage::class);
