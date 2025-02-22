@@ -77,9 +77,10 @@ class ShippingCostResource extends Resource
                     ->live()
                     ->hidden(fn ($get) => $get('governorate_id') || $get('shipping_zone_id') || $get('country_id') || $get('country_group_id')),
 
-        Select::make('governorate_id')
-                    ->rules([
-                        fn (Get $get) => Rule::unique(ShippingCost::class, 'governorate_id')
+                Select::make('governorate_id')
+                    ->rules(fn (Get $get, string $operation) =>
+                    $operation === 'create' ? [
+                        Rule::unique(ShippingCost::class, 'governorate_id')
                             ->where(fn ($query) => $query
                                 ->where('product_id', $get('product_id'))
                                 ->whereNull('shipping_zone_id')
@@ -87,16 +88,17 @@ class ShippingCostResource extends Resource
                                 ->whereNull('city_id')
                                 ->whereNull('country_id')
                             )
-                            ->ignore(request()->route('record')),
-                    ])
+                    ] : []
+                    )
                     ->relationship('governorate', 'name')
                     ->nullable()
                     ->live()
                     ->hidden(fn ($get) => $get('city_id') || $get('shipping_zone_id') || $get('country_id') || $get('country_group_id')),
 
                 Select::make('shipping_zone_id')
-                    ->rules([
-                        fn (Get $get) => Rule::unique(ShippingCost::class, 'shipping_zone_id')
+                    ->rules(fn (Get $get, string $operation) =>
+                    $operation === 'create' ? [
+                        Rule::unique(ShippingCost::class, 'shipping_zone_id')
                             ->where(fn ($query) => $query
                                 ->where('product_id', $get('product_id'))
                                 ->whereNull('governorate_id')
@@ -104,16 +106,17 @@ class ShippingCostResource extends Resource
                                 ->whereNull('city_id')
                                 ->whereNull('country_id')
                             )
-                            ->ignore(request()->route('record')),
-                    ])
+                    ] : []
+                    )
                     ->relationship('shippingZone', 'name')
                     ->nullable()
                     ->live()
                     ->hidden(fn ($get) => $get('city_id') || $get('governorate_id') || $get('country_id') || $get('country_group_id')),
 
                 Select::make('country_id')
-                    ->rules([
-                        fn (Get $get) => Rule::unique(ShippingCost::class, 'country_id')
+                    ->rules(fn (Get $get, string $operation) =>
+                    $operation === 'create' ? [
+                        Rule::unique(ShippingCost::class, 'country_id')
                             ->where(fn ($query) => $query
                                 ->where('product_id', $get('product_id'))
                                 ->whereNull('governorate_id')
@@ -121,16 +124,17 @@ class ShippingCostResource extends Resource
                                 ->whereNull('city_id')
                                 ->whereNull('country_group_id')
                             )
-                            ->ignore(request()->route('record')),
-                    ])
+                    ] : []
+                    )
                     ->relationship('country', 'name')
                     ->nullable()
                     ->live()
                     ->hidden(fn ($get) => $get('city_id') || $get('governorate_id') || $get('shipping_zone_id') || $get('country_group_id')),
 
                 Select::make('country_group_id')
-                    ->rules([
-                        fn (Get $get) => Rule::unique(ShippingCost::class, 'country_group_id')
+                    ->rules(fn (Get $get, string $operation) =>
+                    $operation === 'create' ? [
+                        Rule::unique(ShippingCost::class, 'country_group_id')
                             ->where(fn ($query) => $query
                                 ->where('product_id', $get('product_id'))
                                 ->whereNull('governorate_id')
@@ -138,8 +142,8 @@ class ShippingCostResource extends Resource
                                 ->whereNull('city_id')
                                 ->whereNull('country_id')
                             )
-                            ->ignore(request()->route('record')),
-                    ])
+                    ] : []
+                    )
                     ->relationship('countryGroup', 'name')
                     ->nullable()
                     ->live()
