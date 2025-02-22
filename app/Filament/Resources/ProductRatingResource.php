@@ -133,7 +133,9 @@ class ProductRatingResource extends Resource
                         'rejected' => __('product_ratings.status_rejected'),
                     ]),
 
-                SelectFilter::make('user_id')->relationship('user', 'name')  ->label(__('Select User')),
+                SelectFilter::make('user_id')
+                    ->relationship('user', 'name')
+                    ->label(__('Select User')),
                 SelectFilter::make('product_id')->relationship('product', 'name') ->label(__('Select Product')),
 
                 Filter::make('rating')

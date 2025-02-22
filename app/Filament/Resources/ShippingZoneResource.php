@@ -12,6 +12,7 @@ use Filament\Forms\Get;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
 
@@ -111,11 +112,18 @@ class ShippingZoneResource extends Resource
                     ->limitList(4)
                     ->badge(),
 
+                TextColumn::make('cost')
+                    ->label(__('shipping_cost.cost'))
+                    ->sortable(),
+
+                TextColumn::make('shipping_estimate_time')
+                    ->label(__('shipping_cost.shipping_estimate_time'))
+                    ->searchable(),
+
                 Tables\Columns\TextColumn::make('description')
                     ->label(__('shipping_zone.description'))
                     ->sortable()
-                    ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->searchable(),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
