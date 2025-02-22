@@ -139,6 +139,11 @@ class CategoryResource extends Resource
                     ->label(__('category.cta_banner_text'))
                     ->maxLength(255),
 
+                TextInput::make('cta_banner_url')
+                    ->url()
+                    ->label(__('category.cta_banner_url'))
+                    ->maxLength(255),
+
                 ColorPicker::make('cta_banner_text_color')
                     ->label(__('category.cta_banner_text_color')),
 
@@ -246,7 +251,6 @@ class CategoryResource extends Resource
     {
         return [
             ActionGroup::make([
-                ViewAction::make(),
                 EditAction::make()->color('primary'),
                 DeleteAction::make(),
             ])

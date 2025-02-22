@@ -466,16 +466,18 @@
             <div class="category-banner-container bg-gray">
                 <div class="category-banner banner text-uppercase position-relative"
                      style="background: no-repeat center/cover;
-                background-image: url('{{ $category->getMainCategoryImageUrl() ?? asset('assets/images/default-banner.jpg') }}');
-                min-height: 200px;">
+         background-image: url('{{ $category->getMainCategoryImageUrl() ?? asset('assets/images/default-banner.jpg') }}');
+         min-height: 200px;">
                     <div class="container position-relative">
                         <div class="row align-items-center">
-                            <!-- Banner Text & CTA Button -->
+
+                            <!-- Banner Title & CTA Button -->
                             <div class="col-lg-5 col-md-6 col-sm-12 text-center text-md-left">
                                 @php
                                     $titleColor = $category->title_banner_color ?? '#000000';
                                     $ctaBgColor = $category->cta_banner_background_color ?? '#000000';
                                     $ctaTextColor = $category->cta_banner_text_color ?? '#ffffff';
+                                    $ctaUrl = $category->cta_banner_url ?? '#';
 
                                     // Ensure contrast readability if text color is missing
                                     if (!$category->cta_banner_text_color) {
@@ -491,40 +493,49 @@
                                     }
                                 @endphp
 
-                                <h3 style="color: {{ $titleColor }};">
-                                    {{ $category->title_banner_text }}
+                                    <!-- Title -->
+                                <h3 style="color: {{ $titleColor }}; font-size: 32px; font-weight: bold; line-height: 1.2;">
+                                    Electronic <br> Deals
                                 </h3>
-                                <a href="{{ route('category.products', $category->slug) }}"
+
+                                <!-- CTA Button -->
+                                <a href="{{ $ctaUrl }}"
                                    class="btn"
                                    style="background-color: {{ $ctaBgColor }};
-                              color: {{ $ctaTextColor }};
-                              border: 2px solid {{ $ctaTextColor }};
-                              padding: 10px 20px;
-                              font-weight: bold;
-                              text-transform: uppercase;
-                              border-radius: 5px;
-                              transition: all 0.3s ease;">
+                       color: {{ $ctaTextColor }};
+                       border: 2px solid {{ $ctaTextColor }};
+                       padding: 10px 20px;
+                       font-weight: bold;
+                       text-transform: uppercase;
+                       border-radius: 5px;
+                       transition: all 0.3s ease;">
                                     {{ $category->cta_banner_text }}
                                 </a>
                             </div>
 
                             <!-- Labels Section -->
                             <div class="col-lg-4 col-md-5 col-sm-12 text-center mt-3">
-                                @if($category->labels->isNotEmpty())
-                                    <div class="coupon-sale-content">
-                                        @foreach($category->labels as $label)
-                                            <h4 class="m-b-1 coupon-sale-text text-transform-none"
-                                                style="background-color: {{ $label->background_color_code ?? '#ffffff' }};
-                                           color: {{ $label->color_code ?? '#000000' }};
-                                           padding: 5px 10px;
-                                           display: inline-block;
-                                           border-radius: 3px;">
-                                                {{ $label->getTranslation('title', app()->getLocale()) }}
-                                            </h4>
-                                        @endforeach
-                                    </div>
-                                @endif
+                                <div class="coupon-sale-content">
+                                    <!-- First Label: "Exclusive COUPON" -->
+                                    <h4 class="m-b-1 coupon-sale-text text-transform-none"
+                                        style="background-color: #ffffff;
+                            color: #000000;
+                            padding: 5px 10px;
+                            display: inline-block;
+                            font-weight: bold;
+                            border-radius: 3px;">
+                                        Exclusive COUPON
+                                    </h4>
+
+                                    <!-- Second Label: "$100 OFF" -->
+                                    <h5 class="mb-2 coupon-sale-text d-block ls-10 p-0"
+                                        style="font-size: 22px; font-weight: bold;">
+                                        <i class="ls-0">UP TO</i>
+                                        <b class="text-dark">$100</b> OFF
+                                    </h5>
+                                </div>
                             </div>
+
                         </div>
                     </div>
                 </div>

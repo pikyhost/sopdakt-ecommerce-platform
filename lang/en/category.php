@@ -26,5 +26,6 @@ return [
     'label' => 'Categories',
     'model_label' => 'Category',
     'parent' => 'Parent Category',
-    'cat_name' => 'Category Name'
+    'cat_name' => 'Category Name',
+    'cta_banner_url' => 'Category Banner URL'
 ];
