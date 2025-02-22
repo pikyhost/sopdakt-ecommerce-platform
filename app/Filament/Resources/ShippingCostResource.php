@@ -60,8 +60,9 @@ class ShippingCostResource extends Resource
                     ->relationship('shippingType', 'name'),
 
                 Select::make('city_id')
-                    ->rules([
-                        fn (Get $get) => Rule::unique(ShippingCost::class, 'city_id')
+                    ->rules(fn (Get $get, string $operation) =>
+                    $operation === 'create' ? [
+                        Rule::unique(ShippingCost::class, 'city_id')
                             ->where(fn ($query) => $query
                                 ->where('product_id', $get('product_id'))
                                 ->whereNull('shipping_zone_id')
@@ -69,14 +70,14 @@ class ShippingCostResource extends Resource
                                 ->whereNull('governorate_id')
                                 ->whereNull('country_id')
                             )
-                            ->ignore(request()->route('record')),
-                    ])
+                    ] : []
+                    )
                     ->relationship('city', 'name')
                     ->nullable()
                     ->live()
                     ->hidden(fn ($get) => $get('governorate_id') || $get('shipping_zone_id') || $get('country_id') || $get('country_group_id')),
 
-                Select::make('governorate_id')
+        Select::make('governorate_id')
                     ->rules([
                         fn (Get $get) => Rule::unique(ShippingCost::class, 'governorate_id')
                             ->where(fn ($query) => $query

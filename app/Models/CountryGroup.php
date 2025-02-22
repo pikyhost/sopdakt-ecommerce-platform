@@ -10,7 +10,7 @@ class CountryGroup extends Model
 {
     use HasTranslations;
 
-    protected $fillable = ['name'];
+    protected $guarded = [];
 
     public array $translatable = ['name'];
 
