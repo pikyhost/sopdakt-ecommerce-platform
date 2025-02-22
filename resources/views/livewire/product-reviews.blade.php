@@ -42,8 +42,11 @@
                             @endphp
                             @if($status === App\Enums\Status::Pending->value)
                                 <span class="badge badge-warning">{{ __('messages.pending') }}</span>
+                            @elseif($status === App\Enums\Status::Rejected->value)
+                                <span class="badge badge-danger">{{ __('messages.rejected') }}</span>
                             @endif
                         </div>
+
                     </div>
                     <div class="comment-content">
                         <p>{{ $review->comment }}</p>
