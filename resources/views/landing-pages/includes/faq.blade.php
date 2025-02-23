@@ -1,12 +1,10 @@
 <section id="faq" class="faq">
     @if($landingPage->is_faq_section_top_image)
-        <img class="shape2" src="{{asset($landingPage->faq_section_top_image??'assets/images/bg-shape2.png')}}"
-            alt="">
+        <img class="shape2" src="{{asset('storage/'.$landingPage->faq_section_top_image??'assets/images/bg-shape2.png')}}" alt="">
     @endif
 
     @if($landingPage->is_faq_section_bottom_image)
-        <img class="shape" src="{{asset($landingPage->faq_section_bottom_image??'assets/images/bg-shape.png')}}"
-            alt="">
+        <img class="shape" src="{{asset('storage/'.$landingPage->faq_section_bottom_image??'assets/images/bg-shape.png')}}" alt="">
     @endif
 
     <div class="container">
@@ -42,7 +40,7 @@
             </div>
             <div class="col-lg-6 d-flex justify-content-center align-items-center">
                 <div class="faq-img  " data-aos="fade-left" data-aos-duration="1500">
-                    <img src="{{asset($landingPage->faq_image)}}" alt="faq-image" class=" ">
+                    <img src="{{asset('storage/'.$landingPage->faq_image)}}" alt="faq-image" class=" ">
                 </div>
             </div>
         </div>

@@ -1,12 +1,12 @@
 <section class="contact" id="contact" style="direction: {{app()->getLocale() == 'ar' ? 'rtl' : 'ltr'}}">
     @if($landingPage->is_contact_us_section_top_image)
-        <img class="shape2" src="{{asset($landingPage->contact_us_section_top_image??'assets/images/bg-shape2.png')}}"
-            alt="">
+        <img class="shape2" src="{{asset('storage/'.$landingPage->contact_us_section_top_image??'assets/images/bg-shape2.png')}}" alt="">
     @endif
+
     @if($landingPage->is_contact_us_section_bottom_image)
-        <img class="shape" src="{{asset($landingPage->contact_us_section_bottom_image??'assets/images/bg-shape.png')}}"
-            alt="">
+        <img class="shape" src="{{asset('storage/'.$landingPage->contact_us_section_bottom_image??'assets/images/bg-shape.png')}}" alt="">
     @endif
+
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-10 col-lg-8">

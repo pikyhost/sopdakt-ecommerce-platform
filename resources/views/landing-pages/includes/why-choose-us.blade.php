@@ -1,12 +1,12 @@
 <section class="video" id="video">
     @if($landingPage->is_why_choose_us_section_top_image)
         <img class="shape2" src="{{ asset('assets/images/bg-shape2.png') }}" alt="Background Shape">
+    @endif
 
-    @endif
     @if($landingPage->is_why_choose_us_section_bottom_image)
-        <img class="shape"
-            src="{{asset($landingPage->why_choose_us_section_bottom_image??'assets/images/bg-shape.png')}}" alt="">
+        <img class="shape" src="{{asset('storage/'.$landingPage->why_choose_us_section_bottom_image??'assets/images/bg-shape.png')}}" alt="">
     @endif
+
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-10 col-lg-8">
@@ -40,7 +40,7 @@
                                 <div class="inner-content "
                                     style="background-color: {{$whyChooseUsItem->background_color}};">
                                     <div class="icon">
-                                        <img src="{{asset($whyChooseUsItem->image)}}">
+                                        <img src="{{asset('storage/'.$whyChooseUsItem->image)}}">
                                     </div>
                                     <h5 class="categori"
                                         style="color:{{$whyChooseUsItem->text_color}}">{{$whyChooseUsItem->title}}</h5>

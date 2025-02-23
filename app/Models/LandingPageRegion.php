@@ -13,7 +13,7 @@ class LandingPageRegion extends Model
 
     protected $fillable = [
         'landing_page_id',
-        'country_id',
+        'region_id',
         'shipping_type_id',
         'shipping_cost',
         'status',

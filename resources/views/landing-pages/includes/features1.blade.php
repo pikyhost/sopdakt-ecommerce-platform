@@ -1,7 +1,7 @@
 <div class="row row-one features1" id="features1">
     <div class="col-lg-6 d-flex">
         <div class="about-img">
-            <img src="{{asset($landingPage->feature1_image)}}" alt="">
+            <img src="{{asset('storage/'.$landingPage->feature1_image)}}" alt="">
             @if($landingPage->is_feature1_cta_button)
                 <div class="d-flex justify-content-center mt-4">
                     <a
@@ -30,7 +30,7 @@
                     <li>
                         <div class="icon">
                             <img style="max-width: 80px;max-height: 80px;object-fit: scale-down"
-                                src="{{asset($featureOneItem->image)}}" alt="">
+                                src="{{asset('storage/'.$featureOneItem->image)}}" alt="">
                         </div>
                         <div class="content">
                             <h4 class="title">{{$featureOneItem->title}}</h4>

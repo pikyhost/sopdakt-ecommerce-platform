@@ -1,11 +1,11 @@
 <div id="home" class="hero-area home_section">
+
     @if($landingPage->is_home_section_top_image)
-        <img class="shape2" src="{{asset($landingPage->home_section_top_image??'assets/images/bg-shape2.png')}}"
-            alt="">
+        <img class="shape2" src="{{asset('storage/'.$landingPage->home_section_top_image??'assets/images/bg-shape2.png')}}" alt="">
     @endif
+
     @if($landingPage->is_home_section_bottom_image)
-        <img class="shape" src="{{asset($landingPage->home_section_bottom_image??'assets/images/bg-shape.png')}}"
-            alt="">
+        <img class="shape" src="{{asset('storage/'.$landingPage->home_section_bottom_image??'assets/images/bg-shape.png')}}" alt="">
     @endif
 
     <div class="container">
@@ -43,7 +43,7 @@
                         @endif
                     </div>
                     @if($landingPage->home_image)
-                        <img class="img-fluid img" src="{{asset($landingPage->home_image)}}" alt="">
+                        <img class="img-fluid img" src="{{asset('storage/'.$landingPage->home_image)}}" alt="">
                     @endif
                 </div>
             </div>

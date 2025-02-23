@@ -1,12 +1,10 @@
 <section class="about about_section" id="about">
     @if($landingPage->is_about_section_top_image)
-        <img class="shape2" src="{{asset($landingPage->about_section_top_image??'assets/images/bg-shape2.png')}}"
-            alt="">
+        <img class="shape2" src="{{asset('storage/'.$landingPage->about_section_top_image??'assets/images/bg-shape2.png')}}" alt="">
     @endif
 
     @if($landingPage->is_about_section_bottom_image)
-        <img class="shape" src="{{asset($landingPage->about_section_bottom_image??'assets/images/bg-shape.png')}}"
-            alt="">
+        <img class="shape" src="{{asset('storage/'.$landingPage->about_section_bottom_image??'assets/images/bg-shape.png')}}" alt="">
     @endif
 
     <div class="container">
@@ -26,7 +24,7 @@
                     <div class="box">
                         <div class="inner-box">
                             <div class="icon">
-                                <img src="{{asset($aboutItem->image)}}" alt="">
+                                <img src="{{asset('storage/'.$aboutItem->image)}}" alt="">
                             </div>
                             <h4 class="title">{{$aboutItem->title}}</h4>
                             <p class="text">

@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Governorate;
-use App\Models\LandingPage;
+use Exception;
+use App\Models\Region;
+use Illuminate\Support\Arr;
+use App\Models\ShippingType;
 use Illuminate\Http\Request;
-use App\Models\WebsiteSetting;
-use App\Models\LandingPageSetting;
-use App\Models\LandingPageNavbarItems;
+use App\Http\Requests\LandingPage\OrderLandingRequest;
+use App\Models\{Governorate, LandingPage, WebsiteSetting, LandingPageSetting, LandingPageNavbarItems, LandingPageOrder};
 
 class LandingPageController extends Controller
 {
@@ -95,5 +96,80 @@ class LandingPageController extends Controller
         $governorates = Governorate::all();
 
         return view('landing-page-purhcase-form', compact('landingPage', 'landingPageSettings', 'governorates', 'websiteSettings', 'bundle', 'totalPrice', 'varieties', 'quantity'));
+    }
+
+    function getCombinationPrice(Request $request, $id)
+    {
+        $size = $request->get('size_id');
+        $color = $request->get('color_id');
+
+        $landingPage = LandingPage::find($id);
+        $combination = $landingPage->varieties()->where('size_id', $size)->where('color_id', $color)->first();
+
+        return response()->json($combination);
+    }
+
+    public function saveOrder(OrderLandingRequest $request, $id)
+    {
+        try {
+            $slug = LandingPage::select('slug')->find($id)->value('slug');
+
+            $this->orderPost($request, $id);
+
+            $request->session()->forget('landing_pages_orders');
+            return redirect()->route('landing-pages.thanks', $slug)->with('success', 'Order has been placed successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function orderPost(OrderLandingRequest $request, $id): LandingPageOrder
+    {
+        $data = $request->validated();
+
+        $landingPage = LandingPage::find($id);
+
+        $landingPageVariant = $landingPage->varieties()->where('size_id', $data['size_id'])->where('color_id', $data['color_id'])->first();
+
+        if ($landingPage && $landingPageVariant) {
+
+            if ($landingPageVariant->quantity < $data['quantity']) {
+                throw new Exception('Quantity not available');
+            }
+
+            $region = Region::find($request->region_id);
+
+            $shippingType = ShippingType::find($request->shipping_type_id);
+
+            $shippingCost = $landingPage->shippingCost($region, $shippingType);
+
+            $combination = $landingPage->varieties()->where('size_id', $data['size_id'])->where('color_id', $data['color_id'])->first();
+
+            $subtotal = $combination->price * $request->quantity;
+
+            $total = $subtotal + $shippingCost;
+
+            $data['subtotal'] = $subtotal;
+
+            $data['shipping_cost'] = $shippingCost;
+
+            $data['total'] = $total;
+
+            $order = $landingPage->orders()->create(
+                Arr::except($data, ['color_id', 'size_id'])
+            );
+
+            if ($order) {
+                $order->varieties()->create([
+                    'size_id' => $request['size_id'],
+                    'color_id' => $request['color_id'],
+                ]);
+                $landingPageVariant->quantity -= $data['quantity'];
+                $landingPageVariant->save();
+                return $order;
+            }
+        }
+
+        throw new Exception('LandingPage not found');
     }
 }

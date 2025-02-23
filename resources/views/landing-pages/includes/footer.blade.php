@@ -1,12 +1,10 @@
 <footer class="footer" id="footer">
     @if($landingPage->is_footer_section_top_image)
-        <img class="shape2" src="{{asset($landingPage->footer_section_top_image??'assets/images/bg-shape2.png')}}"
-            alt="">
+        <img class="shape2" src="{{asset('storage/'.$landingPage->footer_section_top_image??'assets/images/bg-shape2.png')}}" alt="">
     @endif
 
     @if($landingPage->is_footer_section_bottom_image)
-        <img class="shape" src="{{asset($landingPage->footer_section_bottom_image??'assets/images/bg-shape.png')}}"
-            alt="">
+        <img class="shape" src="{{asset('storage/'.$landingPage->footer_section_bottom_image??'assets/images/bg-shape.png')}}" alt="">
     @endif
 
     <div class="container">
@@ -15,7 +13,7 @@
                 <div class="footer-info-area">
                     <div class="footer-logo">
                         <a href="#" class="logo-link">
-                            <img src="{{asset($landingPage->footer_image)}}" alt="">
+                            <img src="{{asset('storage/'.$landingPage->footer_image)}}" alt="">
                         </a>
                     </div>
                     <div class="text">

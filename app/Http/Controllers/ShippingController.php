@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\Shipping\CalculateShippingRequest;
+use App\Http\Requests\Shipping\CalculateShippingRequest;
 use App\Models\{LandingPage, Region, ShippingType};
 
 class ShippingController extends Controller
@@ -19,7 +19,7 @@ class ShippingController extends Controller
 
             return response()->json([
                 'shipping_cost' => $shippingCost,
-                'message' => 'Shipping cost calculated successfully.'
+                'message'       => 'Shipping cost calculated successfully.'
             ]);
         } catch (\Exception $e) {
             return response()->json([

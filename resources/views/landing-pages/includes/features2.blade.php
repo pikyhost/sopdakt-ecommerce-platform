@@ -11,7 +11,7 @@
                 @foreach($landingPage->featuresItems()->where('type','feature2')->get() as $featureTwoItem)
                     <li>
                         <div class="icon">
-                            <img style="max-width: 80px;max-height: 80px;object-fit: scale-down" src="{{asset($featureTwoItem->image)}}" alt="">
+                            <img style="max-width: 80px;max-height: 80px;object-fit: scale-down" src="{{asset('storage/'.$featureTwoItem->image)}}" alt="">
                         </div>
                         <div class="content">
                             <h4 class="title">{{$featureTwoItem->title}}</h4>
@@ -24,7 +24,7 @@
     </div>
     <div class="col-lg-6 d-flex order-first order-lg-last">
         <div class="about-img">
-            <img src="{{asset($landingPage->feature2_image)}}" alt="">
+            <img src="{{asset('storage/'.$landingPage->feature2_image)}}" alt="">
             @if($landingPage->is_feature2_cta_button)
                 <div class="d-flex justify-content-center mt-4">
                     <a

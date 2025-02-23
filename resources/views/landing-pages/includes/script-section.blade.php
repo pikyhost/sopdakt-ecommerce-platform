@@ -23,9 +23,11 @@
 
     function getRegions($elementId = 'address_governorate', $regionsElementId = 'address_region') {
         var governorate_id = $('#' + $elementId).val();
-        console.log(governorate_id, $elementId)
+
+        console.log(governorate_id, $elementId);
+
         $.ajax({
-            url: "{{route('api.regions.index')}}",
+            url: "{{route('regions.index')}}",
             type: 'GET',
             data: {
                 governorate_id: governorate_id
@@ -55,8 +57,7 @@
         let shippingTypeId = $('#shipping_type_id').val();
 
         if (regionId) {
-
-            fetch('{{ route('api.shipping.calculate') }}', {
+            fetch('{{ route('shipping.calculate') }}', {
                 method: 'POST',
                 body: JSON.stringify({
                     landing_page_id: {{$landingPage->id}},
@@ -69,51 +70,53 @@
                     'Content-Type': 'application/json',
                 },
             })
-                .then(response => response.json())
-                .then(data => {
-                    if (data) {
-                        if (data.shipping_cost) {
-                            let shippingCost = data.shipping_cost;
-                            let total = subtotal + shippingCost;
+            .then(response => response.json())
+            .then(data => {
+                if (data) {
+                    if (data.shipping_cost) {
+                        let shippingCost = data.shipping_cost;
+                        let total = subtotal + shippingCost;
 
-                            document.getElementById('shipping_cost').innerText =
-                                shippingCost + ' {{$landingPageSettings?->currency_code}}';
-                            document.getElementById('total').innerText =
-                                total + ' {{$landingPageSettings?->currency_code}}';
-                        } else {
-                            document.getElementById('shipping_cost').innerText =
-                                '0 {{$landingPageSettings?->currency_code}}';
-                        }
+                        document.getElementById('shipping_cost').innerText =
+                            shippingCost + ' {{$landingPageSettings?->currency_code}}';
+                        document.getElementById('total').innerText =
+                            total + ' {{$landingPageSettings?->currency_code}}';
                     } else {
-                        Swal.fire({
-                            title: '{{__('Error')}}',
-                            text: 'An error occurred, please try again later',
-                            icon: 'error',
-                            confirmButtonText: 'Ok'
-                        });
+                        document.getElementById('shipping_cost').innerText =
+                            '0 {{$landingPageSettings?->currency_code}}';
                     }
-                })
-                .catch((error) => {
+                } else {
                     Swal.fire({
                         title: '{{__('Error')}}',
                         text: 'An error occurred, please try again later',
                         icon: 'error',
                         confirmButtonText: 'Ok'
                     });
+                }
+            })
+            .catch((error) => {
+                Swal.fire({
+                    title: '{{__('Error')}}',
+                    text: 'An error occurred, please try again later',
+                    icon: 'error',
+                    confirmButtonText: 'Ok'
                 });
+            });
         } else {
             document.getElementById('shipping_cost').innerText = '';
         }
     }
 
-    let product_size = document.getElementById('Size');
-    let product_color = document.getElementById('Color');
+    let product_size = document.getElementById('size');
+    let product_color = document.getElementById('color');
     let quantityInput = document.getElementById('quantity');
 
     product_size.addEventListener('change', function () {
         let selectedSize = product_size.value;
         let selectedColor = product_color.value;
         let quantity = quantityInput.value || 1;
+        console.log(selectedSize, 'selectedSize selectedSize');
+
         setPriceByColorAndSizeId(selectedColor, selectedSize, quantity);
     });
 
@@ -123,6 +126,7 @@
         let quantity = quantityInput.value || 1;
         setPriceByColorAndSizeId(selectedColor, selectedSize, quantity);
     });
+
     quantityInput.addEventListener('input', function () {
         let selectedSize = product_size.value;
         let selectedColor = product_color.value;
@@ -143,46 +147,45 @@
                 'Content-Type': 'application/json',
             },
         })
-            .then(response => response.json())
-            .then(data => {
-                if (data) {
-                    if (data.price) {
-                        let shippingCostElement = document.getElementById('shipping_cost');
-                        let shippingCostText = shippingCostElement.innerText || '0';
+        .then(response => response.json())
+        .then(data => {
+            if (data) {
+                if (data.price) {
+                    let shippingCostElement = document.getElementById('shipping_cost');
+                    let shippingCostText = shippingCostElement.innerText || '0';
 
-                        // Parse the numeric value of shipping cost
-                        let shippingCost = parseFloat(shippingCostText.replace(/[^\d.-]/g, '')) || 0;
+                    // Parse the numeric value of shipping cost
+                    let shippingCost = parseFloat(shippingCostText.replace(/[^\d.-]/g, '')) || 0;
 
-                        // Calculate subtotal and total
-                        subtotal = data.price * quantity;
-                        total = subtotal + shippingCost;
+                    // Calculate subtotal and total
+                    subtotal = data.price * quantity;
+                    total = subtotal + shippingCost;
 
-                        document.getElementById('price').innerText = subtotal + ' {{$landingPageSettings?->currency_code}}';
-                        document.getElementById('total').innerText = total + ' {{$landingPageSettings?->currency_code}}';
-                    }
-                } else {
-                    Swal.fire({
-                        title: '{{__('Error')}}',
-                        text: 'An error occurred, please try again later',
-                        icon: 'error',
-                        confirmButtonText: 'Ok'
-                    });
+                    document.getElementById('price').innerText = subtotal + ' {{$landingPageSettings?->currency_code}}';
+                    document.getElementById('total').innerText = total + ' {{$landingPageSettings?->currency_code}}';
                 }
-            })
-            .catch((error) => {
+            } else {
                 Swal.fire({
                     title: '{{__('Error')}}',
                     text: 'An error occurred, please try again later',
                     icon: 'error',
                     confirmButtonText: 'Ok'
                 });
-
+            }
+        })
+        .catch((error) => {
+            Swal.fire({
+                title: '{{__('Error')}}',
+                text: 'An error occurred, please try again later',
+                icon: 'error',
+                confirmButtonText: 'Ok'
             });
+
+        });
     }
 </script>
 
 <script>
-    // Initialize Swiper for each section
     const leftSwiper = new Swiper('.left-swiper', {
         direction: 'vertical',
         loop: true,
@@ -256,54 +259,33 @@
     let horizontal_quantity_input = document.querySelector('.horizontal-quantity');
 
     function handleCheckout() {
-        // Check if a bundle is selected
         let landing_page_bundle_id = $('input[name="landing_page_bundle_id"]:checked').val();
-
-        // Check if the bundle was expanded and then closed
-        let isBundleExpanded = $('.collapse.show').length === 0; // Check if no bundles are open
+        let isBundleExpanded = $('.collapse.show').length === 0;
 
         if (landing_page_bundle_id) {
             if (isBundleExpanded) {
-                // If a bundle is selected and no bundles are open, show normal checkout
                 updateURLWithParameter('checkout', 'true');
                 showCheckout();
             } else {
-                // If a bundle is selected and left open, validate bundle data
                 updateURLWithParameter('bundleId', landing_page_bundle_id);
                 showCheckoutPage();
             }
         } else {
-            // If no bundle is selected, proceed with normal checkout
             updateURLWithParameter('checkout', 'true');
             showCheckout();
         }
     }
 
-    // function handleCheckout() {
-    //     // Check if a bundle is selected
-    //     let landing_page_bundle_id = $('input[name="landing_page_bundle_id"]:checked').val();
-    //     if (landing_page_bundle_id) {
-    //         // Add a parameter to the URL
-    //         updateURLWithParameter('bundleId', landing_page_bundle_id);
-    //         showCheckoutPage();
-    //     } else {
-    //         // Add a parameter to the URL
-    //         updateURLWithParameter('checkout', 'true');
-    //         showCheckout();
-    //     }
-    // }
-
-
     function updateURLWithParameter(key, value) {
         const url = new URL(window.location.href);
-        url.searchParams.set(key, value); // Add or update parameter
-        window.history.pushState({}, '', url); // Update the URL without reloading
+        url.searchParams.set(key, value);
+        window.history.pushState({}, '', url);
     }
 
     function removeURLParameter(key) {
         const url = new URL(window.location.href);
-        url.searchParams.delete(key); // Remove the parameter
-        window.history.pushState({}, '', url); // Update the URL without reloading
+        url.searchParams.delete(key);
+        window.history.pushState({}, '', url);
     }
 
     function showCheckout() {
@@ -331,7 +313,6 @@
             $('#purchaseModal').modal('show');
         }
 
-        // Remove parameter when modal is closed
         $('#purchaseModal').on('hidden.bs.modal', () => {
             removeURLParameter('checkout');
         });
@@ -343,9 +324,9 @@
         let quantityValue = quantityElemnt.value;
 
         if (landing_page_bundle_id) {
-            // If a bundle is selected, validate its varieties
             const varietiesData = getVarieties();
             const bundleVarieties = varietiesData[landing_page_bundle_id];
+
             if (bundleVarieties) {
                 let errorMessageHtml = `<ul>`;
                 let counter = 1;
@@ -370,7 +351,6 @@
                     return;
                 }
 
-                // Submit the bundle purchase data
                 processCheckout({
                     landing_page_bundle_id: landing_page_bundle_id,
                     quantity: quantityValue,
@@ -378,10 +358,7 @@
                 });
             }
         } else {
-            // If no bundle is selected, proceed with the normal product checkout
-            processCheckout({
-                quantity: quantityValue
-            });
+            processCheckout({quantity: quantityValue});
         }
     }
 
@@ -395,78 +372,74 @@
                 'Content-Type': 'application/json',
             },
         })
-            .then(response => response.json())
-            .then(data => {
-                if (data) {
-                    if (data.success) {
-                        window.location.href = '{{ route('landing-pages.purchase-form.show', $landingPage->slug) }}';
-                    } else {
-                        Swal.fire({
-                            title: '{{__('Error')}}',
-                            text: 'An error',
-                            icon: 'error',
-                            confirmButtonText: 'Ok'
-                        });
-                    }
+        .then(response => response.json())
+        .then(data => {
+            if (data) {
+                if (data.success) {
+                    window.location.href = '{{ route('landing-pages.purchase-form.show', $landingPage->slug) }}';
                 } else {
                     Swal.fire({
                         title: '{{__('Error')}}',
-                        text: 'An error occurred',
+                        text: 'An error',
                         icon: 'error',
                         confirmButtonText: 'Ok'
                     });
                 }
-            })
-            .catch((error) => {
-                if (error.response) {
-                    Swal.fire({
-                        title: '{{__('Error')}}',
-                        text: error.response.data.message,
-                        icon: 'error',
-                        confirmButtonText: 'Ok'
-                    });
-                } else if (error.request) {
-                    Swal.fire({
-                        title: '{{__('Error')}}',
-                        text: 'An error occurred, please try again later',
-                        icon: 'error',
-                        confirmButtonText: 'Ok'
-                    });
-                } else if (error.errors) {
-                    Swal.fire({
-                        title: '{{__('Error')}}',
-                        text: error.errors,
-                        icon: 'error',
-                        confirmButtonText: 'Ok'
-                    });
-                }
-            });
+            } else {
+                Swal.fire({
+                    title: '{{__('Error')}}',
+                    text: 'An error occurred',
+                    icon: 'error',
+                    confirmButtonText: 'Ok'
+                });
+            }
+        })
+        .catch((error) => {
+            if (error.response) {
+                Swal.fire({
+                    title: '{{__('Error')}}',
+                    text: error.response.data.message,
+                    icon: 'error',
+                    confirmButtonText: 'Ok'
+                });
+            } else if (error.request) {
+                Swal.fire({
+                    title: '{{__('Error')}}',
+                    text: 'An error occurred, please try again later',
+                    icon: 'error',
+                    confirmButtonText: 'Ok'
+                });
+            } else if (error.errors) {
+                Swal.fire({
+                    title: '{{__('Error')}}',
+                    text: error.errors,
+                    icon: 'error',
+                    confirmButtonText: 'Ok'
+                });
+            }
+        });
     }
 
 
     function getVarieties() {
         const varieties = {};
-
-        // Select all color and size dropdowns
         const colorElements = document.querySelectorAll('select[name^="varieties"]');
 
         colorElements.forEach(element => {
-            // Extract bundle_id and index from the name attribute
             const matches = element.name.match(/varieties\[(\d+)]\[(\d+)]\[(color_id|size_id)]/);
             if (matches) {
                 const bundleId = matches[1];
                 const index = matches[2];
-                const key = matches[3]; // "color_id" or "size_id"
+                const key = matches[3];
 
-                // Initialize structure if not exists
                 if (!varieties[bundleId]) {
                     varieties[bundleId] = [];
                 }
+
                 if (!varieties[bundleId][index]) {
                     varieties[bundleId][index] = {};
                 }
 
-                // Assign the value
                 varieties[bundleId][index][key] = element.value;
             }
         });

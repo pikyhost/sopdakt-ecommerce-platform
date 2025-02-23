@@ -1,12 +1,12 @@
 <section class="pricing" id="pricing">
     @if($landingPage->is_products_section_top_image)
-        <img class="shape2" src="{{asset($landingPage->products_section_top_image??'assets/images/bg-shape2.png')}}"
-            alt="">
+        <img class="shape2" src="{{asset('storage/'.$landingPage->products_section_top_image??'assets/images/bg-shape2.png')}}" alt="">
     @endif
+
     @if($landingPage->is_products_section_bottom_image)
-        <img class="shape"
-            src="{{asset($landingPage->products_section_bottom_image??'assets/images/bg-shape.png')}}" alt="">
+        <img class="shape" src="{{asset('storage/'.$landingPage->products_section_bottom_image??'assets/images/bg-shape.png')}}" alt="">
     @endif
+
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-10 col-lg-8">
@@ -25,7 +25,7 @@
                         <div class="item">
                             <div class="single-product">
                                 <div class="img">
-                                    <img src="{{asset($productItem->image)}}" alt="">
+                                    <img src="{{asset('storage/'.$productItem->image)}}" alt="">
                                     @if($productItem->cta_button)
                                         <div class="links">
                                             <a target="_blank"

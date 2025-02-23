@@ -1,12 +1,10 @@
 <section class="testimonial-area" id="testimonial-area">
     @if($landingPage->is_feedbacks_section_top_image)
-        <img class="shape2"
-            src="{{asset($landingPage->feedbacks_section_top_image??'assets/images/bg-shape2.png')}}" alt="">
+        <img class="shape2" src="{{asset('storage/'.$landingPage->feedbacks_section_top_image??'assets/images/bg-shape2.png')}}" alt="">
     @endif
 
     @if($landingPage->is_feedbacks_section_bottom_image)
-        <img class="shape"
-            src="{{asset($landingPage->feedbacks_section_bottom_image??'assets/images/bg-shape.png')}}" alt="">
+        <img class="shape" src="{{asset('storage/'.$landingPage->feedbacks_section_bottom_image??'assets/images/bg-shape.png')}}" alt="">
     @endif
 
     <div class="container">
@@ -36,7 +34,7 @@
                         <div class="item">
                             <div class="client">
                                 <div class="client-image">
-                                    <img src="{{asset($feedbackItem->image)}}" class="img-fluid"
+                                    <img src="{{asset('storage/'.$feedbackItem->image)}}" class="img-fluid"
                                         alt="">
                                 </div>
                                 <p class="client-say">

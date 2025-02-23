@@ -1,10 +1,10 @@
 <section class="compare-section" id="compares">
     @if($landingPage->is_compares_section_top_image)
-        <img class="shape2" src="{{asset($landingPage->compares_section_top_image??'assets/images/bg-shape2.png')}}" alt="">
+        <img class="shape2" src="{{asset('storage/'.$landingPage->compares_section_top_image??'assets/images/bg-shape2.png')}}" alt="">
     @endif
 
     @if($landingPage->is_compares_section_bottom_image)
-        <img class="shape" src="{{asset($landingPage->compares_section_bottom_image??'assets/images/bg-shape.png')}}" alt="">
+        <img class="shape" src="{{asset('storage/'.$landingPage->compares_section_bottom_image??'assets/images/bg-shape.png')}}" alt="">
     @endif
 
     <div class="container">
@@ -46,7 +46,7 @@
 
                                 <th class="text-center">
                                     <div class="product-image">
-                                        <img src="{{asset($compareItem->image)}}" alt="">
+                                        <img src="{{asset('storage/'.$compareItem->image)}}" alt="">
                                     </div>
                                     <h3 class="product-title">{{$compareItem->title}}</h3>
                                     <p class="product-subtitle">{{$compareItem->subtitle}}</p>

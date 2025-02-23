@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('landing_page_regions', function (Blueprint $table) {
             $table->foreignIdFor(\App\Models\LandingPage::class)->constrained()->cascadeOnDelete();
-            $table->foreignIdFor(\App\Models\Country::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(\App\Models\Region::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(\App\Models\ShippingType::class)->constrained()->cascadeOnDelete();
             $table->decimal('shipping_cost')->nullable();
             $table->tinyInteger('status')->default(1);

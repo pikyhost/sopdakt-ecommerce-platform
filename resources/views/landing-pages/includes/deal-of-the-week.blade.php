@@ -1,14 +1,12 @@
 <section class="dealofweek" id="dealofweek">
     @if($landingPage->is_deal_of_the_week_section_top_image)
-        <img class="shape2"
-            src="{{asset($landingPage->deal_of_the_week_section_top_image??'assets/images/bg-shape2.png')}}"
-            alt="">
+        <img class="shape2" src="{{asset('storage/'.$landingPage->deal_of_the_week_section_top_image??'assets/images/bg-shape2.png')}}" alt="">
     @endif
+
     @if($landingPage->is_deal_of_the_week_section_bottom_image)
-        <img class="shape"
-            src="{{asset($landingPage->deal_of_the_week_section_bottom_image??'assets/images/bg-shape.png')}}"
-            alt="">
+        <img class="shape" src="{{asset('storage/'.$landingPage->deal_of_the_week_section_bottom_image??'assets/images/bg-shape.png')}}" alt="">
     @endif
+
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-10 col-lg-8">
@@ -41,7 +39,7 @@
                                                                         <a
                                                                             class="glightbox">
                                                                             <img alt="ecommerce"
-                                                                                src="{{asset($dealOfTheWeekItemVariety->image)}}">
+                                                                                src="{{asset('storage/'.$dealOfTheWeekItemVariety->image)}}">
                                                                         </a>
                                                                     </li>
                                                                 @else
@@ -49,7 +47,7 @@
                                                                         <a
                                                                             class="glightbox">
                                                                             <img alt="ecommerce"
-                                                                                src="{{asset($dealOfTheWeekItem->image)}}">
+                                                                                src="{{asset('storage/'.$dealOfTheWeekItem->image)}}">
                                                                         </a>
                                                                     </li>
                                                                 @endif

@@ -1,10 +1,10 @@
 <section class="feature" id="feature">
     @if($landingPage->is_features3_section_top_image)
-        <img class="shape2" src="{{asset($landingPage->features3_section_top_image??'assets/images/bg-shape2.png')}}" alt="">
+        <img class="shape2" src="{{asset('storage/'.$landingPage->features3_section_top_image??'assets/images/bg-shape2.png')}}" alt="">
     @endif
 
     @if($landingPage->is_features3_section_bottom_image)
-        <img class="shape" src="{{asset($landingPage->features3_section_bottom_image??'assets/images/bg-shape.png')}}" alt="">
+        <img class="shape" src="{{asset('storage/'.$landingPage->features3_section_bottom_image??'assets/images/bg-shape.png')}}" alt="">
     @endif
 
     <div class="container">
@@ -36,7 +36,7 @@
                             </div>
                             <div class="icon-area">
                                 <div class="icon">
-                                    <img src="{{asset($featureItem->image)}}" alt="">
+                                    <img src="{{asset('storage/'.$featureItem->image)}}" alt="">
                                 </div>
                             </div>
                         </div>
@@ -46,7 +46,7 @@
 
             <div class="col-lg-4 d-flex justify-content-center">
                 <div class="center-feature align-self-center">
-                    <img src="{{asset($landingPage->feature_image)}}" alt="">
+                    <img src="{{asset('storage/'.$landingPage->feature_image)}}" alt="">
                     @if($landingPage->is_feature_cta_button)
                         <div class="d-flex justify-content-center mt-4">
                             <a
@@ -77,7 +77,7 @@
                             </div>
                             <div class="icon-area">
                                 <div class="icon">
-                                    <img src="{{asset($featureItem->image)}}" alt="">
+                                    <img src="{{asset('storage/'.$featureItem->image)}}" alt="">
                                 </div>
                             </div>
                         </div>

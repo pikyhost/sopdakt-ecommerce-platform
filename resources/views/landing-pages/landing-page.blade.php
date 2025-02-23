@@ -1,10 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    @include('landing-pages.includes.head-section')
-</head>
-
-{{-- @dd($landingPage) --}}
+@include('landing-pages.includes.head-section')
 
 <body class="home9 position-relative " style="@if($landingPage->is_counter_section) padding-bottom:4.687rem; @endif">
     <div class="preloader" id="preloader">
@@ -51,11 +47,11 @@
         <section class="whaybest">
 
             @if($landingPage->is_features1_section_top_image)
-                <img class="shape2" src="{{asset($landingPage->features1_section_top_image??'assets/images/bg-shape2.png')}}" alt="">
+                <img class="shape2" src="{{asset('storage/'.$landingPage->features1_section_top_image??'assets/images/bg-shape2.png')}}" alt="">
             @endif
 
             @if($landingPage->is_features2_section_bottom_image)
-                <img class="shape" src="{{asset($landingPage->features2_section_bottom_image??'assets/images/bg-shape.png')}}" alt="">
+                <img class="shape" src="{{asset('storage/'.$landingPage->features2_section_bottom_image??'assets/images/bg-shape.png')}}" alt="">
             @endif
 
             <div class="container ">
@@ -114,7 +110,7 @@
         </a>
     </div>
 
-    @include('landing-pages.includes.modal')
+    @include('landing-pages.includes.checkout')
 
     @if($landingPage->is_counter_section)
         @include('landing-pages.includes.counter')
