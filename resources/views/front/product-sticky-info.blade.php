@@ -14,7 +14,7 @@
     <meta name="description" content="X - Bootstrap eCommerce Template">
     <meta name="author" content="SW-THEMES">
 
-    <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . \App\Models\Setting::getSetting('site_settings')['favicon'][app()->getLocale()]) }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . \App\Models\Setting::getSetting('site_settings')['favicon']['en']) }}">
 
     <!-- Ensure correct asset loading for dynamic routes -->
     <base href="{{ url('/') }}/">
