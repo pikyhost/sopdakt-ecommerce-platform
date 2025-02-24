@@ -17,9 +17,14 @@ class LandingPageResource extends Resource
 {
     protected static ?string $model = LandingPage::class;
     protected static ?string $navigationIcon = 'heroicon-o-home';
-    protected static ?string $navigationGroup = 'Products Management';
+
     protected static ?string $navigationLabel = 'Landing Page';
     protected static ?int $fileMaxSize = 50 * 1024;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Products Management'); //Products Attributes Management
+    }
 
     protected static $acceptedFileTypes = [
         'image/jpeg',

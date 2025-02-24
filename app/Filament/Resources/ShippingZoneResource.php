@@ -86,7 +86,6 @@ class ShippingZoneResource extends Resource
 
                 TextInput::make('shipping_estimate_time')
                     ->label(__('shipping_cost.shipping_estimate_time'))
-                    ->required()
                     ->maxLength(255)
                     ->default('0-0'),
 

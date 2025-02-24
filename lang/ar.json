@@ -20,7 +20,8 @@
     "reviewed_products.plural_model_label": "تقييمات المنتجات (آراء المستخدمين)",
     "dark_logo_en": "شعار المظهر الداكن (إنجليزي)",
     "dark_logo_ar": "شعار المظهر الداكن (عربي)",
-
+"All" : "الجميع",
+    "Permissions count": "عدد الصلاحبات",
     "errors": "أخطاء",
     "Forbidden": "محظور",
     "Go to page :page": "الإنتقال إلى الصفحة :page",

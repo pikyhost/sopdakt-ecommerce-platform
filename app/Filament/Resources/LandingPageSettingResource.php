@@ -19,8 +19,13 @@ class LandingPageSettingResource extends Resource
 {
     protected static ?string $model = LandingPageNavbarItems::class;
     protected static ?string $navigationIcon = 'heroicon-o-cog';
-    protected static ?string $navigationGroup = 'Settings Management';
+
     protected static ?string $navigationLabel = 'Landing Page Setting';
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Settings Management'); //Products Management
+    }
 
     public static function form(Form $form): Form
     {
