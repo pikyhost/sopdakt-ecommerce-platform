@@ -75,36 +75,36 @@ class ProductActionsService
                 ->openUrlInNewTab()
                 ->action(fn (Product $record) => redirect(route('product.show', ['slug' => $record->slug]))),
 
-            Action::make('rate_and_comment')
-                ->color('primary')
-                ->visible(fn () => auth()->check())
-                ->label(__('product.actions.rate_and_review'))
-                ->icon('heroicon-o-star')
-                ->modalHeading(fn ($record) => __('product.rating.modal_heading', ['product' => $record->name]))
-                ->modalSubmitActionLabel(__('product.rating.confirm'))
-                ->form([
-                    Rating::make('rating')
-                        ->color('warning')
-                        ->required()
-                        ->label(__('product.rating.your_rating'))
-                        ->default(fn ($record) =>
-                        ProductRating::where('product_id', $record->id)
-                            ->where('user_id', Auth::id())
-                            ->value('rating')
-                        ),
-
-                    Textarea::make('comment')
-                        ->rows(3)
-                        ->hiddenLabel()
-                        ->helperText(__('Add any notes (optional)'))
-                        ->placeholder(__('comments.placeholder'))
-                        ->default(fn ($record) =>
-                        ProductRating::where('product_id', $record->id)
-                            ->where('user_id', Auth::id())
-                            ->value('comment')
-                        ),
-                ])
-                ->action(fn ($record, array $data) => self::handleRateAndComment($record, $data))
+//            Action::make('rate_and_comment')
+//                ->color('primary')
+//                ->visible(fn () => auth()->check())
+//                ->label(__('product.actions.rate_and_review'))
+//                ->icon('heroicon-o-star')
+//                ->modalHeading(fn ($record) => __('product.rating.modal_heading', ['product' => $record->name]))
+//                ->modalSubmitActionLabel(__('product.rating.confirm'))
+//                ->form([
+//                    Rating::make('rating')
+//                        ->color('warning')
+//                        ->required()
+//                        ->label(__('product.rating.your_rating'))
+//                        ->default(fn ($record) =>
+//                        ProductRating::where('product_id', $record->id)
+//                            ->where('user_id', Auth::id())
+//                            ->value('rating')
+//                        ),
+//
+//                    Textarea::make('comment')
+//                        ->rows(3)
+//                        ->hiddenLabel()
+//                        ->helperText(__('Add any notes (optional)'))
+//                        ->placeholder(__('comments.placeholder'))
+//                        ->default(fn ($record) =>
+//                        ProductRating::where('product_id', $record->id)
+//                            ->where('user_id', Auth::id())
+//                            ->value('comment')
+//                        ),
+//                ])
+//                ->action(fn ($record, array $data) => self::handleRateAndComment($record, $data))
         ];
     }
 

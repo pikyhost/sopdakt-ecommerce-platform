@@ -143,7 +143,6 @@ class SavedProducts extends Page implements HasForms, HasTable
                              ->label(__('Select User'))
                              ->options(User::pluck('name', 'id')->toArray())
                              ->searchable()
-                             ->preload()
                      ])
                      ->query(function (Builder $query, array $data): Builder {
                          return $query->when(
@@ -167,7 +166,6 @@ class SavedProducts extends Page implements HasForms, HasTable
                              ->label(__('Select Product'))
                              ->options(Product::pluck('name', 'id')->toArray())
                              ->searchable()
-                             ->preload()
                      ])
                      ->query(function (Builder $query, array $data): Builder {
                          return $query->when(

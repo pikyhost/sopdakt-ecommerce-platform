@@ -8,7 +8,7 @@ return [
     'Price' => 'Price',
     'Shipping From' => 'Shipping From',
     'Slug' => 'Slug',
-    'Product Image' => 'Product Image',
+    'Product Image' => 'Feature Image',
     'Meta Title' => 'Meta Title',
     'Meta Description' => 'Meta Description',
     'Meta Keywords' => 'Meta Keywords',

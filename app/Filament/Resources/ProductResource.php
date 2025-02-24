@@ -629,6 +629,7 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('id')->label(__('id')),
 
                 Tables\Columns\SpatieMediaLibraryImageColumn::make('feature_product_image')
+                    ->toggleable(true, false)
                     ->circular()
                     ->simpleLightbox()
                     ->placeholder('-')
@@ -636,6 +637,7 @@ class ProductResource extends Resource
                     ->label(__('products.Product Image')),
 
                 Tables\Columns\SpatieMediaLibraryImageColumn::make('second_feature_product_image')
+                    ->toggleable(true, false)
                     ->circular()
                     ->simpleLightbox()
                     ->placeholder('-')
@@ -643,6 +645,7 @@ class ProductResource extends Resource
                     ->label(__('Second Feature Image')),
 
                 Tables\Columns\SpatieMediaLibraryImageColumn::make('sizes_image')
+                    ->toggleable(true, false)
                     ->circular()
                     ->simpleLightbox()
                     ->placeholder('-')
