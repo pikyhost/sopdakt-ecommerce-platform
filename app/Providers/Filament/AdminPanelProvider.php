@@ -32,14 +32,15 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
-        // Retrieve site settings from the database (with a default fallback)
-        $settings = Setting::getSetting('site_settings') ?? [];
-        
-        // Ensure favicon settings exist
-        $favicon = isset($settings['favicon']['en'])
-            ? asset('storage/' . $settings['favicon']['en'])  // Get favicon from storage
-            : asset('images/clients/client1.png');  // Default fallback favicon
-
+//        // Retrieve site settings from the database (with a default fallback)
+//        $settings = Setting::getSetting('site_settings') ?? [];
+//
+//
+//        // Ensure favicon settings exist
+//        $favicon = isset($settings['favicon']['en'])
+//            ? asset('storage/' . $settings['favicon']['en'])  // Get favicon from storage
+//            : asset('images/clients/client1.png');  // Default fallback favicon
+//
 
         return $panel
             ->default()
