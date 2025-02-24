@@ -26,7 +26,7 @@ class CountryGroupResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('Shipping & Countries'); //Products Attributes Management
+        return __('Shipping Management'); //Products Attributes Management
     }
 
     public static function getNavigationLabel(): string

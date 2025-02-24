@@ -22,7 +22,7 @@ class ShippingCostResource extends Resource
 {
     protected static ?string $model = ShippingCost::class;
 
-    protected static ?int $navigationSort = -199;
+    protected static ?int $navigationSort = 199;
 
     protected static ?string $navigationIcon = 'heroicon-o-truck';
 
@@ -33,7 +33,7 @@ class ShippingCostResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('Shipping & Countries'); //Products Attributes Management
+        return __('Shipping Management'); //Products Attributes Management
     }
 
     public static function getModelLabel(): string
@@ -51,15 +51,18 @@ class ShippingCostResource extends Resource
         return $form->schema([
             Section::make()->schema([
                 Select::make('product_id')
+                    ->searchable()
                     ->label(__('shipping_cost.product'))
                     ->relationship('product', 'name')
                     ->required(),
 
                 Select::make('shipping_type_id')
+                    ->searchable()
                     ->label(__('shipping_cost.shipping_type'))
                     ->relationship('shippingType', 'name'),
 
                 Select::make('city_id')
+                    ->searchable()
                     ->rules(fn (Get $get, string $operation) =>
                     $operation === 'create' ? [
                         Rule::unique(ShippingCost::class, 'city_id')
@@ -78,6 +81,7 @@ class ShippingCostResource extends Resource
                     ->hidden(fn ($get) => $get('governorate_id') || $get('shipping_zone_id') || $get('country_id') || $get('country_group_id')),
 
                 Select::make('governorate_id')
+                    ->searchable()
                     ->rules(fn (Get $get, string $operation) =>
                     $operation === 'create' ? [
                         Rule::unique(ShippingCost::class, 'governorate_id')
@@ -96,6 +100,7 @@ class ShippingCostResource extends Resource
                     ->hidden(fn ($get) => $get('city_id') || $get('shipping_zone_id') || $get('country_id') || $get('country_group_id')),
 
                 Select::make('shipping_zone_id')
+                    ->searchable()
                     ->rules(fn (Get $get, string $operation) =>
                     $operation === 'create' ? [
                         Rule::unique(ShippingCost::class, 'shipping_zone_id')
@@ -114,6 +119,7 @@ class ShippingCostResource extends Resource
                     ->hidden(fn ($get) => $get('city_id') || $get('governorate_id') || $get('country_id') || $get('country_group_id')),
 
                 Select::make('country_id')
+                    ->searchable()
                     ->rules(fn (Get $get, string $operation) =>
                     $operation === 'create' ? [
                         Rule::unique(ShippingCost::class, 'country_id')
@@ -132,6 +138,7 @@ class ShippingCostResource extends Resource
                     ->hidden(fn ($get) => $get('city_id') || $get('governorate_id') || $get('shipping_zone_id') || $get('country_group_id')),
 
                 Select::make('country_group_id')
+                    ->searchable()
                     ->rules(fn (Get $get, string $operation) =>
                     $operation === 'create' ? [
                         Rule::unique(ShippingCost::class, 'country_group_id')
@@ -211,10 +218,12 @@ class ShippingCostResource extends Resource
                     ->placeholder('-'),
 
                 Tables\Columns\TextColumn::make('cost')
+                    ->searchable()
                     ->label(__('shipping_cost.cost'))
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('shipping_estimate_time')
+                    ->searchable()
                     ->label(__('shipping_cost.shipping_estimate_time'))
                     ->searchable(),
 

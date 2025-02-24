@@ -88,6 +88,7 @@ class ProductResource extends Resource
                             ->icon('heroicon-o-information-circle')
                             ->schema([
                                 SelectTree::make('category_id')
+                                    ->searchable()
                                     ->enableBranchNode()
                                     ->label(__('_category'))
                                     ->relationship('category', 'name', 'parent_id')
