@@ -127,7 +127,7 @@ class AdminPanelProvider extends PanelProvider
             'Products Management',
             'Inventory Management',
             'Orders',
-            'Shipping & Countries',
+            'Shipping Management',
             'user_experience',
             'Settings Management',
         ];
