@@ -96,6 +96,7 @@ class CategoryResource extends Resource
 
                 // SelectTree field for selecting parent category
                 SelectTree::make('parent_id')
+                    ->searchable()
                     ->enableBranchNode()
                     ->label(__('category.parent'))
                     ->relationship('parent', 'name', 'parent_id')
