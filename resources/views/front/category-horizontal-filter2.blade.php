@@ -14,7 +14,7 @@
 	<meta name="author" content="SW-THEMES">
 
 	<!-- Favicon -->
-	<link rel="icon" type="image/x-icon" href="assets/images/icons/favicon.png">
+    <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . \App\Models\Setting::getSetting('site_settings')['favicon']['en']) }}">
 
     <!-- Ensure correct asset loading for dynamic routes -->
     <base href="{{ url('/') }}/">
