@@ -64,10 +64,10 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
             ])
-            ->renderHook(
-                PanelsRenderHook::FOOTER,
-                fn () => view('footer')
-            )
+//            ->renderHook(
+//                PanelsRenderHook::FOOTER,
+//                fn () => view('footer')
+//            )
             ->collapsibleNavigationGroups(true)
          ->sidebarCollapsibleOnDesktop()
             ->navigationGroups([
