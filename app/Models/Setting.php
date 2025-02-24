@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Facades\Schema;
 
 class Setting extends Model
 {
@@ -18,6 +19,11 @@ class Setting extends Model
 
     public static function get($key, $locale = null)
     {
+        // Ensure the table exists before querying
+        if (!Schema::hasTable('settings')) {
+            return null;
+        }
+
         // Check if the setting is already loaded in memory
         if (!isset(self::$settingsCache[$key])) {
             $setting = self::where('key', $key)->first();
@@ -32,6 +38,7 @@ class Setting extends Model
 
         return $value;
     }
+
 
     public static function set($key, $value)
     {
