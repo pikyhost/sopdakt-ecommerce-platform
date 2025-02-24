@@ -16,22 +16,22 @@ class Setting extends Model
     // Static property to hold already fetched settings in memory
     protected static array $settingsCache = [];
 
-//    public static function get($key, $locale = null)
-//    {
-//        // Check if the setting is already loaded in memory
-//        if (!isset(self::$settingsCache[$key])) {
-//            $setting = self::where('key', $key)->first();   // this is line 23
-//            self::$settingsCache[$key] = $setting?->value ?? null;
-//        }
-//
-//        $value = self::$settingsCache[$key];
-//
-//        if ($locale && is_array($value)) {
-//            return $value[$locale] ?? null;
-//        }
-//
-//        return $value;
-//    }
+    public static function get($key, $locale = null)
+    {
+        // Check if the setting is already loaded in memory
+        if (!isset(self::$settingsCache[$key])) {
+            $setting = self::where('key', $key)->first();   // this is line 23
+            self::$settingsCache[$key] = $setting?->value ?? null;
+        }
+
+        $value = self::$settingsCache[$key];
+
+        if ($locale && is_array($value)) {
+            return $value[$locale] ?? null;
+        }
+
+        return $value;
+    }
 
     public static function set($key, $value)
     {
@@ -48,10 +48,10 @@ class Setting extends Model
         );
     }
 
-    public static function getSetting($key, $locale = null)
-    {
-        return self::get($key, $locale); // Reuse the optimized `get` method
-    }
+//    public static function getSetting($key, $locale = null)
+//    {
+//        return self::get($key, $locale); // Reuse the optimized `get` method
+//    }
 
 
     public function currency()
