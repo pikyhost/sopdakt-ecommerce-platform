@@ -48,10 +48,10 @@ class Setting extends Model
         );
     }
 
-//    public static function getSetting($key, $locale = null)
-//    {
-//        return self::get($key, $locale); // Reuse the optimized `get` method
-//    }
+    public static function getSetting($key, $locale = null)
+    {
+        return self::get($key, $locale); // Reuse the optimized `get` method
+    }
 
 
     public function currency()
