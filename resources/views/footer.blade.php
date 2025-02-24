@@ -1,21 +1,34 @@
 @php
-    $siteName = \App\Models\Setting::getSetting('site_settings')['name']['en'] ?? 'Your Site Name';
+    $settings = \App\Models\Setting::getSetting('site_settings');
+    $locale = app()->getLocale();
+    $siteName = $settings['name'][$locale] ?? 'Your Site Name';
+
+    // Translations for the footer
+    $footerTexts = [
+        'en' => [
+            'rights' => 'All rights reserved © :name - :year',
+            'made_with' => 'Made with ♥️ by',
+        ],
+        'ar' => [
+            'rights' => 'جميع الحقوق محفوظة © :name - :year',
+            'made_with' => 'مصنوع بحب ♥️ بواسطة',
+        ],
+    ];
 @endphp
 
 <div class="mx-auto max-w-7xl px-6 py-4 flex flex-col items-center md:items-start lg:px-8">
     <div class="text-center md:text-left">
         <p class="text-sm leading-5 footer-text">
-            All rights reserved © {{ $siteName }} - {{ now()->year }}
+            {{ __($footerTexts[$locale]['rights'], ['name' => $siteName, 'year' => now()->year]) }}
         </p>
         <p class="text-sm leading-5 footer-text">
-            Made with ♥️ by
-            <a class="footer-link magic-hover" target="_blank" href="/#">
+            {{ __($footerTexts[$locale]['made_with']) }}
+            <a class="footer-link magic-hover" target="_blank" href="https://www.pikyhost.com/">
                 PikyHost
             </a>
         </p>
     </div>
 </div>
-
 
 <style>
     :root {

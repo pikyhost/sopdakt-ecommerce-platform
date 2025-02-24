@@ -3,9 +3,21 @@
 namespace App\Filament\Resources;
 
 use App\Enums\Status;
+use App\Enums\UserRole;
 use App\Models\Product;
+use Filament\Actions\ActionGroup;
+use Filament\Infolists\Components\Grid;
+use Filament\Infolists\Components\Group;
+use Filament\Infolists\Components\IconEntry;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\SpatieMediaLibraryImageEntry;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
+use Filament\Support\Enums\ActionSize;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
@@ -18,7 +30,9 @@ use Filament\Tables\Table;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Filters\SelectFilter;
 use Mokhosh\FilamentRating\Columns\RatingColumn;
+use Mokhosh\FilamentRating\Entries\RatingEntry;
 use Webbingbrasil\FilamentAdvancedFilter\Filters\DateFilter;
+use Ysfkaya\FilamentPhoneInput\Infolists\PhoneEntry;
 
 class ProductRatingResource extends Resource
 {
@@ -84,18 +98,21 @@ class ProductRatingResource extends Resource
     {
         return $table
             ->columns([
-                SpatieMediaLibraryImageColumn::make('product.main_product_image')
+                SpatieMediaLibraryImageColumn::make('product.feature_product_image')
                     ->simpleLightbox()
                     ->circular()
                     ->label(__('Product Image'))
                     ->toggleable()
-                    ->collection('main_product_image'),
+                    ->collection('feature_product_image'),
 
                 Tables\Columns\TextColumn::make('product.name')
                     ->label(__('products.Product Name'))
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('user.name')
+                    ->formatStateUsing(function ($record) {
+                        return $record->user->name.' (#'.$record->user_id.')';
+                    })
                     ->searchable()
                     ->label(__('User Name'))
 
@@ -107,10 +124,20 @@ class ProductRatingResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('comment')
+                    ->limit(30)
+                    ->tooltip(function (TextColumn $column): ?string {
+                        $state = $column->getState();
+
+                        if (strlen($state) <= $column->getCharacterLimit()) {
+                            return null;
+                        }
+
+                        // Only render the tooltip if the column content exceeds the length limit.
+                        return $state;
+                    })
                     ->searchable()
                     ->placeholder('-')
-                    ->label(__('comments.comment'))
-                    ->limit(50),
+                    ->label(__('comments.comment')),
 
                 Tables\Columns\TextColumn::make('status')
                     ->badge()
@@ -159,29 +186,36 @@ class ProductRatingResource extends Resource
                 DateFilter::make('created_at')   ->label(__('Creation date')),
             ])
             ->actions([
-                Action::make('approve')
-                    ->hidden(fn($record) => $record->status === Status::Approved) // Use enum comparison
-                    ->label(__('Approve'))
-                    ->icon('heroicon-o-check')
-                    ->color('success')
-                    ->action(fn ($record) => self::approveReview($record)),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make()->color('primary'),
+                    Action::make('approve')
+                        ->hidden(fn($record) => $record->status === Status::Approved) // Use enum comparison
+                        ->label(__('Approve'))
+                        ->icon('heroicon-o-check')
+                        ->color('success')
+                        ->action(fn ($record) => self::approveReview($record)),
 
-                Action::make('reject')
-                    ->label(__('Reject'))
-                    ->hidden(fn($record) => $record->status === Status::Rejected) // Use enum comparison
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->action(fn ($record) => self::rejectReview($record)),
+                    Action::make('reject')
+                        ->label(__('Reject'))
+                        ->hidden(fn($record) => $record->status === Status::Rejected) // Use enum comparison
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->action(fn ($record) => self::rejectReview($record)),
 
-                Action::make('pending')
-                    ->label(__('Pending'))
-                    ->hidden(fn($record) => $record->status === Status::Pending) // Use enum comparison
-                    ->icon('heroicon-o-clock')
-                    ->color('warning')
-                    ->action(fn ($record) => self::pendingReview($record)),
+                    Action::make('pending')
+                        ->label(__('Pending'))
+                        ->hidden(fn($record) => $record->status === Status::Pending) // Use enum comparison
+                        ->icon('heroicon-o-clock')
+                        ->color('warning')
+                        ->action(fn ($record) => self::pendingReview($record)),
 
-                Tables\Actions\DeleteAction::make()->color('gray'),
-
+                    Tables\Actions\DeleteAction::make()->color('gray'),
+                ])
+                    ->label(__('Actions'))
+                    ->icon('heroicon-m-ellipsis-vertical')
+                    ->size(ActionSize::Small)
+                    ->color('primary')
+                    ->button(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -253,10 +287,68 @@ class ProductRatingResource extends Resource
             ->with(['product', 'user']);
     }
 
+
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist->schema([
+            Section::make()->schema([
+                \Filament\Infolists\Components\Split::make([
+                    Grid::make(2)->schema([
+                        Group::make([
+                            TextEntry::make('product.name')
+                                ->label(__('products.Product Name')),
+
+                            RatingEntry::make('rating')
+                                ->color('warning')
+                                ->label(__('product_ratings.rating')),
+
+                            TextEntry::make('created_at')
+                                ->label(__('Creation date'))
+                                ->dateTime('D, M j, Y \a\t g:i A'),
+                        ]),
+                        Group::make([
+                            TextEntry::make('user.name')
+                                ->formatStateUsing(function ($record) {
+                                    return $record->user->name.' (#'.$record->user_id.')';
+                                })
+                                ->label(__('User Name')),
+
+                            TextEntry::make('status')
+                                ->badge()
+                                ->label(__('product_ratings.status'))
+                                ->label(__('product_ratings.status')),
+
+                            TextEntry::make('updated_at')
+                                ->label(__('Last modified at'))
+                                ->dateTime('D, M j, Y \a\t g:i A'),
+                        ]),
+                    ]),
+                    SpatieMediaLibraryImageEntry::make('product.feature_product_image')
+                        ->simpleLightbox()
+                        ->circular()
+                        ->hiddenLabel()
+                        ->grow(false)
+                        ->collection('feature_product_image'),
+                ])->from('xl'),
+
+                Section::make(__('comments.comment'))
+                    ->label(__('comments.comment'))
+                    ->schema([
+                        TextEntry::make('comment')
+                            ->placeholder(__('user not wrote any comment'))
+                            ->prose()
+                            ->markdown()
+                            ->hiddenLabel(),
+                    ])->collapsible(),
+            ]),
+        ]);
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListProductRatings::route('/'),
+            'view' => Pages\ViewProductRatings::route('/{record}'),
         ];
     }
 }

@@ -57,6 +57,7 @@ class TransactionResource extends Resource
             ->schema([
                 Forms\Components\Section::make()->schema([
                     Forms\Components\Select::make('product_id')
+                        ->searchable()
                         ->relationship('product', 'name')
                         ->label(__('Product'))
                         ->required(),

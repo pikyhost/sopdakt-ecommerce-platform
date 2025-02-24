@@ -2,15 +2,11 @@
 
 namespace App\Filament\Resources;
 
-use App\Enums\Status;
 use App\Enums\UserRole;
 use App\Filament\Resources\UserResource\Pages;
-use App\Models\ProductRating;
 use App\Models\User;
-use App\Services\PdfDownloadService;
 use App\Traits\HasCreatedAtFilter;
 use App\Traits\HasTimestampSection;
-use Closure;
 use Filament\Events\Auth\Registered;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
@@ -22,30 +18,32 @@ use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
+use Filament\Notifications\Notification;
 use Filament\Pages\SubNavigationPosition;
-use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Pages\Page;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\ActionSize;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
+use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\BulkActionGroup;
+use Filament\Tables\Actions\DeleteAction;
+use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
-use Webbingbrasil\FilamentAdvancedFilter\Filters\BooleanFilter;
+use Webbingbrasil\FilamentAdvancedFilter\Filters\DateFilter;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use Ysfkaya\FilamentPhoneInput\Infolists\PhoneEntry;
-use Ysfkaya\FilamentPhoneInput\PhoneInputNumberType;
-use Ysfkaya\FilamentPhoneInput\Tables\PhoneColumn;
 
 class UserResource extends Resource
 {
@@ -252,15 +250,20 @@ class UserResource extends Resource
                     ->relationship('roles', 'name',
                         modifyQueryUsing: fn (Builder $query) => $query->where('name', '!=', 'panel_user'))
                     ->columnSpan(['sm' => 2, 'md' => 2, 'lg' => 2, 'xl' => 2, '2xl' => 2, 'default' => 2]),
-                self::getCreatedAtFilter()->columnSpan(['sm' => 4, 'md' => 4, 'lg' => 4, 'xl' => 4, '2xl' => 4, 'default' => 4]),
+                DateFilter::make('created_at')
+                    ->columnSpan(['sm' => 2, 'md' => 2, 'lg' => 2, 'xl' => 2, '2xl' => 2, 'default' => 2])
+                    ->label(__('Creation date')),
                 Filter::make('is_active')->toggle()->label(__("Is Active?"))->columnSpanFull(),
-            ])
-            ->filtersFormColumns(6)
+            ], Tables\Enums\FiltersLayout::AboveContentCollapsible)
+            ->filtersFormColumns(4)
             ->actions([
                 ActionGroup::make([
                     Tables\Actions\ViewAction::make()->label(__('View')),
                     Tables\Actions\EditAction::make()->color('primary')->label(__('Edit')),
-                    Tables\Actions\DeleteAction::make()->label(__('Delete')),
+                    DeleteAction::make()
+                        ->label(__('Delete'))
+                        ->hidden(fn($record) => $record->hasRole('super_admin') &&
+                            auth()->user()->hasRole('admin')),
 
                     Action::make('active')
                         ->hidden(fn($record) => $record->is_active) // Use enum comparison
@@ -270,7 +273,10 @@ class UserResource extends Resource
                         ->action(fn ($record) => self::activeUser($record)),
 
                     Action::make('block')
-                        ->hidden(fn($record) => !$record->is_active) // Use enum comparison
+                        ->hidden(fn($record) =>
+                            !$record->is_active ||
+                            ($record->hasRole('super_admin') && auth()->user()->hasRole('admin'))
+                        )
                         ->label(__('Block'))
                         ->icon('heroicon-o-x-circle')
                         ->color('danger')
@@ -286,8 +292,71 @@ class UserResource extends Resource
             ])
             ->bulkActions([
                 BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->modalHeading(__('Delete Selected Users'))
+                        ->requiresConfirmation()
+                        ->deselectRecordsAfterCompletion()
+                        ->action(function (Collection $records) {
+                            $currentUser = auth()->user();
 
+                            // Separate super_admin users
+                            $superAdminUsers = $records->filter(fn ($record) => $record->hasRole('super_admin'));
+                            $normalUsers = $records->reject(fn ($record) => $record->hasRole('super_admin'));
+
+                            // Prevent admin from deleting super_admin users
+                            if ($currentUser->hasRole('admin') && $superAdminUsers->isNotEmpty()) {
+                                Notification::make()
+                                    ->title(__('Action Denied'))
+                                    ->danger()
+                                    ->body(__('You cannot delete users with the Super Admin role.'))
+                                    ->send();
+                            }
+
+                            // Proceed with deletion only for normal users
+                            if ($normalUsers->isNotEmpty()) {
+                                $normalUsers->each->delete();
+
+                                Notification::make()
+                                    ->title(__('Users Deleted'))
+                                    ->success()
+                                    ->body(__(':count users have been deleted.', ['count' => $normalUsers->count()]))
+                                    ->send();
+                            }
+                        }),
+
+        BulkAction::make('block')
+            ->label(__('Block Selected'))
+            ->icon('heroicon-o-x-circle')
+            ->color('danger')
+            ->requiresConfirmation()
+            ->deselectRecordsAfterCompletion()
+            ->action(function (Collection $records) {
+                $currentUser = auth()->user();
+
+                // Separate super_admin users
+                $superAdminUsers = $records->filter(fn ($record) => $record->hasRole('super_admin'));
+                $normalUsers = $records->reject(fn ($record) => $record->hasRole('super_admin'));
+
+                // Prevent admin from blocking super_admin users
+                if ($currentUser->hasRole('admin') && $superAdminUsers->isNotEmpty()) {
+                    Notification::make()
+                        ->title(__('Action Denied'))
+                        ->danger()
+                        ->body(__('You cannot block users with the Super Admin role.'))
+                        ->send();
+                }
+
+                // Proceed with blocking only for normal users
+                if ($normalUsers->isNotEmpty()) {
+                    $normalUsers->each(fn ($record) => self::blockUser($record));
+
+                    Notification::make()
+                        ->title(__('Users Blocked'))
+                        ->success()
+                        ->body(__(':count users have been blocked.', ['count' => $normalUsers->count()]))
+                        ->send();
+                }
+            }),
                     \Filament\Tables\Actions\BulkAction::make('active')
                         ->label(__('Activate Selected'))
                         ->icon('heroicon-o-check-circle')
@@ -296,17 +365,7 @@ class UserResource extends Resource
                         ->action(function ($records) {
                             $records->each(fn ($record) => self::activeUser($record));
                         }),
-
-                    \Filament\Tables\Actions\BulkAction::make('block')
-                        ->label(__('Block Selected'))
-                        ->icon('heroicon-o-x-circle')
-                        ->color('danger')
-                        ->requiresConfirmation()
-                        ->action(function ($records) {
-                            $records->each(fn ($record) => self::blockUser($record));
-                        }),
-
-                ]),
+                    ])
             ])
             ->recordUrl(fn () => '')
             ->defaultSort('id', 'desc');
