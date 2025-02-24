@@ -9,10 +9,8 @@ use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
@@ -32,12 +30,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (!app()->runningInConsole() && Schema::hasTable('settings')) {
-            // Query settings only if the table exists
-            $settings = DB::table('settings')->where('key', 'site_settings')->first();
-            config(['app.settings' => $settings]);
-        }
-
         ProfileContactDetails::setSort(10);
 
         LanguageSwitch::configureUsing(function (LanguageSwitch $switch) {
