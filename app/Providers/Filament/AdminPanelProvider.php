@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Livewire\ProfileContactDetails;
+use App\Models\Setting;
 use CharrafiMed\GlobalSearchModal\GlobalSearchModalPlugin;
 use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
@@ -22,6 +23,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\App;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Jeffgreco13\FilamentBreezy\BreezyCore;
 use SolutionForest\FilamentSimpleLightBox\SimpleLightBoxPlugin;
@@ -30,6 +32,17 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
+        // Retrieve site settings from the database
+        $settings = Setting::getSetting('site_settings');
+
+        // Get the locale
+        $locale = App::getLocale();
+
+        // Determine the correct favicon based on the locale
+        $favicon = isset($settings['favicon'][$locale])
+            ? asset('storage/' . $settings['favicon'][$locale])  // Get favicon from storage
+            : asset('images/clients/client1.png');  // Default fallback favicon
+
         return $panel
             ->default()
             ->id('admin')
@@ -41,6 +54,8 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Indigo,
                 'gray' => Color::Slate,
             ])
+            ->brandLogo(fn () => view('filament.app.logo'))
+            ->favicon($favicon)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
@@ -71,7 +86,7 @@ class AdminPanelProvider extends PanelProvider
                     ->icon('heroicon-m-user-circle'),
                 'logout' => MenuItem::make(),
             ])
-            ->brandName('Ｐｉｋｙ Ｈｏｓｔ')
+//            ->brandName('Ｐｉｋｙ Ｈｏｓｔ')
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

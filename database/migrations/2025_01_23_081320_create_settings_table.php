@@ -16,6 +16,7 @@ return new class extends Migration
             $table->id();
             $table->string('key')->unique();
             $table->json('value')->nullable();
+            $table->foreignId('currency_id')->nullable()->constrained('currencies')->onDelete('cascade');
             $table->timestamps();
         });
     }

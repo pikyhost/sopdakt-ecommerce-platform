@@ -1,0 +1,23 @@
+<div
+    x-data="{ theme: null }"
+    x-init="
+        theme = localStorage.getItem('theme') || @js(filament()->getDefaultThemeMode()->value);
+
+        $watch('theme', () => {
+            localStorage.setItem('theme', theme);
+            $dispatch('theme-changed', theme);
+            setTimeout(() => location.reload(), 50); // Refresh page after 50ms
+        });
+    "
+    class="fi-theme-switcher grid grid-flow-col gap-x-1"
+>
+    <x-filament-panels::theme-switcher.button
+        icon="heroicon-m-sun"
+        theme="light"
+    />
+
+    <x-filament-panels::theme-switcher.button
+        icon="heroicon-m-moon"
+        theme="dark"
+    />
+</div>

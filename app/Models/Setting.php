@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Setting extends Model
 {
-    protected $fillable = ['key', 'value'];
+    protected $fillable = ['key', 'value', 'currency_id'];
 
     protected $casts = [
         'value' => 'array',
@@ -51,5 +51,11 @@ class Setting extends Model
     public static function getSetting($key, $locale = null)
     {
         return self::get($key, $locale); // Reuse the optimized `get` method
+    }
+
+
+    public function currency()
+    {
+        return $this->belongsTo(Currency::class);
     }
 }

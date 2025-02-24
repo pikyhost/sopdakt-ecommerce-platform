@@ -45,6 +45,7 @@ class ClientPanelProvider extends PanelProvider
             ->pages([
                 Pages\Dashboard::class,
             ])
+            ->brandLogo(fn () => view('filament.app.logo'))
             ->renderHook(
                 PanelsRenderHook::FOOTER,
                 fn () => view('footer')
@@ -55,7 +56,7 @@ class ClientPanelProvider extends PanelProvider
             ])
             ->spa()
             ->sidebarFullyCollapsibleOnDesktop()
-            ->brandName('Ｐｉｋｙ Ｈｏｓｔ')
+//            ->brandName('Ｐｉｋｙ Ｈｏｓｔ')
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

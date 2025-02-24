@@ -3,8 +3,10 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\SettingResource\Pages;
+use App\Models\Currency;
 use App\Models\Setting;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\TextInput;
@@ -60,27 +62,52 @@ class SettingResource extends Resource
                         TextInput::make('value.name.ar')
                             ->label(__('website_name_ar'))
                             ->required(),
-                    ])->columns(2),
+
+
+                        Select::make('currency_id')
+                            ->label(__('fields.currency'))
+                            ->relationship('currency', 'name')
+                            ->getOptionLabelFromRecordUsing(fn (\App\Models\Currency $record) => "{$record->name} ({$record->symbol})")
+                            ->required(),
+                        ])->columns(2),
 
                 Forms\Components\Section::make(__('logo_section'))
                     ->description(__('logo_description'))
                     ->schema([
                         FileUpload::make('value.logo.en')
+                            ->image()
+                            ->imageEditor()
                             ->label(__('logo_en')),
 
                         FileUpload::make('value.logo.ar')
+                            ->image()
+                            ->imageEditor()
                             ->label(__('logo_ar')),
+
+                        FileUpload::make('value.dark_logo.en')
+                            ->image()
+                            ->imageEditor()
+                            ->label(__('dark_logo_en')),
+
+                        FileUpload::make('value.dark_logo.ar')
+                            ->image()
+                            ->imageEditor()
+                            ->label(__('dark_logo_ar')),
                     ])->columns(2),
 
                 Forms\Components\Section::make(__('favicon_section'))
                     ->description(__('favicon_description'))
                     ->schema([
                         FileUpload::make('value.favicon.en')
+                            ->image()
+                            ->imageEditor()
                             ->label(__('favicon_en')),
 
-                        FileUpload::make('value.favicon.ar')
-                            ->label(__('favicon_ar')),
-                    ])->columns(2),
+//                        FileUpload::make('value.favicon.ar')
+ //                             ->image()
+  //                          ->imageEditor()
+  //                          ->label(__('favicon_ar')),
+                    ])->columns(1),
             ]);
     }
 
