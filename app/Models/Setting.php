@@ -3,57 +3,79 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Facades\Cache;
 
 class Setting extends Model
 {
-    protected $fillable = ['key', 'value', 'currency_id'];
-
-    protected $casts = [
-        'value' => 'array',
+    protected $fillable = [
+        'site_name_en',
+        'site_name_ar',
+        'currency_id',
+        'logo_en',
+        'logo_ar',
+        'dark_logo_en',
+        'dark_logo_ar',
+        'favicon_en',
+        'favicon_ar',
     ];
 
-    // Static property to hold already fetched settings in memory
-    protected static array $settingsCache = [];
+    protected static string $cacheKey = 'app_settings';
 
-    public static function get($key, $locale = null)
+    protected static function boot()
     {
-        // Check if the setting is already loaded in memory
-        if (!isset(self::$settingsCache[$key])) {
-            $setting = self::where('key', $key)->first();   // this is line 23
-            self::$settingsCache[$key] = $setting?->value ?? null;
-        }
+        parent::boot();
 
-        $value = self::$settingsCache[$key];
-
-        if ($locale && is_array($value)) {
-            return $value[$locale] ?? null;
-        }
-
-        return $value;
+        static::saved(fn () => self::reloadCache());
+        static::deleted(fn () => self::reloadCache());
     }
 
-    public static function set($key, $value)
+    /**
+     * Get all settings from cache or database.
+     */
+    public static function getAllSettings(): array
     {
-        $setting = self::updateOrCreate(['key' => $key], ['value' => $value]);
-        self::$settingsCache[$key] = $value; // Update static cache to prevent re-querying
-        return $setting;
+        return Cache::rememberForever(self::$cacheKey, function () {
+            return self::first()?->toArray() ?? [];
+        });
     }
 
-    public function value(): Attribute
+    /**
+     * Retrieve a specific setting value.
+     */
+    public static function getSetting(string $key)
     {
-        return Attribute::make(
-            get: fn ($value) => json_decode($value, true) ?? [],
-            set: fn ($value) => json_encode($value)
-        );
+        return self::getAllSettings()[$key] ?? null;
     }
 
-    public static function getSetting($key, $locale = null)
+    /**
+     * Update settings and refresh the cache.
+     */
+    public static function updateSettings(array $data): void
     {
-        return self::get($key, $locale); // Reuse the optimized `get` method
+        self::firstOrNew()->fill($data)->save();
+        self::reloadCache();
     }
 
+    /**
+     * Reload settings cache.
+     */
+    public static function reloadCache(): void
+    {
+        Cache::forget(self::$cacheKey);
+        Cache::forever(self::$cacheKey, self::first()?->toArray() ?? []);
+    }
 
+    /**
+     * Clear the settings cache.
+     */
+    public static function clearCache(): void
+    {
+        Cache::forget(self::$cacheKey);
+    }
+
+    /**
+     * Currency relationship.
+     */
     public function currency()
     {
         return $this->belongsTo(Currency::class);

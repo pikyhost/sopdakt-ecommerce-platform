@@ -1,3 +1,18 @@
+@php
+    // Retrieve site settings
+    $siteSettings = App\Models\Setting::getAllSettings();
+    $locale = app()->getLocale();
+
+    // Get favicon based on locale or fallback to default
+    $faviconPath = $siteSettings["favicon_{$locale}"] ?? $siteSettings["favicon_en"] ?? null;
+    $favicon = $faviconPath ? \Illuminate\Support\Facades\Storage::url($faviconPath) : asset('assets/images/clients/client1.png');
+
+    // Get logo based on locale or fallback to default
+    $logoPath = $siteSettings["logo_{$locale}"] ?? null;
+    $logo = $logoPath ?  \Illuminate\Support\Facades\Storage::url($logoPath) : asset('assets/images/clients/client1.png');
+    // Get site name based on locale or fallback to default
+    $siteName = $siteSettings["site_name_{$locale}"] ?? $siteSettings["site_name_en"] ?? 'Default Site Name';
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 
@@ -13,8 +28,8 @@
 	<meta name="description" content="Porto - Bootstrap eCommerce Template">
 	<meta name="author" content="SW-THEMES">
 
-	<!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . \App\Models\Setting::getSetting('site_settings')['favicon']['en']) }}">
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ $favicon }}">
 
     <!-- Ensure correct asset loading for dynamic routes -->
     <base href="{{ url('/') }}/">
@@ -133,24 +148,25 @@
                         </button>
 
                         <a href="demo4.html" class="logo">
-                            <img src="{{ asset('storage/' . \App\Models\Setting::getSetting('site_settings')['logo'][app()->getLocale()]) }}"
+                            <!-- Logo -->
+                            <!-- Logo -->
+                            <img src="{{ $logo }}"
                                  alt="Site Logo"
                                  style="
-                width: 80px;
-                height: 80px;
-                border-radius: 50%;
-                object-fit: cover;
-                border: 3px solid #fff;
-                box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-                transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-            "
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #fff;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+     "
                                  onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0px 6px 12px rgba(0, 0, 0, 0.3)';"
                                  onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0px 4px 8px rgba(0, 0, 0, 0.2)';"
-                            >
+                            />
                         </a>
-
                         <p class="site-name mt-2 font-weight-bold text-dark text-center">
-                            {{ \App\Models\Setting::getSetting('site_settings')['name'][app()->getLocale()] }}
+                            {{ $siteName }}
                         </p>
                     </div>
 

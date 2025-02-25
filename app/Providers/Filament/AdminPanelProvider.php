@@ -26,6 +26,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Jeffgreco13\FilamentBreezy\BreezyCore;
 use SolutionForest\FilamentSimpleLightBox\SimpleLightBoxPlugin;
@@ -34,14 +35,12 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
-        // Retrieve site settings from the database (with a default fallback)
-        $settings = Setting::getSetting('site_settings') ?? [];
+        $settings = Setting::getAllSettings();
 
+        // Get the correct favicon path based on locale
+        $faviconPath = $settings["favicon_en"] ?? null;
 
-        // Ensure favicon settings exist
-        $favicon = isset($settings['favicon']['en'])
-            ? asset('storage/' . $settings['favicon']['en'])  // Get favicon from storage
-            : asset('images/clients/client1.png');  // Default fallback favicon
+        $favicon = $faviconPath ? Storage::url($faviconPath) : asset('images/clients/client1.png');
 
         return $panel
             ->default()

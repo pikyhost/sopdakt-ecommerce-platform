@@ -9,4 +9,9 @@ use Filament\Resources\Pages\EditRecord;
 class EditSetting extends EditRecord
 {
     protected static string $resource = SettingResource::class;
+
+    protected function getRedirectUrl(): string
+    {
+        return '/admin/settings/1/edit';
+    }
 }

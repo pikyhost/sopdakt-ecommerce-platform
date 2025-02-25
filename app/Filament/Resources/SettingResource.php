@@ -25,7 +25,7 @@ class SettingResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('Settings Management'); //Products Management
+        return __('Settings Management');
     }
 
     public static function getModelLabel(): string
@@ -52,62 +52,61 @@ class SettingResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make(__('website_name_section'))
-                    ->description(__('website_name_description'))
+                Forms\Components\Section::make(__('Website Information'))
+                    ->description(__('Update website name and currency'))
                     ->schema([
-                        TextInput::make('value.name.en')
-                            ->label(__('website_name_en'))
+                        TextInput::make('site_name_en')
+                            ->label(__('Website Name (English)'))
                             ->required(),
 
-                        TextInput::make('value.name.ar')
-                            ->label(__('website_name_ar'))
+                        TextInput::make('site_name_ar')
+                            ->label(__('Website Name (Arabic)'))
                             ->required(),
-
 
                         Select::make('currency_id')
-                            ->label(__('fields.currency'))
+                            ->label(__('Currency'))
                             ->relationship('currency', 'name')
-                            ->getOptionLabelFromRecordUsing(fn (\App\Models\Currency $record) => "{$record->name} ({$record->symbol})")
+                            ->getOptionLabelFromRecordUsing(fn (Currency $record) => "{$record->name} ({$record->symbol})")
                             ->required(),
-                        ])->columns(2),
-
-                Forms\Components\Section::make(__('logo_section'))
-                    ->description(__('logo_description'))
-                    ->schema([
-                        FileUpload::make('value.logo.en')
-                            ->image()
-                            ->imageEditor()
-                            ->label(__('logo_en')),
-
-                        FileUpload::make('value.logo.ar')
-                            ->image()
-                            ->imageEditor()
-                            ->label(__('logo_ar')),
-
-                        FileUpload::make('value.dark_logo.en')
-                            ->image()
-                            ->imageEditor()
-                            ->label(__('dark_logo_en')),
-
-                        FileUpload::make('value.dark_logo.ar')
-                            ->image()
-                            ->imageEditor()
-                            ->label(__('dark_logo_ar')),
                     ])->columns(2),
 
-                Forms\Components\Section::make(__('favicon_section'))
-                    ->description(__('favicon_description'))
+                Forms\Components\Section::make(__('Logos'))
+                    ->description(__('Upload logos for different languages'))
                     ->schema([
-                        FileUpload::make('value.favicon.en')
+                        FileUpload::make('logo_en')
                             ->image()
                             ->imageEditor()
-                            ->label(__('favicon_en')),
+                            ->label(__('Logo (English)')),
 
-//                        FileUpload::make('value.favicon.ar')
- //                             ->image()
-  //                          ->imageEditor()
-  //                          ->label(__('favicon_ar')),
-                    ])->columns(1),
+                        FileUpload::make('logo_ar')
+                            ->image()
+                            ->imageEditor()
+                            ->label(__('Logo (Arabic)')),
+
+                        FileUpload::make('dark_logo_en')
+                            ->image()
+                            ->imageEditor()
+                            ->label(__('Dark Logo (English)')),
+
+                        FileUpload::make('dark_logo_ar')
+                            ->image()
+                            ->imageEditor()
+                            ->label(__('Dark Logo (Arabic)')),
+                    ])->columns(2),
+
+                Forms\Components\Section::make(__('Favicon'))
+                    ->description(__('Upload website favicon'))
+                    ->schema([
+                        FileUpload::make('favicon_en')
+                            ->image()
+                            ->imageEditor()
+                            ->label(__('Favicon (English)')),
+
+                        FileUpload::make('favicon_ar')
+                            ->image()
+                            ->imageEditor()
+                            ->label(__('Favicon (Arabic)')),
+                    ])->columns(2),
             ]);
     }
 
