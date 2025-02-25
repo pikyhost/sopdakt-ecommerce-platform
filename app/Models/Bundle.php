@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\BundleType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 use Spatie\Translatable\HasTranslations;
 
 class Bundle extends Model
@@ -76,4 +77,27 @@ class Bundle extends Model
         return (float) \App\Helpers\GeneralHelper::getBundlePriceForCountryWithDiscount($this);
     }
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($bundle) {
+            $bundleType = $bundle->bundle_type->value ?? null; // Get the string value of enum
+            $firstProduct = $bundle->products()->first();
+
+            Log::info('Saving bundle:', [
+                'bundle_type' => $bundleType,
+                'buy_x' => $bundle->buy_x,
+                'product_found' => $firstProduct ? 'Yes' : 'No',
+                'discount_price_for_current_country' => $firstProduct?->discount_price_for_current_country,
+            ]);
+
+            if ($bundleType === \App\Enums\BundleType::BUY_X_GET_Y->value && $bundle->buy_x && $firstProduct) {
+                if (!is_null($firstProduct->discount_price_for_current_country)) {
+                    $bundle->discount_price = $bundle->buy_x * floatval($firstProduct->discount_price_for_current_country);
+                    Log::info('Calculated discount price:', ['discount_price' => $bundle->discount_price]);
+                }
+            }
+        });
+    }
 }

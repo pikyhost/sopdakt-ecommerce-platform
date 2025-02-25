@@ -982,7 +982,7 @@
                                                                     @case(\App\Enums\BundleType::BUY_X_GET_Y)
                                                                         @if (!is_null($bundle->buy_x) && !is_null($bundle->get_y))
                                                                             <p class="bundle-text">
-                                                                                {{ __('Buy :x and get :y free', ['x' => $bundle->buy_x, 'y' => $bundle->get_y]) }}
+                                                                                {{ __('Buy :x and get :y free ', ['x' => $bundle->buy_x, 'y' => $bundle->get_y]) }}
                                                                             </p>
                                                                         @elseif (!is_null($bundle->buy_x) && is_null($bundle->get_y) && isset($bundle->bundle_discount_price_for_current_country))
                                                                             <p class="bundle-text">
@@ -992,7 +992,14 @@
                                                                                 ]) }}
                                                                             </p>
                                                                         @endif
+
+                                                                        @if (!is_null($bundle->discount_price))
+                                                                            <p class="bundle-text">
+                                                                                {{ __('Total Discount Price: :price', ['price' => number_format($bundle->discount_price, 2)]) }}
+                                                                            </p>
+                                                                        @endif
                                                                         @break
+
 
                                                                     @case(\App\Enums\BundleType::FIXED_PRICE)
                                                                         @php
