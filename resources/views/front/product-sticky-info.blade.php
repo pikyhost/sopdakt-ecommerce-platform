@@ -954,7 +954,7 @@
 
                                     <br>
 
-                                    @if($product->bundles->isNotEmpty())
+                                    @if ($product->bundles->isNotEmpty())
                                         <div x-data="{ showBundles: false }" class="product-bundles">
                                             <!-- Bundle Title & Toggle Button -->
                                             <div class="bundle-header">
@@ -984,28 +984,32 @@
                                                                             <p class="bundle-text">
                                                                                 {{ __('Buy :x and get :y free', ['x' => $bundle->buy_x, 'y' => $bundle->get_y]) }}
                                                                             </p>
-                                                                        @elseif (!is_null($bundle->buy_x) && is_null($bundle->get_y) && !is_null($bundle->bundle_discount_price_for_current_country))
+                                                                        @elseif (!is_null($bundle->buy_x) && is_null($bundle->get_y) && isset($bundle->bundle_discount_price_for_current_country))
                                                                             <p class="bundle-text">
-                                                                                {{ __('Buy :x with a discount price of :price', ['x' => $bundle->buy_x, 'price' => number_format($bundle->bundle_discount_price_for_current_country, 2)]) }}
-                                                                            </p>
-                                                                        @endif
-                                                                        @break
-
-                                                                    @case(\App\Enums\BundleType::FIXED_PRICE)
-                                                                        @if (!is_null($bundle->bundle_discount_price_for_current_country) && !is_null($bundle->bundle_price_for_current_country))
-                                                                            <p class="bundle-text">
-                                                                                {{ __('Get this bundle for :price instead of :original', [
-                                                                                    'price' => number_format($bundle->bundle_discount_price_for_current_country, 2),
-                                                                                    'original' => number_format($bundle->bundle_price_for_current_country, 2)
+                                                                                {{ __('Buy :x with a discount price of :price', [
+                                                                                    'x' => $bundle->buy_x,
+                                                                                    'price' => number_format($bundle->bundle_discount_price_for_current_country, 2)
                                                                                 ]) }}
                                                                             </p>
                                                                         @endif
                                                                         @break
 
-                                                                    @case(\App\Enums\BundleType::DISCOUNT_PERCENTAGE)
-                                                                        @if (!is_null($bundle->discount_percentage))
+                                                                    @case(\App\Enums\BundleType::FIXED_PRICE)
+                                                                        @php
+                                                                            $discountPrice = $bundle->bundle_discount_price_for_current_country;
+                                                                            $originalPrice = $bundle->bundle_price_for_current_country;
+                                                                        @endphp
+
+                                                                        @if (isset($discountPrice, $originalPrice) && $discountPrice < $originalPrice)
                                                                             <p class="bundle-text">
-                                                                                {{ __('Buy this bundle and save :discount%', ['discount' => $bundle->discount_percentage]) }}
+                                                                                {{ __('Get this bundle for :price instead of :original', [
+                                                                                    'price' => number_format($discountPrice, 2),
+                                                                                    'original' => number_format($originalPrice, 2)
+                                                                                ]) }}
+                                                                            </p>
+                                                                        @else
+                                                                            <p class="bundle-text">
+                                                                                {{ __('Get this bundle for :price', ['price' => number_format($originalPrice, 2)]) }}
                                                                             </p>
                                                                         @endif
                                                                         @break
@@ -1022,7 +1026,9 @@
                                                                         <div class="product-info">
                                                                             <span class="product-name">{{ $bundleProduct->name }}</span>
                                                                             @if ($bundle->bundle_type !== \App\Enums\BundleType::BUY_X_GET_Y)
-                                                                                <span class="product-quantity">({{ __('Quantity:') }} {{ $bundleProduct->pivot->quantity ?? 1 }})</span>
+                                                                                <span class="product-quantity">
+                                                ({{ __('Quantity:') }} {{ $bundleProduct->pivot->quantity ?? 1 }})
+                                            </span>
                                                                             @endif
                                                                         </div>
                                                                     </div>
