@@ -174,7 +174,7 @@ class Product extends Model implements HasMedia
 
     public function bundles()
     {
-        return $this->belongsToMany(Bundle::class, 'bundle_product')->withPivot('quantity');
+        return $this->belongsToMany(Bundle::class, 'bundle_product');
     }
 
     public function attributes(): BelongsToMany
