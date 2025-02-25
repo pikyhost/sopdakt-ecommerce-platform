@@ -1,3 +1,18 @@
+@php
+    // Retrieve site settings
+    $siteSettings = App\Models\Setting::getAllSettings();
+    $locale = app()->getLocale();
+
+    // Get favicon based on locale or fallback to default
+    $faviconPath = $siteSettings["favicon_{$locale}"] ?? $siteSettings["favicon_en"] ?? null;
+    $favicon = $faviconPath ? \Illuminate\Support\Facades\Storage::url($faviconPath) : asset('assets/images/clients/client1.png');
+
+    // Get logo based on locale or fallback to default
+    $logoPath = $siteSettings["logo_{$locale}"] ?? null;
+    $logo = $logoPath ?  \Illuminate\Support\Facades\Storage::url($logoPath) : asset('assets/images/clients/client1.png');
+    // Get site name based on locale or fallback to default
+    $siteName = $siteSettings["site_name_{$locale}"] ?? $siteSettings["site_name_en"] ?? 'Default Site Name';
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,7 +29,9 @@
     <meta name="description" content="X - Bootstrap eCommerce Template">
     <meta name="author" content="SW-THEMES">
 
-    <link rel="icon" type="image/x-icon" href="{{ asset('storage/' . \App\Models\Setting::getSetting('site_settings')['favicon']['en']) }}">
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ $favicon }}">
+
 
     <!-- Ensure correct asset loading for dynamic routes -->
     <base href="{{ url('/') }}/">
@@ -137,24 +154,25 @@
                         </button>
 
                         <a href="demo4.html" class="logo">
-                            <img src="{{ asset('storage/' . \App\Models\Setting::getSetting('site_settings')['logo'][app()->getLocale()]) }}"
+                            <!-- Logo -->
+                            <!-- Logo -->
+                            <img src="{{ $logo }}"
                                  alt="Site Logo"
                                  style="
-                width: 80px;
-                height: 80px;
-                border-radius: 50%;
-                object-fit: cover;
-                border: 3px solid #fff;
-                box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-                transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-            "
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #fff;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+     "
                                  onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0px 6px 12px rgba(0, 0, 0, 0.3)';"
                                  onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0px 4px 8px rgba(0, 0, 0, 0.2)';"
-                            >
+                            />
                         </a>
-
                         <p class="site-name mt-2 font-weight-bold text-dark text-center">
-                            {{ \App\Models\Setting::getSetting('site_settings')['name'][app()->getLocale()] }}
+                            {{ $siteName }}
                         </p>
                     </div>
 
@@ -720,11 +738,6 @@
 									</div>
 
 									<div class="product-action">
-										<div class="price-box product-filtered-price">
-											<del class="old-price"> <span>$286.00</span></del>
-											<span class="product-price">$245.00</span>
-										</div>
-
 										<div class="product-single-qty">
 											<input class="horizontal-quantity form-control" type="text">
 										</div><!-- End .product-single-qty -->
@@ -965,38 +978,58 @@
                                                             <strong class="bundle-name">{{ $bundle->getTranslation('name', app()->getLocale()) }}</strong>
 
                                                             <div class="bundle-details">
-                                                                @if ($bundle->bundle_type === \App\Enums\BundleType::BUY_X_GET_Y)
-                                                                    @if (!is_null($bundle->buy_x) && !is_null($bundle->get_y))
-                                                                        <p class="bundle-text">{{ __('Buy :x and get :y free', ['x' => $bundle->buy_x, 'y' => $bundle->get_y]) }}</p>
-                                                                    @elseif (!is_null($bundle->buy_x) && is_null($bundle->get_y) && !is_null($bundle->bundle_discount_price_for_current_country))
-                                                                        <p class="bundle-text">{{ __('Buy :x with a discount price of :price', ['x' => $bundle->buy_x, 'price' => number_format($bundle->bundle_discount_price_for_current_country, 2)]) }}</p>
-                                                                    @endif
-                                                                @elseif ($bundle->bundle_type === \App\Enums\BundleType::FIXED_PRICE)
-                                                                    <p class="bundle-text">{{ __('Get this bundle for :price instead of :original', [
-                                    'price' => number_format($bundle->bundle_discount_price_for_current_country, 2),
-                                    'original' => number_format($bundle->bundle_price_for_current_country, 2)
-                                ]) }}</p>
-                                                                @elseif ($bundle->bundle_type === \App\Enums\BundleType::DISCOUNT_PERCENTAGE)
-                                                                    <p class="bundle-text">{{ __('Buy this bundle and save :discount%', ['discount' => $bundle->discount_percentage]) }}</p>
-                                                                @endif
+                                                                @switch($bundle->bundle_type)
+                                                                    @case(\App\Enums\BundleType::BUY_X_GET_Y)
+                                                                        @if (!is_null($bundle->buy_x) && !is_null($bundle->get_y))
+                                                                            <p class="bundle-text">
+                                                                                {{ __('Buy :x and get :y free', ['x' => $bundle->buy_x, 'y' => $bundle->get_y]) }}
+                                                                            </p>
+                                                                        @elseif (!is_null($bundle->buy_x) && is_null($bundle->get_y) && !is_null($bundle->bundle_discount_price_for_current_country))
+                                                                            <p class="bundle-text">
+                                                                                {{ __('Buy :x with a discount price of :price', ['x' => $bundle->buy_x, 'price' => number_format($bundle->bundle_discount_price_for_current_country, 2)]) }}
+                                                                            </p>
+                                                                        @endif
+                                                                        @break
+
+                                                                    @case(\App\Enums\BundleType::FIXED_PRICE)
+                                                                        @if (!is_null($bundle->bundle_discount_price_for_current_country) && !is_null($bundle->bundle_price_for_current_country))
+                                                                            <p class="bundle-text">
+                                                                                {{ __('Get this bundle for :price instead of :original', [
+                                                                                    'price' => number_format($bundle->bundle_discount_price_for_current_country, 2),
+                                                                                    'original' => number_format($bundle->bundle_price_for_current_country, 2)
+                                                                                ]) }}
+                                                                            </p>
+                                                                        @endif
+                                                                        @break
+
+                                                                    @case(\App\Enums\BundleType::DISCOUNT_PERCENTAGE)
+                                                                        @if (!is_null($bundle->discount_percentage))
+                                                                            <p class="bundle-text">
+                                                                                {{ __('Buy this bundle and save :discount%', ['discount' => $bundle->discount_percentage]) }}
+                                                                            </p>
+                                                                        @endif
+                                                                        @break
+                                                                @endswitch
                                                             </div>
 
+                                                            <!-- Bundle Products -->
                                                             <div class="bundle-products">
-                                                                @foreach ($bundle->products as $product)
+                                                                @foreach ($bundle->products as $bundleProduct)
                                                                     <div class="product-item">
-                                                                        <a href="{{ route('product.show', $product->slug) }}">
-                                                                            <img src="{{ $product->getFeatureProductImageUrl() }}" class="product-image" alt="{{ $product->name }}">
+                                                                        <a href="{{ route('product.show', $bundleProduct->slug) }}">
+                                                                            <img src="{{ $bundleProduct->getFeatureProductImageUrl() }}" class="product-image" alt="{{ $bundleProduct->name }}">
                                                                         </a>
                                                                         <div class="product-info">
-                                                                            <span class="product-name">{{ $product->name }}</span>
+                                                                            <span class="product-name">{{ $bundleProduct->name }}</span>
                                                                             @if ($bundle->bundle_type !== \App\Enums\BundleType::BUY_X_GET_Y)
-                                                                                <span class="product-quantity">({{ __('Quantity:') }} {{ $product->pivot->quantity }})</span>
+                                                                                <span class="product-quantity">({{ __('Quantity:') }} {{ $bundleProduct->pivot->quantity ?? 1 }})</span>
                                                                             @endif
                                                                         </div>
                                                                     </div>
                                                                 @endforeach
                                                             </div>
 
+                                                            <!-- Buy Bundle Button -->
                                                             <div class="bundle-buy">
                                                                 <a href="#" class="buy-button">{{ __('Buy Now') }}</a>
                                                             </div>
@@ -1006,7 +1039,6 @@
                                             </ul>
                                         </div>
                                     @endif
-
 
 
                                 @if (session()->has('success'))

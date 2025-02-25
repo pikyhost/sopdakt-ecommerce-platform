@@ -15,10 +15,7 @@ class Bundle extends Model
         'name',
     ];
 
-    protected $fillable = [
-        'name', 'main_product_id', 'bundle_category', 'bundle_type',
-        'discount_price', 'buy_x', 'get_y', 'discount_percentage', 'name_for_admin'
-    ];
+    protected $guarded = [];
 
 
     protected $casts = [

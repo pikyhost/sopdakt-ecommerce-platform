@@ -1,18 +1,22 @@
 @php
-    $settings = \App\Models\Setting::getSetting('site_settings');
+    use Illuminate\Support\Facades\Storage;
+
+    $settings = \App\Models\Setting::getAllSettings();
     $locale = app()->getLocale();
-    $lightLogo = $settings['logo'][$locale] ?? null;
-    $darkLogo = $settings['dark_logo'][$locale] ?? null;
+    $lightLogoPath = $settings["logo_{$locale}"] ?? null;
+    $darkLogoPath = $settings["dark_logo_{$locale}"] ?? null;
+
+    $lightLogo = $lightLogoPath ? Storage::url($lightLogoPath) : null;
+    $darkLogo = $darkLogoPath ? Storage::url($darkLogoPath) : null;
 @endphp
 
 <div
     x-data="{
         mode: localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
+        lightLogo: '{{ $lightLogo }}',
+        darkLogo: '{{ $darkLogo }}',
         updateMode() {
             this.mode = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-        },
-        getLogo() {
-            return this.mode === 'dark' ? '{{ asset('storage/' . $darkLogo) }}' : '{{ asset('storage/' . $lightLogo) }}';
         }
     }"
     x-init="updateMode()"
@@ -20,7 +24,7 @@
     class="flex items-center"
 >
     <img
-        :src="getLogo()"
+        :src="mode === 'dark' ? darkLogo : lightLogo"
         alt="Site Logo"
         class="h-10 w-auto"
         x-cloak

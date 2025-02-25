@@ -3,61 +3,77 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
     public function show($slug)
     {
-        // Fetch product with all required relationships
+        // Fetch the product with all required relationships in a single query
         $product = Product::where('slug', $slug)
             ->with([
                 'colorsWithImages',
-                'sizes',
+                'sizes:id,name',
                 'labels',
-                'ratings' => function ($query) {
-                    $query->with('user');
-                },
+                'ratings',
                 'attributes',
                 'types',
-                'category.parent',
+                'category:id,parent_id,slug,name',  // Load only necessary fields
+                'category.parent:id,name', // Ensure parent is loaded with minimal fields
                 'bundles.products.media',
             ])
-            ->firstOrFail();
+            ->withAvg('ratings', 'rating')
+            ->firstOrFail();  //this make query
 
-        // Get translations of custom attributes
-        $customAttributes = $product->getTranslations('custom_attributes');
+        // Use eager-loaded category data to avoid additional queries
+        $category = $product->category; // Access the eager-loaded category
+        $subcategoryId = $category?->id;
+        $parentCategoryId = $category?->parent?->id; // Access the eager-loaded parent
 
-        // Get category IDs
-        $subcategoryId = $product->category_id;
-        $parentCategoryId = $product->category->parent_id ?? null;
-
-        // Fetch products once and filter them in PHP
-        $allProducts = Product::where(function ($query) use ($subcategoryId, $parentCategoryId) {
-            $query->where('category_id', $subcategoryId);
-            if ($parentCategoryId) {
-                $query->orWhere('category_id', $parentCategoryId);
-            }
-        })
+        // Fetch related products efficiently
+        $relatedProducts = Product::whereIn('category_id', array_filter([$subcategoryId, $parentCategoryId]))
             ->where('id', '!=', $product->id)
-            ->with('media', 'ratings')
+            ->with('media')
+            ->select([
+                'id', 'slug', 'name', 'price', 'after_discount_price',
+                'created_at', 'is_featured', 'category_id'
+            ])
+            ->inRandomOrder()
+            ->limit(8)
+            ->get();  //this make query
+
+        // Fetch products with ratings in a single optimized query
+        $products = Product::whereIn('category_id', array_filter([$subcategoryId, $parentCategoryId]))
+            ->leftJoinSub(
+                DB::table('product_ratings')
+                    ->select('product_id', DB::raw('AVG(rating) as avg_rating'))
+                    ->groupBy('product_id'),
+                'ratings',
+                'products.id',
+                '=',
+                'ratings.product_id'
+            )
+            ->select([
+                'products.id',
+                'products.slug',
+                'products.name',
+                'products.price',
+                'products.sales',
+                'products.created_at',
+                'products.is_featured',
+                DB::raw('COALESCE(products.fake_average_rating, ratings.avg_rating) as final_rating'),
+            ])
+            ->with('media')
             ->get();
 
-        // Extract related products (first 8 random)
-        $relatedProducts = $allProducts->shuffle()->take(8);
-
-        // Filter featured, best-selling, latest, and top-rated products from the same collection
-        $featuredProducts = $allProducts->where('is_featured', true)->shuffle()->take(3);
-        $bestSellingProducts = $allProducts->sortByDesc('sales')->take(3);
-        $latestProducts = $allProducts->sortByDesc('created_at')->take(3);
-
-        // Calculate top-rated products
-        $topRatedProducts = $allProducts->map(function ($p) {
-            $p->final_average_rating = $p->fake_average_rating ?? $p->ratings->avg('rating');
-            return $p;
-        })->sortByDesc('final_average_rating')->take(3);
+        // Categorizing products efficiently
+        $featuredProducts = $products->where('is_featured', true)->take(3);
+        $bestSellingProducts = $products->sortByDesc('sales')->take(3);
+        $latestProducts = $products->sortByDesc('created_at')->take(3);
+        $topRatedProducts = $products->sortByDesc('final_rating')->take(3);
 
         return view('front.product-sticky-info', compact(
-            'product', 'relatedProducts', 'customAttributes', 'featuredProducts',
+            'product', 'relatedProducts', 'featuredProducts',
             'bestSellingProducts', 'latestProducts', 'topRatedProducts'
         ));
     }

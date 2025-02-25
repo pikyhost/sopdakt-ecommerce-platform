@@ -28,16 +28,15 @@ class Product extends Model implements HasMedia
         'discount_end' => 'datetime',
         'saved_at' => 'datetime',
         'rating_status' => Status::class,
-        'custom_attributes' => 'array', // Cast
+        'custom_attributes' => 'array',
     ];
 
-    protected $with = 'media';
+    protected $with = ['media', 'inventory', 'category'];
 
     protected $guarded = [];
 
     protected static function booted()
     {
-        // Create inventory record when a product is created
         static::created(function (Product $product) {
             Inventory::create([
                 'product_id' => $product->id,
@@ -45,11 +44,9 @@ class Product extends Model implements HasMedia
             ]);
         });
 
-        // Update inventory when product quantity changes
         static::updated(function (Product $product) {
             if ($product->wasChanged('quantity')) {
-                Inventory::where('product_id', $product->id)
-                    ->update(['quantity' => $product->quantity]);
+                $product->inventory()->update(['quantity' => $product->quantity]);
             }
         });
     }
@@ -79,27 +76,25 @@ class Product extends Model implements HasMedia
         return $this->belongsToMany(Color::class, 'product_colors');
     }
 
-
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    function shippingTypes()
+    public function shippingTypes()
     {
         return $this->belongsToMany(ShippingType::class)->withPivot(['shipping_cost', 'status']);
     }
 
-    function shippingGovernorates()
+    public function shippingGovernorates()
     {
-        return $this->belongsToMany(Governorate::class,'product_governorate')->withPivot(['shipping_cost', 'status']);
+        return $this->belongsToMany(Governorate::class, 'product_governorate')->withPivot(['shipping_cost', 'status']);
     }
 
     public function specialPrices()
     {
-        return $this->hasMany(ProductSpecialPrice::class, 'product_id', 'id');
+        return $this->hasMany(ProductSpecialPrice::class);
     }
-
 
     public function inventory()
     {
@@ -118,7 +113,7 @@ class Product extends Model implements HasMedia
 
     public function getAverageRatingAttribute()
     {
-        return $this->fake_average_rating ?? $this->ratings()->avg('rating');
+        return $this->fake_average_rating ?? $this->ratings_avg_rating;
     }
 
 
@@ -127,27 +122,12 @@ class Product extends Model implements HasMedia
         return $this->hasMany(Transaction::class);
     }
 
-    // Media Collections
     public function registerMediaCollections(): void
     {
-        $this
-            ->addMediaCollection('feature_product_image')
-            ->singleFile()
-            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
-
-        $this
-            ->addMediaCollection('second_feature_product_image')
-            ->singleFile()
-            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
-
-        $this
-            ->addMediaCollection('sizes_image')
-            ->singleFile();
-
-        $this
-            ->addMediaCollection('more_product_images_and_videos')
-            ->acceptsMimeTypes(['video/mp4', 'video/mpeg', 'video/quicktime',
-                'image/jpeg', 'image/png', 'image/webp']);
+        $this->addMediaCollection('feature_product_image')->singleFile()->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+        $this->addMediaCollection('second_feature_product_image')->singleFile()->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+        $this->addMediaCollection('sizes_image')->singleFile();
+        $this->addMediaCollection('more_product_images_and_videos')->acceptsMimeTypes(['video/mp4', 'video/mpeg', 'video/quicktime', 'image/jpeg', 'image/png', 'image/webp']);
     }
 
     public function getFeatureProductImageUrl(): ?string
@@ -155,37 +135,26 @@ class Product extends Model implements HasMedia
         return $this->getFirstMediaUrl('feature_product_image') ?: null;
     }
 
-    /**
-     * Get the URL for the 'main_author_image' .
-     */
     public function getSecondFeatureProductImageUrl(): ?string
     {
         return $this->getFirstMediaUrl('second_feature_product_image') ?: null;
     }
 
-    /**
-     * Get the URL for the 'main_author_image' .
-     */
     public function getProductSizeImageUrl(): ?string
     {
         return $this->getFirstMediaUrl('sizes_image') ?: null;
     }
 
-
     public function getMoreProductImagesAndVideosUrls(string $conversion = null): array
     {
         return $this->getMedia('more_product_images_and_videos')
-            ->map(fn ($media) => $conversion && $media->hasGeneratedConversion($conversion)
-                ? $media->getUrl($conversion)
-                : $media->getUrl())
+            ->map(fn($media) => $conversion && $media->hasGeneratedConversion($conversion) ? $media->getUrl($conversion) : $media->getUrl())
             ->toArray();
     }
 
     public function usersWhoSaved(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'saved_products', 'product_id', 'user_id')
-            ->withTimestamps()
-            ->withPivot('created_at as saved_at');
+        return $this->belongsToMany(User::class, 'saved_products', 'product_id', 'user_id')->withTimestamps()->withPivot('created_at as saved_at');
     }
 
     public function getPriceForCurrentCountryAttribute()
@@ -200,7 +169,7 @@ class Product extends Model implements HasMedia
 
     public function getRouteKeyName()
     {
-        return 'slug'; // This allows Laravel to automatically resolve routes by slug instead of ID
+        return 'slug';
     }
 
     public function bundles()
@@ -225,12 +194,7 @@ class Product extends Model implements HasMedia
 
     public function getRatingPercentage()
     {
-        if ($this->fake_average_rating !== null) {
-            return ($this->fake_average_rating / 5) * 100; // Convert to percentage
-        }
-
-        $averageRating = $this->ratings()->avg('rating') ?? 0;
-        return ($averageRating / 5) * 100;
+        return (($this->fake_average_rating ?? $this->ratings_avg_rating ?? 0) / 5) * 100;
     }
 
 }

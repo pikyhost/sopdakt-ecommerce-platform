@@ -21,7 +21,6 @@ class DatabaseSeeder extends Seeder
             UsersWithRolesSeeder::class,
             CategoriesSeeder::class,
             ProductsSeeder::class,
-            SettingsSeeder::class,
             TestSeeder::class,
         ]);
     }
