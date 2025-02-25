@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('bundle_id')->constrained()->onDelete('cascade');
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->unsignedInteger('quantity')->default(1); // Quantity of this product in the bundle
         });
     }
 

@@ -34,16 +34,8 @@ class Bundle extends Model
 
     public function getFormattedDiscountAttribute()
     {
-        if ($this->bundle_category === 'accessory') {
-            return "Accessory Bundle";
-        }
-
         if ($this->bundle_type === 'fixed_price') {
             return "Bundle Price: $" . number_format($this->discount_price, 2);
-        }
-
-        if ($this->bundle_type === 'discount_percentage') {
-            return "Save {$this->discount_percentage}%";
         }
 
         if ($this->bundle_type === 'buy_x_get_y') {
@@ -61,11 +53,8 @@ class Bundle extends Model
             case 'fixed_price':
                 return $this->discount_price;
 
-            case 'discount_percentage':
-                return $productsTotal * (1 - ($this->discount_percentage / 100));
-
             case 'buy_x_get_y':
-                return ($this->buy_x * $this->products->first()->price); // Assuming first product is used
+                return ($this->buy_x * $this->products->first()->price);
 
             default:
                 return $productsTotal;

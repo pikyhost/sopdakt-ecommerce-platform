@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProductResource\Pages;
+use App\Filament\Resources\ProductResource\RelationManagers\BundlesRelationManager;
 use App\Models\Product;
 use App\Models\ProductColor;
 use App\Services\ProductActionsService;
@@ -374,132 +375,6 @@ class ProductResource extends Resource
                                     ->maxLength(255),
                             ])->columns(1),
 
-                        // Bundles Tab
-                        Tab::make(__('bundles.title'))
-                            ->visible(function (string $operation) {
-                                return $operation === 'edit';
-                            })
-                            ->columns(2)
-                            ->icon('heroicon-o-bolt')
-                            ->schema([
-                                Select::make('bundles')
-                                    ->columnSpanFull()
-                                    ->label(__('bundles.select'))
-                                    ->multiple()
-                                    ->relationship('bundles', 'name')
-                                    ->preload()
-                                    ->createOptionForm([
-                                        TextInput::make('name')
-                                            ->label(__('bundles.name'))
-                                            ->required(),
-
-                                        TextInput::make('name_for_admin')
-                                            ->label(__('bundles.name_for_admin'))
-                                            ->required(),
-
-                                        Select::make('bundle_type')
-                                            ->live()
-                                            ->label(__('bundles.type'))
-                                            ->options([
-                                                'fixed_price' => __('bundles.type.fixed_price'),
-                                                'discount_percentage' => __('bundles.type.discount_percentage'),
-                                                'buy_x_get_y' => __('bundles.type.buy_x_get_y'),
-                                            ])
-                                            ->required(),
-
-                                        TextInput::make('discount_price')
-                                            ->live()
-                                            ->label(__('bundles.discount_price'))
-                                            ->numeric()
-                                            ->visible(fn ($get) => $get('bundle_type') == 'fixed_price' || 'buy_x_get_y'),
-
-                                        TextInput::make('discount_percentage')
-                                            ->live()
-                                            ->label(__('bundles.discount_percentage'))
-                                            ->numeric()
-                                            ->visible(fn ($get) => $get('bundle_type') == 'discount_percentage'),
-
-                                        TextInput::make('buy_x')
-                                            ->live()
-                                            ->label(__('bundles.buy_x'))
-                                            ->numeric()
-                                            ->visible(fn ($get) => $get('bundle_type') === 'buy_x_get_y'),
-
-                                        TextInput::make('get_y')
-                                            ->live()
-                                            ->label(__('bundles.get_y_free'))
-                                            ->numeric()
-                                            ->visible(fn ($get) => $get('bundle_type') === 'buy_x_get_y'  &&
-                                                !$get('discount_price')),
-
-                                        Select::make('products')
-                                            ->label(__('bundles.products'))
-                                            ->multiple()
-                                            ->relationship('products', 'name')
-                                            ->preload(),
-
-                                        // Special Prices for Bundles
-                                        Repeater::make('specialPrices')
-                                            ->label(__('bundles.special_prices'))
-                                            ->relationship('specialPrices')
-                                            ->columns(2)
-                                            ->schema([
-                                                Placeholder::make('country_or_group_info')
-                                                    ->label(__('country_or_group_info'))
-                                                    ->content(__('messages.select_country_or_group'))
-                                                    ->columnSpanFull(),
-
-                                                Select::make('country_id')
-                                                    ->label(__('fields.select_country'))
-                                                    ->relationship('country', 'name')
-                                                    ->nullable()
-                                                    ->live()
-                                                    ->afterStateUpdated(fn (Forms\Set $set) => $set('country_group_id', null))
-                                                    ->hidden(fn (Forms\Get $get) => filled($get('country_group_id')))
-                                                    ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
-
-                                                Select::make('country_group_id')
-                                                    ->label(__('fields.select_country_group'))
-                                                    ->relationship('countryGroup', 'name')
-                                                    ->preload()
-                                                    ->createOptionForm([
-                                                        Forms\Components\TextInput::make('name')
-                                                            ->label(__('name'))
-                                                            ->required()
-                                                            ->maxLength(255),
-
-                                                        Forms\Components\Select::make('countries')
-                                                            ->label(__('countries'))
-                                                            ->relationship('countries', 'name')
-                                                            ->multiple()
-                                                            ->searchable()
-                                                            ->preload(),
-                                                    ])
-                                                    ->nullable()
-                                                    ->live()
-                                                    ->afterStateUpdated(fn (Forms\Set $set) => $set('country_id', null))
-                                                    ->hidden(fn (Forms\Get $get) => filled($get('country_id')))
-                                                    ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
-
-                                                Select::make('currency_id')
-                                                    ->label(__('fields.currency'))
-                                                    ->relationship('currency', 'name')
-                                                    ->required(),
-
-                                                TextInput::make('special_price')
-                                                    ->label(__('bundles.special_price'))
-                                                    ->numeric()
-                                                    ->required(),
-
-                                                TextInput::make('special_price_after_discount')
-                                                    ->lt('special_price')
-                                                    ->label(__('bundles.after_discount_price'))
-                                                    ->numeric()
-                                                    ->nullable(),
-                                            ])->columnSpanFull(),
-                                    ]),
-                            ]),
-
                         Tabs\Tab::make(__('Shipping'))
                             ->icon('heroicon-o-truck')
                             ->schema([
@@ -792,7 +667,6 @@ class ProductResource extends Resource
             ]);
     }
 
-
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
@@ -800,7 +674,12 @@ class ProductResource extends Resource
             ->withCount('media'); // Count media instead of loading full records
     }
 
-
+    public static function getRelations(): array
+    {
+       return [
+           BundlesRelationManager::class
+       ];
+    }
 
     public static function getPages(): array
     {
