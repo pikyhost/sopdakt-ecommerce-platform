@@ -1034,7 +1034,7 @@
                                                                             <span class="product-name">{{ $bundleProduct->name }}</span>
                                                                             @if ($bundle->bundle_type !== \App\Enums\BundleType::BUY_X_GET_Y)
                                                                                 <span class="product-quantity">
-                                                ({{ __('Quantity:') }}  1 }})
+                                                ({{ __('Quantity:') }} 1)
                                             </span>
                                                                             @endif
                                                                         </div>
