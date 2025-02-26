@@ -1,7 +1,12 @@
 @php
-    $settings = \App\Models\Setting::getSetting('site_settings');
+    $settings = \App\Models\Setting::getAllSettings();
     $locale = app()->getLocale();
-    $siteName = $settings['name'][$locale] ?? 'Your Site Name';
+
+    // Ensure 'site_settings' exists in the retrieved settings array
+    $siteSettings = $settings['site_settings'] ?? [];
+
+    // Retrieve the site name based on the locale, with a fallback to English
+    $siteName = $siteSettings["site_name_{$locale}"] ?? $siteSettings["site_name_en"] ?? 'Default Site Name';
 
     // Translations for the footer
     $footerTexts = [
