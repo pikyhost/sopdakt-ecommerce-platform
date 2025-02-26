@@ -4,8 +4,11 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers\BundlesRelationManager;
+use App\Models\City;
+use App\Models\Governorate;
 use App\Models\Product;
 use App\Models\ProductColor;
+use App\Models\ShippingCost;
 use App\Services\ProductActionsService;
 use Closure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
@@ -26,6 +29,8 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\ActionSize;
@@ -33,6 +38,7 @@ use Filament\Tables;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\Rule;
 use Mokhosh\FilamentRating\Components\Rating;
 
 class ProductResource extends Resource
@@ -375,7 +381,7 @@ class ProductResource extends Resource
                                     ->maxLength(255),
                             ])->columns(1),
 
-                        Tabs\Tab::make(__('Shipping'))
+                        Tabs\Tab::make(__('shipping_cost.navigation_label'))
                             ->icon('heroicon-o-truck')
                             ->schema([
                                Forms\Components\Section::make()->schema([
@@ -389,61 +395,131 @@ class ProductResource extends Resource
                                 Repeater::make('shipping_costs')
                                     ->defaultItems(0)
                                     ->label(__('Shipping Costs'))
-                                    ->relationship('shippingCosts') // Define the relationship
+                                    ->relationship('shippingCosts')
                                     ->schema([
-                                        Forms\Components\Select::make('city_id')
-                                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
-                                            ->label(__('shipping_cost.city'))
-                                            ->relationship('city', 'name')
-                                            ->nullable()
-                                            ->live()
-                                            ->hidden(fn ($get) => $get('governorate_id') || $get('shipping_zone_id') || $get('country_id') || $get('country_group_id')),
-
-                                        Forms\Components\Select::make('governorate_id')
-                                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
-                                            ->label(__('shipping_cost.governorate'))
-                                            ->relationship('governorate', 'name')
-                                            ->nullable()
-                                            ->live()
-                                            ->hidden(fn ($get) => $get('city_id') || $get('shipping_zone_id') || $get('country_id') || $get('country_group_id')),
-
-                                        Forms\Components\Select::make('shipping_zone_id')
-                                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
-                                            ->label(__('shipping_zone.name'))
-                                            ->relationship('shippingZone', 'name')
-                                            ->nullable()
-                                            ->live()
-                                            ->hidden(fn ($get) => $get('city_id') || $get('governorate_id') || $get('country_id') || $get('country_group_id')),
-
-                                        Forms\Components\Select::make('country_id')
-                                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
-                                            ->label(__('shipping_cost.country'))
-                                            ->relationship('country', 'name')
-                                            ->nullable()
-                                            ->live()
-                                            ->hidden(fn ($get) => $get('city_id') || $get('governorate_id') || $get('shipping_zone_id') || $get('country_group_id')),
-
-                                        Forms\Components\Select::make('country_group_id')
-                                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                                        Select::make('country_group_id')
                                             ->label(__('shipping_cost.country_group'))
+                                            ->rules(fn (Get $get, $record) => [
+                                                Rule::unique(ShippingCost::class, 'country_group_id')
+                                                    ->where(fn ($query) => $query
+                                                        ->where('product_id', $get('../../id'))
+                                                        ->whereNull('governorate_id')
+                                                        ->whereNull('shipping_zone_id')
+                                                        ->whereNull('city_id')
+                                                        ->whereNull('country_id')
+                                                    )
+                                                    ->when($record, fn ($rule) => $rule->ignore($record->id))
+                                            ])
                                             ->relationship('countryGroup', 'name')
                                             ->nullable()
                                             ->live()
-                                            ->hidden(fn ($get) => $get('city_id') || $get('governorate_id') || $get('shipping_zone_id') || $get('country_id')),
+                                            ->hidden(fn (Get $get) => $get('../city_id') || $get('../governorate_id') || $get('../shipping_zone_id') || $get('../country_id')),
 
-                                        Forms\Components\TextInput::make('cost')
-                                            ->label(__('shipping_cost.cost'))
-                                            ->required()
-                                            ->numeric()
-                                            ->default(0),
+                                        Select::make('shipping_zone_id')
+                                            ->label(__('shipping_zone.name'))
+                                            ->rules(fn (Get $get, $record) => [
+                                                Rule::unique(ShippingCost::class, 'shipping_zone_id')
+                                                    ->where(fn ($query) => $query
+                                                        ->where('product_id', $get('../../id'))
+                                                        ->whereNull('governorate_id')
+                                                        ->whereNull('country_group_id')
+                                                        ->whereNull('city_id')
+                                                        ->whereNull('country_id')
+                                                    )
+                                                    ->when($record, fn ($rule) => $rule->ignore($record->id))
+                                            ])
+                                            ->relationship('shippingZone', 'name')
+                                            ->nullable()
+                                            ->live()
+                                            ->hidden(fn (Get $get) => $get('../city_id') || $get('../governorate_id') || $get('../country_id') || $get('../country_group_id')),
 
-                                        Forms\Components\TextInput::make('shipping_estimate_time')
-                                            ->label(__('shipping_cost.shipping_estimate_time'))
-                                            ->required()
-                                            ->maxLength(255)
-                                            ->default('0-0'),
-                                    ])
-                                    ->columns(2),
+                                        Select::make('country_id')
+                                            ->label(__('shipping_cost.country'))
+                                            ->searchable()
+                                            ->rules(fn (Get $get, $record) => [
+                                                Rule::unique(ShippingCost::class, 'country_id')
+                                                    ->where(fn ($query) => $query
+                                                        ->where('product_id', $get('../../id'))
+                                                        ->whereNull('governorate_id')
+                                                        ->whereNull('city_id')
+                                                    )
+                                                    ->when($record, fn ($rule) => $rule->ignore($record->id))
+                                            ])
+                                            ->relationship('country', 'name')
+                                            ->nullable()
+                                            ->live()
+                                            ->hidden(fn (Get $get) => $get('governorate_id') || $get('city_id')) // ✅ Hide when governorate or city is set
+                                            ->afterStateHydrated(fn (Set $set, Get $get, $state) =>
+                                            $set('country_id', $state ?: $get('../../country_id')) // ✅ Ensure correct value is selected
+                                            )
+                                            ->dehydrated(fn (Get $get) => !$get('governorate_id') && !$get('city_id')),
+        // ✅ Do not save if governorate or city exists
+
+                                        Select::make('governorate_id')
+                                            ->label(__('shipping_cost.governorate'))
+                                            ->rules(fn (Get $get, $record) => [
+                                                Rule::unique(ShippingCost::class, 'governorate_id')
+                                                    ->where(fn ($query) => $query
+                                                        ->where('product_id', $get('../../id'))
+                                                        ->whereNull('shipping_zone_id')
+                                                        ->whereNull('country_group_id')
+                                                        ->whereNull('city_id')
+                                                        ->whereNull('country_id')
+                                                    )
+                                                    ->when($record, fn ($rule) => $rule->ignore($record->id))
+                                            ])
+                                            ->options(fn (Get $get, $record) =>
+                                            $get('country_id')
+                                                ? Governorate::where('country_id', $get('country_id'))
+                                                ->orWhere('id', $record?->governorate_id) // Ensure existing governorate is included
+                                                ->pluck('name', 'id')
+                                                : ($record?->governorate_id ? Governorate::where('id', $record->governorate_id)->pluck('name', 'id') : [])
+                                            )
+                                            ->nullable()
+                                            ->live()
+                                            ->afterStateUpdated(fn (Set $set) => $set('city_id', null))
+                                            ->hidden(fn ($get) => $get('city_id')),
+
+
+                                        // City Select
+                                        Select::make('city_id')
+                                            ->label(__('shipping_cost.city'))
+                                            ->rules(fn (Get $get, $record) => [
+                                                Rule::unique(ShippingCost::class, 'city_id')
+                                                    ->where(fn ($query) => $query
+                                                        ->where('product_id', $get('../../id'))
+                                                        ->whereNull('governorate_id') // ✅ Ensure governorate is not set
+                                                        ->whereNull('country_id')
+                                                    )
+                                                    ->when($record, fn ($rule) => $rule->ignore($record->id))
+                                            ])
+                                            ->options(fn (Get $get, $record) =>
+                                            $get('governorate_id')
+                                                ? City::where('governorate_id', $get('governorate_id'))
+                                                ->orWhere('id', $record?->city_id) // ✅ Ensure existing city is included
+                                                ->pluck('name', 'id')
+                                                : ($record?->city_id ? City::where('id', $record->city_id)->pluck('name', 'id') : [])
+                                            )
+                                            ->nullable()
+                                            ->live()
+                                            ->afterStateHydrated(fn (Set $set, Get $get, $state) =>
+                                            $set('city_id', $state ?: $get('../../city_id')) // ✅ Ensure correct value is selected
+                                            )
+                                            ->dehydrated(true) // ✅ Always save city
+                                            ->hidden(false), // Always visible
+
+        TextInput::make('cost')
+            ->label(__('shipping_cost.cost'))
+            ->required()
+            ->numeric()
+            ->default(0),
+        TextInput::make('shipping_estimate_time')
+            ->label(__('shipping_cost.shipping_estimate_time'))
+            ->required()
+            ->maxLength(255)
+            ->default('0-0'),
+     ])
+              ->columns(2),
                             ]),
 
                         // Additional Info Tab

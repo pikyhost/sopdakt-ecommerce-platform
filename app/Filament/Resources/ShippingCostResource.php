@@ -3,12 +3,16 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ShippingCostResource\Pages;
+use App\Models\City;
+use App\Models\Governorate;
 use App\Models\ShippingCost;
+use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Filters\QueryBuilder;
@@ -38,12 +42,12 @@ class ShippingCostResource extends Resource
 
     public static function getModelLabel(): string
     {
-        return __('shipping_cost.model_label');
+        return __('shipping_cost.navigation_label');
     }
 
     public static function getPluralModelLabel(): string
     {
-        return __('shipping_cost.plural_label');
+        return __('shipping_cost.navigation_label');
     }
 
     public static function form(Form $form): Form
@@ -55,92 +59,14 @@ class ShippingCostResource extends Resource
                     ->label(__('shipping_cost.product'))
                     ->relationship('product', 'name')
                     ->required(),
-
-                Select::make('shipping_type_id')
-                    ->searchable()
-                    ->label(__('shipping_cost.shipping_type'))
-                    ->relationship('shippingType', 'name'),
-
-                Select::make('city_id')
-                    ->searchable()
-                    ->rules(fn (Get $get, string $operation) =>
-                    $operation === 'create' ? [
-                        Rule::unique(ShippingCost::class, 'city_id')
-                            ->where(fn ($query) => $query
-                                ->where('product_id', $get('product_id'))
-                                ->whereNull('shipping_zone_id')
-                                ->whereNull('country_group_id')
-                                ->whereNull('governorate_id')
-                                ->whereNull('country_id')
-                            )
-                    ] : []
-                    )
-                    ->relationship('city', 'name')
-                    ->nullable()
-                    ->live()
-                    ->hidden(fn ($get) => $get('governorate_id') || $get('shipping_zone_id') || $get('country_id') || $get('country_group_id')),
-
-                Select::make('governorate_id')
-                    ->searchable()
-                    ->rules(fn (Get $get, string $operation) =>
-                    $operation === 'create' ? [
-                        Rule::unique(ShippingCost::class, 'governorate_id')
-                            ->where(fn ($query) => $query
-                                ->where('product_id', $get('product_id'))
-                                ->whereNull('shipping_zone_id')
-                                ->whereNull('country_group_id')
-                                ->whereNull('city_id')
-                                ->whereNull('country_id')
-                            )
-                    ] : []
-                    )
-                    ->relationship('governorate', 'name')
-                    ->nullable()
-                    ->live()
-                    ->hidden(fn ($get) => $get('city_id') || $get('shipping_zone_id') || $get('country_id') || $get('country_group_id')),
-
-                Select::make('shipping_zone_id')
-                    ->searchable()
-                    ->rules(fn (Get $get, string $operation) =>
-                    $operation === 'create' ? [
-                        Rule::unique(ShippingCost::class, 'shipping_zone_id')
-                            ->where(fn ($query) => $query
-                                ->where('product_id', $get('product_id'))
-                                ->whereNull('governorate_id')
-                                ->whereNull('country_group_id')
-                                ->whereNull('city_id')
-                                ->whereNull('country_id')
-                            )
-                    ] : []
-                    )
-                    ->relationship('shippingZone', 'name')
-                    ->nullable()
-                    ->live()
-                    ->hidden(fn ($get) => $get('city_id') || $get('governorate_id') || $get('country_id') || $get('country_group_id')),
-
-                Select::make('country_id')
-                    ->searchable()
-                    ->rules(fn (Get $get, string $operation) =>
-                    $operation === 'create' ? [
-                        Rule::unique(ShippingCost::class, 'country_id')
-                            ->where(fn ($query) => $query
-                                ->where('product_id', $get('product_id'))
-                                ->whereNull('governorate_id')
-                                ->whereNull('shipping_zone_id')
-                                ->whereNull('city_id')
-                                ->whereNull('country_group_id')
-                            )
-                    ] : []
-                    )
-                    ->relationship('country', 'name')
-                    ->nullable()
-                    ->live()
-                    ->hidden(fn ($get) => $get('city_id') || $get('governorate_id') || $get('shipping_zone_id') || $get('country_group_id')),
+//
+//                Select::make('shipping_type_id')
+//                    ->label(__('shipping_cost.shipping_type'))
+//                    ->relationship('shippingType', 'name'),
 
                 Select::make('country_group_id')
-                    ->searchable()
-                    ->rules(fn (Get $get, string $operation) =>
-                    $operation === 'create' ? [
+                    ->label(__('shipping_cost.country_group'))
+                    ->rules(fn (Get $get, $record) => [
                         Rule::unique(ShippingCost::class, 'country_group_id')
                             ->where(fn ($query) => $query
                                 ->where('product_id', $get('product_id'))
@@ -149,12 +75,92 @@ class ShippingCostResource extends Resource
                                 ->whereNull('city_id')
                                 ->whereNull('country_id')
                             )
-                    ] : []
-                    )
+                            ->when($record, fn ($rule) => $rule->ignore($record->id))
+                    ])
                     ->relationship('countryGroup', 'name')
                     ->nullable()
                     ->live()
                     ->hidden(fn ($get) => $get('city_id') || $get('governorate_id') || $get('shipping_zone_id') || $get('country_id')),
+
+                Select::make('shipping_zone_id')
+                    ->label(__('shipping_zone.name'))
+                    ->rules(fn (Get $get, $record) => [
+                        Rule::unique(ShippingCost::class, 'shipping_zone_id')
+                            ->where(fn ($query) => $query
+                                ->where('product_id', $get('product_id'))
+                                ->whereNull('governorate_id')
+                                ->whereNull('country_group_id')
+                                ->whereNull('city_id')
+                                ->whereNull('country_id')
+                            )
+                            ->when($record, fn ($rule) => $rule->ignore($record->id))
+                    ])
+                    ->relationship('shippingZone', 'name')
+                    ->nullable()
+                    ->live()
+                    ->hidden(fn ($get) => $get('city_id') || $get('governorate_id') || $get('country_id') || $get('country_group_id')),
+
+                Select::make('country_id')
+                    ->label(__('shipping_cost.country'))
+                    ->searchable()
+                    ->rules(fn (Get $get, $record) => [
+                        Rule::unique(ShippingCost::class, 'country_id')
+                            ->where(fn ($query) => $query
+                                ->where('product_id', $get('product_id'))
+                                ->whereNull('governorate_id')
+                                ->whereNull('city_id')
+                            )
+                            ->when($record, fn ($rule) => $rule->ignore($record->id))
+                    ])
+                    ->relationship('country', 'name')
+                    ->nullable()
+                    ->live()
+                    ->hidden(fn ($get) => $get('city_id') || $get('governorate_id')),
+
+                Select::make('governorate_id')
+                    ->label(__('shipping_cost.governorate'))
+                    ->rules(fn (Get $get, $record) => [
+                        Rule::unique(ShippingCost::class, 'governorate_id')
+                            ->where(fn ($query) => $query
+                                ->where('product_id', $get('product_id'))
+                                ->whereNull('shipping_zone_id')
+                                ->whereNull('country_group_id')
+                                ->whereNull('city_id')
+                                ->whereNull('country_id')
+                            )
+                            ->when($record, fn ($rule) => $rule->ignore($record->id))
+                    ])
+                    ->options(fn (Get $get) =>
+                    $get('country_id')
+                        ? Governorate::where('country_id', $get('country_id'))->pluck('name', 'id')
+                        : []
+                    )
+                    ->nullable()
+                    ->live()
+                    ->afterStateUpdated(fn (Set $set) => $set('city_id', null)) // Reset lower levels
+                    ->hidden(fn ($get) => $get('city_id')),
+
+                Select::make('city_id')
+                    ->label(__('shipping_cost.city'))
+                    ->rules(fn (Get $get, $record) => [
+                        Rule::unique(ShippingCost::class, 'city_id')
+                            ->where(fn ($query) => $query
+                                ->where('product_id', $get('product_id'))
+                                ->whereNull('shipping_zone_id')
+                                ->whereNull('country_group_id')
+                                ->whereNull('governorate_id')
+                                ->whereNull('country_id')
+                            )
+                            ->when($record, fn ($rule) => $rule->ignore($record->id))
+                    ])
+                    ->options(fn (Get $get) =>
+                    $get('governorate_id')
+                        ? City::where('governorate_id', $get('governorate_id'))->pluck('name', 'id')
+                        : []
+                    )
+                    ->nullable()
+                    ->live()
+                    ->hidden(fn ($get) => false),
 
                 Forms\Components\TextInput::make('cost')
                     ->label(__('shipping_cost.cost'))
@@ -167,7 +173,6 @@ class ShippingCostResource extends Resource
                     ->required()
                     ->maxLength(255)
                     ->default('0-0'),
-
             ])->columns(2)
         ]);
     }
@@ -181,11 +186,11 @@ class ShippingCostResource extends Resource
                     ->searchable()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('shippingType.name')
-                    ->placeholder('-')
-                    ->label(__('shipping_cost.shipping_type'))
-                    ->searchable()
-                    ->sortable(),
+//                Tables\Columns\TextColumn::make('shippingType.name')
+//                    ->placeholder('-')
+//                    ->label(__('shipping_cost.shipping_type'))
+//                    ->searchable()
+//                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('city.name')
                     ->label(__('shipping_cost.city'))
