@@ -44,12 +44,6 @@ class BundlesRelationManager extends RelationManager
                                     ])
                                     ->required(),
 
-                                TextInput::make('discount_price')
-                                    ->live()
-                                    ->label(__('bundles.discount_price'))
-                                    ->numeric()
-                                    ->visible(fn ($get) => $get('bundle_type') == 'fixed_price' || 'buy_x_get_y'),
-
                                 TextInput::make('buy_x')
                                     ->live()
                                     ->label(__('bundles.buy_x'))
@@ -60,7 +54,18 @@ class BundlesRelationManager extends RelationManager
                                     ->live()
                                     ->label(__('bundles.get_y_free'))
                                     ->numeric()
-                                    ->visible(fn ($get) => $get('bundle_type') === 'buy_x_get_y' && !$get('discount_price')),
+                                    ->visible(fn ($get) =>
+                                        $get('bundle_type') === 'buy_x_get_y' && empty($get('discount_price'))
+                                    ),
+
+                                TextInput::make('discount_price')
+                                    ->live()
+                                    ->label(__('bundles.discount_price'))
+                                    ->numeric()
+                                    ->visible(fn ($get) =>
+                                        ($get('bundle_type') === 'fixed_price' || $get('bundle_type') === 'buy_x_get_y') &&
+                                        empty($get('get_y'))
+                                    ),
 
                                 Select::make('products')
                                     ->live()
@@ -69,7 +74,6 @@ class BundlesRelationManager extends RelationManager
                                     ->maxItems(fn (Get $get) => $get('bundle_type') === 'buy_x_get_y' ? 1 : 10)
                                     ->label(__('bundles.products'))
                                     ->multiple()
-                                    ->preload()
                                     ->relationship('products', 'name')
                                     ->rules([
                                         fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) {
@@ -80,6 +84,10 @@ class BundlesRelationManager extends RelationManager
                                             }
                                         }
                                     ])
+                                    ->helperText(fn (Get $get) => $get('bundle_type') === 'buy_x_get_y'
+                                        ?  __('bundles.select_one_product')
+                                        : null),
+
                             ]),
 
                         // Special Prices Tab

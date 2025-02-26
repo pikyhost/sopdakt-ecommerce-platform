@@ -14,6 +14,7 @@
     "governorate_name": "Governorate Name",
     "dark_logo_en": "Dark Mode Logo (English)",
     "dark_logo_ar": "Dark Mode Logo (Arabic)",
+    "bundles.select_one_product" : "You can only select one product for this bundle type. Make sure to choose the product you are currently editing.",
     "Website Information": "Website Information",
     "Update website name and currency": "Update website name and currency",
     "Website Name (English)": "Website Name (English)",
