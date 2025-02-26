@@ -107,12 +107,12 @@ class BundleResource extends Resource
                                         ($get('bundle_type') === 'fixed_price' || $get('bundle_type') === 'buy_x_get_y') &&
                                         empty($get('get_y'))
                                     ),
-                                
+
                                 Select::make('products')
+                                    ->searchable()
                                     ->label(__('bundles.products'))
                                     ->multiple()
-                                    ->relationship('products', 'name')
-                                    ->preload(),
+                                    ->relationship('products', 'name'),
                             ]),
 
                         // Special Prices Tab

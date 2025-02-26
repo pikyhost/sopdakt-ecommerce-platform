@@ -24,6 +24,7 @@
     "Update website name and currency": "تحديث اسم الموقع والعملة",
     "Website Name (English)": "اسم الموقع (بالإنجليزية)",
     "Website Name (Arabic)": "اسم الموقع (بالعربية)",
+    "bundles.select_one_product" : "يمكنك اختيار منتج واحد فقط لهذا النوع من العروض. تأكد من اختيار المنتج الذي تقوم بتعديله حاليًا.",
     "Logos": "الشعارات",
     "Upload logos for different languages": "تحميل الشعارات للغات المختلفة",
     "Logo (English)": "الشعار (بالإنجليزية)",
