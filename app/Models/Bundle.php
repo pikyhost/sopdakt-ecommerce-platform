@@ -77,29 +77,20 @@ class Bundle extends Model
         return (float) \App\Helpers\GeneralHelper::getBundlePriceForCountryWithDiscount($this);
     }
 
-    protected static function boot()
+    /**
+     * Calculate the discount price for BUY_X_GET_Y bundles.
+     */
+    private static function calculateDiscountPrice($bundle)
     {
-        parent::boot();
+        $bundleType = $bundle->bundle_type->value ?? null;
 
-        // Runs on both creating and updating
-        static::saving(function ($bundle) {
-            $bundleType = $bundle->bundle_type->value ?? null; // Get the string value of enum
+        if ($bundleType === \App\Enums\BundleType::BUY_X_GET_Y->value && $bundle->buy_x) {
+            $firstProduct = $bundle->products()->first();
 
-            if ($bundleType === \App\Enums\BundleType::BUY_X_GET_Y->value && $bundle->buy_x) {
-                $firstProduct = $bundle->products()->first();
-
-                if ($firstProduct && !is_null($firstProduct->discount_price_for_current_country)) {
-                    $bundle->discount_price = $bundle->buy_x * floatval($firstProduct->discount_price_for_current_country);
-                }
+            if ($firstProduct && !is_null($firstProduct->discount_price_for_current_country)) {
+                $bundle->discount_price = $bundle->buy_x * floatval($firstProduct->discount_price_for_current_country);
             }
-        });
-
-        // Ensure products exist before saving on creation
-        static::created(function ($bundle) {
-            if ($bundle->products()->exists()) {
-                $bundle->save(); // Triggers the `saving` event again
-            }
-        });
+        }
     }
 
 }

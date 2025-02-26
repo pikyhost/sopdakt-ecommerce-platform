@@ -754,74 +754,111 @@
                                     <livewire:wishlist-button :product-id="$product->id" />
 
                                     <style>
+                                        /* Bundle Section */
                                         .product-bundles {
                                             background: #fff;
-                                            border-radius: 8px;
+                                            border-radius: 12px;
                                             padding: 20px;
-                                            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                                            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
+                                            margin-bottom: 25px;
+                                            transition: all 0.3s ease-in-out;
                                         }
 
-                                        .bundle-title {
-                                            font-size: 20px;
-                                            font-weight: bold;
-                                            margin-bottom: 15px;
-                                            color: #333;
-                                        }
-
-                                        .bundle-list {
-                                            list-style: none;
-                                            padding: 0;
-                                            margin: 0;
-                                        }
-
-                                        .bundle-item {
-                                            border: 1px solid #eee;
-                                            border-radius: 8px;
-                                            padding: 15px;
-                                            margin-bottom: 15px;
-                                        }
-
+                                        /* Bundle Header */
                                         .bundle-header {
                                             display: flex;
                                             justify-content: space-between;
                                             align-items: center;
-                                            font-size: 18px;
-                                            font-weight: bold;
+                                            margin-bottom: 15px;
+                                        }
+
+                                        .bundle-title {
+                                            font-size: 22px;
+                                            font-weight: 600;
                                             color: #222;
+                                        }
+
+                                        /* Toggle Button */
+                                        .toggle-button {
+                                            background: #007bff;
+                                            color: #fff;
+                                            border: none;
+                                            padding: 8px 14px;
+                                            font-size: 14px;
+                                            border-radius: 6px;
+                                            cursor: pointer;
+                                            display: flex;
+                                            align-items: center;
+                                            gap: 6px;
+                                            transition: background 0.3s ease;
+                                        }
+
+                                        .toggle-button:hover {
+                                            background: #0056b3;
+                                        }
+
+                                        /* Bundle List */
+                                        .bundle-list {
+                                            padding: 0;
+                                            margin-top: 10px;
+                                        }
+
+                                        /* Bundle Item */
+                                        .bundle-item {
+                                            background: #f8f9fa;
+                                            padding: 15px;
+                                            border-radius: 8px;
+                                            margin-bottom: 12px;
+                                            border: 1px solid #e0e0e0;
+                                            box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05);
+                                            transition: transform 0.2s ease-in-out;
+                                        }
+
+                                        .bundle-item:hover {
+                                            transform: translateY(-3px);
+                                        }
+
+                                        /* Bundle Details */
+                                        .bundle-text {
+                                            font-size: 14px;
+                                            color: #555;
                                             margin-bottom: 10px;
                                         }
 
-                                        .bundle-text {
-                                            font-size: 14px;
-                                            color: #666;
-                                            margin-bottom: 12px;
-                                        }
-
+                                        /* Bundle Products Grid */
                                         .bundle-products {
                                             display: flex;
                                             flex-wrap: wrap;
-                                            gap: 15px;
-                                            align-items: center;
+                                            gap: 12px;
+                                            margin-top: 10px;
                                         }
 
+                                        /* Product Item */
                                         .product-item {
                                             display: flex;
                                             align-items: center;
-                                            background: #f9f9f9;
+                                            background: #fff;
                                             padding: 10px;
-                                            border-radius: 6px;
+                                            border-radius: 8px;
                                             border: 1px solid #ddd;
-                                            width: fit-content;
+                                            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05);
+                                            transition: all 0.3s ease-in-out;
                                         }
 
+                                        .product-item:hover {
+                                            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+                                        }
+
+                                        /* Product Image */
                                         .product-image {
                                             width: 50px;
                                             height: 50px;
                                             object-fit: cover;
-                                            border-radius: 5px;
+                                            border-radius: 6px;
                                             margin-right: 10px;
                                         }
 
+                                        /* Product Info */
                                         .product-info {
                                             display: flex;
                                             flex-direction: column;
@@ -838,67 +875,28 @@
                                             color: #777;
                                         }
 
+                                        /* Buy Button */
                                         .bundle-buy {
                                             display: flex;
                                             justify-content: flex-end;
-                                            margin-top: 10px;
+                                            margin-top: 12px;
                                         }
 
                                         .buy-button {
-                                            background: #007bff;
+                                            background: #28a745;
                                             color: white;
-                                            font-size: 13px;
-                                            padding: 8px 12px;
-                                            border-radius: 5px;
+                                            font-size: 14px;
+                                            padding: 8px 14px;
+                                            border-radius: 6px;
                                             text-decoration: none;
-                                            transition: 0.3s;
+                                            transition: background 0.3s ease;
                                         }
 
                                         .buy-button:hover {
-                                            background: #0056b3;
+                                            background: #218838;
                                         }
 
-                                        /* General Bundle Styles */
-                                        .product-bundles {
-                                            background: #fff;
-                                            padding: 20px;
-                                            border-radius: 8px;
-                                            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-                                            margin-bottom: 20px;
-                                        }
-
-                                        /* Header and Toggle Button */
-                                        .bundle-header {
-                                            display: flex;
-                                            justify-content: space-between;
-                                            align-items: center;
-                                            margin-bottom: 15px;
-                                        }
-
-                                        .bundle-title {
-                                            font-size: 20px;
-                                            font-weight: 600;
-                                        }
-
-                                        .toggle-button {
-                                            background: #007bff;
-                                            color: white;
-                                            border: none;
-                                            padding: 8px 16px;
-                                            font-size: 14px;
-                                            border-radius: 5px;
-                                            cursor: pointer;
-                                            display: flex;
-                                            align-items: center;
-                                            gap: 5px;
-                                            transition: background 0.3s ease-in-out;
-                                        }
-
-                                        .toggle-button:hover {
-                                            background: #0056b3;
-                                        }
-
-                                        /* Toggle Arrow Icons */
+                                        /* Icon Animation */
                                         .icon {
                                             width: 18px;
                                             height: 18px;
@@ -909,48 +907,7 @@
                                             transform: rotate(180deg);
                                         }
 
-                                        /* Bundle Items */
-                                        .bundle-list {
-                                            padding-left: 0;
-                                        }
-
-                                        .bundle-item {
-                                            list-style: none;
-                                            background: #f9f9f9;
-                                            padding: 15px;
-                                            border-radius: 6px;
-                                            margin-bottom: 10px;
-                                            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-                                        }
-
-                                        /* Product Images */
-                                        .product-image {
-                                            width: 60px;
-                                            height: 60px;
-                                            border-radius: 5px;
-                                            object-fit: cover;
-                                        }
-
-                                        /* Buy Button */
-                                        .buy-button {
-                                            display: inline-block;
-                                            background: #28a745;
-                                            color: white;
-                                            padding: 8px 12px;
-                                            text-decoration: none;
-                                            font-size: 14px;
-                                            border-radius: 4px;
-                                            margin-top: 10px;
-                                            transition: background 0.3s ease;
-                                        }
-
-                                        .buy-button:hover {
-                                            background: #218838;
-                                        }
-
-
                                     </style>
-
 
                                     <br>
 
@@ -982,7 +939,12 @@
                                                                     @case(\App\Enums\BundleType::BUY_X_GET_Y)
                                                                         @if (!is_null($bundle->buy_x) && !is_null($bundle->get_y))
                                                                             <p class="bundle-text">
-                                                                                {{ __('Buy :x and get :y free ', ['x' => $bundle->buy_x, 'y' => $bundle->get_y]) }}
+                                                                                {{ __('Buy :x and get :y free', ['x' => $bundle->buy_x, 'y' => $bundle->get_y]) }}
+                                                                                @if (!is_null($bundle->bundle_discount_price_for_current_country))
+                                                                                    {{ __('with a discount price of :price', [
+                                                                                        'price' => number_format($bundle->bundle_discount_price_for_current_country, 2)
+                                                                                    ]) }}
+                                                                                @endif
                                                                             </p>
                                                                         @elseif (!is_null($bundle->buy_x) && is_null($bundle->get_y) && isset($bundle->bundle_discount_price_for_current_country))
                                                                             <p class="bundle-text">
@@ -992,14 +954,7 @@
                                                                                 ]) }}
                                                                             </p>
                                                                         @endif
-
-                                                                        @if (!is_null($bundle->discount_price))
-                                                                            <p class="bundle-text">
-                                                                                {{ __('Total Discount Price: :price', ['price' => number_format($bundle->discount_price, 2)]) }}
-                                                                            </p>
-                                                                        @endif
                                                                         @break
-
 
                                                                     @case(\App\Enums\BundleType::FIXED_PRICE)
                                                                         @php
@@ -1007,18 +962,16 @@
                                                                             $originalPrice = $bundle->bundle_price_for_current_country;
                                                                         @endphp
 
-                                                                        @if (isset($discountPrice, $originalPrice) && $discountPrice < $originalPrice)
-                                                                            <p class="bundle-text">
+                                                                        <p class="bundle-text">
+                                                                            @if (isset($discountPrice, $originalPrice) && $discountPrice < $originalPrice)
                                                                                 {{ __('Get this bundle for :price instead of :original', [
                                                                                     'price' => number_format($discountPrice, 2),
                                                                                     'original' => number_format($originalPrice, 2)
                                                                                 ]) }}
-                                                                            </p>
-                                                                        @else
-                                                                            <p class="bundle-text">
+                                                                            @else
                                                                                 {{ __('Get this bundle for :price', ['price' => number_format($originalPrice, 2)]) }}
-                                                                            </p>
-                                                                        @endif
+                                                                            @endif
+                                                                        </p>
                                                                         @break
                                                                 @endswitch
                                                             </div>
@@ -1052,6 +1005,7 @@
                                             </ul>
                                         </div>
                                     @endif
+
 
 
                                 @if (session()->has('success'))

@@ -8,6 +8,8 @@ use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -57,6 +59,37 @@ class BundleResource extends Resource
         return __('bundles.label');
     }
 
+    protected static function calculateDiscountPrice(?Get $get)
+    {
+        if ($get && $get('bundle_type') === 'buy_x_get_y' && $get('buy_x') && $get('get_y')) {
+            $productIds = $get('products') ?? []; // Get selected product(s)
+            $productId = is_array($productIds) ? reset($productIds) : $productIds; // Ensure we get the first product ID
+
+            if (!$productId) {
+                return null; // No product selected, return null
+            }
+
+            $product = \App\Models\Product::find($productId); // Fetch product from DB
+
+            if ($product) {
+                $buyX = floatval($get('buy_x')) ?: 1;
+                $pricePerUnit = floatval($product->discount_price_for_current_country);
+                return $buyX * $pricePerUnit;
+            }
+        }
+
+        return null;
+    }
+
+    protected static function updateDiscountPrice(Set $set, Get $get)
+    {
+        if ($get('bundle_type') === 'buy_x_get_y' && $get('buy_x') && $get('get_y')) {
+            $discountPrice = self::calculateDiscountPrice($get);
+            $set('discount_price', $discountPrice);
+        }
+    }
+
+
     public static function form(Form $form): Form
     {
         return $form
@@ -85,40 +118,47 @@ class BundleResource extends Resource
                                     ])
                                     ->required(),
 
+                                Select::make('products')
+                                    ->maxItems(fn (Get $get) => ($get('bundle_type') instanceof \App\Enums\BundleType
+                                        ? $get('bundle_type')->value
+                                        : $get('bundle_type')) === 'fixed_price' ? 10 : 1
+                                    )
+                                    ->searchable()
+                                    ->preload()
+                                    ->label(__('bundles.products'))
+                                    ->multiple()
+                                    ->relationship('products', 'name'),
+
                                 TextInput::make('buy_x')
                                     ->live()
                                     ->label(__('bundles.buy_x'))
                                     ->numeric()
-                                    ->visible(fn ($get) => $get('bundle_type') === 'buy_x_get_y'),
+                                    ->visible(fn ($get) => $get('bundle_type') === 'buy_x_get_y')
+                                    ->afterStateUpdated(fn (Set $set, Get $get) => self::updateDiscountPrice($set, $get)),
 
                                 TextInput::make('get_y')
                                     ->live()
                                     ->label(__('bundles.get_y_free'))
                                     ->numeric()
-                                    ->visible(fn ($get) =>
-                                        $get('bundle_type') === 'buy_x_get_y' && empty($get('discount_price'))
-                                    ),
+                                    ->visible(fn ($get) => $get('bundle_type') === 'buy_x_get_y')
+                                    ->afterStateUpdated(fn (Set $set, Get $get) => self::updateDiscountPrice($set, $get)), // Ensure discount updates
 
                                 TextInput::make('discount_price')
                                     ->live()
                                     ->label(__('bundles.discount_price'))
                                     ->numeric()
-                                    ->visible(fn ($get) =>
-                                        ($get('bundle_type') === 'fixed_price' || $get('bundle_type') === 'buy_x_get_y') &&
-                                        empty($get('get_y'))
-                                    ),
-
-                                Select::make('products')
-                                    ->searchable()
-                                    ->label(__('bundles.products'))
-                                    ->multiple()
-                                    ->relationship('products', 'name'),
-                            ]),
+                                    ->visible(fn ($get) => $get('bundle_type')) // Always visible
+                                    ->disabled(fn ($get) => $get('bundle_type') === 'buy_x_get_y' && $get('buy_x') !== null && $get('get_y') !== null)
+                                    ->default(fn (Get $get) => self::calculateDiscountPrice($get)) // Set default value for database
+                                    ->afterStateHydrated(fn (Set $set, Get $get) => $set('discount_price', self::calculateDiscountPrice($get))) // Ensure correct value is loaded
+                                    ->dehydrated(fn ($get) => $get('bundle_type') === 'buy_x_get_y'),
+        ]),
 
                         // Special Prices Tab
                         Forms\Components\Tabs\Tab::make(__('bundles.special_prices'))
                             ->schema([
                                 Forms\Components\Repeater::make('specialPrices')
+                                    ->defaultItems(0)
                                     ->label(__('bundles.special_prices'))
                                     ->relationship('specialPrices')
                                     ->columns(2)
