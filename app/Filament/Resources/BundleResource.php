@@ -85,12 +85,6 @@ class BundleResource extends Resource
                                     ])
                                     ->required(),
 
-                                TextInput::make('discount_price')
-                                    ->live()
-                                    ->label(__('bundles.discount_price'))
-                                    ->numeric()
-                                    ->visible(fn ($get) => $get('bundle_type') == 'fixed_price' || 'buy_x_get_y'),
-
                                 TextInput::make('buy_x')
                                     ->live()
                                     ->label(__('bundles.buy_x'))
@@ -101,9 +95,19 @@ class BundleResource extends Resource
                                     ->live()
                                     ->label(__('bundles.get_y_free'))
                                     ->numeric()
-                                    ->visible(fn ($get) => $get('bundle_type') === 'buy_x_get_y'  &&
-                                        !$get('discount_price')),
+                                    ->visible(fn ($get) =>
+                                        $get('bundle_type') === 'buy_x_get_y' && empty($get('discount_price'))
+                                    ),
 
+                                TextInput::make('discount_price')
+                                    ->live()
+                                    ->label(__('bundles.discount_price'))
+                                    ->numeric()
+                                    ->visible(fn ($get) =>
+                                        ($get('bundle_type') === 'fixed_price' || $get('bundle_type') === 'buy_x_get_y') &&
+                                        empty($get('get_y'))
+                                    ),
+                                
                                 Select::make('products')
                                     ->label(__('bundles.products'))
                                     ->multiple()

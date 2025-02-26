@@ -30,7 +30,7 @@ class Bundle extends Model
 
     public function products()
     {
-        return $this->belongsToMany(Product::class, 'bundle_product')->withPivot('quantity');
+        return $this->belongsToMany(Product::class, 'bundle_product');
     }
 
     public function getFormattedDiscountAttribute()
@@ -48,7 +48,7 @@ class Bundle extends Model
 
     public function getTotalPriceAttribute()
     {
-        $productsTotal = $this->products->sum(fn($product) => $product->discount_price_for_current_country * $product->pivot->quantity);
+        $productsTotal = $this->products->sum(fn($product) => $product->discount_price_for_current_country);
 
         switch ($this->bundle_type) {
             case 'fixed_price':
@@ -84,13 +84,6 @@ class Bundle extends Model
         static::saving(function ($bundle) {
             $bundleType = $bundle->bundle_type->value ?? null; // Get the string value of enum
             $firstProduct = $bundle->products()->first();
-
-            Log::info('Saving bundle:', [
-                'bundle_type' => $bundleType,
-                'buy_x' => $bundle->buy_x,
-                'product_found' => $firstProduct ? 'Yes' : 'No',
-                'discount_price_for_current_country' => $firstProduct?->discount_price_for_current_country,
-            ]);
 
             if ($bundleType === \App\Enums\BundleType::BUY_X_GET_Y->value && $bundle->buy_x && $firstProduct) {
                 if (!is_null($firstProduct->discount_price_for_current_country)) {
