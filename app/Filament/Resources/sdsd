@@ -2,158 +2,280 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\CityResource\Pages;
-use App\Models\City;
+use App\Filament\Resources\ShippingCostResource\Pages;
+use App\Models\ShippingCost;
 use Filament\Forms;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
-use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\QueryBuilder;
+use Filament\Tables\Filters\QueryBuilder\Constraints\NumberConstraint;
+use Filament\Tables\Filters\QueryBuilder\Constraints\TextConstraint;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Unique;
 
-class CityResource extends Resource
+class ShippingCostResource extends Resource
 {
-    use Translatable;
+    protected static ?string $model = ShippingCost::class;
 
-    protected static ?string $model = City::class;
+    protected static ?int $navigationSort = 199;
 
-    protected static ?string $navigationIcon = 'heroicon-o-map-pin';
+    protected static ?string $navigationIcon = 'heroicon-o-truck';
 
     public static function getNavigationLabel(): string
     {
-        return __('cities'); // Translated to "Governorates"
-    }
-
-    public static function getModelLabel(): string
-    {
-        return __('cities'); // Translated to "Governorate"
-    }
-
-    /**
-     * @return string|null
-     */
-    public static function getPluralLabel(): ?string
-    {
-        return __('cities'); // Translated to "Governorates"
+        return __('shipping_cost.navigation_label');
     }
 
     public static function getNavigationGroup(): ?string
     {
-        return __('Shipping & Countries'); //Products Attributes Management
+        return __('Shipping Management'); //Products Attributes Management
     }
 
-    public static function getLabel(): ?string
+    public static function getModelLabel(): string
     {
-        return __('cities'); // Translated to "Governorate"
+        return __('shipping_cost.model_label');
     }
 
     public static function getPluralModelLabel(): string
     {
-        return __('cities'); // Translated to "Governorates"
+        return __('shipping_cost.plural_label');
     }
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255)
-                    ->label(__('name'))
-                     ->rules([
-                                           fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
-                                               $recordId = $get('id'); // Get the current record ID
-                                               $governorateId = $get('governorate_id'); // Get the selected governorate ID
+        return $form->schema([
+            Section::make()->schema([
+                Select::make('product_id')
+                    ->searchable()
+                    ->label(__('shipping_cost.product'))
+                    ->relationship('product', 'name')
+                    ->required(),
 
-                                               // Check if any locale in the JSON `name` column contains the given value
-                                               $exists = DB::table('cities')
-                                                   ->where(function ($query) use ($value) {
-                                                       foreach (config('app.supported_locales') as $locale) {
-                                                           $query->orWhereRaw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"{$locale}\"')) = ?", [$value]);
-                                                       }
-                                                   })
-                                                   ->where('governorate_id', $governorateId)
-                                                   ->when($recordId, fn ($query) => $query->where('id', '!=', $recordId)) // Ignore current record
-                                                   ->exists();
+                Select::make('shipping_type_id')
+                    ->searchable()
+                    ->label(__('shipping_cost.shipping_type'))
+                    ->relationship('shippingType', 'name'),
 
-                                               if ($exists) {
-                                                   $fail(__('validation.unique', ['attribute' => Str::afterLast($attribute, '.')]));
-                                               }
-                                           },
-                                       ]),
+                Select::make('city_id')
+                    ->searchable()
+                    ->rules(fn (Get $get, string $operation) =>
+                    $operation === 'create' ? [
+                        Rule::unique(ShippingCost::class, 'city_id')
+                            ->where(fn ($query) => $query
+                                ->where('product_id', $get('product_id'))
+                                ->whereNull('shipping_zone_id')
+                                ->whereNull('country_group_id')
+                                ->whereNull('governorate_id')
+                                ->whereNull('country_id')
+                            )
+                    ] : []
+                    )
+                    ->relationship('city', 'name')
+                    ->nullable()
+                    ->live()
+                    ->hidden(fn ($get) => $get('governorate_id') || $get('shipping_zone_id') || $get('country_id') || $get('country_group_id')),
 
-                Forms\Components\Select::make('governorate_id')
+                Select::make('governorate_id')
+                    ->searchable()
+                    ->rules(fn (Get $get, string $operation) =>
+                    $operation === 'create' ? [
+                        Rule::unique(ShippingCost::class, 'governorate_id')
+                            ->where(fn ($query) => $query
+                                ->where('product_id', $get('product_id'))
+                                ->whereNull('shipping_zone_id')
+                                ->whereNull('country_group_id')
+                                ->whereNull('city_id')
+                                ->whereNull('country_id')
+                            )
+                    ] : []
+                    )
                     ->relationship('governorate', 'name')
-                    ->required()
-                    ->label(__('governorate_name')),
+                    ->nullable()
+                    ->live()
+                    ->hidden(fn ($get) => $get('city_id') || $get('shipping_zone_id') || $get('country_id') || $get('country_group_id')),
+
+                Select::make('shipping_zone_id')
+                    ->searchable()
+                    ->rules(fn (Get $get, string $operation) =>
+                    $operation === 'create' ? [
+                        Rule::unique(ShippingCost::class, 'shipping_zone_id')
+                            ->where(fn ($query) => $query
+                                ->where('product_id', $get('product_id'))
+                                ->whereNull('governorate_id')
+                                ->whereNull('country_group_id')
+                                ->whereNull('city_id')
+                                ->whereNull('country_id')
+                            )
+                    ] : []
+                    )
+                    ->relationship('shippingZone', 'name')
+                    ->nullable()
+                    ->live()
+                    ->hidden(fn ($get) => $get('city_id') || $get('governorate_id') || $get('country_id') || $get('country_group_id')),
+
+                Select::make('country_id')
+                    ->searchable()
+                    ->rules(fn (Get $get, string $operation) =>
+                    $operation === 'create' ? [
+                        Rule::unique(ShippingCost::class, 'country_id')
+                            ->where(fn ($query) => $query
+                                ->where('product_id', $get('product_id'))
+                                ->whereNull('governorate_id')
+                                ->whereNull('shipping_zone_id')
+                                ->whereNull('city_id')
+                                ->whereNull('country_group_id')
+                            )
+                    ] : []
+                    )
+                    ->relationship('country', 'name')
+                    ->nullable()
+                    ->live()
+                    ->hidden(fn ($get) => $get('city_id') || $get('governorate_id') || $get('shipping_zone_id') || $get('country_group_id')),
+
+                Select::make('country_group_id')
+                    ->searchable()
+                    ->rules(fn (Get $get, string $operation) =>
+                    $operation === 'create' ? [
+                        Rule::unique(ShippingCost::class, 'country_group_id')
+                            ->where(fn ($query) => $query
+                                ->where('product_id', $get('product_id'))
+                                ->whereNull('governorate_id')
+                                ->whereNull('shipping_zone_id')
+                                ->whereNull('city_id')
+                                ->whereNull('country_id')
+                            )
+                    ] : []
+                    )
+                    ->relationship('countryGroup', 'name')
+                    ->nullable()
+                    ->live()
+                    ->hidden(fn ($get) => $get('city_id') || $get('governorate_id') || $get('shipping_zone_id') || $get('country_id')),
 
                 Forms\Components\TextInput::make('cost')
                     ->label(__('shipping_cost.cost'))
                     ->required()
                     ->numeric()
-                    ->default(0)
-                    ->unique(
-                        table: 'cities',
-                        column: 'cost',
-                        modifyRuleUsing: fn (Unique $rule, Get $get) =>
-                        $rule->where('governorate_id', $get('governorate_id'))
-                    ),
+                    ->default(0),
 
                 Forms\Components\TextInput::make('shipping_estimate_time')
                     ->label(__('shipping_cost.shipping_estimate_time'))
                     ->required()
                     ->maxLength(255)
                     ->default('0-0'),
-            ])->columns(1);
+
+            ])->columns(2)
+        ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
+                Tables\Columns\TextColumn::make('product.name')
+                    ->label(__('shipping_cost.product'))
                     ->searchable()
-                    ->label(__('name')),
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('shippingType.name')
+                    ->placeholder('-')
+                    ->label(__('shipping_cost.shipping_type'))
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('city.name')
+                    ->label(__('shipping_cost.city'))
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('-'),
+
                 Tables\Columns\TextColumn::make('governorate.name')
+                    ->label(__('shipping_cost.governorate'))
                     ->searchable()
-                    ->label(__('governorate_name')),
+                    ->sortable()
+                    ->placeholder('-'),
+
+                Tables\Columns\TextColumn::make('shippingZone.name')
+                    ->label(__('shipping_zone.name'))
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('-'),
+
+                Tables\Columns\TextColumn::make('country.name')
+                    ->label(__('shipping_cost.country'))
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('-'),
+
+                Tables\Columns\TextColumn::make('countryGroup.name')
+                    ->label(__('shipping_cost.country_group'))
+                    ->searchable()
+                    ->sortable()
+                    ->placeholder('-'),
+
                 Tables\Columns\TextColumn::make('cost')
+                    ->searchable()
                     ->label(__('shipping_cost.cost'))
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('shipping_estimate_time')
+                    ->searchable()
                     ->label(__('shipping_cost.shipping_estimate_time'))
                     ->searchable(),
+
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('shipping_cost.created_at'))
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->label(__('created_at')),
+                    ->toggleable(isToggledHiddenByDefault: true),
+
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label(__('shipping_cost.updated_at'))
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->label(__('updated_at')),
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('governorate_id')
-                    ->columnSpanFull()
-                    ->label(__('governorate'))
+                SelectFilter::make('product_id')
+                    ->relationship('product', 'name')
+                    ->label(__('shipping_cost.product')),
+                SelectFilter::make('shipping_type_id')
+                    ->relationship('shippingType', 'name')
+                    ->label(__('shipping_cost.shipping_type')),
+                SelectFilter::make('country_group_id')
+                    ->relationship('countryGroup', 'name')
+                    ->label(__('shipping_cost.country_group')),
+                SelectFilter::make('country_id')
+                    ->relationship('country', 'name')
+                    ->label(__('shipping_cost.country')),
+                SelectFilter::make('shipping_zone_id')
+                    ->relationship('shippingZone', 'name')
+                    ->label(__('shipping_zone.name')),
+                SelectFilter::make('governorate_id')
                     ->relationship('governorate', 'name')
-            ], Tables\Enums\FiltersLayout::AboveContent)
+                    ->label(__('shipping_cost.governorate')),
+                SelectFilter::make('city_id')
+                    ->relationship('city', 'name')
+                    ->label(__('shipping_cost.city')),
+                QueryBuilder::make()
+                    ->constraints([
+                        TextConstraint::make('shipping_estimate_time')
+                            ->label(__('shipping_cost.shipping_estimate_time')),
+                        NumberConstraint::make('cost')
+                            ->label(__('shipping_cost.cost')),
+                    ])->columnSpanFull(),
+            ], Tables\Enums\FiltersLayout::AboveContentCollapsible)
             ->actions([
-                Tables\Actions\EditAction::make()
-                    ->label(__('edit')),
-                Tables\Actions\DeleteAction::make()
-                    ->label(__('delete')),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
-                        ->label(__('delete_bulk')),
+                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -161,7 +283,9 @@ class CityResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageCities::route('/'),
+            'index' => Pages\ListShippingCosts::route('/'),
+            'create' => Pages\CreateShippingCost::route('/create'),
+            'edit' => Pages\EditShippingCost::route('/{record}/edit'),
         ];
     }
 }
