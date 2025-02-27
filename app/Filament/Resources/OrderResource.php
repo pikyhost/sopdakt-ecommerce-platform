@@ -2,25 +2,20 @@
 
 namespace App\Filament\Resources;
 
-use Filament\Forms;
-use Filament\Tables;
-use App\Models\Order;
+
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Models\LandingPageOrder;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
-use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\OrderResource\Pages;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use App\Filament\Resources\OrderResource\RelationManagers;
 
 class OrderResource extends Resource
 {
     protected static ?string $model = LandingPageOrder::class;
     protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
-    protected static ?string $navigationGroup = 'Orders';
-    protected static ?string $navigationLabel = 'Orders';
+    protected static ?string $navigationGroup = 'Orders & Contacts';
+    protected static ?string $navigationLabel = 'Landing Page Orders';
 
     public static function form(Form $form): Form
     {
