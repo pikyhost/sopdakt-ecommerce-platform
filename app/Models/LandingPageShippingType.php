@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class LandingPageShippingType extends Model
 {
+    protected $primaryKey = 'shipping_type_id';
     public $incrementing = false;
 
     protected $fillable = [

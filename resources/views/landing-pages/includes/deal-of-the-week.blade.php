@@ -22,7 +22,6 @@
             <div class="col-md-10">
                 <div class="deal-slider-area  " data-aos="fade-up" data-aos-duration="1500">
                     <div class="deal-slider owl-carousel owl-theme owl-loaded">
-
                         @foreach($landingPage->dealOfTheWeekItems as $dealOfTheWeekItem)
                             <div class="item">
                                 <div class="content">
@@ -32,7 +31,6 @@
                                                 <div id="main-slider" class="splide main-slider w-100 mb-2">
                                                     <div class="splide__track">
                                                         <ul class="splide__list">
-
                                                             @foreach($dealOfTheWeekItem->varieties as $dealOfTheWeekItemVariety)
                                                                 @if($dealOfTheWeekItemVariety->image)
                                                                     <li class="splide__slide">
@@ -52,7 +50,6 @@
                                                                     </li>
                                                                 @endif
                                                             @endforeach
-
                                                         </ul>
                                                     </div>
                                                 </div>
@@ -60,9 +57,7 @@
                                                 <div id="thumbnail-slider" class="splide thumbnail-slider">
                                                     <div class="splide__track">
                                                         <ul class="splide__list">
-
                                                             @foreach($dealOfTheWeekItem->varieties as $variety)
-                                                                {{--                                                                    @if($dealOfTheWeekItemVariety->image)--}}
                                                                 <li title="{{$variety->color->name}}"
                                                                     class="splide__slide d-flex justify-content-center align-items-center">
                                                                     <div title="{{$variety->color->name}}"
@@ -70,7 +65,6 @@
                                                                         style="width: 30px;height: 30px;border-radius: 50%;background-color: {{$variety->color->code}}">
                                                                     </div>
                                                                 </li>
-                                                                {{--                                                                    @endif--}}
                                                             @endforeach
                                                         </ul>
                                                     </div>
@@ -86,12 +80,15 @@
                                                         </li>
                                                     @endfor
                                                 </ul>
+
                                                 <h4 class="name">
                                                     {{$dealOfTheWeekItem->title}}
                                                 </h4>
+
                                                 <p class="description">
                                                     {{$dealOfTheWeekItem->subtitle}}
                                                 </p>
+
                                                 <div class="price">
                                                     <p>
                                                         <span>
@@ -103,23 +100,19 @@
                                                         </del>
                                                     </p>
                                                 </div>
+
                                                 <div class="deal-counter">
                                                     <div data-countdown="{{$dealOfTheWeekItem->end_date}}"></div>
                                                 </div>
+
                                                 @if($dealOfTheWeekItem->cta_button)
                                                     <div class="links">
-                                                        <a @if($dealOfTheWeekItem->cta_button_link)  href="{{$dealOfTheWeekItem->cta_button_link}}"
-                                                        @else
-                                                            {{--                                                                   data-toggle="modal" data-target="#purchaseModal"--}}
-                                                            onclick="handleCheckout()"
-                                                        @endif
-                                                        class="mybtn3 mybtn-bg"><span>{{__($dealOfTheWeekItem->cta_button_text)}}</span>
+                                                        <a @if($dealOfTheWeekItem->cta_button_link)  href="{{$dealOfTheWeekItem->cta_button_link}}" @else onclick="handleCheckout()" @endif class="mybtn3 mybtn-bg">
+                                                            <span>{{__($dealOfTheWeekItem->cta_button_text)}}</span>
                                                         </a>
                                                     </div>
                                                 @endif
                                             </div>
-
-
                                         </div>
                                     </div>
                                 </div>

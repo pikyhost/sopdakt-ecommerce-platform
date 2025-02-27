@@ -37,6 +37,8 @@ class LandingPage extends Model
         parent::boot();
 
         self::creating(function($model){
+            // dd(request()->all());
+
             // dd(json_decode(request()->all()['components'][0]['snapshot'])->data->data[0]);
 
             $model->slug = Str::slug($model->slug ?? $model->home_title);

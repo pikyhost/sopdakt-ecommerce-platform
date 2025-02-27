@@ -6,10 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class LandingPageShippingZone extends Model
 {
-    protected $primaryKey = null;
+    protected $primaryKey = 'shipping_zone_id';
     public $incrementing = false;
-
-    protected $guarded = [];
 
     protected $fillable = [
         'landing_page_id',

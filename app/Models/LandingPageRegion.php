@@ -6,10 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class LandingPageRegion extends Model
 {
-    protected $primaryKey = null;
+    protected $primaryKey = 'region_id';
     public $incrementing = false;
-
-    protected $guarded = [];
 
     protected $fillable = [
         'landing_page_id',
@@ -30,5 +28,4 @@ class LandingPageRegion extends Model
     {
         return $this->belongsTo(Region::class);
     }
-
 }

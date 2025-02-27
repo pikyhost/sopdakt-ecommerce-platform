@@ -19,6 +19,11 @@ class Governorate extends Model
         return $this->belongsTo(Country::class);
     }
 
+    public function shippingTypes()
+    {
+        return $this->hasMany(ShippingType::class, 'id');
+    }
+
     public function shippingZones()
     {
         return $this->belongsToMany(ShippingZone::class, 'governorate_shipping_zone');

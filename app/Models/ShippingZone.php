@@ -14,12 +14,14 @@ class ShippingZone extends Model
 
     protected $guarded = [];
 
-    /**
-     * Get the shipping costs related to this zone.
-     */
     public function shippingCosts()
     {
         return $this->hasMany(ShippingCost::class);
+    }
+
+    public function shippingTypes()
+    {
+        return $this->hasMany(ShippingType::class, 'id');
     }
 
     public function governorates()

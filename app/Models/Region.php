@@ -11,9 +11,13 @@ class Region extends Model
 
     protected $guarded = [];
 
+    public function shippingTypes()
+    {
+        return $this->hasMany(ShippingType::class, 'id');
+    }
+
     public function governorate()
     {
         return $this->belongsTo(Governorate::class);
     }
-
 }

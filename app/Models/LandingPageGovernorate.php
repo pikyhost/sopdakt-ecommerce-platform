@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class LandingPageGovernorate extends Model
 {
-    protected $primaryKey = null;
+    protected $primaryKey = 'governorate_id';
     public $incrementing = false;
 
     protected $guarded = [];
