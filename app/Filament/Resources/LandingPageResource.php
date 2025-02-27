@@ -22,7 +22,6 @@ class LandingPageResource extends Resource
 {
     protected static ?string $model = LandingPage::class;
     protected static ?string $navigationIcon = 'heroicon-o-home';
-
     protected static ?string $navigationLabel = 'Landing Page';
     protected static ?int $fileMaxSize = 50 * 1024;
 

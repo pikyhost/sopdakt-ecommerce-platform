@@ -1817,6 +1817,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             "version": "v3.3.0",
             "source": {
                 "type": "git",
@@ -1845,13 +1846,17 @@
 >>>>>>> 05db3d4 (push from server to sync)
 =======
             "version": "v3.2.142",
+=======
+            "version": "v3.3.0",
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/actions.git",
-                "reference": "0decaf9a48858ff105fc38ed47d36e26995c533b"
+                "reference": "acaaa861bc01f72a73cb5faedcc3fecbbbf599c6"
             },
             "dist": {
                 "type": "zip",
+<<<<<<< HEAD
                 "url": "https://api.github.com/repos/filamentphp/actions/zipball/0decaf9a48858ff105fc38ed47d36e26995c533b",
                 "reference": "0decaf9a48858ff105fc38ed47d36e26995c533b",
 >>>>>>> 05db3d4 (push from server to sync)
@@ -1871,6 +1876,10 @@
                 "url": "https://api.github.com/repos/filamentphp/actions/zipball/0decaf9a48858ff105fc38ed47d36e26995c533b",
                 "reference": "0decaf9a48858ff105fc38ed47d36e26995c533b",
 >>>>>>> 05db3d4 (push from server to sync)
+=======
+                "url": "https://api.github.com/repos/filamentphp/actions/zipball/acaaa861bc01f72a73cb5faedcc3fecbbbf599c6",
+                "reference": "acaaa861bc01f72a73cb5faedcc3fecbbbf599c6",
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
                 "shasum": ""
             },
             "require": {
@@ -1914,6 +1923,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             "time": "2025-02-25T08:19:06+00:00"
         },
         {
@@ -1950,17 +1960,21 @@
 >>>>>>> 05db3d4 (push from server to sync)
 =======
             "time": "2025-02-20T23:14:35+00:00"
+=======
+            "time": "2025-02-25T08:19:06+00:00"
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
         },
         {
             "name": "filament/filament",
-            "version": "v3.2.142",
+            "version": "v3.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/panels.git",
-                "reference": "c68bd2a46bdb02df7b8145aafb2f505062bcbded"
+                "reference": "2ddea9d4c3c7d1bfce2d9ea6b3d7d7fe8c5682ec"
             },
             "dist": {
                 "type": "zip",
+<<<<<<< HEAD
                 "url": "https://api.github.com/repos/filamentphp/panels/zipball/c68bd2a46bdb02df7b8145aafb2f505062bcbded",
                 "reference": "c68bd2a46bdb02df7b8145aafb2f505062bcbded",
 >>>>>>> 05db3d4 (push from server to sync)
@@ -1984,6 +1998,10 @@
                 "url": "https://api.github.com/repos/filamentphp/panels/zipball/c68bd2a46bdb02df7b8145aafb2f505062bcbded",
                 "reference": "c68bd2a46bdb02df7b8145aafb2f505062bcbded",
 >>>>>>> 05db3d4 (push from server to sync)
+=======
+                "url": "https://api.github.com/repos/filamentphp/panels/zipball/2ddea9d4c3c7d1bfce2d9ea6b3d7d7fe8c5682ec",
+                "reference": "2ddea9d4c3c7d1bfce2d9ea6b3d7d7fe8c5682ec",
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
                 "shasum": ""
             },
             "require": {
@@ -2039,6 +2057,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             "time": "2025-02-25T08:19:05+00:00"
         },
         {
@@ -2075,17 +2094,21 @@
 >>>>>>> 05db3d4 (push from server to sync)
 =======
             "time": "2025-02-19T08:42:25+00:00"
+=======
+            "time": "2025-02-25T08:19:05+00:00"
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
         },
         {
             "name": "filament/forms",
-            "version": "v3.2.142",
+            "version": "v3.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/forms.git",
-                "reference": "357a5d4c92661911949ebe56c5f281267d908609"
+                "reference": "2d3670835f3fef356e8a0c2dc756eeb9f9acce73"
             },
             "dist": {
                 "type": "zip",
+<<<<<<< HEAD
                 "url": "https://api.github.com/repos/filamentphp/forms/zipball/357a5d4c92661911949ebe56c5f281267d908609",
                 "reference": "357a5d4c92661911949ebe56c5f281267d908609",
 >>>>>>> 05db3d4 (push from server to sync)
@@ -2109,6 +2132,10 @@
                 "url": "https://api.github.com/repos/filamentphp/forms/zipball/357a5d4c92661911949ebe56c5f281267d908609",
                 "reference": "357a5d4c92661911949ebe56c5f281267d908609",
 >>>>>>> 05db3d4 (push from server to sync)
+=======
+                "url": "https://api.github.com/repos/filamentphp/forms/zipball/2d3670835f3fef356e8a0c2dc756eeb9f9acce73",
+                "reference": "2d3670835f3fef356e8a0c2dc756eeb9f9acce73",
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
                 "shasum": ""
             },
             "require": {
@@ -2155,6 +2182,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             "time": "2025-02-25T08:19:00+00:00"
         },
         {
@@ -2191,17 +2219,21 @@
 >>>>>>> 05db3d4 (push from server to sync)
 =======
             "time": "2025-02-20T23:14:35+00:00"
+=======
+            "time": "2025-02-25T08:19:00+00:00"
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
         },
         {
             "name": "filament/infolists",
-            "version": "v3.2.142",
+            "version": "v3.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/infolists.git",
-                "reference": "e015d90d88294385274cdb01a00e1c08dbc6b6d7"
+                "reference": "3e5f9d2ec79a2be9080c9e081c5284bbeb93ed7a"
             },
             "dist": {
                 "type": "zip",
+<<<<<<< HEAD
                 "url": "https://api.github.com/repos/filamentphp/infolists/zipball/e015d90d88294385274cdb01a00e1c08dbc6b6d7",
                 "reference": "e015d90d88294385274cdb01a00e1c08dbc6b6d7",
 >>>>>>> 05db3d4 (push from server to sync)
@@ -2225,6 +2257,10 @@
                 "url": "https://api.github.com/repos/filamentphp/infolists/zipball/e015d90d88294385274cdb01a00e1c08dbc6b6d7",
                 "reference": "e015d90d88294385274cdb01a00e1c08dbc6b6d7",
 >>>>>>> 05db3d4 (push from server to sync)
+=======
+                "url": "https://api.github.com/repos/filamentphp/infolists/zipball/3e5f9d2ec79a2be9080c9e081c5284bbeb93ed7a",
+                "reference": "3e5f9d2ec79a2be9080c9e081c5284bbeb93ed7a",
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
                 "shasum": ""
             },
             "require": {
@@ -2266,6 +2302,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             "time": "2025-02-25T08:19:04+00:00"
         },
         {
@@ -2302,17 +2339,21 @@
 >>>>>>> 05db3d4 (push from server to sync)
 =======
             "time": "2025-02-19T08:42:24+00:00"
+=======
+            "time": "2025-02-25T08:19:04+00:00"
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
         },
         {
             "name": "filament/notifications",
-            "version": "v3.2.142",
+            "version": "v3.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/notifications.git",
-                "reference": "5c7809f5672ec721f09a65b3a6394bd79b2a9ee2"
+                "reference": "8cfe18e5d04ba72d777753ed632bbcf3408236a2"
             },
             "dist": {
                 "type": "zip",
+<<<<<<< HEAD
                 "url": "https://api.github.com/repos/filamentphp/notifications/zipball/5c7809f5672ec721f09a65b3a6394bd79b2a9ee2",
                 "reference": "5c7809f5672ec721f09a65b3a6394bd79b2a9ee2",
 >>>>>>> 05db3d4 (push from server to sync)
@@ -2336,6 +2377,10 @@
                 "url": "https://api.github.com/repos/filamentphp/notifications/zipball/5c7809f5672ec721f09a65b3a6394bd79b2a9ee2",
                 "reference": "5c7809f5672ec721f09a65b3a6394bd79b2a9ee2",
 >>>>>>> 05db3d4 (push from server to sync)
+=======
+                "url": "https://api.github.com/repos/filamentphp/notifications/zipball/8cfe18e5d04ba72d777753ed632bbcf3408236a2",
+                "reference": "8cfe18e5d04ba72d777753ed632bbcf3408236a2",
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
                 "shasum": ""
             },
             "require": {
@@ -2378,6 +2423,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             "time": "2025-02-25T08:18:58+00:00"
         },
         {
@@ -2411,6 +2457,13 @@
             "name": "filament/spatie-laravel-media-library-plugin",
             "version": "v3.2.142",
 >>>>>>> 05db3d4 (push from server to sync)
+=======
+            "time": "2025-02-25T08:18:58+00:00"
+        },
+        {
+            "name": "filament/spatie-laravel-media-library-plugin",
+            "version": "v3.3.0",
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/spatie-laravel-media-library-plugin.git",
@@ -2451,6 +2504,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             "version": "v3.3.0",
 =======
             "version": "v3.2.142",
@@ -2464,6 +2518,9 @@
 =======
             "version": "v3.2.142",
 >>>>>>> 05db3d4 (push from server to sync)
+=======
+            "version": "v3.3.0",
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/spatie-laravel-translatable-plugin.git",
@@ -2512,6 +2569,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             "version": "v3.3.0",
             "source": {
                 "type": "git",
@@ -2540,13 +2598,17 @@
 >>>>>>> 05db3d4 (push from server to sync)
 =======
             "version": "v3.2.142",
+=======
+            "version": "v3.3.0",
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/support.git",
-                "reference": "84b4fe507e250ed37e69d92854753761ad5d7908"
+                "reference": "9ae768216b8f1cd6921946c98364b95f51053b20"
             },
             "dist": {
                 "type": "zip",
+<<<<<<< HEAD
                 "url": "https://api.github.com/repos/filamentphp/support/zipball/84b4fe507e250ed37e69d92854753761ad5d7908",
                 "reference": "84b4fe507e250ed37e69d92854753761ad5d7908",
 >>>>>>> 05db3d4 (push from server to sync)
@@ -2566,6 +2628,10 @@
                 "url": "https://api.github.com/repos/filamentphp/support/zipball/84b4fe507e250ed37e69d92854753761ad5d7908",
                 "reference": "84b4fe507e250ed37e69d92854753761ad5d7908",
 >>>>>>> 05db3d4 (push from server to sync)
+=======
+                "url": "https://api.github.com/repos/filamentphp/support/zipball/9ae768216b8f1cd6921946c98364b95f51053b20",
+                "reference": "9ae768216b8f1cd6921946c98364b95f51053b20",
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
                 "shasum": ""
             },
             "require": {
@@ -2615,6 +2681,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             "time": "2025-02-25T08:19:17+00:00"
         },
         {
@@ -2651,17 +2718,21 @@
 >>>>>>> 05db3d4 (push from server to sync)
 =======
             "time": "2025-02-20T23:14:48+00:00"
+=======
+            "time": "2025-02-25T08:19:17+00:00"
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
         },
         {
             "name": "filament/tables",
-            "version": "v3.2.142",
+            "version": "v3.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/tables.git",
-                "reference": "1eb41bbc46a3b0deba2adcdcaa3bd2556a0a0d08"
+                "reference": "0b5152d810780d03a560b8e5387dc61881b72b42"
             },
             "dist": {
                 "type": "zip",
+<<<<<<< HEAD
                 "url": "https://api.github.com/repos/filamentphp/tables/zipball/1eb41bbc46a3b0deba2adcdcaa3bd2556a0a0d08",
                 "reference": "1eb41bbc46a3b0deba2adcdcaa3bd2556a0a0d08",
 >>>>>>> 05db3d4 (push from server to sync)
@@ -2685,6 +2756,10 @@
                 "url": "https://api.github.com/repos/filamentphp/tables/zipball/1eb41bbc46a3b0deba2adcdcaa3bd2556a0a0d08",
                 "reference": "1eb41bbc46a3b0deba2adcdcaa3bd2556a0a0d08",
 >>>>>>> 05db3d4 (push from server to sync)
+=======
+                "url": "https://api.github.com/repos/filamentphp/tables/zipball/0b5152d810780d03a560b8e5387dc61881b72b42",
+                "reference": "0b5152d810780d03a560b8e5387dc61881b72b42",
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
                 "shasum": ""
             },
             "require": {
@@ -2727,6 +2802,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             "time": "2025-02-25T08:19:15+00:00"
         },
         {
@@ -2760,6 +2836,13 @@
             "name": "filament/widgets",
             "version": "v3.2.142",
 >>>>>>> 05db3d4 (push from server to sync)
+=======
+            "time": "2025-02-25T08:19:15+00:00"
+        },
+        {
+            "name": "filament/widgets",
+            "version": "v3.3.0",
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/widgets.git",
@@ -3631,6 +3714,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             "version": "v11.44.0",
             "source": {
                 "type": "git",
@@ -3659,13 +3743,17 @@
 >>>>>>> 05db3d4 (push from server to sync)
 =======
             "version": "v11.43.2",
+=======
+            "version": "v11.44.0",
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "99d1573698abc42222f04d25fcd5b213d0eedf21"
+                "reference": "e9a33da34815ac1ed46c7e4c477a775f4592f0a7"
             },
             "dist": {
                 "type": "zip",
+<<<<<<< HEAD
                 "url": "https://api.github.com/repos/laravel/framework/zipball/99d1573698abc42222f04d25fcd5b213d0eedf21",
                 "reference": "99d1573698abc42222f04d25fcd5b213d0eedf21",
 >>>>>>> 05db3d4 (push from server to sync)
@@ -3685,6 +3773,10 @@
                 "url": "https://api.github.com/repos/laravel/framework/zipball/99d1573698abc42222f04d25fcd5b213d0eedf21",
                 "reference": "99d1573698abc42222f04d25fcd5b213d0eedf21",
 >>>>>>> 05db3d4 (push from server to sync)
+=======
+                "url": "https://api.github.com/repos/laravel/framework/zipball/e9a33da34815ac1ed46c7e4c477a775f4592f0a7",
+                "reference": "e9a33da34815ac1ed46c7e4c477a775f4592f0a7",
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
                 "shasum": ""
             },
             "require": {
@@ -3890,6 +3982,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             "time": "2025-02-24T13:08:54+00:00"
 =======
             "time": "2025-02-19T21:53:48+00:00"
@@ -3903,6 +3996,9 @@
 =======
             "time": "2025-02-19T21:53:48+00:00"
 >>>>>>> 05db3d4 (push from server to sync)
+=======
+            "time": "2025-02-24T13:08:54+00:00"
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
         },
         {
             "name": "laravel/prompts",
@@ -4874,6 +4970,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             "version": "3.1.64",
             "source": {
                 "type": "git",
@@ -4902,13 +4999,17 @@
 >>>>>>> 05db3d4 (push from server to sync)
 =======
             "version": "3.1.63",
+=======
+            "version": "3.1.64",
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
             "source": {
                 "type": "git",
                 "url": "https://github.com/SpartnerNL/Laravel-Excel.git",
-                "reference": "fccd234da23b39ab03e1a1f6fe9178fb96ec1be1"
+                "reference": "e25d44a2d91da9179cd2d7fec952313548597a79"
             },
             "dist": {
                 "type": "zip",
+<<<<<<< HEAD
                 "url": "https://api.github.com/repos/SpartnerNL/Laravel-Excel/zipball/fccd234da23b39ab03e1a1f6fe9178fb96ec1be1",
                 "reference": "fccd234da23b39ab03e1a1f6fe9178fb96ec1be1",
 >>>>>>> 05db3d4 (push from server to sync)
@@ -4928,6 +5029,10 @@
                 "url": "https://api.github.com/repos/SpartnerNL/Laravel-Excel/zipball/fccd234da23b39ab03e1a1f6fe9178fb96ec1be1",
                 "reference": "fccd234da23b39ab03e1a1f6fe9178fb96ec1be1",
 >>>>>>> 05db3d4 (push from server to sync)
+=======
+                "url": "https://api.github.com/repos/SpartnerNL/Laravel-Excel/zipball/e25d44a2d91da9179cd2d7fec952313548597a79",
+                "reference": "e25d44a2d91da9179cd2d7fec952313548597a79",
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
                 "shasum": ""
             },
             "require": {
@@ -4987,6 +5092,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                 "source": "https://github.com/SpartnerNL/Laravel-Excel/tree/3.1.64"
 =======
                 "source": "https://github.com/SpartnerNL/Laravel-Excel/tree/3.1.63"
@@ -5000,6 +5106,9 @@
 =======
                 "source": "https://github.com/SpartnerNL/Laravel-Excel/tree/3.1.63"
 >>>>>>> 05db3d4 (push from server to sync)
+=======
+                "source": "https://github.com/SpartnerNL/Laravel-Excel/tree/3.1.64"
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
             },
             "funding": [
                 {
@@ -5015,6 +5124,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             "time": "2025-02-24T11:12:50+00:00"
 =======
             "time": "2025-02-19T14:24:57+00:00"
@@ -5028,6 +5138,9 @@
 =======
             "time": "2025-02-19T14:24:57+00:00"
 >>>>>>> 05db3d4 (push from server to sync)
+=======
+            "time": "2025-02-24T11:12:50+00:00"
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
         },
         {
             "name": "maennchen/zipstream-php",
@@ -10963,6 +11076,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             "version": "v3.15.2",
             "source": {
                 "type": "git",
@@ -10991,13 +11105,17 @@
 >>>>>>> 05db3d4 (push from server to sync)
 =======
             "version": "v3.15.0",
+=======
+            "version": "v3.15.2",
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
             "source": {
                 "type": "git",
                 "url": "https://github.com/barryvdh/laravel-debugbar.git",
-                "reference": "77cca4a1162d45e1fe64e7a71b4a3031656b6c86"
+                "reference": "0bc1e1361e7fffc2be156f46ad1fba6927c01729"
             },
             "dist": {
                 "type": "zip",
+<<<<<<< HEAD
                 "url": "https://api.github.com/repos/barryvdh/laravel-debugbar/zipball/77cca4a1162d45e1fe64e7a71b4a3031656b6c86",
                 "reference": "77cca4a1162d45e1fe64e7a71b4a3031656b6c86",
 >>>>>>> 05db3d4 (push from server to sync)
@@ -11017,6 +11135,10 @@
                 "url": "https://api.github.com/repos/barryvdh/laravel-debugbar/zipball/77cca4a1162d45e1fe64e7a71b4a3031656b6c86",
                 "reference": "77cca4a1162d45e1fe64e7a71b4a3031656b6c86",
 >>>>>>> 05db3d4 (push from server to sync)
+=======
+                "url": "https://api.github.com/repos/barryvdh/laravel-debugbar/zipball/0bc1e1361e7fffc2be156f46ad1fba6927c01729",
+                "reference": "0bc1e1361e7fffc2be156f46ad1fba6927c01729",
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
                 "shasum": ""
             },
             "require": {
@@ -11083,6 +11205,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                 "source": "https://github.com/barryvdh/laravel-debugbar/tree/v3.15.2"
 =======
                 "source": "https://github.com/barryvdh/laravel-debugbar/tree/v3.15.0"
@@ -11096,6 +11219,9 @@
 =======
                 "source": "https://github.com/barryvdh/laravel-debugbar/tree/v3.15.0"
 >>>>>>> 05db3d4 (push from server to sync)
+=======
+                "source": "https://github.com/barryvdh/laravel-debugbar/tree/v3.15.2"
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
             },
             "funding": [
                 {
@@ -11111,6 +11237,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             "time": "2025-02-25T15:25:22+00:00"
 =======
             "time": "2025-02-21T15:00:44+00:00"
@@ -11124,6 +11251,9 @@
 =======
             "time": "2025-02-21T15:00:44+00:00"
 >>>>>>> 05db3d4 (push from server to sync)
+=======
+            "time": "2025-02-25T15:25:22+00:00"
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
         },
         {
             "name": "dragon-code/contracts",
@@ -11618,6 +11748,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             "version": "15.19.1",
             "source": {
                 "type": "git",
@@ -11646,13 +11777,17 @@
 >>>>>>> 05db3d4 (push from server to sync)
 =======
             "version": "15.17.0",
+=======
+            "version": "15.19.1",
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
             "source": {
                 "type": "git",
                 "url": "https://github.com/Laravel-Lang/lang.git",
-                "reference": "7b237b051e0130a8fa555f1aa2280086bbdba707"
+                "reference": "a2ba3f83785133f5e6e29b1a43e0e16c6debf729"
             },
             "dist": {
                 "type": "zip",
+<<<<<<< HEAD
                 "url": "https://api.github.com/repos/Laravel-Lang/lang/zipball/7b237b051e0130a8fa555f1aa2280086bbdba707",
                 "reference": "7b237b051e0130a8fa555f1aa2280086bbdba707",
 >>>>>>> 05db3d4 (push from server to sync)
@@ -11672,6 +11807,10 @@
                 "url": "https://api.github.com/repos/Laravel-Lang/lang/zipball/7b237b051e0130a8fa555f1aa2280086bbdba707",
                 "reference": "7b237b051e0130a8fa555f1aa2280086bbdba707",
 >>>>>>> 05db3d4 (push from server to sync)
+=======
+                "url": "https://api.github.com/repos/Laravel-Lang/lang/zipball/a2ba3f83785133f5e6e29b1a43e0e16c6debf729",
+                "reference": "a2ba3f83785133f5e6e29b1a43e0e16c6debf729",
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
                 "shasum": ""
             },
             "require": {
@@ -11725,6 +11864,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             "time": "2025-02-25T12:00:50+00:00"
 =======
             "time": "2025-02-20T07:25:51+00:00"
@@ -11738,6 +11878,9 @@
 =======
             "time": "2025-02-20T07:25:51+00:00"
 >>>>>>> 05db3d4 (push from server to sync)
+=======
+            "time": "2025-02-25T12:00:50+00:00"
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
         },
         {
             "name": "laravel-lang/locale-list",
@@ -12746,6 +12889,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             "version": "v2.1.6",
 =======
             "version": "v2.1.5",
@@ -12756,15 +12900,18 @@
 >>>>>>> 89d20d8 (- add new way to save (Bundles Section) in Landing Page)
 =======
             "version": "v2.1.5",
+=======
+            "version": "v2.1.6",
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-debugbar/php-debugbar.git",
-                "reference": "3f589bbbaed53039d9699702c2908148647c27a1"
+                "reference": "16fa68da5617220594aa5e33fa9de415f94784a0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-debugbar/php-debugbar/zipball/3f589bbbaed53039d9699702c2908148647c27a1",
-                "reference": "3f589bbbaed53039d9699702c2908148647c27a1",
+                "url": "https://api.github.com/repos/php-debugbar/php-debugbar/zipball/16fa68da5617220594aa5e33fa9de415f94784a0",
+                "reference": "16fa68da5617220594aa5e33fa9de415f94784a0",
                 "shasum": ""
             },
             "require": {
@@ -12819,12 +12966,13 @@
             ],
             "support": {
                 "issues": "https://github.com/php-debugbar/php-debugbar/issues",
-                "source": "https://github.com/php-debugbar/php-debugbar/tree/v2.1.5"
+                "source": "https://github.com/php-debugbar/php-debugbar/tree/v2.1.6"
             },
-            "time": "2025-02-21T13:02:05+00:00"
+            "time": "2025-02-21T17:47:03+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
+<<<<<<< HEAD
             "version": "11.0.8",
 >>>>>>> 05db3d4 (push from server to sync)
             "source": {
@@ -13057,6 +13205,16 @@
             "dist": {
                 "type": "zip",
 >>>>>>> 89d20d8 (- add new way to save (Bundles Section) in Landing Page)
+=======
+            "version": "11.0.9",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
+                "reference": "14d63fbcca18457e49c6f8bebaa91a87e8e188d7"
+            },
+            "dist": {
+                "type": "zip",
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
                 "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/14d63fbcca18457e49c6f8bebaa91a87e8e188d7",
                 "reference": "14d63fbcca18457e49c6f8bebaa91a87e8e188d7",
                 "shasum": ""
@@ -13376,6 +13534,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             "version": "11.5.10",
             "source": {
                 "type": "git",
@@ -13404,13 +13563,17 @@
 >>>>>>> 05db3d4 (push from server to sync)
 =======
             "version": "11.5.9",
+=======
+            "version": "11.5.10",
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "c91c830e7108a81e5845aeb6ba8fe3c1a4351c0b"
+                "reference": "d5df2b32d729562ff8db634678d71085ee579006"
             },
             "dist": {
                 "type": "zip",
+<<<<<<< HEAD
                 "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/c91c830e7108a81e5845aeb6ba8fe3c1a4351c0b",
                 "reference": "c91c830e7108a81e5845aeb6ba8fe3c1a4351c0b",
 >>>>>>> 05db3d4 (push from server to sync)
@@ -13430,6 +13593,10 @@
                 "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/c91c830e7108a81e5845aeb6ba8fe3c1a4351c0b",
                 "reference": "c91c830e7108a81e5845aeb6ba8fe3c1a4351c0b",
 >>>>>>> 05db3d4 (push from server to sync)
+=======
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/d5df2b32d729562ff8db634678d71085ee579006",
+                "reference": "d5df2b32d729562ff8db634678d71085ee579006",
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
                 "shasum": ""
             },
             "require": {
@@ -13505,6 +13672,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
                 "source": "https://github.com/sebastianbergmann/phpunit/tree/11.5.10"
 =======
                 "source": "https://github.com/sebastianbergmann/phpunit/tree/11.5.9"
@@ -13518,6 +13686,9 @@
 =======
                 "source": "https://github.com/sebastianbergmann/phpunit/tree/11.5.9"
 >>>>>>> 05db3d4 (push from server to sync)
+=======
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/11.5.10"
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
             },
             "funding": [
                 {
@@ -13537,6 +13708,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
             "time": "2025-02-25T06:11:48+00:00"
 =======
             "time": "2025-02-21T06:08:50+00:00"
@@ -13550,6 +13722,9 @@
 =======
             "time": "2025-02-21T06:08:50+00:00"
 >>>>>>> 05db3d4 (push from server to sync)
+=======
+            "time": "2025-02-25T06:11:48+00:00"
+>>>>>>> 7b519a9 (- add new way to save (Bundles Section) in Landing Page)
         },
         {
             "name": "sebastian/cli-parser",
@@ -14730,12 +14905,12 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.2"
     },
-    "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "platform-dev": [],
+    "plugin-api-version": "2.3.0"
 }
