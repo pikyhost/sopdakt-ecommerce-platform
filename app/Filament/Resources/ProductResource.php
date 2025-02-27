@@ -8,6 +8,7 @@ use App\Models\City;
 use App\Models\Governorate;
 use App\Models\Product;
 use App\Models\ProductColor;
+use App\Models\Setting;
 use App\Models\ShippingCost;
 use App\Services\ProductActionsService;
 use Closure;
@@ -626,7 +627,13 @@ class ProductResource extends Resource
 
                 Tables\Columns\TextColumn::make('price')
                     ->label(__('products.Price'))
-                    ->money()
+                    ->formatStateUsing(function ($state) {
+                        $currency = Setting::getCurrency();
+                        $symbol = $currency?->symbol ?? '';
+
+                        $locale = app()->getLocale();
+                        return $locale === 'ar' ? "{$state} {$symbol}" : "{$symbol} {$state}";
+                    })
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('quantity')

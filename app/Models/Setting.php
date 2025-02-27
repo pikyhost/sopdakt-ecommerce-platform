@@ -80,4 +80,20 @@ class Setting extends Model
     {
         return $this->belongsTo(Currency::class);
     }
+
+    /**
+     * Get the currency with its symbol.
+     */
+    public static function getCurrency(): ?object
+    {
+        $settings = self::getAllSettings();
+        if (!isset($settings['currency_id'])) {
+            return null;
+        }
+
+        return Cache::rememberForever("currency_{$settings['currency_id']}", function () use ($settings) {
+            return \App\Models\Currency::find($settings['currency_id']);
+        });
+    }
+
 }
