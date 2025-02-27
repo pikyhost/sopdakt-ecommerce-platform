@@ -7,11 +7,14 @@ use App\Models\Region;
 use Illuminate\Support\Arr;
 use App\Models\ShippingType;
 use Illuminate\Http\Request;
+use App\Services\JtExpressService;
 use App\Http\Requests\LandingPage\OrderLandingRequest;
 use App\Models\{Governorate, LandingPage, WebsiteSetting, LandingPageSetting, LandingPageNavbarItems, LandingPageOrder};
 
 class LandingPageController extends Controller
 {
+    public function __construct(protected JtExpressService $jtExpressService){}
+
     public function show($slug)
     {
         $landingPage = LandingPage::where('slug', $slug)

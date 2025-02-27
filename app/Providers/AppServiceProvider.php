@@ -2,17 +2,18 @@
 
 namespace App\Providers;
 
+use Livewire\Livewire;
 use App\Enums\UserRole;
-use App\Livewire\ProfileContactDetails;
-use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
-use Filament\Forms\Components\TextInput;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Enums\FiltersLayout;
 use Filament\Tables\Table;
+use App\Services\JtExpressService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
+use App\Livewire\ProfileContactDetails;
+use Filament\Tables\Columns\TextColumn;
 use Illuminate\Support\ServiceProvider;
-use Livewire\Livewire;
+use Filament\Forms\Components\TextInput;
+use Filament\Tables\Enums\FiltersLayout;
+use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 
 class AppServiceProvider extends ServiceProvider
@@ -22,7 +23,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(JtExpressService::class, function ($app) {
+            return new JtExpressService();
+        });
     }
 
     /**
