@@ -123,8 +123,6 @@
                             </div><!-- End .header-menu -->
                         </div><!-- End .header-dropdown -->
 
-
-
                         <div class="header-dropdown mr-auto mr-sm-3 mr-md-0">
 							<a href="#">USD</a>
 							<div class="header-menu">
