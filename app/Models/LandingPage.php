@@ -235,8 +235,13 @@ class LandingPage extends Model
         return $shippingCost;
     }
 
-    function bundles()
+    public function bundles()
     {
-        return $this->hasMany(LandingPageBundle::class);
+        return $this->belongsToMany(Bundle::class, 'bundle_landing_page');
     }
+
+    // function bundles()
+    // {
+    //     return $this->hasMany(LandingPageBundle::class);
+    // }
 }

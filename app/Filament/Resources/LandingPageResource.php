@@ -2,9 +2,11 @@
 
 namespace App\Filament\Resources;
 
+use App\Models\Product;
 use Filament\Tables\Table;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\Action;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use App\Models\LandingPageVarieties;
 use Filament\Forms\{Get, Set, Form};
@@ -20,7 +22,6 @@ class LandingPageResource extends Resource
 {
     protected static ?string $model = LandingPage::class;
     protected static ?string $navigationIcon = 'heroicon-o-home';
-
     protected static ?string $navigationLabel = 'Landing Page';
     protected static ?int $fileMaxSize = 50 * 1024;
 
@@ -192,8 +193,8 @@ class LandingPageResource extends Resource
                                 ->relationship('varieties')
                                 ->schema([
                                     TextInput::make('combination_name')->label('Combination Name')->disabled(),
-                                    TextInput::make('price')->label('Price')->required(), // ->numeric(),
-                                    TextInput::make('quantity')->label('Quantity')->required(), // ->numeric(),
+                                    TextInput::make('price')->label('Price')->required(),
+                                    TextInput::make('quantity')->label('Quantity')->required(),
                                     Hidden::make('size_id'),
                                     Hidden::make('color_id'),
                                 ])
@@ -236,15 +237,46 @@ class LandingPageResource extends Resource
                 ])->collapsed(),
 
                 Section::make('Bundles Section')->schema([
-                    // Repeater::make('product_bundles')
-                    // ->relationship('bundles')
-                    // ->schema([
-                    //     TextInput::make('name')->label('Name')->required(),
-                    //     TextInput::make('quantity')->label('Quantity')->required(),
-                    //     TextInput::make('price')->label('Price')->required(),
-                    // ])
-                    // ->label('Product Bundles')
-                    // ->createItemButtonLabel('Add Product Bundle'),
+                    Repeater::make('product_bundles')
+                    ->relationship('bundles')
+                    ->schema([
+                        TextInput::make('name')
+                        ->label(fn () => __('Bundle Name'))
+                        ->required()
+                        ->afterStateHydrated(function (TextInput $component, $state) {
+                            $locale = App::getLocale();
+                            $component->state($state[$locale] ?? $state['en'] ?? '');
+                        }),
+
+                        TextInput::make('name_for_admin')->label('Name For Admin')->required(),
+
+                        Select::make('bundle_type')->live()->label('Type')
+                        ->options([
+                            'fixed_price' => 'Fixed Price',
+                            'buy_x_get_y' => 'Buy X Get Y'
+                        ])->required(),
+
+                        Select::make('products')
+                        ->maxItems(fn (Get $get) => ($get('bundle_type') instanceof \App\Enums\BundleType ? $get('bundle_type')->value: $get('bundle_type')) === 'fixed_price' ? 10 : 1)
+                        ->searchable()->preload()->label(__('bundles.products'))->multiple()->relationship('products', 'name'),
+
+                        TextInput::make('buy_x')->live()->label('Buy X')->numeric()
+                        ->visible(fn ($get) => $get('bundle_type') === 'buy_x_get_y')
+                        ->afterStateUpdated(fn (Set $set, Get $get) => self::updateDiscountPrice($set, $get)),
+
+                        TextInput::make('get_y')->live()->label('Get Y Free')->numeric()
+                        ->visible(fn ($get) => $get('bundle_type') === 'buy_x_get_y')
+                        ->afterStateUpdated(fn (Set $set, Get $get) => self::updateDiscountPrice($set, $get)),
+
+                        TextInput::make('discount_price')->live()->label('Discount Price')->numeric()
+                        ->visible(fn ($get) => $get('bundle_type'))
+                        ->disabled(fn ($get) => $get('bundle_type') === 'buy_x_get_y' && $get('buy_x') !== null && $get('get_y') !== null)
+                        ->default(fn (Get $get) => self::calculateDiscountPrice($get))
+                        ->afterStateHydrated(fn (Set $set, Get $get) => $set('discount_price', self::calculateDiscountPrice($get)))
+                        ->dehydrated(fn ($get) => $get('bundle_type') === 'buy_x_get_y'),
+                    ])
+                    ->label('Product Bundles')
+                    ->createItemButtonLabel('Add Product Bundle'),
                 ])->collapsed(),
 
                 Section::make('Products Section')->schema([
@@ -513,11 +545,11 @@ class LandingPageResource extends Resource
                             ->downloadable()
                             ->openable()
                             ->required(),
-                        TextInput::make('rate')->label('Rate')->live()->minValue(0)->required()->rule('gte:0')->extraAttributes(['oninput' => "this.value = Math.max(0, this.value)"]), // ->numeric()
+                        TextInput::make('rate')->label('Rate')->live()->minValue(0)->required()->rule('gte:0')->extraAttributes(['oninput' => "this.value = Math.max(0, this.value)"]),
                         TextInput::make('title')->label('Title')->required(),
                         TextInput::make('subtitle')->label('Subtitle')->required(),
-                        TextInput::make('price')->label('Price')->required(), // ->numeric()->rules(['numeric', 'decimal:0,2'])
-                        TextInput::make('after_discount_price')->label('After Discount Price')->required(), // ->numeric(),
+                        TextInput::make('price')->label('Price')->required(),
+                        TextInput::make('after_discount_price')->label('After Discount Price')->required(),
                         DatePicker::make('date_of_birth')->label('End Date')->native(false),
                         TextInput::make('cta_button_text')->label('Cta Button Text'),
                         TextInput::make('cta_button_link')->label('Cta Button Link'),
@@ -615,7 +647,7 @@ class LandingPageResource extends Resource
                             ->required(),
                         TextInput::make('title')->label('Title')->required(),
                         TextInput::make('subtitle')->label('Subtitle')->required(),
-                        TextInput::make('price')->label('Price')->required(), // ->numeric()->rules(['numeric', 'decimal:0,2'])
+                        TextInput::make('price')->label('Price')->required(),
                         TextInput::make('brand')->label('Brand')->required(),
                         TextInput::make('color')->label('Color')->required(),
                         TextInput::make('dimensions')->label('Dimensions')->required(),
@@ -759,6 +791,34 @@ class LandingPageResource extends Resource
                 ])->collapsed(),
             ])
             ->columns(2);
+    }
+
+    protected static function calculateDiscountPrice(?Get $get)
+    {
+        if ($get && $get('bundle_type') === 'buy_x_get_y' && $get('buy_x') && $get('get_y')) {
+            $productIds = $get('products') ?? [];
+            $productId = is_array($productIds) ? reset($productIds) : $productIds;
+
+            if ($productId) {
+                $product = Product::find($productId);
+
+                if ($product) {
+                    $buyX = floatval($get('buy_x')) ?: 1;
+                    $pricePerUnit = floatval($product->discount_price_for_current_country);
+                    return $buyX * $pricePerUnit;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    protected static function updateDiscountPrice(Set $set, Get $get)
+    {
+        if ($get('bundle_type') === 'buy_x_get_y' && $get('buy_x') && $get('get_y')) {
+            $discountPrice = self::calculateDiscountPrice($get);
+            $set('discount_price', $discountPrice);
+        }
     }
 
     private static function loadExistingCombinations($record): array

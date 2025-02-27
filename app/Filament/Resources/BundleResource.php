@@ -129,6 +129,13 @@ class BundleResource extends Resource
                                     ->multiple()
                                     ->relationship('products', 'name'),
 
+                                Select::make('landing_pages')
+                                    ->searchable()
+                                    ->preload()
+                                    ->label(__('bundles.landingPages'))
+                                    ->multiple()
+                                    ->relationship('landingPages', 'slug'),
+
                                 TextInput::make('buy_x')
                                     ->live()
                                     ->label(__('bundles.buy_x'))

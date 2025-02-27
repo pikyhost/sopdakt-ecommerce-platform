@@ -33,6 +33,11 @@ class Bundle extends Model
         return $this->belongsToMany(Product::class, 'bundle_product');
     }
 
+    public function landingPages()
+    {
+        return $this->belongsToMany(LandingPage::class, 'bundle_landing_page');
+    }
+
     public function getFormattedDiscountAttribute()
     {
         if ($this->bundle_type === 'fixed_price') {
