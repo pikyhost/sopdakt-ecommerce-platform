@@ -101,7 +101,7 @@ class LandingPageController extends Controller
         return view('landing-page-purhcase-form', compact('landingPage', 'landingPageSettings', 'governorates', 'websiteSettings', 'bundle', 'totalPrice', 'varieties', 'quantity'));
     }
 
-    function getCombinationPrice(Request $request, $id)
+    public function getCombinationPrice(Request $request, $id)
     {
         $size = $request->get('size_id');
         $color = $request->get('color_id');
