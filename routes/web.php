@@ -20,16 +20,17 @@ Route::redirect('/admin/settings', '/admin/settings/1/edit');
 
 
 Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['localeSessionRedirect', 'localizationRedirect', 'localeViewPath']], function () {
-    Route::post('landing-pages/{id}/show-purchase-form', [LandingPageController::class, 'saveBundleData'])->name('landing-pages.purchase-form.save-bundle-data');
-    Route::get('landing-pages/{slug}/show-purchase-form', [LandingPageController::class, 'showPurchaseForm'])->name('landing-pages.purchase-form.show');
     Route::get('landing-page/{slug}', [LandingPageController::class, 'show'])->name('landing-page.show-by-slug');
     Route::get('/products/{slug}', [ProductController::class, 'show'])->name('product.show');
     Route::get('/category/{slug}', [CategoryProductController::class, 'show'])->name('category.products');
     Route::get('/regions', [RegionsController::class, 'index'])->name('regions.index');
     Route::post('/calculate-shipping', [ShippingController::class, 'calculateShipping'])->name('shipping.calculate');
 
+    Route::post('landing-pages/{id}/show-purchase-form', [LandingPageController::class, 'saveBundleData'])->name('landing-pages.purchase-form.save-bundle-data');
+    Route::get('landing-pages/{slug}/show-purchase-form', [LandingPageController::class, 'showPurchaseForm'])->name('landing-pages.purchase-form.show');
     Route::post('/landing-pages/{id}/get-combination-price', [LandingPageController::class, 'getCombinationPrice'])->name('dashboard.landing-pages.get-combination-price');
     Route::post('landing-pages/{id}/order', [LandingPageController::class, 'saveOrder'])->name('landing-pages.purchase-form.order');
+    Route::get('landing-pages/{slug}/thanks', [LandingPageController::class, 'thanks'])->name('landing-pages.thanks');
 });
 
 // Route::post('/jt-express-webhook', [ShippingController::class, 'handleWebhook']);

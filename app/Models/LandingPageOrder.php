@@ -51,6 +51,16 @@ class LandingPageOrder extends Model
         return $this->belongsTo(Governorate::class);
     }
 
+    function shippingType()
+    {
+        return $this->belongsTo(ShippingType::class);
+    }
+
+    function country()
+    {
+        return $this->belongsTo(Country::class);
+    }
+
     function region()
     {
         return $this->belongsTo(Region::class);
@@ -76,8 +86,5 @@ class LandingPageOrder extends Model
                 ->whereDate('created_at', '<=', $end)
                 ->orWhereDate('created_at', $start);
         });
-
     }
-
-
 }

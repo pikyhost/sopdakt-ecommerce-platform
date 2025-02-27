@@ -132,7 +132,10 @@ class LandingPageController extends Controller
 
         $landingPage = LandingPage::find($id);
 
-        $landingPageVariant = $landingPage->varieties()->where('size_id', $data['size_id'])->where('color_id', $data['color_id'])->first();
+        $landingPageVariant = $landingPage->varieties()
+                                ->where('size_id', $data['size_id'])
+                                ->where('color_id', $data['color_id'])
+                                ->first();
 
         if ($landingPage && $landingPageVariant) {
 
@@ -167,6 +170,7 @@ class LandingPageController extends Controller
                     'size_id' => $request['size_id'],
                     'color_id' => $request['color_id'],
                 ]);
+
                 $landingPageVariant->quantity -= $data['quantity'];
                 $landingPageVariant->save();
                 return $order;
@@ -174,5 +178,14 @@ class LandingPageController extends Controller
         }
 
         throw new Exception('LandingPage not found');
+    }
+
+    public function thanks($slug)
+    {
+        return view('landing-pages.landing-page-thanks', [
+            'landingPage'          => LandingPage::where('slug', $slug)->firstOrFail(),
+            'settings'             => WebsiteSetting::query()->latest()->first(),
+            'landingPageSettings'  => LandingPageSetting::latest()->first(),
+        ]);
     }
 }

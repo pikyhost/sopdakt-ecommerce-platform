@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 
-use Filament\Forms\Form;
 use Filament\Tables\Table;
 use App\Models\LandingPageOrder;
 use Filament\Resources\Resource;
@@ -17,21 +16,15 @@ class OrderResource extends Resource
     protected static ?string $navigationGroup = 'Orders & Contacts';
     protected static ?string $navigationLabel = 'Landing Page Orders';
 
-    public static function form(Form $form): Form
-    {
-        return $form->schema([]);
-    }
-
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
                 TextColumn::make('id')->label('Order ID')->sortable(),
-                TextColumn::make('landingPage.name')->label('Landing Page')->sortable(),
+                TextColumn::make('landingPage.slug')->label('Landing Page')->sortable(),
                 TextColumn::make('governorate.name')->label('Governorate')->sortable(),
                 TextColumn::make('country.name')->label('Country')->sortable(),
                 TextColumn::make('shippingType.name')->label('Shipping Type')->sortable(),
-                TextColumn::make('landingPageBundle.name')->label('Landing Page Bundle')->sortable(),
                 TextColumn::make('name')->label('Customer Name')->sortable()->searchable(),
                 TextColumn::make('phone')->label('Phone Number')->sortable()->searchable(),
                 TextColumn::make('another_phone')->label('Alternate Phone')->sortable()->searchable(),
@@ -43,10 +36,7 @@ class OrderResource extends Resource
                 TextColumn::make('status')->label('Status')->badge()->sortable(),
                 TextColumn::make('notes')->label('Notes')->limit(100),
                 TextColumn::make('created_at')->label('Order Date')->dateTime('M d, Y H:i A')->sortable(),
-            ])
-            ->filters([])
-            ->actions([])
-            ->bulkActions([]);
+            ]);
     }
 
     public static function getPages(): array

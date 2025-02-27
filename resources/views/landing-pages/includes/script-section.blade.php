@@ -199,8 +199,8 @@
 
 <script>
     let horizontal_quantity_input = document.querySelector('.horizontal-quantity');
-    let product_size = document.getElementById('size');
-    let product_color = document.getElementById('color');
+    let product_size = document.getElementById('Size');
+    let product_color = document.getElementById('Color');
     let quantityInput = document.getElementById('quantity');
 
     product_size.addEventListener('change', function () {
@@ -243,11 +243,8 @@
                 if (data.price) {
                     let shippingCostElement = document.getElementById('shipping_cost');
                     let shippingCostText = shippingCostElement.innerText || '0';
-
-                    // Parse the numeric value of shipping cost
                     let shippingCost = parseFloat(shippingCostText.replace(/[^\d.-]/g, '')) || 0;
 
-                    // Calculate subtotal and total
                     subtotal = data.price * quantity;
                     total = subtotal + shippingCost;
 
@@ -447,14 +444,8 @@
                 const index = matches[2];
                 const key = matches[3];
 
-                if (!varieties[bundleId]) {
-                    varieties[bundleId] = [];
-                }
-
-                if (!varieties[bundleId][index]) {
-                    varieties[bundleId][index] = {};
-                }
-
+                if (!varieties[bundleId]) varieties[bundleId] = [];
+                if (!varieties[bundleId][index]) varieties[bundleId][index] = {}
                 varieties[bundleId][index][key] = element.value;
             }
         });
