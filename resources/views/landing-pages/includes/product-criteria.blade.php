@@ -99,7 +99,7 @@
                                             </label>
                                         </h5>
 
-                                        <div id="collapse-{{$bundle->id}}" class="collapse  p-0" data-parent="#accordion">
+                                        <div id="collapse-{{$bundle->id}}" class="   p-0" data-parent="#accordion">
                                             <div class="feature-box">
                                                 <div class="feature-box-content ">
                                                     <div class="row">

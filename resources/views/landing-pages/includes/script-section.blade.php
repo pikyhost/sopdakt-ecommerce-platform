@@ -106,83 +106,6 @@
             document.getElementById('shipping_cost').innerText = '';
         }
     }
-
-    let product_size = document.getElementById('size');
-    let product_color = document.getElementById('color');
-    let quantityInput = document.getElementById('quantity');
-
-    product_size.addEventListener('change', function () {
-        let selectedSize = product_size.value;
-        let selectedColor = product_color.value;
-        let quantity = quantityInput.value || 1;
-        console.log(selectedSize, 'selectedSize selectedSize');
-
-        setPriceByColorAndSizeId(selectedColor, selectedSize, quantity);
-    });
-
-    product_color.addEventListener('change', function () {
-        let selectedSize = product_size.value;
-        let selectedColor = product_color.value;
-        let quantity = quantityInput.value || 1;
-        setPriceByColorAndSizeId(selectedColor, selectedSize, quantity);
-    });
-
-    quantityInput.addEventListener('input', function () {
-        let selectedSize = product_size.value;
-        let selectedColor = product_color.value;
-        let quantity = quantityInput.value || 1;
-        setPriceByColorAndSizeId(selectedColor, selectedSize, quantity);
-    });
-
-    function setPriceByColorAndSizeId(selectedColor, selectedSize, quantity) {
-        fetch('{{ route('dashboard.landing-pages.get-combination-price',$landingPage->id) }}', {
-            method: 'POST',
-            body: JSON.stringify({
-                size_id: selectedSize,
-                color_id: selectedColor
-            }),
-            headers: {
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-            },
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data) {
-                if (data.price) {
-                    let shippingCostElement = document.getElementById('shipping_cost');
-                    let shippingCostText = shippingCostElement.innerText || '0';
-
-                    // Parse the numeric value of shipping cost
-                    let shippingCost = parseFloat(shippingCostText.replace(/[^\d.-]/g, '')) || 0;
-
-                    // Calculate subtotal and total
-                    subtotal = data.price * quantity;
-                    total = subtotal + shippingCost;
-
-                    document.getElementById('price').innerText = subtotal + ' {{$landingPageSettings?->currency_code}}';
-                    document.getElementById('total').innerText = total + ' {{$landingPageSettings?->currency_code}}';
-                }
-            } else {
-                Swal.fire({
-                    title: '{{__('Error')}}',
-                    text: 'An error occurred, please try again later',
-                    icon: 'error',
-                    confirmButtonText: 'Ok'
-                });
-            }
-        })
-        .catch((error) => {
-            Swal.fire({
-                title: '{{__('Error')}}',
-                text: 'An error occurred, please try again later',
-                icon: 'error',
-                confirmButtonText: 'Ok'
-            });
-
-        });
-    }
 </script>
 
 <script>
@@ -256,7 +179,100 @@
         main.mount();
         thumbnails.mount();
     });
+</script>
+
+<script>
+    function enforceMaxLength(input) {
+        if (input.value.length > 11) {
+            input.value = input.value.slice(0, 11);
+        }
+    }
+
+    document.getElementById('phone').addEventListener('input', function() {
+        enforceMaxLength(this);
+    });
+
+    document.getElementById('another_phone').addEventListener('input', function() {
+        enforceMaxLength(this);
+    });
+</script>
+
+<script>
     let horizontal_quantity_input = document.querySelector('.horizontal-quantity');
+    let product_size = document.getElementById('size');
+    let product_color = document.getElementById('color');
+    let quantityInput = document.getElementById('quantity');
+
+    product_size.addEventListener('change', function () {
+        let selectedSize = product_size.value;
+        let selectedColor = product_color.value;
+        let quantity = quantityInput.value || 1;
+        setPriceByColorAndSizeId(selectedColor, selectedSize, quantity);
+    });
+
+    product_color.addEventListener('change', function () {
+        let selectedSize = product_size.value;
+        let selectedColor = product_color.value;
+        let quantity = quantityInput.value || 1;
+        setPriceByColorAndSizeId(selectedColor, selectedSize, quantity);
+    });
+
+    quantityInput.addEventListener('input', function () {
+        let selectedSize = product_size.value;
+        let selectedColor = product_color.value;
+        let quantity = quantityInput.value || 1;
+        setPriceByColorAndSizeId(selectedColor, selectedSize, quantity);
+    });
+
+    function setPriceByColorAndSizeId(selectedColor, selectedSize, quantity) {
+        fetch('{{ route('dashboard.landing-pages.get-combination-price',$landingPage->id) }}', {
+            method: 'POST',
+            body: JSON.stringify({
+                size_id: selectedSize,
+                color_id: selectedColor
+            }),
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data) {
+                if (data.price) {
+                    let shippingCostElement = document.getElementById('shipping_cost');
+                    let shippingCostText = shippingCostElement.innerText || '0';
+
+                    // Parse the numeric value of shipping cost
+                    let shippingCost = parseFloat(shippingCostText.replace(/[^\d.-]/g, '')) || 0;
+
+                    // Calculate subtotal and total
+                    subtotal = data.price * quantity;
+                    total = subtotal + shippingCost;
+
+                    document.getElementById('price').innerText = subtotal + ' {{$landingPageSettings?->currency_code}}';
+                    document.getElementById('total').innerText = total + ' {{$landingPageSettings?->currency_code}}';
+                }
+            } else {
+                Swal.fire({
+                    title: '{{__('Error')}}',
+                    text: 'An error occurred, please try again later',
+                    icon: 'error',
+                    confirmButtonText: 'Ok'
+                });
+            }
+        })
+        .catch((error) => {
+            Swal.fire({
+                title: '{{__('Error')}}',
+                text: 'An error occurred, please try again later',
+                icon: 'error',
+                confirmButtonText: 'Ok'
+            });
+
+        });
+    }
 
     function handleCheckout() {
         let landing_page_bundle_id = $('input[name="landing_page_bundle_id"]:checked').val();
@@ -420,7 +436,6 @@
         });
     }
 
-
     function getVarieties() {
         const varieties = {};
         const colorElements = document.querySelectorAll('select[name^="varieties"]');
@@ -446,23 +461,6 @@
 
         return varieties;
     }
-
-</script>
-
-<script>
-    function enforceMaxLength(input) {
-        if (input.value.length > 11) {
-            input.value = input.value.slice(0, 11);
-        }
-    }
-
-    document.getElementById('phone').addEventListener('input', function() {
-        enforceMaxLength(this);
-    });
-
-    document.getElementById('another_phone').addEventListener('input', function() {
-        enforceMaxLength(this);
-    });
 </script>
 
 {!! displayAlert() !!}

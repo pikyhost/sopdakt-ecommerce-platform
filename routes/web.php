@@ -27,6 +27,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
     Route::get('/category/{slug}', [CategoryProductController::class, 'show'])->name('category.products');
     Route::get('/regions', [RegionsController::class, 'index'])->name('regions.index');
     Route::post('/calculate-shipping', [ShippingController::class, 'calculateShipping'])->name('shipping.calculate');
+
     Route::post('/landing-pages/{id}/get-combination-price', [LandingPageController::class, 'getCombinationPrice'])->name('dashboard.landing-pages.get-combination-price');
     Route::post('landing-pages/{id}/order', [LandingPageController::class, 'saveOrder'])->name('landing-pages.purchase-form.order');
 });

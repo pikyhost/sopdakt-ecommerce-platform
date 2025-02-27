@@ -2,6 +2,8 @@
 <html lang="en">
 @include('landing-pages.includes.head-section')
 
+{{-- @dd($landingPage->bundles) --}}
+
 <body class="home9 position-relative " style="@if($landingPage->is_counter_section) padding-bottom:4.687rem; @endif">
     <div class="preloader" id="preloader">
         <div class="preloader-inner">
