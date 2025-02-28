@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-@include('landing-pages.includes.head-section')
+@include('landing-pages.includes.head-section', ['showSettings' => true])
 <body>
     <header class="header">
         <h1>{{$settings?->website_name}}</h1>

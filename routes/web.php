@@ -1,8 +1,11 @@
 <?php
 
+use App\Models\Size;
+use App\Models\Color;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{ProductController, LandingPageController, RegionsController, ShippingController, CategoryProductController};
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
+use App\Http\Controllers\{ProductController, LandingPageController, RegionsController, ShippingController, CategoryProductController};
 
 Route::get('/', function () {
     return view('welcome');
@@ -25,9 +28,9 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
     Route::get('/category/{slug}', [CategoryProductController::class, 'show'])->name('category.products');
     Route::get('/regions', [RegionsController::class, 'index'])->name('regions.index');
     Route::post('/calculate-shipping', [ShippingController::class, 'calculateShipping'])->name('shipping.calculate');
-
     Route::post('landing-pages/{id}/show-purchase-form', [LandingPageController::class, 'saveBundleData'])->name('landing-pages.purchase-form.save-bundle-data');
     Route::get('landing-pages/{slug}/show-purchase-form', [LandingPageController::class, 'showPurchaseForm'])->name('landing-pages.purchase-form.show');
+    Route::post('landing-pages/{id}/purchase', [LandingPageController::class, 'order'])->name('landing-pages.purchase-form.store');
     Route::post('/landing-pages/{id}/get-combination-price', [LandingPageController::class, 'getCombinationPrice'])->name('dashboard.landing-pages.get-combination-price');
     Route::post('landing-pages/{id}/order', [LandingPageController::class, 'saveOrder'])->name('landing-pages.purchase-form.order');
     Route::get('landing-pages/{slug}/thanks', [LandingPageController::class, 'thanks'])->name('landing-pages.thanks');

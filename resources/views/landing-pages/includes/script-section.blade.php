@@ -23,9 +23,6 @@
 
     function getRegions($elementId = 'address_governorate', $regionsElementId = 'address_region') {
         var governorate_id = $('#' + $elementId).val();
-
-        console.log(governorate_id, $elementId);
-
         $.ajax({
             url: "{{route('regions.index')}}",
             type: 'GET',
@@ -39,7 +36,6 @@
                     addressRegions.append('<option value="">No regions found</option>');
                 } else {
                     data.forEach(function (region) {
-                        console.log(region);
                         addressRegions.append('<option value="' + region.id + '">' + region.name + '</option>');
                     });
                     getShippingCost();
@@ -77,13 +73,10 @@
                         let shippingCost = data.shipping_cost;
                         let total = subtotal + shippingCost;
 
-                        document.getElementById('shipping_cost').innerText =
-                            shippingCost + ' {{$landingPageSettings?->currency_code}}';
-                        document.getElementById('total').innerText =
-                            total + ' {{$landingPageSettings?->currency_code}}';
+                        document.getElementById('shipping_cost').innerText = shippingCost + ' {{$landingPageSettings?->currency_code}}';
+                        document.getElementById('total').innerText = total + ' {{$landingPageSettings?->currency_code}}';
                     } else {
-                        document.getElementById('shipping_cost').innerText =
-                            '0 {{$landingPageSettings?->currency_code}}';
+                        document.getElementById('shipping_cost').innerText = '0 {{$landingPageSettings?->currency_code}}';
                     }
                 } else {
                     Swal.fire({
@@ -271,21 +264,23 @@
         });
     }
 
-    function handleCheckout() {
-        let landing_page_bundle_id = $('input[name="landing_page_bundle_id"]:checked').val();
-        let isBundleExpanded = $('.collapse.show').length === 0;
-
-        if (landing_page_bundle_id) {
-            if (isBundleExpanded) {
-                updateURLWithParameter('checkout', 'true');
-                showCheckout();
-            } else {
-                updateURLWithParameter('bundleId', landing_page_bundle_id);
-                showCheckoutPage();
-            }
-        } else {
+    function handleCheckout($dierctCheckout = false) {
+        if($dierctCheckout) {
             updateURLWithParameter('checkout', 'true');
             showCheckout();
+        } else {
+            let bundle_landing_page_id = $('input[name="bundle_landing_page_id"]:checked').val();
+            let isBundleExpanded = $('.collapse.show').length === 0;
+
+            if (bundle_landing_page_id) {
+                if (isBundleExpanded) {
+                    updateURLWithParameter('checkout', 'true');
+                    showCheckout();
+                } else {
+                    updateURLWithParameter('bundleId', bundle_landing_page_id);
+                    showCheckoutPage();
+                }
+            }
         }
     }
 
@@ -332,13 +327,13 @@
     }
 
     function showCheckoutPage() {
-        let landing_page_bundle_id = $('input[name="landing_page_bundle_id"]:checked').val();
+        let bundle_landing_page_id = $('input[name="bundle_landing_page_id"]:checked').val();
         let quantityElemnt = document.querySelector('.horizontal-quantity.form-control');
         let quantityValue = quantityElemnt.value;
 
-        if (landing_page_bundle_id) {
+        if (bundle_landing_page_id) {
             const varietiesData = getVarieties();
-            const bundleVarieties = varietiesData[landing_page_bundle_id];
+            const bundleVarieties = varietiesData[bundle_landing_page_id];
 
             if (bundleVarieties) {
                 let errorMessageHtml = `<ul>`;
@@ -365,7 +360,7 @@
                 }
 
                 processCheckout({
-                    landing_page_bundle_id: landing_page_bundle_id,
+                    bundle_landing_page_id: bundle_landing_page_id,
                     quantity: quantityValue,
                     varieties: bundleVarieties
                 });

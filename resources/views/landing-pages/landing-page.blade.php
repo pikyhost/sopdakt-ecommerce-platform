@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-@include('landing-pages.includes.head-section')
-
-{{-- @dd($landingPage->bundles->load('products', 'products.sizes', 'products.colors')) --}}
+@include('landing-pages.includes.head-section', ['showSettings' => true])
 
 <body class="home9 position-relative " style="@if($landingPage->is_counter_section) padding-bottom:4.687rem; @endif">
      <div class="preloader" id="preloader">
