@@ -31,7 +31,7 @@ class LandingPageSettingResource extends Resource
     {
         return $form
             ->schema([
-                TextInput::make('name')->label('Name')->required(),
+                TextInput::make('name')->label('Name')->required()->disabled(),
                 TextInput::make('display_name')->label('Display Name')->required(),
                 Toggle::make('status')->label('Status')->default(true),
             ]);

@@ -91,7 +91,7 @@
                             </ul>
 
                             <div id="accordion" class="col-12 p-0" style="direction:  {{app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }}">
-                                @foreach($landingPage->bundles as $bundle)
+                                @foreach($landingPage->bundles as $key => $bundle)
                                     <div class="col-12 my-2">
                                         <h5>
                                             <label for="bundle-{{$bundle->id}}" type="button" data-toggle="collapse" data-target="#collapse-{{$bundle->id}}" aria-expanded="true" aria-controls="collapse-{{$bundle->id}}" class="btn rounded-1 btn-toggle btn-link border w-100 m-0">
@@ -99,41 +99,48 @@
                                             </label>
                                         </h5>
 
-                                        <div id="collapse-{{$bundle->id}}" class="   p-0" data-parent="#accordion">
+                                        <div id="collapse-{{$bundle->id}}" class="collapse  p-0" data-parent="#accordion">
                                             <div class="feature-box">
                                                 <div class="feature-box-content ">
                                                     <div class="row">
-                                                        <input class="d-none" id="bundle-{{$bundle->id}}" type="radio" name="landing_page_bundle_id" value="{{$bundle->id}}"/>
+                                                        <input class="d-none" id="bundle-{{$bundle->id}}" type="radio" name="bundle_landing_page_id" value="{{$bundle->id}}"/>
                                                     </div>
 
-                                                    @for($i = 0; $i < $bundle->quantity; $i++)
-                                                        <div class=" card mb-1 px-3 py-1 rounded-0 shadow">
-                                                            <div class="card-body">
-                                                                <div class="row">
-                                                                    <h5>{{__('Piece number')}} {{$i + 1}}</h5>
-                                                                </div>
+                                                    <div class=" card mb-1 px-3 py-1 rounded-0 shadow">
+                                                        <div class="card-body">
+                                                            <div class="row">
+                                                                <h5>{{__('Piece number')}} {{$key + 1}}</h5>
+                                                            </div>
 
-                                                                <div class="row my-2">
-                                                                    <div class="col-6" style="text-align: {{app()->getLocale() == 'ar' ? 'right' : 'left'}}">
-                                                                        <x-select class="rounded-0 form-control" id="color" name="varieties[{{$bundle->id}}][{{$i}}][color_id]" label-name="Color" required>
-                                                                            @foreach($landingPage->colors->unique() as $color)
+                                                            <div class="row my-2">
+                                                                @foreach($bundle->products as $key => $product)
+                                                                    <div class="col-6 my-2" style="text-align: {{app()->getLocale() == 'ar' ? 'right' : 'left'}}">
+                                                                        <x-select class="rounded-0 form-control" id="color" name="varieties[{{$bundle->id}}][{{$key}}][color_id]" label-name="Color" required>
+                                                                            @foreach ($product->colors->unique() as $color)
                                                                                 <option value="{{$color->id}}">{{__($color->name)}}</option>
                                                                             @endforeach
                                                                         </x-select>
                                                                     </div>
 
-                                                                    <div class="col-6"
-                                                                        style="text-align: {{app()->getLocale() == 'ar' ? 'right' : 'left'}}">
-                                                                        <x-select class="rounded-0 form-control" id="size" name="varieties[{{$bundle->id}}][{{$i}}][size_id]" label-name="Size" required>
-                                                                            @foreach($landingPage->sizes->unique() as $size)
+                                                                    <div class="col-6 my-2" style="text-align: {{app()->getLocale() == 'ar' ? 'right' : 'left'}}">
+                                                                        <x-select class="rounded-0 form-control" id="size" name="varieties[{{$bundle->id}}][{{$key}}][size_id]" label-name="Size" required>
+                                                                            @foreach($product->sizes->unique() as $size)
                                                                                 <option value="{{$size->id}}">{{$size->name}}</option>
                                                                             @endforeach
                                                                         </x-select>
                                                                     </div>
+                                                                @endforeach
+                                                            </div>
+
+                                                            <div class="row mt-2 mb-2">
+                                                                <div class="col-12">
+                                                                    <button onclick="handleCheckout(false)" style="border-radius: 5px !important;" class="mybtn3 mybtn-bg btn btn-dark rounded-0 px-3 py-2 my-2 w-100" title="{{__('Buy Now')}}">
+                                                                        <span class="buy_text">{{__('Buy Now')}}</span>
+                                                                    </button>
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                    @endfor
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -147,7 +154,7 @@
                                 <input class="horizontal-quantity form-control" type="number" min="1">
                             </div>
 
-                            <button onclick="handleCheckout()" style="border-radius: 5px !important;" class="mybtn3 mybtn-bg btn btn-dark rounded-0 px-3 py-2 my-2" title="Add to Cart">
+                            <button onclick="handleCheckout(true)" style="border-radius: 5px !important;" class="mybtn3 mybtn-bg btn btn-dark rounded-0 px-3 py-2 my-2" title="{{__('Buy Now')}}">
                                 <span class="buy_text">{{__('Buy Now')}}</span>
                             </button>
                         </div>

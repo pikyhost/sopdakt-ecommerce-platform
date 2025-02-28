@@ -1,9 +1,12 @@
 
 <head>
-    {!! $settings?->facebook_pixel_code !!}
-    {!! $settings?->tiktok_pixel_code !!}
-    {!! $settings?->google_pixel_code !!}
-    {!! $settings?->snapchat_pixel_code !!}
+    @if ($showSettings)
+        {!! $settings?->facebook_pixel_code !!}
+        {!! $settings?->tiktok_pixel_code !!}
+        {!! $settings?->google_pixel_code !!}
+        {!! $settings?->snapchat_pixel_code !!}
+    @endif
+
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
@@ -40,7 +43,7 @@
             --product-criteria-description-color: #ffffff;
             --product-criteria-sku-label-color: #f7f3f3;
             --product-criteria-sku-color: #ffffff;
-            --product-criteria-background-color: #0f0f0f;
+            --product-criteria-background-color: #2c2c2c;
             --product-criteria-cta-button-background-color: #ff0000;
             --product-criteria-cta-button-hover-background-color: #000000;
             --product-criteria-cta-button-border-color: #ff0000;
@@ -167,8 +170,13 @@
             --counter-section-counter-color: #ffffff;
             --counter-section-cta-button-color: #ff0000;
             --counter-section-cta-button-text-color: #ffffff;
+            --shadow-color: rgba(255, 255, 255, 0.1);
+            --footer-border-color: rgba(255, 255, 255, 0.15);
         }
 
+        .body {
+            background-color: #FFF !important;
+        }
         .rtl-header {
             display: flex;
             flex-direction: row-reverse;

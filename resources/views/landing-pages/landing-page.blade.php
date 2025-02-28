@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-@include('landing-pages.includes.head-section')
-
-{{-- @dd($landingPage->bundles) --}}
+@include('landing-pages.includes.head-section', ['showSettings' => true])
 
 <body class="home9 position-relative " style="@if($landingPage->is_counter_section) padding-bottom:4.687rem; @endif">
-    <div class="preloader" id="preloader">
+     <div class="preloader" id="preloader">
         <div class="preloader-inner">
             <div class="cube-wrapper">
                 <div class="cube-folding">
@@ -20,7 +18,7 @@
     </div>
 
     <header class="navigation">
-        @if($landingPage->topBars->count()>0)
+        @if($landingPage->topBars->count() > 0)
             @include('landing-pages.includes.top-bars')
         @endif
 

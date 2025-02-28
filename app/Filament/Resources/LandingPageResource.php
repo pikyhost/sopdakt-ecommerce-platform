@@ -27,7 +27,7 @@ class LandingPageResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('Products Management'); //Products Attributes Management
+        return __('Products Management');
     }
 
     protected static $acceptedFileTypes = [
