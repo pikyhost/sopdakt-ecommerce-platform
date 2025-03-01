@@ -11,6 +11,7 @@ class JtExpressService
     protected $apiAccount;
     protected $privateKey;
     protected $customerCode;
+    protected $password;
 
     public function __construct()
     {
@@ -18,20 +19,29 @@ class JtExpressService
         $this->apiAccount = env('JT_EXPRESS_API_ACCOUNT', '29250815308379141');
         $this->privateKey = env('JT_EXPRESS_PRIVATE_KEY', 'afa1047cce70493c9d5d29704f05d0d9');
         $this->customerCode = env('JT_EXPRESS_CUSTOMER_CODE', 'J0086024138');
+        $this->password = env('JT_EXPRESS_PASSWORD', '');
     }
 
     protected function getAuthHeaders(array $requestBody)
     {
         $jsonData = json_encode($requestBody, JSON_UNESCAPED_UNICODE);
-        $md5Hash  = md5($jsonData . $this->privateKey, true);
-        $digest   = base64_encode($md5Hash);
+        $md5Hash = md5($jsonData . $this->privateKey, true);
+        $digest = base64_encode($md5Hash);
 
         return [
-            'apiAccount'   => $this->apiAccount,
-            'digest'       => $digest,
-            'timestamp'    => time(),
-            'Content-Type' => 'application/x-www-form-urlencoded'
+            'apiAccount'    => $this->apiAccount,
+            'digest'        => $digest,
+            'timestamp'     => time(),
+            'Content-Type'  => 'application/x-www-form-urlencoded',
         ];
+    }
+
+    protected function getBusinessDigest()
+    {
+        $passwordHash = strtoupper(md5($this->password . 'jadada236t2'));
+        $businessSignatureData = $this->customerCode . $passwordHash . $this->privateKey;
+        $businessSignatureMd5 = md5($businessSignatureData, true);
+        return base64_encode($businessSignatureMd5);
     }
 
     public function createOrder(array $orderData)
@@ -39,6 +49,7 @@ class JtExpressService
         try {
             $requestBody = [
                 'customerCode'   => $this->customerCode,
+                'digest'         => $this->getBusinessDigest(),
                 'txlogisticId'   => $orderData['tracking_number'] ?? ('EGY' . time() . rand(1000, 9999)),
                 'serviceType'    => $orderData['service_type'] ?? '02',
                 'orderType'      => $orderData['order_type'] ?? '2',
@@ -117,10 +128,12 @@ class JtExpressService
                 ],
             ];
 
+            $headers = $this->getAuthHeaders($requestBody);
             $response = Http::asForm()
-                ->withHeaders($this->getAuthHeaders($requestBody))
-                ->post($this->baseUrl . '/order/addOrder', $requestBody);
+                ->withHeaders($headers)
+                ->post($this->baseUrl . '/order/addOrder', ['bizContent' => json_encode($requestBody, JSON_UNESCAPED_UNICODE)]);
 
+            // dd($response);
             return $response->json();
         } catch (Exception $e) {
             throw new Exception('Failed to create J&T Express order: ' . $e->getMessage());
@@ -132,12 +145,14 @@ class JtExpressService
         try {
             $requestBody = [
                 'customerCode' => $this->customerCode,
+                'digest' => $this->getBusinessDigest(),
                 'txlogisticId' => $orderNumber
             ];
 
+            $headers = $this->getAuthHeaders($requestBody);
             $response = Http::asForm()
-                ->withHeaders($this->getAuthHeaders($requestBody))
-                ->post($this->baseUrl . '/order/checkOrder', $requestBody);
+                ->withHeaders($headers)
+                ->post($this->baseUrl . '/order/checkOrder', ['bizContent' => json_encode($requestBody, JSON_UNESCAPED_UNICODE)]);
 
             return $response->json();
         } catch (Exception $e) {
@@ -145,17 +160,20 @@ class JtExpressService
         }
     }
 
-    public function cancelOrder(string $orderNumber)
+    public function cancelOrder(string $orderNumber, string $reason = '')
     {
         try {
             $requestBody = [
                 'customerCode' => $this->customerCode,
-                'txlogisticId' => $orderNumber
+                'digest' => $this->getBusinessDigest(),
+                'txlogisticId' => $orderNumber,
+                'reason' => $reason ?: 'Cancellation requested by customer'
             ];
 
+            $headers = $this->getAuthHeaders($requestBody);
             $response = Http::asForm()
-                ->withHeaders($this->getAuthHeaders($requestBody))
-                ->post($this->baseUrl . '/order/cancelOrder', $requestBody);
+                ->withHeaders($headers)
+                ->post($this->baseUrl . '/order/cancelOrder', ['bizContent' => json_encode($requestBody, JSON_UNESCAPED_UNICODE)]);
 
             return $response->json();
         } catch (Exception $e) {
@@ -168,12 +186,14 @@ class JtExpressService
         try {
             $requestBody = [
                 'customerCode' => $this->customerCode,
+                'digest' => $this->getBusinessDigest(),
                 'txlogisticId' => $orderNumber
             ];
 
+            $headers = $this->getAuthHeaders($requestBody);
             $response = Http::asForm()
-                ->withHeaders($this->getAuthHeaders($requestBody))
-                ->post($this->baseUrl . '/order/statusReturn', $requestBody);
+                ->withHeaders($headers)
+                ->post($this->baseUrl . '/order/statusReturn', ['bizContent' => json_encode($requestBody, JSON_UNESCAPED_UNICODE)]);
 
             return $response->json();
         } catch (Exception $e) {
@@ -186,12 +206,14 @@ class JtExpressService
         try {
             $requestBody = [
                 'customerCode' => $this->customerCode,
-                'billCode'     => $trackingNumber
+                'digest' => $this->getBusinessDigest(),
+                'billCode' => $trackingNumber
             ];
 
+            $headers = $this->getAuthHeaders($requestBody);
             $response = Http::asForm()
-                ->withHeaders($this->getAuthHeaders($requestBody))
-                ->post($this->baseUrl . '/logistics/trackQuery', $requestBody);
+                ->withHeaders($headers)
+                ->post($this->baseUrl . '/logistics/trackQuery', ['bizContent' => json_encode($requestBody, JSON_UNESCAPED_UNICODE)]);
 
             return $response->json();
         } catch (Exception $e) {
@@ -204,12 +226,14 @@ class JtExpressService
         try {
             $requestBody = [
                 'customerCode' => $this->customerCode,
-                'billCode'     => $trackingNumber
+                'digest' => $this->getBusinessDigest(),
+                'billCode' => $trackingNumber
             ];
 
+            $headers = $this->getAuthHeaders($requestBody);
             $response = Http::asForm()
-                ->withHeaders($this->getAuthHeaders($requestBody))
-                ->post($this->baseUrl . '/logistics/trajectoryReturn', $requestBody);
+                ->withHeaders($headers)
+                ->post($this->baseUrl . '/logistics/trajectoryReturn', ['bizContent' => json_encode($requestBody, JSON_UNESCAPED_UNICODE)]);
 
             return $response->json();
         } catch (Exception $e) {
@@ -221,13 +245,17 @@ class JtExpressService
     {
         try {
             $requestParams = array_merge(
-                ['customerCode' => $this->customerCode],
+                [
+                    'customerCode' => $this->customerCode,
+                    'digest' => $this->getBusinessDigest()
+                ],
                 $parameters
             );
 
+            $headers = $this->getAuthHeaders($requestParams);
             $response = Http::asForm()
-                ->withHeaders($this->getAuthHeaders($requestParams))
-                ->post($this->baseUrl . '/other/threeSegmentCodeSearch', $requestParams);
+                ->withHeaders($headers)
+                ->post($this->baseUrl . '/other/threeSegmentCodeSearch', ['bizContent' => json_encode($requestParams, JSON_UNESCAPED_UNICODE)]);
 
             return $response->json();
         } catch (Exception $e) {

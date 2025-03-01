@@ -182,14 +182,7 @@ class LandingPageController extends Controller
 
                 $JtExpressOrderData =  $this->prepareJtExpressOrderData($order);
                 $jtExpressResponse = app(JtExpressService::class)->createOrder($JtExpressOrderData);
-
-                if (isset($jtExpressResponse['code']) && $jtExpressResponse['code'] == 1) {
-                    $order->update([
-                        'tracking_number'   => $JtExpressOrderData['tracking_number'],
-                        'shipping_status'   => 'pending',
-                        'shipping_response' => json_encode($jtExpressResponse)
-                    ]);
-                }
+                $this->updateJtExpressLandingPageOrder($order, 'pending', $JtExpressOrderData,  $jtExpressResponse);
 
                 DB::commit();
                 return $order;
@@ -267,14 +260,7 @@ class LandingPageController extends Controller
 
                 $JtExpressOrderData =  $this->prepareJtExpressOrderData($order);
                 $jtExpressResponse = app(JtExpressService::class)->createOrder($JtExpressOrderData);
-
-                if (isset($jtExpressResponse['code']) && $jtExpressResponse['code'] == 1) {
-                    $order->update([
-                        'tracking_number'   => $JtExpressOrderData['tracking_number'],
-                        'shipping_status'   => 'pending',
-                        'shipping_response' => json_encode($jtExpressResponse)
-                    ]);
-                }
+                $this->updateJtExpressLandingPageOrder($order, 'pending', $JtExpressOrderData,  $jtExpressResponse);
 
                 return $order;
             }
@@ -308,6 +294,17 @@ class LandingPageController extends Controller
             'item_currency'             => 'EGP',
             'item_description'          => $order->landingPage->description ?? '',
         ];
+    }
+
+    private function updateJtExpressLandingPageOrder(LandingPageOrder $order, string $shipping_status, $JtExpressOrderData,  $jtExpressResponse)
+    {
+        if (isset($jtExpressResponse['code']) && $jtExpressResponse['code'] == 1) {
+            $order->update([
+                'tracking_number'   => $JtExpressOrderData['tracking_number'],
+                'shipping_status'   => $shipping_status,
+                'shipping_response' => json_encode($jtExpressResponse)
+            ]);
+        }
     }
 
     public function thanks($slug)
