@@ -29,6 +29,9 @@ class LandingPageOrder extends Model
         'another_phone',
         'created_at',
         'updated_at',
+        'tracking_number',
+        'shipping_status',
+        'shipping_response',
     ];
 
     function landingPage()

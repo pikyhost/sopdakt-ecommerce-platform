@@ -15,8 +15,6 @@ use App\Models\{Governorate, LandingPage, WebsiteSetting, LandingPageSetting, La
 
 class LandingPageController extends Controller
 {
-    public function __construct(protected JtExpressService $jtExpressService){}
-
     public function show($slug)
     {
         $landingPage = LandingPage::where('slug', $slug)
@@ -182,6 +180,17 @@ class LandingPageController extends Controller
                     }
                 }
 
+                $JtExpressOrderData =  $this->prepareJtExpressOrderData($order);
+                $jtExpressResponse = app(JtExpressService::class)->createOrder($JtExpressOrderData);
+
+                if (isset($jtExpressResponse['code']) && $jtExpressResponse['code'] == 1) {
+                    $order->update([
+                        'tracking_number'   => $JtExpressOrderData['tracking_number'],
+                        'shipping_status'   => 'pending',
+                        'shipping_response' => json_encode($jtExpressResponse)
+                    ]);
+                }
+
                 DB::commit();
                 return $order;
             } catch (Exception $e) {
@@ -255,11 +264,50 @@ class LandingPageController extends Controller
 
                 $landingPageVariant->quantity -= $data['quantity'];
                 $landingPageVariant->save();
+
+                $JtExpressOrderData =  $this->prepareJtExpressOrderData($order);
+                $jtExpressResponse = app(JtExpressService::class)->createOrder($JtExpressOrderData);
+
+                if (isset($jtExpressResponse['code']) && $jtExpressResponse['code'] == 1) {
+                    $order->update([
+                        'tracking_number'   => $JtExpressOrderData['tracking_number'],
+                        'shipping_status'   => 'pending',
+                        'shipping_response' => json_encode($jtExpressResponse)
+                    ]);
+                }
+
                 return $order;
             }
         }
 
         throw new Exception('LandingPage not found');
+    }
+
+    private function prepareJtExpressOrderData($order): array
+    {
+        return [
+            'tracking_number'           => 'EGY' . time() . rand(1000, 9999),
+            'weight'                    => 1.0,
+            'quantity'                  => $order->quantity,
+            'remark'                    => $order->notes ?? '',
+            'sender_name'               => 'Your Company Name',
+            'sender_company'            => 'Your Company',
+            'sender_province'           => 'Your Province',
+            'sender_city'               => 'Your City',
+            'sender_address'            => 'Your Full Address',
+            'sender_mobile'             => 'Your Contact Number',
+            'receiver_name'             => $order->name,
+            'receiver_province'         => $order->region->governorate->name ?? '',
+            'receiver_city'             => $order->region->name ?? '',
+            'receiver_address'          => $order->address,
+            'receiver_mobile'           => $order->phone,
+            'receiver_alternate_phone'  => $order->another_phone ?? '',
+            'item_name'                 => $order->landingPage->name ?? 'Product Order',
+            'item_quantity'             => $order->quantity,
+            'item_value'                => $order->total,
+            'item_currency'             => 'EGP',
+            'item_description'          => $order->landingPage->description ?? '',
+        ];
     }
 
     public function thanks($slug)

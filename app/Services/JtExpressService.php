@@ -20,15 +20,17 @@ class JtExpressService
         $this->customerCode = env('JT_EXPRESS_CUSTOMER_CODE', 'J0086024138');
     }
 
-    protected function getAuthHeaders()
+    protected function getAuthHeaders(array $requestBody)
     {
-        $timestamp = time();
-        $digest = base64_encode(hash_hmac('sha256', $timestamp . $this->privateKey, $this->privateKey, true));
+        $jsonData = json_encode($requestBody, JSON_UNESCAPED_UNICODE);
+        $md5Hash  = md5($jsonData . $this->privateKey, true);
+        $digest   = base64_encode($md5Hash);
 
         return [
-            'apiAccount' => $this->apiAccount,
-            'digest'     => $digest,
-            'timestamp'  => $timestamp
+            'apiAccount'   => $this->apiAccount,
+            'digest'       => $digest,
+            'timestamp'    => time(),
+            'Content-Type' => 'application/x-www-form-urlencoded'
         ];
     }
 
@@ -116,7 +118,7 @@ class JtExpressService
             ];
 
             $response = Http::asForm()
-                ->withHeaders($this->getAuthHeaders())
+                ->withHeaders($this->getAuthHeaders($requestBody))
                 ->post($this->baseUrl . '/order/addOrder', $requestBody);
 
             return $response->json();
@@ -128,12 +130,14 @@ class JtExpressService
     public function checkingOrder(string $orderNumber)
     {
         try {
+            $requestBody = [
+                'customerCode' => $this->customerCode,
+                'txlogisticId' => $orderNumber
+            ];
+
             $response = Http::asForm()
-                ->withHeaders($this->getAuthHeaders())
-                ->post($this->baseUrl . '/order/checkOrder', [
-                    'customerCode' => $this->customerCode,
-                    'txlogisticId' => $orderNumber
-                ]);
+                ->withHeaders($this->getAuthHeaders($requestBody))
+                ->post($this->baseUrl . '/order/checkOrder', $requestBody);
 
             return $response->json();
         } catch (Exception $e) {
@@ -144,12 +148,14 @@ class JtExpressService
     public function cancelOrder(string $orderNumber)
     {
         try {
+            $requestBody = [
+                'customerCode' => $this->customerCode,
+                'txlogisticId' => $orderNumber
+            ];
+
             $response = Http::asForm()
-                ->withHeaders($this->getAuthHeaders())
-                ->post($this->baseUrl . '/order/cancelOrder', [
-                    'customerCode' => $this->customerCode,
-                    'txlogisticId' => $orderNumber
-                ]);
+                ->withHeaders($this->getAuthHeaders($requestBody))
+                ->post($this->baseUrl . '/order/cancelOrder', $requestBody);
 
             return $response->json();
         } catch (Exception $e) {
@@ -160,12 +166,14 @@ class JtExpressService
     public function getOrderStatus(string $orderNumber)
     {
         try {
+            $requestBody = [
+                'customerCode' => $this->customerCode,
+                'txlogisticId' => $orderNumber
+            ];
+
             $response = Http::asForm()
-                ->withHeaders($this->getAuthHeaders())
-                ->post($this->baseUrl . '/order/statusReturn', [
-                    'customerCode' => $this->customerCode,
-                    'txlogisticId' => $orderNumber
-                ]);
+                ->withHeaders($this->getAuthHeaders($requestBody))
+                ->post($this->baseUrl . '/order/statusReturn', $requestBody);
 
             return $response->json();
         } catch (Exception $e) {
@@ -176,12 +184,14 @@ class JtExpressService
     public function trackLogistics(string $trackingNumber)
     {
         try {
+            $requestBody = [
+                'customerCode' => $this->customerCode,
+                'billCode'     => $trackingNumber
+            ];
+
             $response = Http::asForm()
-                ->withHeaders($this->getAuthHeaders())
-                ->post($this->baseUrl . '/logistics/trackQuery', [
-                    'customerCode'  => $this->customerCode,
-                    'billCode'      => $trackingNumber
-                ]);
+                ->withHeaders($this->getAuthHeaders($requestBody))
+                ->post($this->baseUrl . '/logistics/trackQuery', $requestBody);
 
             return $response->json();
         } catch (Exception $e) {
@@ -192,12 +202,14 @@ class JtExpressService
     public function getLogisticsTrajectory(string $trackingNumber)
     {
         try {
+            $requestBody = [
+                'customerCode' => $this->customerCode,
+                'billCode'     => $trackingNumber
+            ];
+
             $response = Http::asForm()
-                ->withHeaders($this->getAuthHeaders())
-                ->post($this->baseUrl . '/logistics/trajectoryReturn', [
-                    'customerCode' => $this->customerCode,
-                    'billCode'     => $trackingNumber
-                ]);
+                ->withHeaders($this->getAuthHeaders($requestBody))
+                ->post($this->baseUrl . '/logistics/trajectoryReturn', $requestBody);
 
             return $response->json();
         } catch (Exception $e) {
@@ -214,7 +226,7 @@ class JtExpressService
             );
 
             $response = Http::asForm()
-                ->withHeaders($this->getAuthHeaders())
+                ->withHeaders($this->getAuthHeaders($requestParams))
                 ->post($this->baseUrl . '/other/threeSegmentCodeSearch', $requestParams);
 
             return $response->json();
