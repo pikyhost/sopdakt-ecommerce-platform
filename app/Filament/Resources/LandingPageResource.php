@@ -32,6 +32,7 @@ class LandingPageResource extends Resource
 
     protected static $acceptedFileTypes = [
         'image/jpeg',
+        'image/jpg',
         'image/png',
         'image/gif',
         'image/webp',
