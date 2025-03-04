@@ -1,9 +1,5 @@
 <?php
 
-use App\Models\Order;
-use App\Models\Size;
-use App\Models\Color;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use App\Http\Controllers\{CartController,

@@ -1,8 +1,7 @@
 <nav class="navbar navbar-expand-lg navbar-light">
-
-    {{-- <a class="navbar-brand" href="{{route('landing-pages.show',$landingPage->slug)}}">
-        <img src="{{asset('storage/'.$landingPageSettings->landing_page_header_image)}}" alt="">
-    </a> --}}
+    <a class="navbar-brand" href="{{route('landing-page.show-by-slug', $landingPage->slug)}}">
+        <img src="{{asset('storage/'.$settingData['header_image'])}}" alt="Header Image">
+    </a>
 
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#mainmenu"
             aria-controls="mainmenu" aria-expanded="false" aria-label="Toggle navigation">

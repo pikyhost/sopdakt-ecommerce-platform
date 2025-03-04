@@ -92,11 +92,11 @@
                                                 <div class="price">
                                                     <p>
                                                         <span>
-                                                            {{$landingPageSettings?->currency_code}} {{$dealOfTheWeekItem->after_discount_price}}
+                                                            {{$settingData['currency_code']}} {{$dealOfTheWeekItem->after_discount_price}}
 
                                                         </span>
                                                         <del>
-                                                            {{$landingPageSettings?->currency_code}} {{$dealOfTheWeekItem->price}}
+                                                            {{$settingData['currency_code']}} {{$dealOfTheWeekItem->price}}
                                                         </del>
                                                     </p>
                                                 </div>

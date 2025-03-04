@@ -46,12 +46,12 @@
                                     </ul>
                                     <div class="price">
                                         <p class="new-price">
-                                            {{$landingPageSettings?->currency_code}} {{$productItem->price}}
+                                            {{$settingData['currency_code']}} {{$productItem->price}}
                                         </p>
                                         @if($productItem->after_discount_price)
                                             <p class="old-price">
                                                 <del>
-                                                    {{$landingPageSettings?->currency_code}} {{$productItem->after_discount_price}}
+                                                    {{$settingData['currency_code']}} {{$productItem->after_discount_price}}
                                                 </del>
                                             </p>
 

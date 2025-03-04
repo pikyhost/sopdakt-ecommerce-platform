@@ -73,10 +73,10 @@
                         let shippingCost = data.shipping_cost;
                         let total = subtotal + shippingCost;
 
-                        document.getElementById('shipping_cost').innerText = shippingCost + ' {{$landingPageSettings?->currency_code}}';
-                        document.getElementById('total').innerText = total + ' {{$landingPageSettings?->currency_code}}';
+                        document.getElementById('shipping_cost').innerText = shippingCost + ' {{$settingData['currency_code']}}';
+                        document.getElementById('total').innerText = total + ' {{$settingData['currency_code']}}';
                     } else {
-                        document.getElementById('shipping_cost').innerText = '0 {{$landingPageSettings?->currency_code}}';
+                        document.getElementById('shipping_cost').innerText = '0 {{$settingData['currency_code']}}';
                     }
                 } else {
                     Swal.fire({
@@ -218,7 +218,7 @@
     });
 
     function setPriceByColorAndSizeId(selectedColor, selectedSize, quantity) {
-        fetch('{{ route('dashboard.landing-pages.get-combination-price',$landingPage->id) }}', {
+        fetch('{{ route('landing-page.get-combination-price',$landingPage->id) }}', {
             method: 'POST',
             body: JSON.stringify({
                 size_id: selectedSize,
@@ -241,8 +241,8 @@
                     subtotal = data.price * quantity;
                     total = subtotal + shippingCost;
 
-                    document.getElementById('price').innerText = subtotal + ' {{$landingPageSettings?->currency_code}}';
-                    document.getElementById('total').innerText = total + ' {{$landingPageSettings?->currency_code}}';
+                    document.getElementById('price').innerText = subtotal + ' {{$settingData['currency_code']}}';
+                    document.getElementById('total').innerText = total + ' {{$settingData['currency_code']}}';
                 }
             } else {
                 Swal.fire({
@@ -371,7 +371,7 @@
     }
 
     function processCheckout(data) {
-        fetch('{{ route('landing-pages.purchase-form.save-bundle-data', $landingPage->id) }}', {
+        fetch('{{ route('landing-page.purchase-form.save-bundle-data', $landingPage->id) }}', {
             method: 'POST',
             body: JSON.stringify(data),
             headers: {
@@ -384,7 +384,7 @@
         .then(data => {
             if (data) {
                 if (data.success) {
-                    window.location.href = '{{ route('landing-pages.purchase-form.show', $landingPage->slug) }}';
+                    window.location.href = '{{ route('landing-page.purchase-form.show', $landingPage->slug) }}';
                 } else {
                     Swal.fire({
                         title: '{{__('Error')}}',

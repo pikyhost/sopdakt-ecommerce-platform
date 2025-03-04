@@ -2,7 +2,7 @@
 <html lang="en">
 @include('landing-pages.includes.head-section', ['showSettings' => false])
 <body>
-    <form action="{{route('landing-pages.purchase-form.store', $landingPage->id)}}" id="checkout-form" method="post">
+    <form action="{{route('landing-page.purchase-form.store', $landingPage->id)}}" id="checkout-form" method="post">
         @csrf
 
         <x-widget-container style="background-color: #FFF">
