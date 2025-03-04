@@ -271,29 +271,63 @@ class LandingPageController extends Controller
 
     private function prepareJtExpressOrderData($order): array
     {
-        return [
+        $data = [
             'tracking_number'           => 'EGY' . time() . rand(1000, 9999),
             'weight'                    => 1.0,
-            'quantity'                  => $order->quantity,
+            'quantity'                  => 1, // $order->quantity,
             'remark'                    => $order->notes ?? '',
-            'sender_name'               => 'Your Company Name',
-            'sender_company'            => 'Your Company',
-            'sender_province'           => 'Your Province',
-            'sender_city'               => 'Your City',
-            'sender_address'            => 'Your Full Address',
-            'sender_mobile'             => 'Your Contact Number',
-            'receiver_name'             => $order->name,
-            'receiver_province'         => $order->region->governorate->name ?? '',
-            'receiver_city'             => $order->region->name ?? '',
-            'receiver_address'          => $order->address,
-            'receiver_mobile'           => $order->phone,
-            'receiver_alternate_phone'  => $order->another_phone ?? '',
             'item_name'                 => $order->landingPage->name ?? 'Product Order',
             'item_quantity'             => $order->quantity,
             'item_value'                => $order->total,
             'item_currency'             => 'EGP',
             'item_description'          => $order->landingPage->description ?? '',
         ];
+
+        $data['sender'] = [
+            'name'                   => 'Your Company Name',
+            'company'                => 'Your Company',
+            'city'                   => 'Your City',
+            'address'                => 'Your Full Address',
+            'mobile'                 => 'Your Contact Number',
+            'countryCode'            => 'Your Country Code',
+            'prov'                   => 'Your Prov',
+            'area'                   => 'Your Area',
+            'town'                   => 'Your Town',
+            'street'                 => 'Your Street',
+            'addressBak'             => 'Your Address Bak',
+            'postCode'               => 'Your Post Code',
+            'phone'                  => 'Your Phone',
+            'mailBox'                => 'Your Mail Box',
+            'areaCode'               => 'Your Area Code',
+            'building'               => 'Your Building',
+            'floor'                  => 'Your Floor',
+            'flats'                  => 'Your Flats',
+            'alternateSenderPhoneNo' => 'Your Alternate Sender Phone No',
+        ];
+
+        $data['receiver'] = [
+            'name'                      => 'test', // $order->name,
+            'prov'                      => 'أسيوط', // $order->region->governorate->name,
+            'city'                      => 'القوصية', // $order->region->name,
+            'address'                   => 'sdfsacdscdscdsa', // $order->address,
+            'mobile'                    => '1441234567', // $order->phone,
+            'company'                   => 'guangdongshengshenzhe',
+            'countryCode'               => 'EGY',
+            'area'                      => 'الصبحه',
+            'town'                      => 'town',
+            'addressBak'                => 'receivercdsfsafdsaf lkhdlksjlkfjkndskjfnhskjlkafdslkjdshflksjal',
+            'street'                    => 'street',
+            'postCode'                  => '54830',
+            'phone'                     => '23423423423',
+            'mailBox'                   => 'ant_li123@qq.com',
+            'areaCode'                  => '2342343',
+            'building'                  => '13',
+            'floor'                     => '25',
+            'flats'                     => '47',
+            'alternateReceiverPhoneNo'  => $order->another_phone ?? '1231321322',
+        ];
+
+        return $data;
     }
 
     private function updateJtExpressLandingPageOrder(LandingPageOrder $order, string $shipping_status, $JtExpressOrderData,  $jtExpressResponse)
