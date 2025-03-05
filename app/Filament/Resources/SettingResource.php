@@ -63,6 +63,12 @@ class SettingResource extends Resource
                             ->label(__('Website Name (Arabic)'))
                             ->required(),
 
+                        TextInput::make('tax_percentage')
+                            ->numeric()
+                            ->prefix("%")
+                            ->label(__('Website Products Tax Percentage'))
+                            ->required(),
+
                         Select::make('currency_id')
                             ->label(__('Currency'))
                             ->relationship('currency', 'name')
@@ -97,15 +103,11 @@ class SettingResource extends Resource
                 Forms\Components\Section::make(__('Favicon'))
                     ->description(__('Upload website favicon'))
                     ->schema([
-                        FileUpload::make('favicon_en')
+                        FileUpload::make('favicon')
+                            ->columnSpanFull()
                             ->image()
                             ->imageEditor()
-                            ->label(__('Favicon (English)')),
-
-                        FileUpload::make('favicon_ar')
-                            ->image()
-                            ->imageEditor()
-                            ->label(__('Favicon (Arabic)')),
+                            ->label(__('Favicon (English & Arabic)')),
                     ])->columns(2),
             ]);
     }

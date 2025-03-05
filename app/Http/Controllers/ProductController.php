@@ -12,8 +12,6 @@ class ProductController extends Controller
         // Fetch the product with all required relationships in a single query
         $product = Product::where('slug', $slug)
             ->with([
-                'colorsWithImages',
-                'sizes:id,name',
                 'labels',
                 'ratings',
                 'attributes',

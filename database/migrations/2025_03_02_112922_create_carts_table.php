@@ -11,20 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('contacts', function (Blueprint $table) {
+        Schema::create('carts', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->nullable()->constrained()->onDelete('cascade'); // Authenticated users
             $table->string('session_id')->nullable()->unique(); // Ensure guests have a unique session
-            $table->string('name')->nullable();
-            $table->string('company_name')->nullable();
+            $table->unsignedInteger('subtotal')->default(0); // Sum of all cart items' subtotals
+            $table->unsignedInteger('total')->default(0); // Final total after applying discounts
+            $table->unsignedTinyInteger('tax_percentage')->default(0);
+            $table->integer('tax_amount')->default(0);
             $table->foreignId('country_id')->nullable()->constrained('countries')->cascadeOnDelete();
             $table->foreignId('governorate_id')->nullable()->constrained('governorates')->cascadeOnDelete();
             $table->foreignId('city_id')->nullable()->constrained('cities')->cascadeOnDelete();
-            $table->tinyText('address')->nullable();
-            $table->tinyText('apartment')->nullable();
-            $table->string('postcode')->nullable(); // Added postcode field
-            $table->string('email')->nullable();
-            $table->string('phone')->nullable();
-            $table->text('notes')->nullable();
+            $table->foreignId('shipping_type_id')->nullable()->constrained('shipping_types')->cascadeOnDelete();
+            $table->unsignedInteger('shipping_cost')->nullable(); // Optional, free shipping cases
             $table->timestamps();
         });
     }
@@ -34,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('contacts');
+        Schema::dropIfExists('carts');
     }
 };

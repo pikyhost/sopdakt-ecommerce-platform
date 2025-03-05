@@ -219,6 +219,7 @@ class ProductResource extends Resource
                             ->icon('heroicon-o-table-cells')
                             ->schema([
                                 Select::make('labels')
+                                    ->columnSpanFull()
                                     ->label(__('labels.plural_label'))
                                     ->createOptionForm([
                                         Forms\Components\TextInput::make('title')
@@ -236,95 +237,49 @@ class ProductResource extends Resource
                                     ->preload()
                                     ->nullable(),
 
-                                Select::make('sizes')
-                                    ->multiple()
-                                    ->label(__('Sizes'))
-                                    ->relationship('sizes', 'name')
-                                    ->searchable()
-                                    ->preload(),
-
-                                Repeater::make('colorsWithImages')
-                                    ->defaultItems(0)
+                                Repeater::make('productColors')
                                     ->columnSpanFull()
-                                    ->relationship('colorsWithImages') // Uses the hasMany relationship
+                                    ->relationship('productColors') // Uses hasMany relationship
                                     ->label(__('Colors'))
                                     ->schema([
                                         Select::make('color_id')
-                                            ->label(__('name'))
+                                            ->label(__('Color'))
                                             ->relationship('color', 'name') // Fetch color names
                                             ->required(),
 
+                                        Select::make('sizes')
+                                            ->multiple()
+                                            ->label(__('Sizes'))
+                                            ->relationship('sizes', 'name')
+                                            ->preload(),
+
                                         FileUpload::make('image')
-                                            ->label(__('image'))
+                                            ->label(__('Image'))
                                             ->imageEditor()
                                             ->required(),
                                     ])
                                     ->collapsible(),
 
-                                Repeater::make('types')
-                                    ->defaultItems(0)
-                                    ->label(__('Types'))
-                                    ->columnSpanFull()
-                                    ->relationship('types') // Defines the relationship with ProductType model
-                                    ->schema([
-                                        TextInput::make('name')
-                                            ->required()
-                                            ->label(__('name')),
-
-                                        FileUpload::make('image')
-                                            ->label(__('image'))
-                                            ->imageEditor()
-                                            ->required(),
-                                    ])
-                                    ->collapsible() // Allow collapsing sections
-                                    ->addActionLabel('Add Product Type'), // Custom button label
+//                                Repeater::make('types')
+//                                    ->defaultItems(0)
+//                                    ->label(__('Types'))
+//                                    ->columnSpanFull()
+//                                    ->relationship('types') // Defines the relationship with ProductType model
+//                                    ->schema([
+//                                        TextInput::make('name')
+//                                            ->required()
+//                                            ->label(__('name')),
+//
+//                                        FileUpload::make('image')
+//                                            ->label(__('image'))
+//                                            ->imageEditor()
+//                                            ->required(),
+//                                    ])
+//                                    ->collapsible() // Allow collapsing sections
+//                                    ->addActionLabel('Add Product Type'), // Custom button label
 
                                 Forms\Components\Section::make(__('Attributes'))
                                     ->schema([
-                                        Select::make('attributes')
-                                            ->label(__('Select Predefined Attributes'))
-                                            ->multiple()
-                                            ->relationship('attributes', 'name')
-                                            ->preload()
-                                            ->createOptionForm([
-                                                TextInput::make('name')
-                                                    ->columnSpanFull()
-                                                    ->label(__('Attribute Name'))
-                                                    ->required(),
-
-                                                Textarea::make('description')
-                                                    ->columnSpanFull()
-                                                    ->label(__('Description'))
-                                                    ->nullable(),
-
-                                                Select::make('type')
-                                                    ->columnSpanFull()
-                                                    ->label(__('attributes.type'))
-                                                    ->options([
-                                                        'boolean' => __('attributes.type.boolean'),
-                                                        'select' => __('attributes.type.select'),
-                                                        'text' => __('attributes.type.text'),
-                                                    ])
-                                                    ->live()
-                                                    ->required(),
-
-                                                Toggle::make('default_value')
-                                                    ->columnSpanFull()
-                                                    ->label(__('Default Value (for Boolean)'))
-                                                    ->visible(fn ($get) => $get('type') === 'boolean'),
-
-                                                KeyValue::make('values')
-                                                ->columnSpanFull()
-                                                    ->label(__('Attribute Values (for Select type)'))
-                                                    ->visible(fn ($get) => $get('type') === 'select')
-                                                    ->addActionLabel(__('Add Option')),
-
-                                                TextInput::make('default_value')
-                                                ->columnSpanFull()
-                                                    ->label(__('Default Value (for Text)'))
-                                                    ->visible(fn ($get) => $get('type') === 'text'),
-                                            ]),
-
                                         KeyValue::make('custom_attributes')
                                             ->label(__('Custom Attributes'))
                                             ->addActionLabel(__('Add Custom Attribute'))
@@ -337,21 +292,21 @@ class ProductResource extends Resource
                             ->schema([
                                 SpatieMediaLibraryFileUpload::make('feature_product_image')
                                     ->label(__('Feature Image'))
-                                    ->required()
+
                                     ->collection('feature_product_image')
                                     ->image()
                                     ->maxSize(5120),
 
                                 SpatieMediaLibraryFileUpload::make('second_feature_product_image')
                                     ->label(__('Second Feature Image'))
-                                    ->required()
+
                                     ->collection('second_feature_product_image')
                                     ->image()
                                     ->maxSize(5120),
 
                                 SpatieMediaLibraryFileUpload::make('sizes_image')
                                     ->label(__('Size Guide Image'))
-                                    ->required()
+
                                     ->collection('sizes_image')
                                     ->image()
                                     ->maxSize(5120),
@@ -359,7 +314,7 @@ class ProductResource extends Resource
                                 SpatieMediaLibraryFileUpload::make('more_product_images_and_videos')
                                     ->maxFiles(20)
                                     ->label(__('Extra Images and Videos'))
-                                    ->columnSpanFull()
+
                                     ->collection('more_product_images_and_videos')
                                     ->multiple()
                                     ->acceptedFileTypes(['video/mp4', 'video/mpeg', 'video/quicktime',
@@ -753,7 +708,6 @@ class ProductResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->with(['colorsWithImages']) // Eager load only necessary relations
             ->withCount('media'); // Count media instead of loading full records
     }
 

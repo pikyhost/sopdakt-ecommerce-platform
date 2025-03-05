@@ -4,11 +4,11 @@
     $locale = app()->getLocale();
 
     // Get favicon based on locale or fallback to default
-    $faviconPath = $siteSettings["favicon_{$locale}"] ?? $siteSettings["favicon_en"] ?? null;
+    $faviconPath = $siteSettings["favicon"] ?? null;
     $favicon = $faviconPath ? \Illuminate\Support\Facades\Storage::url($faviconPath) : asset('assets/images/clients/client1.png');
 
     // Get logo based on locale or fallback to default
-    $logoPath = $siteSettings["logo_{$locale}"] ?? null;
+    $logoPath = $siteSettings["logo_{$locale}"] ?? $siteSettings["logo_en"] ?? null;
     $logo = $logoPath ?  \Illuminate\Support\Facades\Storage::url($logoPath) : asset('assets/images/clients/client1.png');
     // Get site name based on locale or fallback to default
     $siteName = $siteSettings["site_name_{$locale}"] ?? $siteSettings["site_name_en"] ?? 'Default Site Name';
@@ -55,10 +55,14 @@
     <link rel="stylesheet" href="{{ asset('assets/css/style.min.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/fontawesome-free/css/all.min.css') }}">
 
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap JS (for modals) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <!-- Ensure Bootstrap JS loads properly -->
     <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}" defer></script>
 </head>
-
 
 <body>
 	<div class="page-wrapper">
@@ -493,7 +497,7 @@
 
 				<div class="product-single-container product-single-info">
 					<div class="cart-message d-none">
-						<strong class="single-cart-notice">“Men Black Sports Shoes”</strong>
+						<strong class="single-cart-notice">“{{ $product->getTranslation('name', app()->getLocale()) }}”</strong>
 						<span>has been added to your cart.</span>
 					</div>
 
@@ -651,25 +655,55 @@
 										</li>
 									</ul>
 
-									<div class="product-filters-container custom-product-filters">
-                                        <div class="product-single-filter">
+                                    <div class="product-filters-container custom-product-filters">
+                                        <!-- Size Selection -->
+                                        <div>
                                             <label>Size:</label>
-                                            <ul class="config-size-list">
-                                                @foreach($product->sizes as $size)
-                                                    <li>
-                                                        <a href="javascript:;" class="d-flex align-items-center justify-content-center">
-                                                            {{ $size->name }}
-                                                        </a>
-                                                    </li>
+                                            <ul class="size-badge-list">
+                                                @php
+                                                    $sizeIds = collect();
+                                                    foreach ($product->productColors as $productColor) {
+                                                        $sizeIds = $sizeIds->merge($productColor->sizes->pluck('id'));
+                                                    }
+                                                    $sizes = \App\Models\Size::whereIn('id', $sizeIds->unique())->get();
+                                                @endphp
+                                                @foreach($sizes as $size)
+                                                    <li class="size-badge">{{ $size->name }}</li>
                                                 @endforeach
                                             </ul>
                                         </div>
 
+                                        <style>
+                                            .size-badge-list {
+                                                list-style: none;
+                                                padding: 0;
+                                                display: flex;
+                                                gap: 8px;
+                                            }
 
+                                            .size-badge {
+                                                display: inline-block;
+                                                padding: 6px 12px;
+                                                background-color: #007bff;
+                                                color: white;
+                                                border-radius: 12px;
+                                                font-size: 14px;
+                                                font-weight: bold;
+                                                cursor: pointer;
+                                                transition: background 0.3s;
+                                            }
+
+                                            .size-badge:hover {
+                                                background-color: #0056b3;
+                                            }
+                                        </style>
+
+
+                                        <!-- Color Selection -->
                                         <div class="product-single-filter">
                                             <label>{{ __('Color:') }}</label>
                                             <ul class="config-size-list config-color-list">
-                                                @forelse ($product->colorsWithImages as $productColor)
+                                                @foreach($product->productColors as $productColor)
                                                     <li>
                                                         <a href="javascript:;"
                                                            class="d-flex align-items-center justify-content-center p-0 color-swatch"
@@ -679,14 +713,13 @@
                                                             &nbsp;
                                                         </a>
                                                     </li>
-                                                @empty
-                                                    <p>{{ __('No colors available at the moment.') }}</p>
-                                                    <p>{{ __('لا توجد ألوان متاحة في الوقت الحالي.') }}</p>
-                                                @endforelse
+                                                @endforeach
                                             </ul>
                                         </div>
+                                    </div>
 
-                                        {{-- Display the selected color image --}}
+
+                                    {{-- Display the selected color image --}}
                                         <div class="selected-color-image mt-3">
                                             <img id="color-image" src="" alt="Selected Color" style="display: none; width: 200px; height: auto;">
                                         </div>
@@ -735,19 +768,9 @@
 										<!---->
 									</div>
 
-									<div class="product-action">
-										<div class="product-single-qty">
-											<input class="horizontal-quantity form-control" type="text">
-										</div><!-- End .product-single-qty -->
+                                    @livewire('add-to-cart', ['productId' => $product->id])
 
-										<a href="cart.html"
-											class="btn btn-dark disabled add-cart icon-shopping-cart mr-2"
-											title="Add to Cart">Add to Cart</a>
-
-										<a href="cart.html" class="btn btn-gray view-cart d-none">View cart</a>
-									</div><!-- End .product-action -->
-
-									<hr class="divider mb-0 mt-0">
+                                    <hr class="divider mb-0 mt-0">
 
                                     <livewire:wishlist-button :product-id="$product->id" />
 
@@ -909,102 +932,7 @@
 
                                     <br>
 
-                                    @if ($product->bundles->isNotEmpty())
-                                        <div x-data="{ showBundles: false }" class="product-bundles">
-                                            <!-- Bundle Title & Toggle Button -->
-                                            <div class="bundle-header">
-                                                <h3 class="bundle-title">{{ __('Available Bundles') }}</h3>
-                                                <button @click="showBundles = !showBundles" class="toggle-button">
-                                                    <span x-text="showBundles ? '{{ __('Hide Bundles') }}' : '{{ __('Show Bundles') }}'"></span>
-                                                    <svg x-show="!showBundles" class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                                                    </svg>
-                                                    <svg x-show="showBundles" class="icon rotate-180" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                                    </svg>
-                                                </button>
-                                            </div>
-
-                                            <!-- Bundle List -->
-                                            <ul class="bundle-list" x-show="showBundles" x-collapse>
-                                                @foreach ($product->bundles as $bundle)
-                                                    <li class="bundle-item">
-                                                        <div class="bundle-content">
-                                                            <strong class="bundle-name">{{ $bundle->getTranslation('name', app()->getLocale()) }}</strong>
-
-                                                            <div class="bundle-details">
-                                                                @switch($bundle->bundle_type)
-                                                                    @case(\App\Enums\BundleType::BUY_X_GET_Y)
-                                                                        @if (!is_null($bundle->buy_x) && !is_null($bundle->get_y))
-                                                                            <p class="bundle-text">
-                                                                                {{ __('Buy :x and get :y free', ['x' => $bundle->buy_x, 'y' => $bundle->get_y]) }}
-                                                                                @if (!is_null($bundle->bundle_discount_price_for_current_country))
-                                                                                    {{ __('with a discount price of :price', [
-                                                                                        'price' => number_format($bundle->bundle_discount_price_for_current_country, 2)
-                                                                                    ]) }}
-                                                                                @endif
-                                                                            </p>
-                                                                        @elseif (!is_null($bundle->buy_x) && is_null($bundle->get_y) && isset($bundle->bundle_discount_price_for_current_country))
-                                                                            <p class="bundle-text">
-                                                                                {{ __('Buy :x with a discount price of :price', [
-                                                                                    'x' => $bundle->buy_x,
-                                                                                    'price' => number_format($bundle->bundle_discount_price_for_current_country, 2)
-                                                                                ]) }}
-                                                                            </p>
-                                                                        @endif
-                                                                        @break
-
-                                                                    @case(\App\Enums\BundleType::FIXED_PRICE)
-                                                                        @php
-                                                                            $discountPrice = $bundle->bundle_discount_price_for_current_country;
-                                                                            $originalPrice = $bundle->bundle_price_for_current_country;
-                                                                        @endphp
-
-                                                                        <p class="bundle-text">
-                                                                            @if (isset($discountPrice, $originalPrice) && $discountPrice < $originalPrice)
-                                                                                {{ __('Get this bundle for :price instead of :original', [
-                                                                                    'price' => number_format($discountPrice, 2),
-                                                                                    'original' => number_format($originalPrice, 2)
-                                                                                ]) }}
-                                                                            @else
-                                                                                {{ __('Get this bundle for :price', ['price' => number_format($originalPrice, 2)]) }}
-                                                                            @endif
-                                                                        </p>
-                                                                        @break
-                                                                @endswitch
-                                                            </div>
-
-                                                            <!-- Bundle Products -->
-                                                            <div class="bundle-products">
-                                                                @foreach ($bundle->products as $bundleProduct)
-                                                                    <div class="product-item">
-                                                                        <a href="{{ route('product.show', $bundleProduct->slug) }}">
-                                                                            <img src="{{ $bundleProduct->getFeatureProductImageUrl() }}" class="product-image" alt="{{ $bundleProduct->name }}">
-                                                                        </a>
-                                                                        <div class="product-info">
-                                                                            <span class="product-name">{{ $bundleProduct->name }}</span>
-                                                                            @if ($bundle->bundle_type !== \App\Enums\BundleType::BUY_X_GET_Y)
-                                                                                <span class="product-quantity">
-                                                ({{ __('Quantity:') }} 1)
-                                            </span>
-                                                                            @endif
-                                                                        </div>
-                                                                    </div>
-                                                                @endforeach
-                                                            </div>
-
-                                                            <!-- Buy Bundle Button -->
-                                                            <div class="bundle-buy">
-                                                                <a href="#" class="buy-button">{{ __('Buy Now') }}</a>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                @endforeach
-                                            </ul>
-                                        </div>
-                                    @endif
-
-
+                                @livewire('add-bundle-to-cart', ['product' => $product])
 
                                 @if (session()->has('success'))
                                         <div class="alert alert-success">
@@ -1150,9 +1078,8 @@
 			<div class="container">
 				<div class="products-section pt-0">
 					<h2 class="section-title">Related Products</h2>
-
                     <div class="products-slider owl-carousel owl-theme dots-top dots-small">
-                        @foreach ($relatedProducts as $relatedProduct)
+                    @foreach ($relatedProducts as $relatedProduct)
                             <div class="product-default">
                                 <figure>
                                     <a href="{{ route('product.show', $relatedProduct->slug) }}">
@@ -1269,7 +1196,6 @@
                             </div>
                         @endforeach
                     </div>
-
 
                     <div class="col-lg-3 col-sm-6 pb-5 pb-md-0">
                         <h4 class="section-sub-title">Latest Products</h4>

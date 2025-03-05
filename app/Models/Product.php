@@ -61,16 +61,17 @@ class Product extends Model implements HasMedia
         return $this->belongsToMany(Label::class, 'label_product');
     }
 
-    public function sizes()
-    {
-        return $this->belongsToMany(Size::class, 'product_sizes');
-    }
-
-    public function colorsWithImages()
+    /**
+     * Get the colors associated with the product.
+     */
+    public function productColors()
     {
         return $this->hasMany(ProductColor::class);
     }
 
+    /**
+     * Get all colors available for the product.
+     */
     public function colors()
     {
         return $this->belongsToMany(Color::class, 'product_colors');
@@ -115,7 +116,6 @@ class Product extends Model implements HasMedia
     {
         return $this->fake_average_rating ?? $this->ratings_avg_rating;
     }
-
 
     public function transactions()
     {
@@ -197,4 +197,16 @@ class Product extends Model implements HasMedia
         return (($this->fake_average_rating ?? $this->ratings_avg_rating ?? 0) / 5) * 100;
     }
 
+    public function getShippingCostByLocation($cityId, $governorateId, $countryId)
+    {
+        if (!$cityId && !$governorateId && !$countryId) {
+            return 0; // Return 0 if no location is selected
+        }
+
+        return $this->shippingCosts()
+            ->when($cityId, fn($query) => $query->where('city_id', $cityId))
+            ->when($governorateId && !$cityId, fn($query) => $query->where('governorate_id', $governorateId))
+            ->when($countryId && !$governorateId && !$cityId, fn($query) => $query->where('country_id', $countryId))
+            ->value('cost') ?? 0;
+    }
 }

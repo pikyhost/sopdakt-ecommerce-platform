@@ -11,12 +11,12 @@ class Setting extends Model
         'site_name_en',
         'site_name_ar',
         'currency_id',
+        'tax_percentage',
         'logo_en',
         'logo_ar',
         'dark_logo_en',
         'dark_logo_ar',
-        'favicon_en',
-        'favicon_ar',
+        'favicon',
     ];
 
     protected static string $cacheKey = 'app_settings';

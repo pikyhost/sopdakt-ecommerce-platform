@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProductColor extends Model
 {
-    protected $fillable = ['product_id', 'color_id', 'image'];
+    protected $guarded = [];
 
     public function product()
     {
@@ -16,5 +16,15 @@ class ProductColor extends Model
     public function color()
     {
         return $this->belongsTo(Color::class);
+    }
+
+    public function sizes()
+    {
+        return $this->belongsToMany(Size::class, 'product_color_sizes');
+    }
+
+    public function productColorSizes()
+    {
+        return $this->hasMany(ProductColorSize::class);
     }
 }

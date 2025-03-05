@@ -2,202 +2,203 @@
 
 namespace App\Filament\Resources;
 
-
-use Filament\Tables\Table;
-use App\Models\LandingPageOrder;
-use Filament\Resources\Resource;
-use App\Services\JtExpressService;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Notifications\Notification;
-use Filament\Tables\Actions\ActionGroup;
+use App\Enums\OrderStatus;
 use App\Filament\Resources\OrderResource\Pages;
+use App\Models\Order;
+use Carbon\Carbon;
+use Filament\Forms;
+use Filament\Forms\Form;
+use Filament\Resources\Resource;
+use Filament\Support\Enums\ActionSize;
+use Filament\Tables;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class OrderResource extends Resource
 {
-    protected static ?string $model = LandingPageOrder::class;
-    protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
-    protected static ?string $navigationGroup = 'Orders & Contacts';
-    protected static ?string $navigationLabel = 'Landing Page Orders';
+    protected static ?string $model = Order::class;
+
+    protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
+
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Forms\Components\Select::make('user_id')
+                    ->relationship('user', 'name'),
+                Forms\Components\Select::make('contact_id')
+                    ->relationship('contact', 'name'),
+                Forms\Components\Select::make('shipping_type_id')
+                    ->relationship('shippingType', 'name')
+                    ->required(),
+                Forms\Components\Select::make('payment_method_id')
+                    ->relationship('paymentMethod', 'name')
+                    ->required(),
+                Forms\Components\Select::make('coupon_id')
+                    ->relationship('coupon', 'id'),
+                Forms\Components\TextInput::make('shipping_cost')
+                    ->numeric(),
+                Forms\Components\TextInput::make('tax_percentage')
+                    ->required()
+                    ->numeric()
+                    ->default(0),
+                Forms\Components\TextInput::make('tax_amount')
+                    ->required()
+                    ->numeric()
+                    ->default(0),
+                Forms\Components\TextInput::make('subtotal')
+                    ->required()
+                    ->numeric()
+                    ->default(0),
+                Forms\Components\TextInput::make('total')
+                    ->required()
+                    ->numeric()
+                    ->default(0),
+                Forms\Components\TextInput::make('status')
+                    ->required(),
+                Forms\Components\Textarea::make('notes')
+                    ->columnSpanFull(),
+            ]);
+    }
 
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('id')->label('Order ID')->sortable(),
-                TextColumn::make('landingPage.slug')->label('Landing Page')->sortable(),
-                TextColumn::make('governorate.name')->label('Governorate')->sortable(),
-                TextColumn::make('country.name')->label('Country')->sortable(),
-                TextColumn::make('shippingType.name')->label('Shipping Type')->sortable(),
-                TextColumn::make('name')->label('Customer Name')->sortable()->searchable(),
-                TextColumn::make('phone')->label('Phone Number')->sortable()->searchable(),
-                TextColumn::make('another_phone')->label('Alternate Phone')->sortable()->searchable(),
-                TextColumn::make('address')->label('Address')->sortable()->limit(50),
-                TextColumn::make('quantity')->label('Quantity')->sortable(),
-                TextColumn::make('subtotal')->label('Subtotal')->money('USD')->sortable(),
-                TextColumn::make('shipping_cost')->label('Shipping Cost')->money('USD')->sortable(),
-                TextColumn::make('total')->label('Total Price')->money('USD')->sortable(),
-                TextColumn::make('status')->label('Status')->badge()->sortable(),
-                TextColumn::make('tracking_number')->label('Tracking Number'),
-                TextColumn::make('notes')->label('Notes')->limit(100),
-                TextColumn::make('created_at')->label('Order Date')->dateTime('M d, Y H:i A')->sortable(),
+                Tables\Columns\TextColumn::make('id')
+                ->searchable(),
+                Tables\Columns\TextColumn::make('user.name')
+                    ->searchable()
+                    ->placeholder('-')
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('contact.name')
+                    ->searchable()
+                    ->placeholder('-')
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('status')->badge()
+                ->searchable(),
+                Tables\Columns\TextColumn::make('shippingType.name')
+                    ->searchable()
+                    ->numeric()
+                    ->placeholder('-')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('paymentMethod.name')
+                    ->searchable()
+                    ->numeric()
+                    ->placeholder('-')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('coupon.id')
+                    ->searchable()
+                    ->numeric()
+                    ->placeholder('-')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('shipping_cost')
+                    ->numeric()
+                    ->placeholder('-')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('tax_percentage')
+                    ->numeric()
+                    ->placeholder('-')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('tax_amount')
+                    ->numeric()
+                    ->placeholder('-')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('subtotal')
+                    ->numeric()
+                    ->placeholder('-')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('total')
+                    ->numeric()
+                    ->placeholder('-')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->filters([
+                Tables\Filters\Filter::make('created_at')
+                    ->form([
+                        Forms\Components\DatePicker::make('created_from')
+                            ->placeholder(fn ($state): string => 'Dec 18, ' . now()->subYear()->format('Y')),
+                        Forms\Components\DatePicker::make('created_until')
+                            ->placeholder(fn ($state): string => now()->format('M d, Y')),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'] ?? null,
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'] ?? null,
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['created_from'] ?? null) {
+                            $indicators['created_from'] = 'Order from ' . Carbon::parse($data['created_from'])->toFormattedDateString();
+                        }
+                        if ($data['created_until'] ?? null) {
+                            $indicators['created_until'] = 'Order until ' . Carbon::parse($data['created_until'])->toFormattedDateString();
+                        }
+
+                        return $indicators;
+                    }),
+            ], Tables\Enums\FiltersLayout::Modal)
             ->actions([
-                ActionGroup::make([
-                    Action::make('trackOrder')
-                        ->label('Track Order')
-                        ->icon('heroicon-o-map')
-                        ->color('success')
-                        ->visible(fn (LandingPageOrder $record): bool =>
-                            !is_null($record->tracking_number) &&
-                            !is_null($record->shipping_status)
-                        )
-                        ->action(function (LandingPageOrder $record): void {
-                            $trackingInfo = app(JtExpressService::class)->trackLogistics($record->tracking_number);
+                Tables\Actions\ActionGroup::make([
+                    ...collect(OrderStatus::cases())->map(fn ($status) =>
+                    Tables\Actions\Action::make($status->value)
+                        ->label(__($status->getLabel()))
+                        ->icon($status->getIcon())
+                        ->color($status->getColor())
+                        ->action(fn ($record) => $record->update(['status' => $status->value]))
+                    )->toArray(),
 
-                            if (isset($trackingInfo['success']) && $trackingInfo['success']) {
-                                Notification::make()
-                                    ->title('Tracking Information')
-                                    ->body('Tracking details retrieved successfully: ' . ($trackingInfo['data']['billCode'] ?? $record->tracking_number))
-                                    ->success()
-                                    ->send();
-                            } else {
-                                Notification::make()
-                                    ->title('Tracking Error')
-                                    ->body($trackingInfo['msg'] ?? 'Unable to retrieve tracking information')
-                                    ->danger()
-                                    ->send();
-                            }
-                        }),
-                    Action::make('checkOrder')
-                        ->label('Check Order Status')
-                        ->icon('heroicon-o-check-circle')
-                        ->color('primary')
-                        ->visible(fn (LandingPageOrder $record): bool =>
-                            !is_null($record->tracking_number)
-                        )
-                        ->action(function (LandingPageOrder $record): void {
-                            $orderInfo = app(JtExpressService::class)->checkingOrder($record->tracking_number);
+                    Tables\Actions\DeleteAction::make(),
+                ])->label(__('Actions'))
+                    ->icon('heroicon-m-ellipsis-vertical')
+                    ->size(ActionSize::Small)
+                    ->color('primary')
+                    ->button(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    ...collect(OrderStatus::cases())->map(fn ($status) =>
+                    Tables\Actions\BulkAction::make($status->value)
+                        ->label(__($status->getLabel()))
+                        ->icon($status->getIcon())
+                        ->color($status->getColor())
+                        ->action(fn ($records) => $records->each(fn ($record) => $record->update(['status' => $status->value])))
+                    )->toArray(),
 
-                            if (isset($orderInfo['success']) && $orderInfo['success']) {
-                                Notification::make()
-                                    ->title('Order Status')
-                                    ->body('Order exists: ' . ($orderInfo['data']['isExist'] ?? 'Unknown'))
-                                    ->success()
-                                    ->send();
-                            } else {
-                                Notification::make()
-                                    ->title('Check Error')
-                                    ->body($orderInfo['msg'] ?? 'Unable to check order status')
-                                    ->danger()
-                                    ->send();
-                            }
-                        }),
-                    Action::make('getOrderStatus')
-                        ->label('Get Detailed Status')
-                        ->icon('heroicon-o-clipboard-document-list')
-                        ->color('info')
-                        ->visible(fn (LandingPageOrder $record): bool =>
-                            !is_null($record->tracking_number)
-                        )
-                        ->action(function (LandingPageOrder $record): void {
-                            $statusInfo = app(JtExpressService::class)->getOrderStatus($record->tracking_number);
-
-                            if (isset($statusInfo['success']) && $statusInfo['success']) {
-                                $status = $statusInfo['data']['deliveryStatus'] ?? 'Unknown';
-
-                                $record->update([
-                                    'shipping_status' => $status,
-                                    'shipping_response' => json_encode($statusInfo)
-                                ]);
-
-                                Notification::make()
-                                    ->title('Order Status Updated')
-                                    ->body('Current status: ' . $status)
-                                    ->success()
-                                    ->send();
-                            } else {
-                                Notification::make()
-                                    ->title('Status Error')
-                                    ->body($statusInfo['msg'] ?? 'Unable to get order status')
-                                    ->danger()
-                                    ->send();
-                            }
-                        }),
-                    Action::make('getTrajectory')
-                        ->label('View Delivery Trajectory')
-                        ->icon('heroicon-o-arrow-path')
-                        ->color('gray')
-                        ->visible(fn (LandingPageOrder $record): bool =>
-                            !is_null($record->tracking_number)
-                        )
-                        ->action(function (LandingPageOrder $record): void {
-                            $trajectoryInfo = app(JtExpressService::class)->getLogisticsTrajectory($record->tracking_number);
-
-                            if (isset($trajectoryInfo['success']) && $trajectoryInfo['success']) {
-                                $steps = count($trajectoryInfo['data']['details'] ?? []);
-
-                                Notification::make()
-                                    ->title('Delivery Trajectory')
-                                    ->body("Retrieved {$steps} tracking events for this shipment.")
-                                    ->success()
-                                    ->send();
-
-                                // You could store this information or display it in a modal
-                            } else {
-                                Notification::make()
-                                    ->title('Trajectory Error')
-                                    ->body($trajectoryInfo['msg'] ?? 'Unable to get trajectory information')
-                                    ->danger()
-                                    ->send();
-                            }
-                        }),
-                    Action::make('cancelOrder')
-                        ->label('Cancel Order')
-                        ->icon('heroicon-o-x-circle')
-                        ->color('danger')
-                        ->visible(fn (LandingPageOrder $record): bool =>
-                            !is_null($record->tracking_number) &&
-                            $record->shipping_status !== 'delivered' &&
-                            $record->shipping_status !== 'cancelled'
-                        )
-                        ->requiresConfirmation()
-                        ->action(function (LandingPageOrder $record): void {
-                            $cancelResult = app(JtExpressService::class)->cancelOrder($record->tracking_number);
-
-                            if (isset($cancelResult['success']) && $cancelResult['success']) {
-                                $record->update([
-                                    'shipping_status' => 'cancelled',
-                                    'shipping_response' => json_encode($cancelResult)
-                                ]);
-
-                                Notification::make()
-                                    ->title('Order Cancelled')
-                                    ->body('The order has been successfully cancelled.')
-                                    ->success()
-                                    ->send();
-                            } else {
-                                Notification::make()
-                                    ->title('Cancellation Error')
-                                    ->body($cancelResult['msg'] ?? 'Unable to cancel the order')
-                                    ->danger()
-                                    ->send();
-                            }
-                        }),
-                ])
-                ->visible(fn (LandingPageOrder $record): bool =>
-                    !is_null($record->tracking_number)
-                )
-                ->label('Shipping Actions')
-                ->icon('heroicon-o-truck')
-                ->button()
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
             ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListOrders::route('/')
+            'index' => Pages\ListOrders::route('/'),
+            'create' => Pages\CreateOrder::route('/create'),
+            'edit' => Pages\EditOrder::route('/{record}/edit'),
         ];
     }
 }

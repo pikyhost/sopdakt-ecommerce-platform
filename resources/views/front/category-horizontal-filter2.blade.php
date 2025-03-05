@@ -4,11 +4,11 @@
     $locale = app()->getLocale();
 
     // Get favicon based on locale or fallback to default
-    $faviconPath = $siteSettings["favicon_{$locale}"] ?? $siteSettings["favicon_en"] ?? null;
+    $faviconPath = $siteSettings["favicon"] ?? null;
     $favicon = $faviconPath ? \Illuminate\Support\Facades\Storage::url($faviconPath) : asset('assets/images/clients/client1.png');
 
     // Get logo based on locale or fallback to default
-    $logoPath = $siteSettings["logo_{$locale}"] ?? null;
+    $logoPath = $siteSettings["logo_{$locale}"] ?? $siteSettings["logo_en"] ?? null;
     $logo = $logoPath ?  \Illuminate\Support\Facades\Storage::url($logoPath) : asset('assets/images/clients/client1.png');
     // Get site name based on locale or fallback to default
     $siteName = $siteSettings["site_name_{$locale}"] ?? $siteSettings["site_name_en"] ?? 'Default Site Name';
