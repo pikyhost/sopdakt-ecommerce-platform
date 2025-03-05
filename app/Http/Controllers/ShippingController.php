@@ -2,12 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Shipping\CalculateShippingRequest;
 use App\Models\{LandingPage, Region, ShippingType};
+use App\Http\Requests\Shipping\CalculateShippingRequest;
 
 class ShippingController extends Controller
 {
+    public function handleWebhook(Request $request)
+    {
+        $data = $request->all();
+        Log::info('JT Express Webhook', $data);
+        return response()->json(['message' => 'Webhook received successfully.']);
+    }
+
     function calculateShipping(CalculateShippingRequest $request)
     {
         try {
@@ -29,5 +38,4 @@ class ShippingController extends Controller
 
         }
     }
-
 }
