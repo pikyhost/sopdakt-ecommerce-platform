@@ -10,6 +10,7 @@ use App\Models\Governorate;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Setting;
+use App\Services\JtExpressService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
@@ -274,6 +275,10 @@ class Checkout extends Component
             $cart->items()->delete();
             $cart->delete();
 
+            $JtExpressOrderData =  $this->prepareJtExpressOrderData($order);
+            $jtExpressResponse = app(JtExpressService::class)->createOrder($JtExpressOrderData);
+            $this->updateJtExpressOrder($order, 'pending', $JtExpressOrderData,  $jtExpressResponse);
+
             DB::commit();
 
             // Send order confirmation email
@@ -281,6 +286,7 @@ class Checkout extends Component
 
             // Set session message for order completion
             session()->flash('success', 'Order placed successfully! A confirmation email has been sent.');
+
 
             return redirect()->route('order.complete')->with('order_success', true);
         } catch (\Exception $e) {
@@ -308,5 +314,77 @@ class Checkout extends Component
             'currentRoute' => $this->currentRoute,
             'isCheckoutReady' => $this->isCheckoutReady,
         ]);
+    }
+
+    private function prepareJtExpressOrderData($order): array
+    {
+        $data = [
+            'tracking_number'           => 'EGY' . time() . rand(1000, 9999),
+            'weight'                    => 1.0,
+            'quantity'                  => 1, // $order->quantity,
+            'remark'                    => $order->notes ?? '',
+            'item_name'                 => 'Some items',
+            'item_quantity'             => 1,
+            'item_value'                => $order->total,
+            'item_currency'             => 'EGP',
+            'item_description'          => $order->notes,
+        ];
+
+        $data['sender'] = [
+            'name'                   => 'Your Company Name',
+            'company'                => 'Your Company',
+            'city'                   => 'Your City',
+            'address'                => 'Your Full Address',
+            'mobile'                 => 'Your Contact Number',
+            'countryCode'            => 'Your Country Code',
+            'prov'                   => 'Your Prov',
+            'area'                   => 'Your Area',
+            'town'                   => 'Your Town',
+            'street'                 => 'Your Street',
+            'addressBak'             => 'Your Address Bak',
+            'postCode'               => 'Your Post Code',
+            'phone'                  => 'Your Phone',
+            'mailBox'                => 'Your Mail Box',
+            'areaCode'               => 'Your Area Code',
+            'building'               => 'Your Building',
+            'floor'                  => 'Your Floor',
+            'flats'                  => 'Your Flats',
+            'alternateSenderPhoneNo' => 'Your Alternate Sender Phone No',
+        ];
+
+        $data['receiver'] = [
+            'name'                      => 'test', // $order->name,
+            'prov'                      => 'أسيوط', // $order->region->governorate->name,
+            'city'                      => 'القوصية', // $order->region->name,
+            'address'                   => 'sdfsacdscdscdsa', // $order->address,
+            'mobile'                    => '1441234567', // $order->phone,
+            'company'                   => 'guangdongshengshenzhe',
+            'countryCode'               => 'EGY',
+            'area'                      => 'الصبحه',
+            'town'                      => 'town',
+            'addressBak'                => 'receivercdsfsafdsaf lkhdlksjlkfjkndskjfnhskjlkafdslkjdshflksjal',
+            'street'                    => 'street',
+            'postCode'                  => '54830',
+            'phone'                     => '23423423423',
+            'mailBox'                   => 'ant_li123@qq.com',
+            'areaCode'                  => '2342343',
+            'building'                  => '13',
+            'floor'                     => '25',
+            'flats'                     => '47',
+            'alternateReceiverPhoneNo'  => $order->another_phone ?? '1231321322',
+        ];
+
+        return $data;
+    }
+
+    private function updateJtExpressOrder(Order $order, string $shipping_status, $JtExpressOrderData, $jtExpressResponse)
+    {
+        if (isset($jtExpressResponse['code']) && $jtExpressResponse['code'] == 1) {
+            $order->update([
+                'tracking_number'   => $JtExpressOrderData['tracking_number'],
+                'shipping_status'   => $shipping_status,
+                'shipping_response' => json_encode($jtExpressResponse)
+            ]);
+        }
     }
 }

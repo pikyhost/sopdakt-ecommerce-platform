@@ -29,6 +29,7 @@ class Order extends Model
         'country_id',
         'city_id',
         'governorate_id',
+        'tracking_number', 'shipping_status', 'shipping_response'
     ];
 
     protected $casts = [

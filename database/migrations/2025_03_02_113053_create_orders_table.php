@@ -34,6 +34,10 @@ return new class extends Migration
 
             $table->text('notes')->nullable();
             $table->timestamps();
+
+            $table->string('tracking_number')->nullable();
+            $table->string('shipping_status')->nullable();
+            $table->json('shipping_response')->nullable();
         });
     }
 
