@@ -25,6 +25,10 @@ class Order extends Model
         'total',
         'status',
         'notes',
+        'shipping_type_id',
+        'country_id',
+        'city_id',
+        'governorate_id',
     ];
 
     protected $casts = [
@@ -93,5 +97,20 @@ class Order extends Model
     public function isCompleted(): bool
     {
         return $this->status === 'completed';
+    }
+
+    public function country()
+    {
+        return $this->belongsTo(Country::class);
+    }
+
+    public function governorate()
+    {
+        return $this->belongsTo(Governorate::class);
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class);
     }
 }

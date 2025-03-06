@@ -4,10 +4,17 @@ namespace App\Filament\Resources;
 
 use App\Enums\OrderStatus;
 use App\Filament\Resources\OrderResource\Pages;
+use App\Models\City;
+use App\Models\Country;
+use App\Models\Governorate;
 use App\Models\Order;
+use App\Models\Product;
+use App\Models\Setting;
+use App\Models\ShippingType;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\ActionSize;
 use Filament\Tables;
@@ -16,6 +23,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class OrderResource extends Resource
 {
+    use Translatable;
+
     protected static ?string $model = Order::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
@@ -25,40 +34,153 @@ class OrderResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Select::make('user_id')
-                    ->relationship('user', 'name'),
+                    ->relationship('user', 'name')
+                    ->label(__('user_id')),
+
                 Forms\Components\Select::make('contact_id')
-                    ->relationship('contact', 'name'),
+                    ->relationship('contact', 'name')
+                    ->label(__('contact_id')),
+
                 Forms\Components\Select::make('shipping_type_id')
                     ->relationship('shippingType', 'name')
-                    ->required(),
+                    ->required()
+                    ->label(__('shipping_type_id'))
+                    ->reactive()
+                    ->afterStateUpdated(fn ($state, callable $set) => $set('shipping_cost', self::calculateShippingCost($state))),
+
                 Forms\Components\Select::make('payment_method_id')
                     ->relationship('paymentMethod', 'name')
-                    ->required(),
+                    ->required()
+                    ->label(__('payment_method_id')),
+
                 Forms\Components\Select::make('coupon_id')
-                    ->relationship('coupon', 'id'),
+                    ->relationship('coupon', 'id')
+                    ->label(__('coupon_id')),
+
+                Forms\Components\Select::make('country_id')
+                    ->relationship('country', 'name')
+                    ->label(__('country_id'))
+                    ->reactive()
+                    ->afterStateUpdated(fn ($state, callable $set) => $set('shipping_cost', self::calculateShippingCost($state))),
+
+                Forms\Components\Select::make('governorate_id')
+                    ->relationship('governorate', 'name')
+                    ->label(__('governorate_id'))
+                    ->reactive()
+                    ->afterStateUpdated(fn ($state, callable $set) => $set('shipping_cost', self::calculateShippingCost($state))),
+
+                Forms\Components\Select::make('city_id')
+                    ->relationship('city', 'name')
+                    ->label(__('city_id'))
+                    ->reactive()
+                    ->afterStateUpdated(fn ($state, callable $set) => $set('shipping_cost', self::calculateShippingCost($state))),
+
                 Forms\Components\TextInput::make('shipping_cost')
-                    ->numeric(),
+                    ->numeric()
+                    ->disabled()
+                    ->label(__('shipping_cost')),
+
                 Forms\Components\TextInput::make('tax_percentage')
-                    ->required()
                     ->numeric()
-                    ->default(0),
+                    ->default(self::getTaxPercentage())
+                    ->disabled()
+                    ->label(__('tax_percentage')),
+
                 Forms\Components\TextInput::make('tax_amount')
-                    ->required()
                     ->numeric()
-                    ->default(0),
+                    ->disabled()
+                    ->label(__('tax_amount')),
+
                 Forms\Components\TextInput::make('subtotal')
-                    ->required()
                     ->numeric()
-                    ->default(0),
+                    ->disabled()
+                    ->label(__('subtotal')),
+
                 Forms\Components\TextInput::make('total')
-                    ->required()
                     ->numeric()
-                    ->default(0),
+                    ->disabled()
+                    ->label(__('total')),
+
                 Forms\Components\TextInput::make('status')
-                    ->required(),
+                    ->required()
+                    ->label(__('status')),
+
                 Forms\Components\Textarea::make('notes')
-                    ->columnSpanFull(),
+                    ->columnSpanFull()
+                    ->label(__('notes')),
             ]);
+    }
+
+    private static function calculateShippingCost($shippingTypeId): float
+    {
+        if (!$shippingTypeId) {
+            return 0.0;
+        }
+
+        $shippingType = ShippingType::find($shippingTypeId);
+        return $shippingType ? $shippingType->cost : 0.0;
+    }
+
+    private static function getTaxPercentage(): float
+    {
+        return Setting::first()?->tax_percentage ?? 0.0;
+    }
+
+    private static function getLocationBasedShippingCost($cityId, $governorateId, $countryId): float
+    {
+        if ($cityId) {
+            $city = City::find($cityId);
+            if ($city && $city->cost !== null) {
+                return $city->cost;
+            }
+        }
+
+        if ($governorateId) {
+            $governorate = Governorate::find($governorateId);
+            if ($governorate && $governorate->cost !== null) {
+                return $governorate->cost;
+            }
+        }
+
+        if ($countryId) {
+            $country = Country::find($countryId);
+            if ($country && $country->cost !== null) {
+                return $country->cost;
+            }
+        }
+
+        return 0.0;
+    }
+
+    private static function getProductShippingCost(Product $product, $cityId, $governorateId, $countryId): float
+    {
+        $shippingCosts = $product->shippingCosts()->get();
+
+        if ($shippingCosts->where('city_id', $cityId)->isNotEmpty()) {
+            return $shippingCosts->where('city_id', $cityId)->first()->cost;
+        }
+
+        if ($shippingCosts->where('governorate_id', $governorateId)->isNotEmpty()) {
+            return $shippingCosts->where('governorate_id', $governorateId)->first()->cost;
+        }
+
+        if ($shippingCosts->where('country_id', $countryId)->isNotEmpty()) {
+            return $shippingCosts->where('country_id', $countryId)->first()->cost;
+        }
+
+        return $product->cost ?? 0.0;
+    }
+
+    private static function calculateTotals($subtotal, $shippingCost): array
+    {
+        $taxPercentage = self::getTaxPercentage();
+        $taxAmount = ($subtotal * $taxPercentage) / 100;
+        $total = $subtotal + $shippingCost + $taxAmount;
+
+        return [
+            'tax_amount' => $taxAmount,
+            'total' => $total,
+        ];
     }
 
     public static function table(Table $table): Table
@@ -185,14 +307,6 @@ class OrderResource extends Resource
                 ]),
             ]);
     }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
-    }
-
     public static function getPages(): array
     {
         return [

@@ -11,7 +11,6 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Setting;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Livewire\Component;
@@ -138,6 +137,8 @@ class Checkout extends Component
         $this->subTotal = $cart->subtotal ?? 0;
         $this->total = $cart->total ?? 0;
         $this->shippingCost = $cart->shipping_cost ?? 0;
+        $this->country_id = $cart->country_id;
+        $this->governorate_id = $cart->governorate_id;
 
         $this->taxPercentage = Setting::first()?->tax_percentage ?? 0;
         $this->taxAmount = ($this->taxPercentage > 0) ? ($this->subTotal * $this->taxPercentage / 100) : 0;
@@ -244,6 +245,9 @@ class Checkout extends Component
                 'payment_method_id' => 1,
                 'coupon_id' => $cart->coupon_id ?? null,
                 'shipping_cost' => $cart->shipping_cost,
+                'country_id' => $cart-> country_id,
+                'governorate_id' => $cart->governorate_id,
+                'city_id' => $cart->city_id,
                 'tax_percentage' => $cart->tax_percentage,
                 'tax_amount' => $cart->tax_amount,
                 'subtotal' => $cart->subtotal,

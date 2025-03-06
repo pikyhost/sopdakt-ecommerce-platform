@@ -9,12 +9,15 @@ use Filament\Resources\Components\Tab;
 
 class ListOrders extends ListRecords
 {
+    use ListRecords\Concerns\Translatable;
+
     protected static string $resource = OrderResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
             Actions\CreateAction::make(),
+            Actions\LocaleSwitcher::make(),
         ];
     }
 
