@@ -11,7 +11,9 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Setting;
 use App\Services\JtExpressService;
+use Barryvdh\Debugbar\DataCollector\LogsCollector;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Livewire\Component;
@@ -293,6 +295,8 @@ class Checkout extends Component
             DB::rollBack();
 
             $this->addError('order', 'Something went wrong: ' . $e->getMessage());
+
+            Log::info('error is:'. $e->getMessage());
 
             return redirect()->route('cart.index')->with('error', 'Something went wrong: ' . $e->getMessage());
         }
