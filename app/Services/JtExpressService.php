@@ -16,31 +16,29 @@ class JtExpressService
     public function __construct()
     {
         $this->baseUrl = env('JT_EXPRESS_BASE_URL', 'https://openapi.jtjms-eg.com/webopenplatformapi/api');
-        $this->apiAccount = env('JT_EXPRESS_API_ACCOUNT', '29250815308379141');
-        $this->privateKey = env('JT_EXPRESS_PRIVATE_KEY', 'afa1047cce70493c9d5d29704f05d0d9');
-        $this->customerCode = env('JT_EXPRESS_CUSTOMER_CODE', 'J0086024138');
-        $this->password = env('JT_EXPRESS_PASSWORD', '');
+        $this->apiAccount = env('JT_EXPRESS_API_ACCOUNT', '765199128979308601');
+        $this->privateKey = env('JT_EXPRESS_PRIVATE_KEY', '69024527c19c405a929fec5ae6a6ed46');
+        $this->customerCode = env('JT_EXPRESS_CUSTOMER_CODE', 'J0086006967');
+        $this->password = env('JT_EXPRESS_PASSWORD', 'Hanyhelmy11');
     }
 
     protected function getAuthHeaders(array $requestBody)
     {
-        $jsonData = json_encode($requestBody, JSON_UNESCAPED_UNICODE);
-        $md5Hash = md5($jsonData . $this->privateKey, true);
-        $digest = base64_encode($md5Hash);
+        $jsonBody = json_encode($requestBody, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $digest = base64_encode(md5($jsonBody . $this->privateKey, true));
 
         return [
             'apiAccount'    => $this->apiAccount,
             'digest'        => $digest,
             'timestamp'     => time(),
-            'Content-Type'  => 'application/x-www-form-urlencoded',
+            'Content-Type'  => 'application/json',
         ];
     }
 
     protected function getBusinessDigest()
     {
-        $passwordHash = strtoupper(md5($this->password . 'jadada236t2'));
-        $businessSignatureData = $this->customerCode . $passwordHash . $this->privateKey;
-        $businessSignatureMd5 = md5($businessSignatureData, true);
+        $pwd = strtoupper(md5($this->password . 'jadada236t2'));
+        $businessSignatureMd5 = md5($this->customerCode . $pwd . $this->privateKey, true);
         return base64_encode($businessSignatureMd5);
     }
 
@@ -61,7 +59,7 @@ class JtExpressService
                 'width'          => $orderData['width'] ?? 10,
                 'height'         => $orderData['height'] ?? 60,
                 'weight'         => $orderData['weight'] ?? 5.02,
-                'totalQuantity'  => $orderData['quantity'] ?? '1',
+                'totalQuantity'  => $orderData['quantity'],
                 'remark'         => $orderData['remark'] ?? '',
                 'operateType'    => $orderData['operate_type'] ?? 1,
                 'goodsType'      => $orderData['goods_type'] ?? 'ITN1',
@@ -72,48 +70,49 @@ class JtExpressService
                 'offerFee'       => $orderData['offer_fee'] ?? 0,
                 'sendStartTime'  => $orderData['send_start_time'] ?? date('Y-m-d H:i:s'),
                 'sendEndTime'    => $orderData['send_end_time'] ?? date('Y-m-d H:i:s', strtotime('+1 day')),
-                'sender' => [
-                    'name'                   => $orderData['sender_name'],
-                    'company'                => $orderData['sender_company'] ?? '',
-                    'countryCode'            => $orderData['sender_country_code'] ?? 'EGY',
-                    'prov'                   => $orderData['sender_province'],
-                    'city'                   => $orderData['sender_city'],
-                    'area'                   => $orderData['sender_area'] ?? '',
-                    'town'                   => $orderData['sender_town'] ?? '',
-                    'street'                 => $orderData['sender_street'] ?? '',
-                    'address'                => $orderData['sender_address'],
-                    'addressBak'             => $orderData['sender_address_bak'] ?? $orderData['sender_address'],
-                    'postCode'               => $orderData['sender_postal_code'] ?? '',
-                    'mobile'                 => $orderData['sender_mobile'],
-                    'phone'                  => $orderData['sender_phone'] ?? $orderData['sender_mobile'],
-                    'mailBox'                => $orderData['sender_email'] ?? '',
-                    'alternateSenderPhoneNo' => $orderData['sender_alternate_phone'] ?? '',
-                    'areaCode'               => $orderData['sender_area_code'] ?? '',
-                    'building'               => $orderData['sender_building'] ?? '',
-                    'floor'                  => $orderData['sender_floor'] ?? '',
-                    'flats'                  => $orderData['sender_flats'] ?? '',
+                'sender'         => [
+                    'name'                   => $orderData['sender']['name'],
+                    'company'                => $orderData['sender']['company'],
+                    'city'                   => $orderData['sender']['city'],
+                    'address'                => $orderData['sender']['address'],
+                    'mobile'                 => $orderData['sender']['mobile'],
+                    'countryCode'            => $orderData['sender']['countryCode'],
+                    'prov'                   => $orderData['sender']['prov'],
+                    'area'                   => $orderData['sender']['area'],
+                    'town'                   => $orderData['sender']['town'],
+                    'street'                 => $orderData['sender']['street'],
+                    'addressBak'             => $orderData['sender']['addressBak'],
+                    'postCode'               => $orderData['sender']['postCode'],
+                    'phone'                  => $orderData['sender']['phone'],
+                    'mailBox'                => $orderData['sender']['mailBox'],
+                    'areaCode'               => $orderData['sender']['areaCode'],
+                    'building'               => $orderData['sender']['building'],
+                    'floor'                  => $orderData['sender']['floor'],
+                    'flats'                  => $orderData['sender']['flats'],
+                    'alternateSenderPhoneNo' => $orderData['sender']['alternateSenderPhoneNo'],
                 ],
-                'receiver' => [
-                    'name'                      => $orderData['receiver_name'],
-                    'company'                   => $orderData['receiver_company'] ?? '',
-                    'countryCode'               => $orderData['receiver_country_code'] ?? 'EGY',
-                    'prov'                      => $orderData['receiver_province'],
-                    'city'                      => $orderData['receiver_city'],
-                    'area'                      => $orderData['receiver_area'] ?? '',
-                    'town'                      => $orderData['receiver_town'] ?? '',
-                    'address'                   => $orderData['receiver_address'],
-                    'addressBak'                => $orderData['receiver_address_bak'] ?? $orderData['receiver_address'],
-                    'postCode'                  => $orderData['receiver_postal_code'] ?? '',
-                    'mobile'                    => $orderData['receiver_mobile'],
-                    'phone'                     => $orderData['receiver_phone'] ?? $orderData['receiver_mobile'],
-                    'mailBox'                   => $orderData['receiver_email'] ?? '',
-                    'alternateReceiverPhoneNo'  => $orderData['receiver_alternate_phone'] ?? '',
-                    'areaCode'                  => $orderData['receiver_area_code'] ?? '',
-                    'building'                  => $orderData['receiver_building'] ?? '',
-                    'floor'                     => $orderData['receiver_floor'] ?? '',
-                    'flats'                     => $orderData['receiver_flats'] ?? '',
+                'receiver'       => [
+                    'name'                      => $orderData['receiver']['name'],
+                    'prov'                      => $orderData['receiver']['prov'],
+                    'city'                      => $orderData['receiver']['city'],
+                    'address'                   => $orderData['receiver']['address'],
+                    'mobile'                    => $orderData['receiver']['mobile'],
+                    'company'                   => $orderData['receiver']['company'],
+                    'countryCode'               => $orderData['receiver']['countryCode'],
+                    'area'                      => $orderData['receiver']['area'],
+                    'town'                      => $orderData['receiver']['town'],
+                    'addressBak'                => $orderData['receiver']['addressBak'],
+                    'street'                    => $orderData['receiver']['street'],
+                    'postCode'                  => $orderData['receiver']['postCode'],
+                    'phone'                     => $orderData['receiver']['phone'],
+                    'mailBox'                   => $orderData['receiver']['mailBox'],
+                    'areaCode'                  => $orderData['receiver']['areaCode'],
+                    'building'                  => $orderData['receiver']['building'],
+                    'floor'                     => $orderData['receiver']['floor'],
+                    'flats'                     => $orderData['receiver']['flats'],
+                    'alternateReceiverPhoneNo'  => $orderData['receiver']['alternateReceiverPhoneNo'],
                 ],
-                'items' => isset($orderData['items']) ? $orderData['items'] : [
+                'items'          => isset($orderData['items']) ? $orderData['items'] : [
                     [
                         'itemName'      => $orderData['item_name'] ?? 'Default Item',
                         'number'        => $orderData['item_quantity'] ?? 1,
@@ -133,7 +132,6 @@ class JtExpressService
                 ->withHeaders($headers)
                 ->post($this->baseUrl . '/order/addOrder', ['bizContent' => json_encode($requestBody, JSON_UNESCAPED_UNICODE)]);
 
-            // dd($response);
             return $response->json();
         } catch (Exception $e) {
             throw new Exception('Failed to create J&T Express order: ' . $e->getMessage());
@@ -152,7 +150,7 @@ class JtExpressService
             $headers = $this->getAuthHeaders($requestBody);
             $response = Http::asForm()
                 ->withHeaders($headers)
-                ->post($this->baseUrl . '/order/checkOrder', ['bizContent' => json_encode($requestBody, JSON_UNESCAPED_UNICODE)]);
+                ->post($this->baseUrl . '/order/getOrders', ['bizContent' => json_encode($requestBody, JSON_UNESCAPED_UNICODE)]);
 
             return $response->json();
         } catch (Exception $e) {
@@ -193,7 +191,7 @@ class JtExpressService
             $headers = $this->getAuthHeaders($requestBody);
             $response = Http::asForm()
                 ->withHeaders($headers)
-                ->post($this->baseUrl . '/order/statusReturn', ['bizContent' => json_encode($requestBody, JSON_UNESCAPED_UNICODE)]);
+                ->post($this->baseUrl . '/order/printOrder', ['bizContent' => json_encode($requestBody, JSON_UNESCAPED_UNICODE)]);
 
             return $response->json();
         } catch (Exception $e) {
@@ -213,7 +211,7 @@ class JtExpressService
             $headers = $this->getAuthHeaders($requestBody);
             $response = Http::asForm()
                 ->withHeaders($headers)
-                ->post($this->baseUrl . '/logistics/trackQuery', ['bizContent' => json_encode($requestBody, JSON_UNESCAPED_UNICODE)]);
+                ->post($this->baseUrl . '/logistics/trace', ['bizContent' => json_encode($requestBody, JSON_UNESCAPED_UNICODE)]);
 
             return $response->json();
         } catch (Exception $e) {
