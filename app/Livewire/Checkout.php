@@ -273,14 +273,26 @@ class Checkout extends Component
             'tracking_number'   => '#'. $order->id. ' EGY' . time() . rand(1000, 9999),
             'weight'            => 1.0, // You might want to calculate the total weight dynamically
             'quantity'          => $order->items->sum('quantity'), // Sum of all item quantities in the order
-            'remark'            => $order->notes ?? '',
+
+            'remark'            => implode(' , ', array_filter([
+                'Notes: ' . ($order->notes ?? 'No notes'),
+                $order->user?->name ? 'User: ' . $order->user->name : null,
+                $order->user?->email ? 'Email: ' . $order->user->email : null,
+                $order->user?->phone ? 'Phone: ' . $order->user->phone : null,
+                $order->user?->address ? 'Address: ' . $order->user->address : null,
+                $order->contact?->name ? 'Contact: ' . $order->contact->name : null,
+                $order->contact?->email ? 'Contact Email: ' . $order->contact->email : null,
+                $order->contact?->phone ? 'Contact Phone: ' . $order->contact->phone : null,
+                $order->contact?->address ? 'Contact Address: ' . $order->contact->address : null,
+            ])),
+
             'item_name'         => $order->items->pluck('product.name')->implode(', '), // Concatenated product names
             'item_quantity'     => $order->items->count(), // Total distinct items in the order
             'item_value'        => $order->total, // Order total amount
             'item_currency'     => 'EGP',
             'item_description'  => $order->notes ?? 'No description provided',
         ];
-        
+
         $data['sender'] = [
             'name'                   => 'Your Company Name',
             'company'                => 'Your Company',
