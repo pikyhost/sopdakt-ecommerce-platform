@@ -135,7 +135,7 @@ class OrderResource extends Resource
                         ->label(__($status->getLabel()))
                         ->icon($status->getIcon())
                         ->color($status->getColor())
-                        ->action(fn ($record) => $this->updateOrderStatus($record, $status))
+                        ->action(fn ($record) => self::updateOrderStatus($record, $status))
                     )->toArray(),
 
                     Tables\Actions\DeleteAction::make(),
@@ -160,7 +160,7 @@ class OrderResource extends Resource
             ]);
     }
 
-    public function updateOrderStatus($order, OrderStatus $status)
+    public static function updateOrderStatus($order, OrderStatus $status)
     {
         $order->update(['status' => $status->value]);
 
@@ -168,9 +168,9 @@ class OrderResource extends Resource
 
         // Trigger JT Express only when the status is set to "Confirmed"
         if ($status === OrderStatus::Shipping) {
-            $JtExpressOrderData = $this->prepareJtExpressOrderData($order);
+            $JtExpressOrderData = self::prepareJtExpressOrderData($order);
             $jtExpressResponse = app(JtExpressService::class)->createOrder($JtExpressOrderData);
-            $this->updateJtExpressOrder($order, 'pending', $JtExpressOrderData, $jtExpressResponse);
+            self::updateJtExpressOrder($order, 'pending', $JtExpressOrderData, $jtExpressResponse);
         }
     }
 
@@ -350,7 +350,7 @@ class OrderResource extends Resource
         ];
     }
 
-    private function prepareJtExpressOrderData($order): array
+    private static function prepareJtExpressOrderData($order): array
     {
         $data = [
             'tracking_number'   => '#'. $order->id. ' EGY' . time() . rand(1000, 9999),
@@ -423,7 +423,7 @@ class OrderResource extends Resource
         return $data;
     }
 
-    private function updateJtExpressOrder(Order $order, string $shipping_status, $JtExpressOrderData, $jtExpressResponse)
+    private static function updateJtExpressOrder(Order $order, string $shipping_status, $JtExpressOrderData, $jtExpressResponse)
     {
         if (isset($jtExpressResponse['code']) && $jtExpressResponse['code'] == 1) {
             $order->update([
