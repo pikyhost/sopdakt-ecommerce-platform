@@ -91,7 +91,7 @@ class GovernorateResource extends Resource
                     ->required()
                     ->label(__('country_name')),
 
-                Forms\Components\TextInput::make('shipping_cost')
+                Forms\Components\TextInput::make('cost')
                     ->label(__('shipping_cost.cost'))
                     ->required()
                     ->numeric()
@@ -116,7 +116,7 @@ class GovernorateResource extends Resource
                     ->searchable()
                     ->label(__('country_name')),
 
-                Tables\Columns\TextColumn::make('shipping_cost')
+                Tables\Columns\TextColumn::make('cost')
                     ->label(__('shipping_cost.cost'))
                     ->sortable(),
 
