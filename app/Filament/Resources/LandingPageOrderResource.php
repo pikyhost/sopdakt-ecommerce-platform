@@ -172,9 +172,10 @@ class LandingPageOrderResource extends Resource
                             $shipping_response = json_decode($record->shipping_response);
                             $cancelResult = app(JtExpressService::class)->cancelOrder($shipping_response->data);
 
-                            if (isset($cancelResult['success']) && $cancelResult['success']) {
+                            if (isset($cancelResult['code']) && $cancelResult['code'] == 1) {
                                 $record->update([
-                                    'shipping_status' => 'cancelled',
+                                    'status'            => 'cancelled',
+                                    'shipping_status'   => 'cancelled',
                                     'shipping_response' => json_encode($cancelResult)
                                 ]);
 
