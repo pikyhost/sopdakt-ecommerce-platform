@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 
+use App\Filament\Resources\LandingPageOrderResource\Pages\ListLandingPageOrders;
 use Filament\Tables\Table;
 use App\Models\LandingPageOrder;
 use Filament\Resources\Resource;
@@ -12,6 +13,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
 use App\Filament\Resources\OrderResource\Pages;
+use Illuminate\Database\Eloquent\Builder;
 
 class LandingPageOrderResource extends Resource
 {
@@ -197,7 +199,7 @@ class LandingPageOrderResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListOrders::route('/')
+            'index' => ListLandingPageOrders::route('/')
         ];
     }
 }
