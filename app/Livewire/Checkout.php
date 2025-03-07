@@ -254,7 +254,7 @@ class Checkout extends Component
         return count($this->cartItems) > 0 // Ensure cart is not empty
             && $this->cart->country_id // Ensure country is selected
             && $this->cart->governorate_id // Ensure governorate is selected
-            && $this->subTotal; // Ensure subtotal is greater than zero
+           ; // Ensure subtotal is greater than zero
     }
 
 
