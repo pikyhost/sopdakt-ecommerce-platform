@@ -160,7 +160,7 @@ class OrderResource extends Resource
                             $shipping_response = json_decode($record->shipping_response);
                             $trackingInfo = app(JtExpressService::class)->trackLogistics($shipping_response->data);
 
-                            if (isset($trackingInfo['success']) && $trackingInfo['success']) {
+                            if (isset($trackingInfo['code']) && $trackingInfo['code'] == 1) {
                                 Notification::make()
                                     ->title('Tracking Information')
                                     ->body('Tracking details retrieved successfully: ' . ($trackingInfo['data']['billCode'] ?? $record->tracking_number))
@@ -188,7 +188,7 @@ class OrderResource extends Resource
                             $shipping_response = json_decode($record->shipping_response);
                             $orderInfo = app(JtExpressService::class)->checkingOrder($shipping_response->data);
 
-                            if (isset($orderInfo['success']) && $orderInfo['success']) {
+                            if (isset($orderInfo['code']) && $orderInfo['code'] == 1) {
                                 Notification::make()
                                     ->title('Order Status')
                                     ->body('Order exists: ' . ($orderInfo['data']['isExist'] ?? 'Unknown'))
@@ -216,7 +216,7 @@ class OrderResource extends Resource
                             $shipping_response = json_decode($record->shipping_response);
                             $statusInfo = app(JtExpressService::class)->getOrderStatus($shipping_response->data);
 
-                            if (isset($statusInfo['success']) && $statusInfo['success']) {
+                            if (isset($statusInfo['code']) && $statusInfo['code'] == 1) {
                                 $status = $statusInfo['data']['deliveryStatus'] ?? 'Unknown';
 
                                 $record->update([
@@ -251,7 +251,7 @@ class OrderResource extends Resource
                             $shipping_response = json_decode($record->shipping_response);
                             $trajectoryInfo = app(JtExpressService::class)->getLogisticsTrajectory($shipping_response->data);
 
-                            if (isset($trajectoryInfo['success']) && $trajectoryInfo['success']) {
+                            if (isset($trajectoryInfo['code']) && $trajectoryInfo['code'] == 1) {
                                 $steps = count($trajectoryInfo['data']['details'] ?? []);
 
                                 Notification::make()
