@@ -83,57 +83,15 @@
 
                     <form wire:submit.prevent="save">
                         <div class="form-group">
-                            <label>Name</label>
+                            <label>Name</label><abbr class="required" title="required">*</abbr></label>
                             <input type="text" class="form-control" wire:model.defer="name" />
                             @error('name') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="form-group">
-                            <label>Company name (optional)</label>
-                            <input type="text" class="form-control" wire:model.defer="company_name" />
-                        </div>
-
-                        <div class="form-group">
-                            <label>Country / Region <abbr class="required" title="required">*</abbr></label>
-                            <select class="form-control" wire:model.live="country_id">
-                                <option value="">Select Country</option>
-                                @foreach ($countries as $country)
-                                    <option value="{{ $country->id }}">{{ $country->name }}</option>
-                                @endforeach
-                            </select>
-                            @error('country_id') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
-
-                        <div class="form-group">
-                            <label>Governorate <abbr class="required" title="required">*</abbr></label>
-                            <select class="form-control" wire:model.live="governorate_id">
-                                <option value="">Select Governorate</option>
-                                @foreach ($governorates as $governorate)
-                                    <option value="{{ $governorate->id }}">{{ $governorate->name }}</option>
-                                @endforeach
-                            </select>
-                            @error('governorate_id') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
-
-                        <div class="form-group">
-                            <label>Town / City <abbr class="required" title="required">*</abbr></label>
-                            <select class="form-control" wire:model.live="city_id">
-                                <option value="">Select City</option>
-                                @foreach ($cities as $city)
-                                    <option value="{{ $city->id }}">{{ $city->name }}</option>
-                                @endforeach
-                            </select>
-                            @error('city_id') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
-
-                        <div class="form-group">
-                            <label>Street address <abbr class="required" title="required">*</abbr></label>
-                            <input type="text" class="form-control" wire:model.defer="address" required />
-                            @error('address') <span class="text-danger">{{ $message }}</span> @enderror
-                        </div>
-
-                        <div class="form-group">
-                            <input type="text" class="form-control" wire:model.defer="apartment" placeholder="Apartment, suite, etc. (optional)" />
+                            <label>Phone <abbr class="required" title="required">*</abbr></label>
+                            <input type="tel" class="form-control" wire:model.defer="phone" required />
+                            @error('phone') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="form-group">
@@ -143,15 +101,24 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Postcode / Zip <abbr class="required" title="required">*</abbr></label>
-                            <input type="text" class="form-control" wire:model.defer="postcode" required />
-                            @error('postcode') <span class="text-danger">{{ $message }}</span> @enderror
+                            <label>Country / Region <abbr class="required" title="required">*</abbr></label>
+                            <input type="text" class="form-control" value="{{ $cart->country->name ?? 'N/A' }}" disabled>
                         </div>
 
                         <div class="form-group">
-                            <label>Phone <abbr class="required" title="required">*</abbr></label>
-                            <input type="tel" class="form-control" wire:model.defer="phone" required />
-                            @error('phone') <span class="text-danger">{{ $message }}</span> @enderror
+                            <label>Governorate <abbr class="required" title="required">*</abbr></label>
+                            <input type="text" class="form-control" value="{{ $cart->governorate->name ?? 'N/A' }}" disabled>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Town / City <abbr class="required" title="required">*</abbr></label>
+                            <input type="text" class="form-control" value="{{ $cart->city->name ?? 'N/A' }}" disabled>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Address details<abbr class="required" title="required">*</abbr></label>
+                            <input type="text" placeholder="Street name, Apartment, suite, etc." class="form-control" wire:model.defer="address" required />
+                            @error('address') <span class="text-danger">{{ $message }}</span> @enderror
                         </div>
 
                         @guest
@@ -280,8 +247,7 @@
             </div>
         <!-- End .col-lg-4 -->
     </div>
-</div>
-</form>
+    </div>
     <!-- End .row -->
 </div>
 <!-- End .container -->

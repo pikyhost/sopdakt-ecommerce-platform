@@ -23,11 +23,10 @@ return new class extends Migration
             $table->rememberToken();
             $table->timestamps();
 
-            $table->foreignId('country_id')->nullable()->constrained('countries')->cascadeOnDelete();
-            $table->foreignId('governorate_id')->nullable()->constrained('governorates')->cascadeOnDelete();
-            $table->foreignId('city_id')->nullable()->constrained('cities')->cascadeOnDelete();
+//            $table->foreignId('country_id')->nullable()->constrained('countries')->cascadeOnDelete();
+//            $table->foreignId('governorate_id')->nullable()->constrained('governorates')->cascadeOnDelete();
+//            $table->foreignId('city_id')->nullable()->constrained('cities')->cascadeOnDelete();
 
-            // Account Status
             $table->boolean('is_active')->default(true);
         });
 
