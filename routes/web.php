@@ -45,4 +45,3 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
 });
 
 Route::post('/jt-express-webhook', [ShippingController::class, 'handleWebhook']);
-// this is a comment for testing (git)
