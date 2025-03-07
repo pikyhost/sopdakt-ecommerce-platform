@@ -85,6 +85,19 @@ class AddToCart extends Component
 
         $product = Product::findOrFail($this->productId);
 
+        $availableStock = $product->quantity;
+
+        // Stock validation
+        if ($availableStock <= 0) {
+            $this->addError('cart_error', 'This product is out of stock!');
+            return;
+        }
+
+        if ($this->quantity > $availableStock) {
+            $this->addError('cart_error', 'The requested quantity exceeds available stock!');
+            return;
+        }
+
         // Ensure only one cart per user or session
         $this->cart = Cart::firstOrCreate(
             ['user_id' => Auth::id(), 'session_id' => Auth::check() ? null : Session::getId()]

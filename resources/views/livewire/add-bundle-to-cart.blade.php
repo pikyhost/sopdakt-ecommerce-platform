@@ -83,8 +83,15 @@
                                     @endforeach
                                 </div>
                                 <br>
+                                <!-- Cart Error Message -->
+                                @if ($errors->has('cart_error'))
+                                    <div class="alert alert-danger mt-3">
+                                        {{ $errors->first('cart_error') }}
+                                    </div>
+                                @endif
                                 <button wire:click="selectBundle({{ $bundle->id }})" class="btn btn-success">
-                                    <i class="fas fa-cart-plus me-1"></i> Add to Cart                                </button>
+                                    <i class="fas fa-cart-plus me-1"></i> Add to Cart
+                                </button>
                             </div>
                         </li>
                     @endforeach
