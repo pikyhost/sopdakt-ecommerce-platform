@@ -3,17 +3,19 @@
 namespace App\Filament\Resources;
 
 
-use App\Filament\Resources\LandingPageOrderResource\Pages\ListLandingPageOrders;
+use App\Enums\OrderStatus;
 use Filament\Tables\Table;
 use App\Models\LandingPageOrder;
 use Filament\Resources\Resource;
 use App\Services\JtExpressService;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\ActionGroup;
-use App\Filament\Resources\OrderResource\Pages;
-use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\LandingPageOrderResource\Pages\ListLandingPageOrders;
+use Filament\Forms\Components\{Grid, Section, Select, TextInput, Textarea};
+use Filament\Forms\Form;
 
 class LandingPageOrderResource extends Resource
 {
@@ -21,6 +23,56 @@ class LandingPageOrderResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
     protected static ?string $navigationGroup = 'Orders & Contacts';
     protected static ?string $navigationLabel = 'Landing Page Orders';
+
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Section::make('Order Details')
+                    ->schema([
+                        Grid::make()
+                            ->schema([
+                                Select::make('landing_page_id')->relationship('landingPage', 'slug')->required()->label('Landing Page'),
+                                Select::make('governorate_id')->relationship('governorate', 'name')->required()->label('Governorate'),
+                                Select::make('country_id')->relationship('country', 'name')->required()->label('Country'),
+                                Select::make('shipping_type_id')->relationship('shippingType', 'name')->required()->label('Shipping Type'),
+                                TextInput::make('quantity')->numeric()->minValue(1)->required()->label('Quantity'),
+                                Select::make('status')->options(collect(OrderStatus::cases())->mapWithKeys(fn ($status) => [$status->value => $status->getLabel()]))->required()->label('Order Status'),
+                            ]),
+                    ]),
+
+                Section::make('Customer Information')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('name')->required()->label('Customer Name'),
+                                TextInput::make('phone')->tel()->required()->label('Phone Number'),
+                                TextInput::make('another_phone')->tel()->label('Alternate Phone Number'),
+                                Textarea::make('address')->required()->rows(3)->label('Address'),
+                            ]),
+                    ]),
+
+                Section::make('Pricing')
+                    ->schema([
+                        Grid::make(3)
+                            ->schema([
+                                TextInput::make('subtotal')->numeric()->prefix('$')->required()->label('Subtotal'),
+                                TextInput::make('shipping_cost')->numeric()->prefix('$')->required()->label('Shipping Cost'),
+                                TextInput::make('total')->numeric()->prefix('$')->required()->label('Total Price'),
+                            ]),
+                    ]),
+
+                Section::make('Shipping Information')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('tracking_number')->label('Tracking Number'),
+                                TextInput::make('shipping_status')->label('Shipping Status'),
+                                Textarea::make('notes')->rows(3)->label('Notes'),
+                            ]),
+                    ]),
+            ]);
+    }
 
     public static function table(Table $table): Table
     {
@@ -45,7 +97,9 @@ class LandingPageOrderResource extends Resource
                 TextColumn::make('created_at')->label('Order Date')->dateTime('M d, Y H:i A')->sortable(),
             ])
             ->actions([
+                EditAction::make()->color('primary'),
                 ActionGroup::make([
+                    Action::make(OrderStatus::Shipping->getLabel())->label('Change To (Shipping)')->icon('heroicon-m-truck')->color('primary')->action(fn ($record) => self::updateOrderStatus($record, OrderStatus::Shipping)),
                     Action::make('trackOrder')
                         ->label('Track Order')
                         ->icon('heroicon-o-map')
@@ -193,19 +247,99 @@ class LandingPageOrderResource extends Resource
                             }
                         }),
                 ])
-                ->visible(fn (LandingPageOrder $record): bool =>
-                    !is_null($record->tracking_number)
-                )
                 ->label('Shipping Actions')
                 ->icon('heroicon-o-truck')
                 ->button()
             ]);
     }
 
+    public static function updateOrderStatus($order, OrderStatus $status)
+    {
+        $order->update(['status' => $status->value]);
+
+        if ($status === OrderStatus::Shipping) {
+            $JtExpressOrderData = self::prepareJtExpressOrderData($order);
+            $jtExpressResponse = app(JtExpressService::class)->createOrder($JtExpressOrderData);
+            self::updateJtExpressLandingPageOrder($order, 'pending', $JtExpressOrderData, $jtExpressResponse);
+        }
+    }
+
     public static function getPages(): array
     {
         return [
-            'index' => ListLandingPageOrders::route('/')
+            'index' => ListLandingPageOrders::route('/'),
         ];
+    }
+
+    private static function prepareJtExpressOrderData($order): array
+    {
+        $data = [
+            'tracking_number'           => 'EGY' . time() . rand(1000, 9999),
+            'weight'                    => 1.0,
+            'quantity'                  => 1, // $order->quantity,
+            'remark'                    => $order->notes ?? '',
+            'item_name'                 => $order->landingPage->name ?? 'Product Order',
+            'item_quantity'             => $order->quantity,
+            'item_value'                => $order->total,
+            'item_currency'             => 'EGP',
+            'item_description'          => $order->landingPage->description ?? '',
+        ];
+
+        $data['sender'] = [
+            'name'                   => 'Your Company Name',
+            'company'                => 'Your Company',
+            'city'                   => 'Your City',
+            'address'                => 'Your Full Address',
+            'mobile'                 => 'Your Contact Number',
+            'countryCode'            => 'Your Country Code',
+            'prov'                   => 'Your Prov',
+            'area'                   => 'Your Area',
+            'town'                   => 'Your Town',
+            'street'                 => 'Your Street',
+            'addressBak'             => 'Your Address Bak',
+            'postCode'               => 'Your Post Code',
+            'phone'                  => 'Your Phone',
+            'mailBox'                => 'Your Mail Box',
+            'areaCode'               => 'Your Area Code',
+            'building'               => 'Your Building',
+            'floor'                  => 'Your Floor',
+            'flats'                  => 'Your Flats',
+            'alternateSenderPhoneNo' => 'Your Alternate Sender Phone No',
+        ];
+
+        $data['receiver'] = [
+            'name'                      => 'test', // $order->name,
+            'prov'                      => 'أسيوط', // $order->region->governorate->name,
+            'city'                      => 'القوصية', // $order->region->name,
+            'address'                   => 'sdfsacdscdscdsa', // $order->address,
+            'mobile'                    => '1441234567', // $order->phone,
+            'company'                   => 'guangdongshengshenzhe',
+            'countryCode'               => 'EGY',
+            'area'                      => 'الصبحه',
+            'town'                      => 'town',
+            'addressBak'                => 'receivercdsfsafdsaf lkhdlksjlkfjkndskjfnhskjlkafdslkjdshflksjal',
+            'street'                    => 'street',
+            'postCode'                  => '54830',
+            'phone'                     => '23423423423',
+            'mailBox'                   => 'ant_li123@qq.com',
+            'areaCode'                  => '2342343',
+            'building'                  => '13',
+            'floor'                     => '25',
+            'flats'                     => '47',
+            'alternateReceiverPhoneNo'  => $order->another_phone ?? '1231321322',
+        ];
+
+        return $data;
+    }
+
+    private static function updateJtExpressLandingPageOrder(LandingPageOrder $order, string $shipping_status, $JtExpressOrderData, $jtExpressResponse)
+    {
+        if (isset($jtExpressResponse['code']) && $jtExpressResponse['code'] == 1) {
+            $order->update([
+                'tracking_number'   => $JtExpressOrderData['tracking_number'] ?? null,
+                'shipping_status'   => $shipping_status,
+                'shipping_response' => json_encode($jtExpressResponse)
+            ]);
+        }
     }
 }

@@ -9,10 +9,4 @@ use Filament\Resources\Pages\ListRecords;
 class ListLandingPageOrders extends ListRecords
 {
     protected static string $resource = LandingPageOrderResource::class;
-
-    protected function getHeaderActions(): array
-    {
-        return [
-        ];
-    }
 }
