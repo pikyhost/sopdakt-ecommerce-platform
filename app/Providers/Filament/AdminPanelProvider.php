@@ -126,15 +126,14 @@ class AdminPanelProvider extends PanelProvider
             'Products Management',
             'Inventory Management',
             'Orders',
+            'Orders & Contacts',
             'Shipping Management',
             'user_experience',
             'Settings Management',
         ];
 
-        // Create NavigationGroup instances
         $navigationGroups = array_map(fn($group) => NavigationGroup::make(__($group)), $groups);
 
-        // Find the active group
         $activeGroup = null;
         foreach ($navigationGroups as $navigationGroup) {
             if ($navigationGroup->isActive()) {
@@ -143,7 +142,6 @@ class AdminPanelProvider extends PanelProvider
             }
         }
 
-        // Ensure all groups are collapsed by default, except the active one
         return array_map(fn($navigationGroup) => $navigationGroup->collapsed($navigationGroup->getLabel() !== $activeGroup),
             $navigationGroups
         );
