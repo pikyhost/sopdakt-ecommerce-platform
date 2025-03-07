@@ -387,7 +387,6 @@ class OrderResource extends Resource
                             ),
 
                         TextInput::make('price_per_unit')
-                            ->default(fn())  // get product_id price
                             ->readOnly()
                             ->label(__('Price per Unit'))
                             ->numeric(),
