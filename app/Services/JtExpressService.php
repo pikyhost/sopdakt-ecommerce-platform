@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Exception;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class JtExpressService
 {
@@ -24,8 +25,8 @@ class JtExpressService
 
     protected function getAuthHeaders(array $requestBody)
     {
-        $jsonBody = json_encode($requestBody, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        $digest = base64_encode(md5($jsonBody . $this->privateKey, true));
+        $bizContent = json_encode($requestBody, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $digest = base64_encode(md5($bizContent . $this->privateKey, true));
 
         return [
             'apiAccount'    => $this->apiAccount,
@@ -37,9 +38,11 @@ class JtExpressService
 
     protected function getBusinessDigest()
     {
-        $pwd = strtoupper(md5($this->password . 'jadada236t2'));
-        $businessSignatureMd5 = md5($this->customerCode . $pwd . $this->privateKey, true);
-        return base64_encode($businessSignatureMd5);
+        $pwd = md5($this->password . 'jadada236t2');
+        $pwd = strtoupper($pwd);
+        $signatureString = $this->customerCode . $pwd . $this->privateKey;
+        $digest = base64_encode(md5($signatureString, true));
+        return $digest;
     }
 
     public function createOrder(array $orderData)
@@ -127,13 +130,18 @@ class JtExpressService
                 ],
             ];
 
+            $bizContent = json_encode($requestBody, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $digest = base64_encode(md5($bizContent . $this->privateKey, true));
+
             $headers = $this->getAuthHeaders($requestBody);
             $response = Http::asForm()
                 ->withHeaders($headers)
-                ->post($this->baseUrl . '/order/addOrder', ['bizContent' => json_encode($requestBody, JSON_UNESCAPED_UNICODE)]);
+                ->post($this->baseUrl . '/order/addOrder', ['bizContent' => $bizContent]);
 
+            Log::info('create J&T Express order', $response->json());
             return $response->json();
         } catch (Exception $e) {
+            Log::error('create J&T Express order', [$e->getMessage()]);
             throw new Exception('Failed to create J&T Express order: ' . $e->getMessage());
         }
     }

@@ -6,6 +6,7 @@ use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use App\Services\JtExpressService;
+use Illuminate\Support\Facades\Log;
 use App\Http\Requests\LandingPage\{OrderLandingRequest, OrderLandingPageBundleRequest};
 use App\Models\{Governorate, ShippingType, Region, LandingPage, WebsiteSetting, LandingPageNavbarItems, LandingPageOrder};
 
@@ -177,13 +178,13 @@ class LandingPageController extends Controller
                     throw new Exception('Quantity not available');
                 }
 
-                $region = Region::find($request->region_id);
+                $region = Region::find($data['region_id']);
 
-                $shippingType = ShippingType::find($request->shipping_type_id);
+                $shippingType = ShippingType::find($data['shipping_type_id']);
 
                 $shippingCost = $landingPage->shippingCost($region, $shippingType);
 
-                $subtotal = $landingPageVariant->price * $request->quantity;
+                $subtotal = $landingPageVariant->price * $data['quantity'];
 
                 $total = $subtotal + $shippingCost;
 
@@ -215,6 +216,7 @@ class LandingPageController extends Controller
             $request->session()->forget('landing_pages_orders');
             return redirect()->back()->with('success', 'Order has been placed successfully');
         } catch (Exception $e) {
+            Log::error('create order', [$e->getMessage()]);
             return redirect()->back()->with('error', $e->getMessage());
         }
     }
@@ -284,7 +286,7 @@ class LandingPageController extends Controller
     {
         if (isset($jtExpressResponse['code']) && $jtExpressResponse['code'] == 1) {
             $order->update([
-                'tracking_number'   => $JtExpressOrderData['tracking_number'],
+                'tracking_number'   => $JtExpressOrderData['tracking_number'] ?? null,
                 'shipping_status'   => $shipping_status,
                 'shipping_response' => json_encode($jtExpressResponse)
             ]);

@@ -124,9 +124,11 @@
 
                                                                     <div class="col-6 my-2" style="text-align: {{app()->getLocale() == 'ar' ? 'right' : 'left'}}">
                                                                         <x-select class="rounded-0 form-control" id="size" name="varieties[{{$bundle->id}}][{{$key}}][size_id]" label-name="Size" required>
-                                                                            @foreach($product->sizes->unique() as $size)
-                                                                                <option value="{{$size->id}}">{{$size->name}}</option>
-                                                                            @endforeach
+                                                                            @if (!is_null($product->sizes))
+                                                                                @foreach($product->sizes->unique() as $size)
+                                                                                    <option value="{{$size->id}}">{{$size->name}}</option>
+                                                                                @endforeach
+                                                                            @endif
                                                                         </x-select>
                                                                     </div>
                                                                 @endforeach

@@ -255,7 +255,7 @@ class OrderResource extends Resource
     {
         if (isset($jtExpressResponse['code']) && $jtExpressResponse['code'] == 1) {
             $order->update([
-                'tracking_number'   => $JtExpressOrderData['tracking_number'],
+                'tracking_number'   => $JtExpressOrderData['tracking_number'] ?? null,
                 'shipping_status'   => $shipping_status,
                 'shipping_response' => json_encode($jtExpressResponse)
             ]);

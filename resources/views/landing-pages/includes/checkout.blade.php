@@ -62,9 +62,11 @@
 
                         <div class="col-md-6 mb-2">
                             <x-select id="Size" name="size_id" label-name="Size" required>
-                                @foreach( $landingPage->sizes->unique() as $size)
-                                    <option value="{{$size->id}}">{{$size->name}}</option>
-                                @endforeach
+                                @if (!is_null($landingPage->sizes))
+                                    @foreach( $landingPage->sizes->unique() as $size)
+                                        <option value="{{$size->id}}">{{$size->name}}</option>
+                                    @endforeach
+                                @endif
                             </x-select>
                         </div>
 
