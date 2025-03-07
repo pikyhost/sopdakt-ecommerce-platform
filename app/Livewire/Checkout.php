@@ -3,17 +3,13 @@
 namespace App\Livewire;
 
 use App\Mail\OrderConfirmationMail;
-use App\Models\City;
 use App\Models\Contact;
 use App\Models\Country;
-use App\Models\Governorate;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Setting;
 use App\Services\JtExpressService;
-use Barryvdh\Debugbar\DataCollector\LogsCollector;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Livewire\Component;
@@ -24,28 +20,22 @@ use App\Models\CartItem;
 class Checkout extends Component
 {
     public $currentRoute;
-    public $name, $company_name, $country_id;
-    public $governorate_id, $city_id, $address, $apartment, $postcode;
+    public $name;
+    public $address;
     public $email, $phone, $notes, $create_account = false, $password;
-    public $governorates = [], $cities = [];
     public $total = 0;
     public $subTotal = 0;
     public $cartItems = [];
     public $shippingCost = 0.0;
     public $taxPercentage;
     public $taxAmount;
+    public $cart;
 
    protected function rules()
    {
         return [
             'name' => 'required|string|max:255',
-            'company_name' => 'nullable|string|max:255',
-            'country_id' => 'required|exists:countries,id',
-            'governorate_id' => 'required|exists:governorates,id',
-            'city_id' => 'nullable|exists:cities,id',
             'address' => 'required|string|max:500',
-            'apartment' => 'nullable|string|max:255',
-            'postcode' => 'nullable|string|max:20',
             'email' => 'required|email|max:255|unique:users,email,' . auth()->id(),
             'phone' => 'required|string|max:20',
             'notes' => 'nullable|string',
@@ -55,7 +45,13 @@ class Checkout extends Component
 
     public function mount()
     {
-        $this->currentRoute = Route::currentRouteName(); // Set route in mount
+        $this->currentRoute = Route::currentRouteName();
+
+        // Load cart data
+        $session_id = session()->getId();
+        $this->cart = Auth::check()
+            ? Cart::where('user_id', Auth::id())->latest()->first()
+            : Cart::where('session_id', $session_id)->latest()->first();
 
         if (Auth::check()) {
             // Load data for authenticated users
@@ -64,12 +60,6 @@ class Checkout extends Component
             $this->email = $user->email;
             $this->phone = $user->phone;
             $this->address = $user->address;
-            $this->company_name = $user->company_name;
-            $this->country_id = $user->country_id;
-            $this->governorate_id = $user->governorate_id;
-            $this->city_id = $user->city_id;
-            $this->postcode = $user->postcode;
-            $this->apartment = $user->apartment;
         } else {
             // Load data for guest users using session_id
             $session_id = session()->getId();
@@ -80,30 +70,10 @@ class Checkout extends Component
                 $this->email = $guestContact->email;
                 $this->phone = $guestContact->phone;
                 $this->address = $guestContact->address;
-                $this->company_name = $guestContact->company_name;
-                $this->country_id = $guestContact->country_id;
-                $this->governorate_id = $guestContact->governorate_id;
-                $this->city_id = $guestContact->city_id;
-                $this->postcode = $guestContact->postcode;
-                $this->apartment = $guestContact->apartment;
             }
         }
 
         $this->loadCartItems(); // Ensure cart items are loaded
-    }
-
-    public function updatedCountryId()
-    {
-        $this->governorates = Governorate::where('country_id', $this->country_id)->get();
-        $this->governorate_id = null;
-        $this->cities = [];
-        $this->city_id = null;
-    }
-
-    public function updatedGovernorateId()
-    {
-        $this->cities = City::where('governorate_id', $this->governorate_id)->get();
-        $this->city_id = null;
     }
 
     public function loadCartItems()
@@ -118,6 +88,7 @@ class Checkout extends Component
             $this->cartItems = [];
             $this->subTotal = 0;
             $this->total = 0;
+            $this->shippingCost = 0;
             return;
         }
 
@@ -140,8 +111,6 @@ class Checkout extends Component
         $this->subTotal = $cart->subtotal ?? 0;
         $this->total = $cart->total ?? 0;
         $this->shippingCost = $cart->shipping_cost ?? 0;
-        $this->country_id = $cart->country_id;
-        $this->governorate_id = $cart->governorate_id;
 
         $this->taxPercentage = Setting::first()?->tax_percentage ?? 0;
         $this->taxAmount = ($this->taxPercentage > 0) ? ($this->subTotal * $this->taxPercentage / 100) : 0;
@@ -149,8 +118,6 @@ class Checkout extends Component
 
     public function save()
     {
-        $this->validate();
-
         if (Auth::check()) {
             // Authenticated user - Update their contact info
             $user = Auth::user();
@@ -159,9 +126,6 @@ class Checkout extends Component
                 'email' => $this->email,
                 'phone' => $this->phone,
                 'address' => $this->address,
-                'country_id' => $this->country_id,
-                'governorate_id' => $this->governorate_id,
-                'city_id' => $this->city_id,
             ]);
             return $user;
         } else {
@@ -177,9 +141,6 @@ class Checkout extends Component
                     'email' => $this->email,
                     'phone' => $this->phone,
                     'address' => $this->address,
-                    'country_id' => $this->country_id,
-                    'governorate_id' => $this->governorate_id,
-                    'city_id' => $this->city_id,
                     'password' => bcrypt($this->password),
                 ]);
 
@@ -197,12 +158,6 @@ class Checkout extends Component
                         'email' => $this->email,
                         'phone' => $this->phone,
                         'address' => $this->address,
-                        'company_name' => $this->company_name,
-                        'country_id' => $this->country_id,
-                        'governorate_id' => $this->governorate_id,
-                        'city_id' => $this->city_id,
-                        'postcode' => $this->postcode,
-                        'apartment' => $this->apartment,
                     ]);
                 } else {
                     $guestContact->update([
@@ -210,12 +165,6 @@ class Checkout extends Component
                         'email' => $this->email,
                         'phone' => $this->phone,
                         'address' => $this->address,
-                        'company_name' => $this->company_name,
-                        'country_id' => $this->country_id,
-                        'governorate_id' => $this->governorate_id,
-                        'city_id' => $this->city_id,
-                        'postcode' => $this->postcode,
-                        'apartment' => $this->apartment,
                     ]);
                 }
                 return $guestContact;
@@ -225,6 +174,8 @@ class Checkout extends Component
 
     public function placeOrder()
     {
+        $this->validate();
+
         DB::beginTransaction();
         try {
             // Get the cart for user or guest session
@@ -295,18 +246,14 @@ class Checkout extends Component
             DB::rollBack();
 
             $this->addError('order', 'Something went wrong: ' . $e->getMessage());
-
-            Log::info('error is:'. $e->getMessage());
-
-            return redirect()->route('cart.index')->with('error', 'Something went wrong: ' . $e->getMessage());
         }
     }
 
     public function getIsCheckoutReadyProperty()
     {
         return count($this->cartItems) > 0 // Ensure cart is not empty
-            && !empty($this->country_id) // Ensure country is selected
-            && !empty($this->governorate_id) // Ensure governorate is selected
+            && $this->cart->country_id // Ensure country is selected
+            && $this->cart->governorate_id // Ensure governorate is selected
             && $this->subTotal > 0; // Ensure subtotal is greater than zero
     }
 
@@ -323,17 +270,17 @@ class Checkout extends Component
     private function prepareJtExpressOrderData($order): array
     {
         $data = [
-            'tracking_number'           => 'EGY' . time() . rand(1000, 9999),
-            'weight'                    => 1.0,
-            'quantity'                  => 1, // $order->quantity,
-            'remark'                    => $order->notes ?? '',
-            'item_name'                 => 'Some items',
-            'item_quantity'             => 1,
-            'item_value'                => $order->total,
-            'item_currency'             => 'EGP',
-            'item_description'          => $order->notes,
+            'tracking_number'   => '#'. $order->id. ' EGY' . time() . rand(1000, 9999),
+            'weight'            => 1.0, // You might want to calculate the total weight dynamically
+            'quantity'          => $order->items->sum('quantity'), // Sum of all item quantities in the order
+            'remark'            => $order->notes ?? '',
+            'item_name'         => $order->items->pluck('product.name')->implode(', '), // Concatenated product names
+            'item_quantity'     => $order->items->count(), // Total distinct items in the order
+            'item_value'        => $order->total, // Order total amount
+            'item_currency'     => 'EGP',
+            'item_description'  => $order->notes ?? 'No description provided',
         ];
-
+        
         $data['sender'] = [
             'name'                   => 'Your Company Name',
             'company'                => 'Your Company',

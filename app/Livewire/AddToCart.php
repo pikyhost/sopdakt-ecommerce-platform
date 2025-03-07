@@ -41,7 +41,13 @@ class AddToCart extends Component
 
     private function loadCart(): void
     {
-        $this->cart = Cart::where('user_id', Auth::id())->first();
+        $this->cart = Cart::where(function ($query) {
+            if (Auth::check()) {
+                $query->where('user_id', Auth::id());
+            } else {
+                $query->where('session_id', Session::getId());
+            }
+        })->with('items.product')->first();
     }
 
     private function loadCartData(): void

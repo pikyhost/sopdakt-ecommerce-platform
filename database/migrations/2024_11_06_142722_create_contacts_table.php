@@ -15,13 +15,10 @@ return new class extends Migration
             $table->id();
             $table->string('session_id')->nullable()->unique(); // Ensure guests have a unique session
             $table->string('name')->nullable();
-            $table->string('company_name')->nullable();
             $table->foreignId('country_id')->nullable()->constrained('countries')->cascadeOnDelete();
             $table->foreignId('governorate_id')->nullable()->constrained('governorates')->cascadeOnDelete();
             $table->foreignId('city_id')->nullable()->constrained('cities')->cascadeOnDelete();
             $table->tinyText('address')->nullable();
-            $table->tinyText('apartment')->nullable();
-            $table->string('postcode')->nullable(); // Added postcode field
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
             $table->text('notes')->nullable();

@@ -13,19 +13,28 @@ class Cart extends Model
 
    protected $guarded = [];
 
-    /**
-     * Get the user who owns the cart (optional for guests).
-     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get all items in the cart.
-     */
     public function items(): HasMany
     {
         return $this->hasMany(CartItem::class);
+    }
+
+    public function country()
+    {
+        return $this->belongsTo(Country::class);
+    }
+
+    public function governorate()
+    {
+        return $this->belongsTo(Governorate::class);
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class);
     }
 }

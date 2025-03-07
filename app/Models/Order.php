@@ -12,25 +12,7 @@ class Order extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'user_id',
-        'contact_id',
-        'shipping_type_id',
-        'payment_method_id',
-        'coupon_id',
-        'shipping_cost',
-        'tax_percentage',
-        'tax_amount',
-        'subtotal',
-        'total',
-        'status',
-        'notes',
-        'shipping_type_id',
-        'country_id',
-        'city_id',
-        'governorate_id',
-        'tracking_number', 'shipping_status', 'shipping_response'
-    ];
+    protected $guarded = [];
 
     protected $casts = [
         'status' => OrderStatus::class
