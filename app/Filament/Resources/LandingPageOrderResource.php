@@ -55,7 +55,8 @@ class LandingPageOrderResource extends Resource
                             !is_null($record->shipping_status)
                         )
                         ->action(function (LandingPageOrder $record): void {
-                            $trackingInfo = app(JtExpressService::class)->trackLogistics($record->tracking_number);
+                            $shipping_response = json_decode($record->shipping_response);
+                            $trackingInfo = app(JtExpressService::class)->trackLogistics($shipping_response->data);
 
                             if (isset($trackingInfo['success']) && $trackingInfo['success']) {
                                 Notification::make()
@@ -79,7 +80,8 @@ class LandingPageOrderResource extends Resource
                             !is_null($record->tracking_number)
                         )
                         ->action(function (LandingPageOrder $record): void {
-                            $orderInfo = app(JtExpressService::class)->checkingOrder($record->tracking_number);
+                            $shipping_response = json_decode($record->shipping_response);
+                            $orderInfo = app(JtExpressService::class)->checkingOrder($shipping_response->data);
 
                             if (isset($orderInfo['success']) && $orderInfo['success']) {
                                 Notification::make()
@@ -103,7 +105,8 @@ class LandingPageOrderResource extends Resource
                             !is_null($record->tracking_number)
                         )
                         ->action(function (LandingPageOrder $record): void {
-                            $statusInfo = app(JtExpressService::class)->getOrderStatus($record->tracking_number);
+                            $shipping_response = json_decode($record->shipping_response);
+                            $statusInfo = app(JtExpressService::class)->getOrderStatus($shipping_response->data);
 
                             if (isset($statusInfo['success']) && $statusInfo['success']) {
                                 $status = $statusInfo['data']['deliveryStatus'] ?? 'Unknown';
@@ -134,7 +137,8 @@ class LandingPageOrderResource extends Resource
                             !is_null($record->tracking_number)
                         )
                         ->action(function (LandingPageOrder $record): void {
-                            $trajectoryInfo = app(JtExpressService::class)->getLogisticsTrajectory($record->tracking_number);
+                            $shipping_response = json_decode($record->shipping_response);
+                            $trajectoryInfo = app(JtExpressService::class)->getLogisticsTrajectory($shipping_response->data);
 
                             if (isset($trajectoryInfo['success']) && $trajectoryInfo['success']) {
                                 $steps = count($trajectoryInfo['data']['details'] ?? []);
@@ -165,7 +169,8 @@ class LandingPageOrderResource extends Resource
                         )
                         ->requiresConfirmation()
                         ->action(function (LandingPageOrder $record): void {
-                            $cancelResult = app(JtExpressService::class)->cancelOrder($record->tracking_number);
+                            $shipping_response = json_decode($record->shipping_response);
+                            $cancelResult = app(JtExpressService::class)->cancelOrder($shipping_response->data);
 
                             if (isset($cancelResult['success']) && $cancelResult['success']) {
                                 $record->update([

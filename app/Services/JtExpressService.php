@@ -131,8 +131,6 @@ class JtExpressService
             ];
 
             $bizContent = json_encode($requestBody, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-            $digest = base64_encode(md5($bizContent . $this->privateKey, true));
-
             $headers = $this->getAuthHeaders($requestBody);
             $response = Http::asForm()
                 ->withHeaders($headers)
@@ -146,125 +144,167 @@ class JtExpressService
         }
     }
 
-    public function checkingOrder(string $orderNumber)
+    public function checkingOrder($shipping_response)
     {
         try {
             $requestBody = [
-                'customerCode' => $this->customerCode,
-                'digest' => $this->getBusinessDigest(),
-                'txlogisticId' => $orderNumber
+                'customerCode'      => $this->customerCode,
+                'digest'            => $this->getBusinessDigest(),
+                'txlogisticId'      => $shipping_response->txlogisticId,
+                'billCode'          => $shipping_response->billCode,
+                'sortingCode'       => $shipping_response->sortingCode,
+                'createOrderTime'   => $shipping_response->createOrderTime,
+                'lastCenterName'    => $shipping_response->lastCenterName,
+                'command'           => 2,
             ];
 
+            $bizContent = json_encode($requestBody, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             $headers = $this->getAuthHeaders($requestBody);
             $response = Http::asForm()
                 ->withHeaders($headers)
-                ->post($this->baseUrl . '/order/getOrders', ['bizContent' => json_encode($requestBody, JSON_UNESCAPED_UNICODE)]);
+                ->post($this->baseUrl . '/order/getOrders', ['bizContent' => $bizContent]);
 
+            Log::info('check J&T Express order', $response->json());
             return $response->json();
         } catch (Exception $e) {
+            Log::error('Failed to check J&T Express order', [$e->getMessage()]);
             throw new Exception('Failed to check J&T Express order: ' . $e->getMessage());
         }
     }
 
-    public function cancelOrder(string $orderNumber, string $reason = '')
+    public function cancelOrder($shipping_response, string $reason = '')
     {
         try {
             $requestBody = [
-                'customerCode' => $this->customerCode,
-                'digest' => $this->getBusinessDigest(),
-                'txlogisticId' => $orderNumber,
-                'reason' => $reason ?: 'Cancellation requested by customer'
+                'customerCode'      => $this->customerCode,
+                'digest'            => $this->getBusinessDigest(),
+                'txlogisticId'      => $shipping_response->txlogisticId,
+                'billCode'          => $shipping_response->billCode,
+                'sortingCode'       => $shipping_response->sortingCode,
+                'createOrderTime'   => $shipping_response->createOrderTime,
+                'lastCenterName'    => $shipping_response->lastCenterName,
+                'reason'            => $reason ?: 'Cancellation requested by customer'
             ];
 
+            $bizContent = json_encode($requestBody, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             $headers = $this->getAuthHeaders($requestBody);
             $response = Http::asForm()
                 ->withHeaders($headers)
-                ->post($this->baseUrl . '/order/cancelOrder', ['bizContent' => json_encode($requestBody, JSON_UNESCAPED_UNICODE)]);
+                ->post($this->baseUrl . '/order/cancelOrder', ['bizContent' => $bizContent]);
 
+            Log::info('cancel J&T Express order', $response->json());
             return $response->json();
         } catch (Exception $e) {
+            Log::error('Failed to cancel J&T Express order', [$e->getMessage()]);
             throw new Exception('Failed to cancel J&T Express order: ' . $e->getMessage());
         }
     }
 
-    public function getOrderStatus(string $orderNumber)
+    public function getOrderStatus($shipping_response)
     {
         try {
             $requestBody = [
-                'customerCode' => $this->customerCode,
-                'digest' => $this->getBusinessDigest(),
-                'txlogisticId' => $orderNumber
+                'customerCode'      => $this->customerCode,
+                'digest'            => $this->getBusinessDigest(),
+                'txlogisticId'      => $shipping_response->txlogisticId,
+                'billCode'          => $shipping_response->billCode,
+                'sortingCode'       => $shipping_response->sortingCode,
+                'createOrderTime'   => $shipping_response->createOrderTime,
+                'lastCenterName'    => $shipping_response->lastCenterName,
+                'printSize'         => 'A4',
             ];
 
+            $bizContent = json_encode($requestBody, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             $headers = $this->getAuthHeaders($requestBody);
             $response = Http::asForm()
                 ->withHeaders($headers)
-                ->post($this->baseUrl . '/order/printOrder', ['bizContent' => json_encode($requestBody, JSON_UNESCAPED_UNICODE)]);
+                ->post($this->baseUrl . '/order/printOrder', ['bizContent' => $bizContent]);
 
+            Log::info('get J&T Express order status', $response->json());
             return $response->json();
         } catch (Exception $e) {
+            Log::error('Failed to get J&T Express order status', [$e->getMessage()]);
             throw new Exception('Failed to get J&T Express order status: ' . $e->getMessage());
         }
     }
 
-    public function trackLogistics(string $trackingNumber)
+    public function trackLogistics($shipping_response)
     {
         try {
             $requestBody = [
-                'customerCode' => $this->customerCode,
-                'digest' => $this->getBusinessDigest(),
-                'billCode' => $trackingNumber
+                'customerCode'      => $this->customerCode,
+                'digest'            => $this->getBusinessDigest(),
+                'txlogisticId'      => $shipping_response->txlogisticId,
+                'billCode'          => $shipping_response->billCode,
+                'sortingCode'       => $shipping_response->sortingCode,
+                'createOrderTime'   => $shipping_response->createOrderTime,
+                'lastCenterName'    => $shipping_response->lastCenterName,
             ];
 
+            $bizContent = json_encode($requestBody, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             $headers = $this->getAuthHeaders($requestBody);
             $response = Http::asForm()
                 ->withHeaders($headers)
-                ->post($this->baseUrl . '/logistics/trace', ['bizContent' => json_encode($requestBody, JSON_UNESCAPED_UNICODE)]);
+                ->post($this->baseUrl . '/logistics/trace', ['bizContent' => $bizContent]);
 
+            Log::info('track J&T Express shipment', $response->json());
             return $response->json();
         } catch (Exception $e) {
+            Log::error('Failed to track J&T Express shipment', [$e->getMessage()]);
             throw new Exception('Failed to track J&T Express shipment: ' . $e->getMessage());
         }
     }
 
-    public function getLogisticsTrajectory(string $trackingNumber)
+    public function getLogisticsTrajectory($shipping_response)
     {
         try {
             $requestBody = [
-                'customerCode' => $this->customerCode,
-                'digest' => $this->getBusinessDigest(),
-                'billCode' => $trackingNumber
+                'customerCode'      => $this->customerCode,
+                'digest'            => $this->getBusinessDigest(),
+                'txlogisticId'      => $shipping_response->txlogisticId,
+                'billCode'          => $shipping_response->billCode,
+                'sortingCode'       => $shipping_response->sortingCode,
+                'createOrderTime'   => $shipping_response->createOrderTime,
+                'lastCenterName'    => $shipping_response->lastCenterName,
             ];
 
+            $bizContent = json_encode($requestBody, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             $headers = $this->getAuthHeaders($requestBody);
             $response = Http::asForm()
                 ->withHeaders($headers)
-                ->post($this->baseUrl . '/logistics/trajectoryReturn', ['bizContent' => json_encode($requestBody, JSON_UNESCAPED_UNICODE)]);
+                ->post($this->baseUrl . '/logistics/trajectoryReturn', ['bizContent' => $bizContent]);
 
+            Log::info('get J&T Express trajectory', $response->json());
             return $response->json();
         } catch (Exception $e) {
+            Log::error('Failed to get J&T Express trajectory', [$e->getMessage()]);
             throw new Exception('Failed to get J&T Express trajectory: ' . $e->getMessage());
         }
     }
 
-    public function searchThreeSegmentCode(array $parameters)
+    public function searchThreeSegmentCode($shipping_response)
     {
         try {
-            $requestParams = array_merge(
-                [
-                    'customerCode' => $this->customerCode,
-                    'digest' => $this->getBusinessDigest()
-                ],
-                $parameters
-            );
+            $requestBody = [
+                'customerCode'      => $this->customerCode,
+                'digest'            => $this->getBusinessDigest(),
+                'txlogisticId'      => $shipping_response->txlogisticId,
+                'billCode'          => $shipping_response->billCode,
+                'sortingCode'       => $shipping_response->sortingCode,
+                'createOrderTime'   => $shipping_response->createOrderTime,
+                'lastCenterName'    => $shipping_response->lastCenterName,
+            ];
 
-            $headers = $this->getAuthHeaders($requestParams);
+            $bizContent = json_encode($requestBody, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $headers = $this->getAuthHeaders($requestBody);
             $response = Http::asForm()
                 ->withHeaders($headers)
-                ->post($this->baseUrl . '/other/threeSegmentCodeSearch', ['bizContent' => json_encode($requestParams, JSON_UNESCAPED_UNICODE)]);
+                ->post($this->baseUrl . '/other/threeSegmentCodeSearch', ['bizContent' => $bizContent]);
 
+            Log::info('search three-segment code', $response->json());
             return $response->json();
         } catch (Exception $e) {
+            Log::error('Failed to search three-segment code', [$e->getMessage()]);
             throw new Exception('Failed to search three-segment code: ' . $e->getMessage());
         }
     }
