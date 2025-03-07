@@ -164,13 +164,12 @@ class OrderResource extends Resource
     {
         $order->update(['status' => $status->value]);
 
-        Mail::to($order->user->email ?? $order->contact->email)->queue(new OrderConfirmationMail($order));
-
         // Trigger JT Express only when the status is set to "Confirmed"
         if ($status === OrderStatus::Shipping) {
             $JtExpressOrderData = self::prepareJtExpressOrderData($order);
             $jtExpressResponse = app(JtExpressService::class)->createOrder($JtExpressOrderData);
             self::updateJtExpressOrder($order, 'pending', $JtExpressOrderData, $jtExpressResponse);
+            Mail::to($order->user->email ?? $order->contact->email)->queue(new OrderConfirmationMail($order));
         }
     }
 
