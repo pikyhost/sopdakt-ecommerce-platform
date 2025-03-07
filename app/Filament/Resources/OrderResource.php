@@ -183,7 +183,7 @@ class OrderResource extends Resource
         $data = [
             'tracking_number'   => '#'. $order->id. ' EGY' . time() . rand(1000, 9999),
             'weight'            => 1.0, // You might want to calculate the total weight dynamically
-            'quantity'          => $order->items->sum('quantity'), // Sum of all item quantities in the order
+            'quantity'          => 1,  // $order->items->sum('quantity') Sum of all item quantities in the order
 
             'remark'            => implode(' , ', array_filter([
                 'Notes: ' . ($order->notes ?? 'No notes'),
