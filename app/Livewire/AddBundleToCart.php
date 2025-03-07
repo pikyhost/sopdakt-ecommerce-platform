@@ -88,6 +88,14 @@ class AddBundleToCart extends Component
             return;
         }
 
+        $availableStock = $this->product->quantity;
+
+        // Stock validation
+        if ($availableStock <= 0) {
+            $this->addError('cart_error', 'This product is out of stock!');
+            return;
+        }
+
         DB::transaction(function () {
             $cart = Auth::check()
                 ? Cart::firstOrCreate(['user_id' => Auth::id()])

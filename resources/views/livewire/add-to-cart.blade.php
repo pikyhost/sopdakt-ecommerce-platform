@@ -33,6 +33,13 @@
                    class="horizontal-quantity form-control w-20 text-center border-gray-300 rounded-md shadow-sm">
         </div>
 
+        <!-- Cart Error Message -->
+        @if ($errors->has('cart_error'))
+            <div class="alert alert-danger mt-3">
+                {{ $errors->first('cart_error') }}
+            </div>
+        @endif
+
         <!-- Add to Cart Button -->
         <button wire:click="addToCart"
                 class="btn btn-dark add-cart flex items-center px-4 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700"

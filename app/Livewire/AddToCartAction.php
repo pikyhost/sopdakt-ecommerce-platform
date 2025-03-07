@@ -88,7 +88,7 @@ class AddToCartAction extends Component
 
             $cartItem->update([
                 'quantity' => $newQuantity,
-                'subtotal' => $newQuantity * $this->product->discount_price_for_current_country,
+                'subtotal' => $newQuantity * (float) $this->product->discount_price_for_current_country,
             ]);
         } else {
             CartItem::create([
@@ -97,8 +97,8 @@ class AddToCartAction extends Component
                 'size_id' => $this->sizeId,
                 'color_id' => $this->colorId,
                 'quantity' => $this->quantity,
-                'price_per_unit' => $this->product->discount_price_for_current_country,
-                'subtotal' => $this->quantity * $this->product->discount_price_for_current_country,
+                'price_per_unit' => (float) $this->product->discount_price_for_current_country,
+                'subtotal' => $this->quantity * (float) $this->product->discount_price_for_current_country,
             ]);
         }
 
