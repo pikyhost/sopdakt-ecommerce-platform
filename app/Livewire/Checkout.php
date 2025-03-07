@@ -228,14 +228,14 @@ class Checkout extends Component
             $cart->items()->delete();
             $cart->delete();
 
-            $JtExpressOrderData =  $this->prepareJtExpressOrderData($order);
-            $jtExpressResponse = app(JtExpressService::class)->createOrder($JtExpressOrderData);
-            $this->updateJtExpressOrder($order, 'pending', $JtExpressOrderData,  $jtExpressResponse);
+//            $JtExpressOrderData =  $this->prepareJtExpressOrderData($order);
+//            $jtExpressResponse = app(JtExpressService::class)->createOrder($JtExpressOrderData);
+//            $this->updateJtExpressOrder($order, 'pending', $JtExpressOrderData,  $jtExpressResponse);
 
             DB::commit();
 
-            // Send order confirmation email
-            Mail::to(Auth::user()->email ?? $contact->email)->queue(new OrderConfirmationMail($order));
+//            // Send order confirmation email
+//            Mail::to(Auth::user()->email ?? $contact->email)->queue(new OrderConfirmationMail($order));
 
             // Set session message for order completion
             session()->flash('success', 'Order placed successfully! A confirmation email has been sent.');

@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Enums\OrderStatus;
 use App\Filament\Resources\OrderResource\Pages;
+use App\Mail\OrderConfirmationMail;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\Governorate;
@@ -24,6 +25,7 @@ use Filament\Support\Enums\ActionSize;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Mail;
 
 class OrderResource extends Resource
 {
@@ -161,6 +163,8 @@ class OrderResource extends Resource
     public function updateOrderStatus($order, OrderStatus $status)
     {
         $order->update(['status' => $status->value]);
+
+        Mail::to($order->user->email ?? $order->contact->email)->queue(new OrderConfirmationMail($order));
 
         // Trigger JT Express only when the status is set to "Confirmed"
         if ($status === OrderStatus::Shipping) {

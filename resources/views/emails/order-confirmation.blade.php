@@ -14,6 +14,6 @@
         <li>{{ $item->product->name }} - Quantity: {{ $item->quantity }} - ${{ number_format($item->subtotal, 2) }}</li>
     @endforeach
 </ul>
-<p>We will notify you when your order is shipped.</p>
+<p>The order status is shipping now.</p>
 </body>
 </html>
