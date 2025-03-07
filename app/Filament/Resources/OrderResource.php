@@ -22,6 +22,8 @@ use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Wizard;
+use Filament\Forms\Components\Wizard\Step;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Resources\Resource;
@@ -271,6 +273,169 @@ class OrderResource extends Resource
 
     public static function form(Form $form): Form
     {
+        return $form->schema([
+            Wizard::make([
+                Step::make('Order Details')
+                    ->schema([
+                        Select::make('user_id')
+                            ->live()
+                            ->hidden(fn (Get $get) => $get('contact_id'))
+                            ->relationship('user', 'name')
+                            ->label(__('Customer')),
+
+                        Select::make('contact_id')
+                            ->live()
+                            ->hidden(fn (Get $get) => $get('user_id'))
+                            ->relationship('contact', 'name')
+                            ->label(__('Contact')),
+
+                        Forms\Components\ToggleButtons::make('status')
+                            ->label(__('Status'))
+                            ->inline()
+                            ->options(OrderStatus::class)
+                            ->required(),
+
+                        Forms\Components\MarkdownEditor::make('notes')
+                            ->label(__('Notes'))
+                            ->columnSpan('full'),
+                    ]),
+
+                Step::make('Shipping Information')
+                    ->schema([
+                        Select::make('shipping_type_id')
+                            ->relationship('shippingType', 'name')
+                            ->required()
+                            ->label(__('Shipping Type'))
+                            ->live()
+                            ->afterStateUpdated(fn ($state, callable $set, Get $get) =>
+                            self::updateShippingCost($set, $state, $get('city_id'), $get('governorate_id'), $get('country_id'))
+                            ),
+
+                        Select::make('country_id')
+                            ->label(__('Country'))
+                            ->options(Country::pluck('name', 'id'))
+                            ->live()
+                            ->afterStateUpdated(function (callable $set, Get $get) {
+                                $set('governorate_id', null);
+                                $set('city_id', null);
+                                self::updateShippingCost($set, $get('shipping_type_id'), null, null, $get('country_id'));
+                            }),
+
+                        Select::make('governorate_id')
+                            ->label(__('Governorate'))
+                            ->options(fn (Get $get) => Governorate::where('country_id', $get('country_id'))->pluck('name', 'id'))
+                            ->live()
+                            ->afterStateUpdated(fn ($state, callable $set, Get $get) =>
+                            self::updateShippingCost($set, $get('shipping_type_id'), null, $state, $get('country_id'))
+                            ),
+
+                        Select::make('city_id')
+                            ->label(__('City'))
+                            ->options(fn (Get $get) => City::where('governorate_id', $get('governorate_id'))->pluck('name', 'id'))
+                            ->live()
+                            ->placeholder(fn (Get $get) => empty($get('governorate_id')) ? 'Select a governorate first' : 'Select a city')
+                            ->afterStateUpdated(fn ($state, callable $set, Get $get) =>
+                            self::updateShippingCost($set, $get('shipping_type_id'), $state, $get('governorate_id'), $get('country_id'))
+                            ),
+
+                        Forms\Components\TextInput::make('shipping_cost')
+                            ->numeric()
+                            ->disabled()
+                            ->label(__('shipping_cost')),
+                    ]),
+
+                Step::make('Order Items')
+                    ->schema([
+                        Forms\Components\Repeater::make('items')
+                            ->relationship('items')
+                            ->schema([
+                                Select::make('product_id')
+                                    ->label(__('Product'))
+                                    ->options(Product::pluck('name', 'id'))
+                                    ->searchable()
+                                    ->reactive()
+                                    ->afterStateUpdated(fn ($state, Forms\Set $set) =>
+                                    $set('price_per_unit', Product::find($state)?->price ?? '')
+                                    ),
+
+                                TextInput::make('quantity')
+                                    ->label(__('Quantity'))
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->live()
+                                    ->afterStateUpdated(fn ($state, callable $set, Get $get) =>
+                                    $set('subtotal', ($get('price_per_unit') ?? 0) * ($state ?? 1))
+                                    ),
+
+                                TextInput::make('price_per_unit')
+                                    ->default(fn (Get $get) => Product::find($get('../product_id'))?->id ?? 0) // Get price based on product_id
+                                    ->readOnly()
+                                    ->label(__('Price per Unit'))
+                                    ->numeric(),
+
+                                TextInput::make('subtotal')
+                                    ->readOnly()
+                                    ->label(__('Subtotal'))
+                                    ->numeric(),
+                            ])
+                            ->columnSpanFull()
+                            ->collapsible(),
+                    ]),
+
+                // **Moved Billing Information to a separate step**
+                Step::make('Billing Information')
+                    ->schema([
+                        Select::make('payment_method_id')
+                            ->columnSpanFull()
+                            ->relationship('paymentMethod', 'name')
+                            ->required()
+                            ->label(__('Payment Method')),
+
+                        Select::make('coupon_id')
+                            ->columnSpanFull()
+                            ->relationship('coupon', 'id')
+                            ->label(__('Coupon')),
+
+                        Forms\Components\TextInput::make('tax_percentage')
+                            ->required()
+                            ->numeric()
+                            ->default(self::getTaxPercentage())
+                            ->live()
+                            ->afterStateUpdated(function (Get $get, Forms\Set $set) {
+                                $subtotal = collect($get('items'))->sum(fn ($item) => $item['subtotal'] ?? 0);
+                                $taxPercentage = $get('tax_percentage') ?? 0;
+                                $taxAmount = ($subtotal * $taxPercentage) / 100;
+                                $shippingCost = $get('shipping_cost') ?? 0;
+                                $total = $subtotal + $taxAmount + $shippingCost;
+
+                                $set('subtotal', $subtotal);
+                                $set('tax_amount', $taxAmount);
+                                $set('total', $total);
+                            })
+                            ->label(__('Tax Percentage')),
+
+                        Forms\Components\TextInput::make('tax_amount')
+                            ->numeric()
+                            ->disabled()
+                            ->label(__('Tax Amount')),
+
+                        Forms\Components\TextInput::make('subtotal')
+                            ->numeric()
+                            ->disabled()
+                            ->label(__('Subtotal')),
+
+                        Forms\Components\TextInput::make('total')
+                            ->numeric()
+                            ->disabled()
+                            ->label(__('Total')),
+                    ])->columns(2),
+            ])->columnSpanFull()
+        ]);
+    }
+
+
+    public static function form2(Form $form): Form
+    {
         return $form
             ->schema([
                 Select::make('user_id')
@@ -282,6 +447,10 @@ class OrderResource extends Resource
                     ->hidden(fn (Get $get) => $get('user_id'))
                     ->relationship('contact', 'name')
                     ->label(__('contact_id')),
+
+                Forms\Components\TextInput::make('status')
+                    ->required()
+                    ->label(__('status')),
 
                 Select::make('shipping_type_id')
                     ->relationship('shippingType', 'name')
@@ -342,14 +511,19 @@ class OrderResource extends Resource
                             ->options(Bundle::pluck('name', 'id'))
                             ->searchable()
                             ->reactive()
-                            ->afterStateUpdated(fn ($state, callable $set) => $set('price_per_unit', Bundle::find($state)?->price ?? 0)),
+                            ->afterStateUpdated(fn ($state, Forms\Set $set) =>
+                            $set('price_per_unit', Bundle::find($state)?->price ?? 0)
+                            ),
 
                         Select::make('product_id')
                             ->label(__('Product'))
                             ->options(Product::pluck('name', 'id'))
                             ->searchable()
-                            ->reactive()
-                            ->afterStateUpdated(fn ($state, callable $set) => $set('color_id', null)), // Reset color when product changes
+                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                                $set('color_id', null); // Reset color when product changes
+                                $set('price_per_unit', Product::find($state)?->price ?? 0); // Set price based on product
+                            })
+                            ->reactive(),
 
                         Select::make('color_id')
                             ->label(__('Color'))
@@ -379,7 +553,6 @@ class OrderResource extends Resource
                         TextInput::make('quantity')
                             ->label(__('Quantity'))
                             ->numeric()
-                            ->default(1)
                             ->minValue(1)
                             ->live()
                             ->afterStateUpdated(fn ($state, callable $set, Get $get) =>
@@ -387,48 +560,61 @@ class OrderResource extends Resource
                             ),
 
                         TextInput::make('price_per_unit')
+                            ->default(fn (Get $get) => Product::find($get('../product_id'))?->id ?? 0) // Get price based on product_id
                             ->readOnly()
                             ->label(__('Price per Unit'))
                             ->numeric(),
+
 
                         TextInput::make('subtotal')
                             ->readOnly()
                             ->label(__('Subtotal'))
                             ->numeric(),
                     ])
-                  ->columnSpanFull()
+                    ->columnSpanFull()
                     ->collapsible(),
 
                 Forms\Components\TextInput::make('tax_percentage')
                     ->numeric()
                     ->default(self::getTaxPercentage())
-                    ->disabled()
-                    ->label(__('tax_percentage')),
+                    ->live()
+                    ->afterStateUpdated(function (Get $get, Forms\Set $set) {
+                        $subtotal = collect($get('items'))
+                            ->sum(fn ($item) => $item['subtotal'] ?? 0);
+
+                        $taxPercentage = $get('tax_percentage') ?? 0;
+                        $taxAmount = ($subtotal * $taxPercentage) / 100;
+                        $shippingCost = $get('shipping_cost') ?? 0;
+                        $total = $subtotal + $taxAmount + $shippingCost;
+
+                        $set('subtotal', $subtotal);
+                        $set('tax_amount', $taxAmount);
+                        $set('total', $total);
+                    })
+                    ->label(__('Tax Percentage')),
 
                 Forms\Components\TextInput::make('tax_amount')
                     ->numeric()
                     ->disabled()
-                    ->label(__('tax_amount')),
+                    ->label(__('Tax Amount')),
 
                 Forms\Components\TextInput::make('subtotal')
                     ->numeric()
                     ->disabled()
-                    ->label(__('subtotal')),
+                    ->label(__('Subtotal')),
 
                 Forms\Components\TextInput::make('total')
                     ->numeric()
                     ->disabled()
-                    ->label(__('total')),
-
-                Forms\Components\TextInput::make('status')
-                    ->required()
-                    ->label(__('status')),
+                    ->label(__('Total')),
 
                 Forms\Components\Textarea::make('notes')
                     ->columnSpanFull()
                     ->label(__('notes')),
             ]);
     }
+
+
 
     private static function updateShippingCost(callable $set, $shippingTypeId, $cityId, $governorateId, $countryId): void
     {
