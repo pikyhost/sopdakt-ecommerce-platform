@@ -14,10 +14,6 @@ class Contact extends Model
         'name',
         'phone',
         'email',
-        'country_id',
-        'governorate_id',
-        'city_id',
         'address',
-        'notes',
     ];
 }
