@@ -218,12 +218,7 @@
 						<a href="wishlist.html" class="header-icon" title="wishlist"><i class="icon-wishlist-2"></i></a>
 
 						<div class="dropdown cart-dropdown">
-							<a href="#" title="Cart" class="dropdown-toggle dropdown-arrow cart-toggle" role="button"
-								data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static">
-								<i class="minicart-icon"></i>
-								<span class="cart-count badge-circle">3</span>
-							</a>
-
+                            @livewire('cart.cart-icon')
 
 							<div class="cart-overlay"></div>
 

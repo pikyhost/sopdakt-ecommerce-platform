@@ -17,12 +17,28 @@ class AddToCartAction extends Component
     public $product;
     public ?int $sizeId = null;
     public ?int $colorId = null;
-    public $quantity = 1;
-    public $showModal = false;
+    public int $quantity = 1;
+    public bool $showModal = false;
 
     public function mount(Product $product)
     {
         $this->product = $product;
+    }
+
+    public function rules()
+    {
+        return [
+            'colorId' => [
+                function ($attribute, $value, $fail) {
+                    if ($this->product->productColors->isNotEmpty() && empty($value)) {
+                        $fail('The color selection is required.');
+                    }
+                }
+            ],
+
+            'sizeId' => ['required_with:colorId', 'exists:sizes,id'],
+            'quantity' => 'required|integer|min:1'
+        ];
     }
 
     public function openModal()
@@ -37,24 +53,14 @@ class AddToCartAction extends Component
 
     public function addToCart()
     {
-        // Validate input
-        $this->validate([
-            'sizeId' => 'required',
-            'colorId' => 'required',
-            'quantity' => 'required|integer|min:1',
-        ], [
-            'sizeId.required' => 'Please select a size.',
-            'colorId.required' => 'Please select a color.',
-            'quantity.required' => 'Please enter a quantity.',
-            'quantity.integer' => 'Quantity must be a valid number.',
-            'quantity.min' => 'Quantity must be at least 1.',
-        ]);
+        $this->validate();
 
         $user = Auth::user();
         $sessionId = session()->getId();
         $availableStock = $this->product->quantity;
+        $pricePerUnit = (float) $this->product->discount_price_for_current_country; // Ensure valid decimal
 
-        // Stock validation
+        // Check stock availability
         if ($availableStock <= 0) {
             $this->addError('cart_error', 'This product is out of stock!');
             return;
@@ -88,7 +94,7 @@ class AddToCartAction extends Component
 
             $cartItem->update([
                 'quantity' => $newQuantity,
-                'subtotal' => $newQuantity * (float) $this->product->discount_price_for_current_country,
+                'subtotal' => $newQuantity * $pricePerUnit,
             ]);
         } else {
             CartItem::create([
@@ -97,16 +103,22 @@ class AddToCartAction extends Component
                 'size_id' => $this->sizeId,
                 'color_id' => $this->colorId,
                 'quantity' => $this->quantity,
-                'price_per_unit' => (float) $this->product->discount_price_for_current_country,
-                'subtotal' => $this->quantity * (float) $this->product->discount_price_for_current_country,
+                'price_per_unit' => $pricePerUnit, // Ensure it's a float
+                'subtotal' => $this->quantity * $pricePerUnit,
             ]);
         }
 
-        // Reduce product stock
+        // Reduce product stock safely
         $this->product->decrement('quantity', $this->quantity);
 
         session()->flash('cart_success', 'Product added to cart successfully!');
         $this->closeModal();
+        $this->dispatch('cartUpdated');
+    }
+
+    private function availableSizes()
+    {
+        return $this->product->productColors->where('id', $this->colorId)->first()?->sizes ?? [];
     }
 
     public function render()

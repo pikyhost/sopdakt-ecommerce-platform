@@ -223,13 +223,9 @@
 						<a href="wishlist.html" class="header-icon" title="wishlist"><i class="icon-wishlist-2"></i></a>
 
 						<div class="dropdown cart-dropdown">
-							<a href="#" title="Cart" class="dropdown-toggle dropdown-arrow cart-toggle" role="button"
-								data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static">
-								<i class="minicart-icon"></i>
-								<span class="cart-count badge-circle">3</span>
-							</a>
+                            @livewire('cart.cart-icon')
 
-							<div class="cart-overlay"></div>
+                            <div class="cart-overlay"></div>
 
 							<div class="dropdown-menu mobile-cart">
 								<a href="#" title="Close (Esc)" class="btn-close">×</a>
@@ -655,6 +651,7 @@
 										</li>
 									</ul>
 
+                                    @if($product->productColors->isNotEmpty())
                                     <div class="product-filters-container custom-product-filters">
                                         <!-- Size Selection -->
                                         <div>
@@ -672,6 +669,7 @@
                                                 @endforeach
                                             </ul>
                                         </div>
+                                        @endif
 
                                         <style>
                                             .size-badge-list {
@@ -700,22 +698,25 @@
 
 
                                         <!-- Color Selection -->
-                                        <div class="product-single-filter">
-                                            <label>{{ __('Color:') }}</label>
-                                            <ul class="config-size-list config-color-list">
-                                                @foreach($product->productColors as $productColor)
-                                                    <li>
-                                                        <a href="javascript:;"
-                                                           class="d-flex align-items-center justify-content-center p-0 color-swatch"
-                                                           style="background-color: {{ $productColor->color->code }}; border: 2px solid #ddd;"
-                                                           title="{{ $productColor->color->name }}"
-                                                           data-image="{{ asset('storage/' . $productColor->image) }}">
-                                                            &nbsp;
-                                                        </a>
-                                                    </li>
-                                                @endforeach
-                                            </ul>
-                                        </div>
+                                        @if($product->productColors->isNotEmpty())
+                                            <div class="product-single-filter">
+                                                <label>{{ __('Color:') }}</label>
+                                                <ul class="config-size-list config-color-list">
+                                                    @foreach($product->productColors as $productColor)
+                                                        <li>
+                                                            <a href="javascript:;"
+                                                               class="d-flex align-items-center justify-content-center p-0 color-swatch"
+                                                               style="background-color: {{ $productColor->color->code }}; border: 2px solid #ddd;"
+                                                               title="{{ $productColor->color->name }}"
+                                                               data-image="{{ asset('storage/' . $productColor->image) }}">
+                                                                &nbsp;
+                                                            </a>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        @endif
+
                                     </div>
 
 

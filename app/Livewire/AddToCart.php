@@ -25,11 +25,22 @@ class AddToCart extends Component
 
     protected ?Cart $cart = null;
 
-    protected $rules = [
-        'sizeId' => 'required|exists:sizes,id',
-        'colorId' => 'required|exists:colors,id',
-        'quantity' => 'required|integer|min:1'
-    ];
+    public function rules()
+    {
+        return [
+            'colorId' => [
+                function ($attribute, $value, $fail) {
+                    if (\App\Models\Product::find($this->productId)->productColors->isNotEmpty() && empty($value)) {
+                        $fail('The color selection is required.');
+                    }
+                }
+            ],
+
+            'sizeId' => ['required_with:colorId', 'exists:sizes,id'],
+
+            'quantity' => 'required|integer|min:1'
+        ];
+    }
 
     public function mount(int $productId): void
     {
