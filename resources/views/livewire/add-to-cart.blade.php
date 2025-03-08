@@ -34,6 +34,7 @@
         <div class="product-single-qty">
             <input type="number" min="1" step="1" wire:model="quantity"
                    class="horizontal-quantity form-control w-20 text-center border-gray-300 rounded-md shadow-sm">
+            @error('quantity')  <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
         </div>
 
         <!-- Cart Error Message -->

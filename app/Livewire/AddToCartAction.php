@@ -17,28 +17,12 @@ class AddToCartAction extends Component
     public $product;
     public ?int $sizeId = null;
     public ?int $colorId = null;
-    public int $quantity = 1;
+    public $quantity;
     public bool $showModal = false;
 
     public function mount(Product $product)
     {
         $this->product = $product;
-    }
-
-    public function rules()
-    {
-        return [
-            'colorId' => [
-                function ($attribute, $value, $fail) {
-                    if ($this->product->productColors->isNotEmpty() && empty($value)) {
-                        $fail('The color selection is required.');
-                    }
-                }
-            ],
-
-            'sizeId' => ['required_with:colorId', 'exists:sizes,id'],
-            'quantity' => 'required|integer|min:1'
-        ];
     }
 
     public function openModal()
@@ -53,14 +37,39 @@ class AddToCartAction extends Component
 
     public function addToCart()
     {
-        $this->validate();
+        // Clear previous errors
+        $this->resetErrorBag();
 
-        $user = Auth::user();
-        $sessionId = session()->getId();
-        $availableStock = $this->product->quantity;
-        $pricePerUnit = (float) $this->product->discount_price_for_current_country; // Ensure valid decimal
+        if (!$this->quantity || $this->quantity < 1) {
+            $this->addError('quantity', 'Please enter a valid quantity.');
+            return;
+        }
 
-        // Check stock availability
+        $product = $this->product;
+
+        // Check if the product has colors
+        $hasColors = $product->productColors()->exists();
+
+        // If the product has colors, ensure color is selected
+        if ($hasColors && !$this->colorId) {
+            $this->addError('colorId', 'Please select a color.');
+            return;
+        }
+
+        // Check if the selected color has available sizes
+        if ($this->colorId) {
+            $color = $product->productColors()->where('color_id', $this->colorId)->first();
+            $hasSizes = $color && $color->sizes()->exists();
+
+            // If the selected color has sizes, ensure size is selected
+            if ($hasSizes && !$this->sizeId) {
+                $this->addError('sizeId', 'Please select a size.');
+                return;
+            }
+        }
+
+        // Stock and quantity validation
+        $availableStock = $product->quantity;
         if ($availableStock <= 0) {
             $this->addError('cart_error', 'This product is out of stock!');
             return;
@@ -70,6 +79,10 @@ class AddToCartAction extends Component
             $this->addError('cart_error', 'The requested quantity exceeds available stock!');
             return;
         }
+
+        $user = Auth::user();
+        $sessionId = session()->getId();
+        $pricePerUnit = (float) $this->product->discount_price_for_current_country; // Ensure valid decimal
 
         // Find or create cart
         $cart = Cart::firstOrCreate([
