@@ -87,11 +87,6 @@ class Product extends Model implements HasMedia
         return $this->belongsToMany(ShippingType::class)->withPivot(['shipping_cost', 'status']);
     }
 
-    public function shippingGovernorates()
-    {
-        return $this->belongsToMany(Governorate::class, 'product_governorate')->withPivot(['shipping_cost', 'status']);
-    }
-
     public function specialPrices()
     {
         return $this->hasMany(ProductSpecialPrice::class);
