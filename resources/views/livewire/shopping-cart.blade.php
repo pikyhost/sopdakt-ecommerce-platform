@@ -13,17 +13,23 @@
                         <th>Price</th>
                         <th>Quantity</th>
                         <th class="text-right">Subtotal</th>
-                        <th class="text-center">Action</th>
                     </tr>
                     </thead>
                     <tbody>
                     @forelse ($cartItems as $cartItem)
                         <tr>
                             <td>
-                                <figure>
-                                    <img src="{{ $cartItem['product']['feature_product_image_url'] ?? $cartItem['bundle']['feature_image_url'] ?? '#' }}"
-                                         alt="Product Image"
-                                         style="width: 50px; height: 50px; object-fit: cover;">
+                                <figure class="product-image-container">
+                                    <!-- Product Image Link -->
+                                    <a href="product.html" class="product-image">
+                                        <img src="{{ $cartItem['product']['feature_product_image_url'] ?? $cartItem['bundle']['feature_image_url'] ?? '#' }}"
+                                             alt="Product Image">
+                                    </a>
+
+                                    <!-- Remove Button -->
+                                    <a href="javascript:void(0);" class="btn-remove icon-cancel" title="Remove Product"
+                                       wire:click.prevent="removeCartItem({{ $cartItem['id'] }})">
+                                    </a>
                                 </figure>
                             </td>
                             <td>
@@ -73,11 +79,6 @@
 
                             <td class="text-right">
                                 $<span wire:key="subtotal-{{ $cartItem['id'] }}">{{ number_format($cartItem['subtotal'], 2) }}</span>
-                            </td>
-                            <td class="text-center">
-                                <button wire:click="removeCartItem({{ $cartItem['id'] }})" style="background: none; border: none; color: red; font-size: 16px; cursor: pointer;">
-                                    ❌
-                                </button>
                             </td>
                         </tr>
                     @empty

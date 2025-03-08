@@ -15,32 +15,15 @@ use Illuminate\Support\Facades\Session;
 class AddToCart extends Component
 {
     public int $productId;
-    public int $quantity = 1;
+    public $quantity;
     public int $cartTotalQuantity = 0;
     public int $productCartQuantity = 0;
     public array $cartItems = [];
     public ?int $sizeId = null;
     public ?int $colorId = null;
-    public bool $isDisabled = true; // Button disable state
+    public bool $isDisabled = true;
 
     protected ?Cart $cart = null;
-
-    public function rules()
-    {
-        return [
-            'colorId' => [
-                function ($attribute, $value, $fail) {
-                    if (\App\Models\Product::find($this->productId)->productColors->isNotEmpty() && empty($value)) {
-                        $fail('The color selection is required.');
-                    }
-                }
-            ],
-
-            'sizeId' => ['required_with:colorId', 'exists:sizes,id'],
-
-            'quantity' => 'required|integer|min:1'
-        ];
-    }
 
     public function mount(int $productId): void
     {
@@ -92,13 +75,39 @@ class AddToCart extends Component
 
     public function addToCart(): void
     {
-        $this->validate();
+        // Clear previous errors
+        $this->resetErrorBag();
 
-        $product = Product::findOrFail($this->productId);
+        if (!$this->quantity || $this->quantity < 1) {
+            $this->addError('quantity', 'Please enter a valid quantity.');
+            return;
+        }
 
+        $product = Product::find($this->productId);
+
+        // Check if the product has colors
+        $hasColors = $product->productColors()->exists();
+
+        // If the product has colors, ensure color is selected
+        if ($hasColors && !$this->colorId) {
+            $this->addError('colorId', 'Please select a color.');
+            return;
+        }
+
+        // Check if the selected color has available sizes
+        if ($this->colorId) {
+            $color = $product->productColors()->where('color_id', $this->colorId)->first();
+            $hasSizes = $color && $color->sizes()->exists();
+
+            // If the selected color has sizes, ensure size is selected
+            if ($hasSizes && !$this->sizeId) {
+                $this->addError('sizeId', 'Please select a size.');
+                return;
+            }
+        }
+
+        // Stock and quantity validation
         $availableStock = $product->quantity;
-
-        // Stock validation
         if ($availableStock <= 0) {
             $this->addError('cart_error', 'This product is out of stock!');
             return;
