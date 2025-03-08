@@ -1,5 +1,6 @@
 <div>
     <!-- Color Selection (Comes First) -->
+    @if(\App\Models\Product::find($productId)->productColors->isNotEmpty())
     <div class="mb-3">
         <label for="color" class="block text-sm font-medium text-gray-700">Select Color</label>
         <select wire:model.live="colorId" id="color" class="form-control border-gray-300 rounded-md shadow-sm">
@@ -23,6 +24,8 @@
             </select>
             @error('sizeId') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
         </div>
+    @endif
+
     @endif
 
     <!-- Product Action -->

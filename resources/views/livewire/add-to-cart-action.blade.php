@@ -17,6 +17,7 @@
                     </div>
 
                     <div class="modal-body">
+                        @if($product->productColors->isNotEmpty())
                         <!-- Color Selection -->
                         <div class="mb-3">
                             <label for="color" class="form-label fw-bold">Select Color</label>
@@ -40,6 +41,8 @@
                             </select>
                             @error('sizeId') <small class="text-danger">{{ $message }}</small> @enderror
                         </div>
+
+                        @endif
 
                         <!-- Quantity Input -->
                         <div class="mb-3">
