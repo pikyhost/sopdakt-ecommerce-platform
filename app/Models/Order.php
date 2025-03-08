@@ -18,6 +18,44 @@ class Order extends Model
         'status' => OrderStatus::class
     ];
 
+    protected static function booted()
+    {
+        static::created(function (Order $order) {
+            foreach ($order->items as $item) {
+                if ($item->product_id) {
+                    // Deduct from the products table
+                    $product = Product::find($item->product_id);
+                    if ($product) {
+                        $product->decrement('quantity', $item->quantity);
+
+                        // Deduct from inventory table
+                        $product->inventory()->decrement('quantity', $item->quantity);
+                    }
+                }
+            }
+        });
+    }
+
+    public function setStatusAttribute($value)
+    {
+        // If order is being canceled or refunded, restore stock
+        if (in_array($this->status, ['pending', 'preparing', 'shipping']) &&
+            in_array($value, ['cancelled', 'refund'])) {
+
+            foreach ($this->items as $item) {
+                if ($item->product_id) {
+                    $product = Product::find($item->product_id);
+                    if ($product) {
+                        $product->increment('quantity', $item->quantity);
+                        $product->inventory()->increment('quantity', $item->quantity);
+                    }
+                }
+            }
+        }
+
+        $this->attributes['status'] = $value;
+    }
+
     /**
      * Get the user who placed the order.
      */

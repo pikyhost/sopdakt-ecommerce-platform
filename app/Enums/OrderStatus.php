@@ -37,8 +37,8 @@ enum OrderStatus: string implements HasColor, HasIcon, HasLabel
             self::Shipping  => 'primary',
             self::Delayed   => 'danger',
             self::Refund    => 'gray',
-            self::Cancelled => 'danger',
             self::Completed => 'success',
+            default => 'danger',
         };
     }
 
@@ -50,7 +50,7 @@ enum OrderStatus: string implements HasColor, HasIcon, HasLabel
             self::Shipping  => 'heroicon-m-truck',
             self::Delayed   => 'heroicon-m-exclamation-circle',
             self::Refund    => 'heroicon-m-arrow-uturn-left',
-            self::Cancelled => 'heroicon-m-exclamation-circle',
+            self::Cancelled => 'heroicon-o-x-circle',
             self::Completed => 'heroicon-m-check-badge',
         };
     }

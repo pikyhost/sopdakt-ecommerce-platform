@@ -329,17 +329,40 @@ class OrderResource extends Resource
 
     public static function updateOrderStatus($order, OrderStatus $status)
     {
+        $previousStatus = OrderStatus::tryFrom($order->status);
+
+        // Restore stock when an order is cancelled or refunded
+        if (
+            in_array($previousStatus, [OrderStatus::Pending, OrderStatus::Preparing, OrderStatus::Shipping]) &&
+            in_array($status, [OrderStatus::Cancelled, OrderStatus::Refund])
+        ) {
+            foreach ($order->items as $item) {
+                if ($item->product_id) {
+                    $product = Product::find($item->product_id);
+                    if ($product) {
+                        $product->increment('quantity', $item->quantity);
+                        $product->inventory()->increment('quantity', $item->quantity);
+                    }
+                }
+            }
+        }
+
+        // Update order status
         $order->update(['status' => $status->value]);
 
-        // Trigger JT Express only when the status is set to "Confirmed"
+        // Handle JT Express when the status is set to "Shipping"
         if ($status === OrderStatus::Shipping) {
             $JtExpressOrderData = self::prepareJtExpressOrderData($order);
             $jtExpressResponse = app(JtExpressService::class)->createOrder($JtExpressOrderData);
             self::updateJtExpressOrder($order, 'pending', $JtExpressOrderData, $jtExpressResponse);
-            Mail::to($order->user->email ?? $order->contact->email)->queue(new OrderConfirmationMail($order));
+
+            // Send order confirmation email
+            $email = $order->user->email ?? $order->contact->email;
+            if ($email) {
+                Mail::to($email)->queue(new OrderConfirmationMail($order));
+            }
         }
     }
-
 
     private static function prepareJtExpressOrderData($order): array
     {
@@ -463,62 +486,19 @@ class OrderResource extends Resource
                             ->columnSpan('full'),
                     ]),
 
-                Step::make('Shipping Information')
-                    ->schema([
-                        Select::make('shipping_type_id')
-                            ->relationship('shippingType', 'name')
-                            ->required()
-                            ->label(__('Shipping Type'))
-                            ->live()
-                            ->afterStateUpdated(fn ($state, callable $set, Get $get) =>
-                            self::updateShippingCost($set, $state, $get('city_id'), $get('governorate_id'), $get('country_id'))
-                            ),
-
-                        Select::make('country_id')
-                            ->label(__('Country'))
-                            ->options(Country::pluck('name', 'id'))
-                            ->live()
-                            ->afterStateUpdated(function (callable $set, Get $get) {
-                                $set('governorate_id', null);
-                                $set('city_id', null);
-                                self::updateShippingCost($set, $get('shipping_type_id'), null, null, $get('country_id'));
-                            }),
-
-                        Select::make('governorate_id')
-                            ->label(__('Governorate'))
-                            ->options(fn (Get $get) => Governorate::where('country_id', $get('country_id'))->pluck('name', 'id'))
-                            ->live()
-                            ->afterStateUpdated(fn ($state, callable $set, Get $get) =>
-                            self::updateShippingCost($set, $get('shipping_type_id'), null, $state, $get('country_id'))
-                            ),
-
-                        Select::make('city_id')
-                            ->label(__('City'))
-                            ->options(fn (Get $get) => City::where('governorate_id', $get('governorate_id'))->pluck('name', 'id'))
-                            ->live()
-                            ->placeholder(fn (Get $get) => empty($get('governorate_id')) ? 'Select a governorate first' : 'Select a city')
-                            ->afterStateUpdated(fn ($state, callable $set, Get $get) =>
-                            self::updateShippingCost($set, $get('shipping_type_id'), $state, $get('governorate_id'), $get('country_id'))
-                            ),
-
-                        Forms\Components\TextInput::make('shipping_cost')
-                            ->numeric()
-                            ->disabled()
-                            ->label(__('shipping_cost')),
-                    ]),
-
                 Step::make('Order Items')
                     ->schema([
                         Forms\Components\Repeater::make('items')
                             ->relationship('items')
                             ->schema([
                                 Select::make('product_id')
+                                    ->columnSpanFull()
                                     ->label(__('Product'))
                                     ->options(Product::pluck('name', 'id'))
                                     ->searchable()
                                     ->reactive()
                                     ->afterStateUpdated(fn ($state, Forms\Set $set) =>
-                                    $set('price_per_unit', Product::find($state)?->price ?? '')
+                                    $set('price_per_unit', Product::find($state)?->price ?? 0)
                                     ),
 
                                 TextInput::make('quantity')
@@ -531,7 +511,7 @@ class OrderResource extends Resource
                                     ),
 
                                 TextInput::make('price_per_unit')
-                                    ->default(fn (Get $get) => Product::find($get('../product_id'))?->id ?? 0) // Get price based on product_id
+                                    ->default(fn (Get $get) => Product::find($get('../product_id'))?->price ?? 0)
                                     ->readOnly()
                                     ->label(__('Price per Unit'))
                                     ->numeric(),
@@ -541,9 +521,88 @@ class OrderResource extends Resource
                                     ->label(__('Subtotal'))
                                     ->numeric(),
                             ])
-                            ->columnSpanFull()
-                            ->collapsible(),
+                            ->columns(3)
+                            ->collapsible()
+                            ->afterStateUpdated(function (Get $get, Forms\Set $set) {
+                                // Calculate subtotal
+                                $subtotal = collect($get('items') ?? [])->sum(fn ($item) => ($item['subtotal'] ?? 0));
+
+                                // Fetch tax percentage from settings
+                                $taxPercentage = Setting::first()?->tax_percentage ?? 0;
+                                $taxAmount = ($subtotal * $taxPercentage) / 100;
+
+                                // Get shipping cost
+                                $shippingCost = $get('shipping_cost') ?? 0;
+
+                                // Calculate total
+                                $total = $subtotal + $taxAmount + $shippingCost;
+
+                                // Set the values
+                                $set('subtotal', $subtotal);
+                                $set('tax_amount', $taxAmount);
+                                $set('total', $total);
+                            }),
                     ]),
+
+                Step::make('Shipping Information')
+                    ->schema([
+                        Select::make('shipping_type_id')
+                            ->relationship('shippingType', 'name')
+                            ->required()
+                            ->label(__('Shipping Type'))
+                            ->live()
+                            ->afterStateUpdated(fn ($state, callable $set, Get $get) =>
+                            self::updateShippingCost($set, $state, $get('items'), $get('city_id'), $get('governorate_id'), $get('country_id'))
+                            ),
+
+                        Select::make('country_id')
+                            ->required()
+                            ->label(__('Country'))
+                            ->options(Country::pluck('name', 'id'))
+                            ->live()
+                            ->afterStateUpdated(function (callable $set, Get $get) {
+                                $set('governorate_id', null);
+                                $set('city_id', null);
+                                self::updateShippingCost($set, $get('shipping_type_id'), $get('items'), null, null, $get('country_id'));
+
+                                // Recalculate total when shipping details change
+                                self::recalculateTotal($set, $get);
+                            }),
+
+                        Select::make('governorate_id')
+                            ->required()
+                            ->label(__('Governorate'))
+                            ->options(function (Get $get) {
+                                return Governorate::where('country_id', $get('country_id'))->pluck('name', 'id');
+                            })
+                            ->live()
+                            ->afterStateUpdated(function ($state, callable $set, Get $get) {
+                                self::updateShippingCost($set, $get('shipping_type_id'), $get('items'), null, $state, $get('country_id'));
+                                self::recalculateTotal($set, $get);
+                            }),
+
+                        Select::make('city_id')
+                            ->label(__('City'))
+                            ->options(function (Get $get) {
+                                return City::where('governorate_id', $get('governorate_id'))->pluck('name', 'id');
+                            })
+                            ->live()
+                            ->placeholder(function (Get $get) {
+                                return empty($get('governorate_id')) ? 'Select a governorate first' : 'Select a city';
+                            })
+                            ->afterStateUpdated(function ($state, callable $set, Get $get) {
+                                self::updateShippingCost($set, $get('shipping_type_id'), $get('items'), $state, $get('governorate_id'), $get('country_id'));
+                                self::recalculateTotal($set, $get);
+                            }),
+
+                        Forms\Components\TextInput::make('shipping_cost')
+                            ->numeric()
+                            ->disabled()
+                            ->label(__('Shipping Cost'))
+                            ->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
+                                self::recalculateTotal($set, $get);
+                            }),
+        ]),
 
                 // **Moved Billing Information to a separate step**
                 Step::make('Billing Information')
@@ -564,38 +623,30 @@ class OrderResource extends Resource
                             ->numeric()
                             ->default(self::getTaxPercentage())
                             ->live()
-                            ->afterStateUpdated(function (Get $get, Forms\Set $set) {
-                                $subtotal = collect($get('items'))->sum(fn ($item) => $item['subtotal'] ?? 0);
-                                $taxPercentage = $get('tax_percentage') ?? 0;
-                                $taxAmount = ($subtotal * $taxPercentage) / 100;
-                                $shippingCost = $get('shipping_cost') ?? 0;
-                                $total = $subtotal + $taxAmount + $shippingCost;
-
-                                $set('subtotal', $subtotal);
-                                $set('tax_amount', $taxAmount);
-                                $set('total', $total);
-                            })
                             ->label(__('Tax Percentage')),
 
                         Forms\Components\TextInput::make('tax_amount')
+                            ->live()
                             ->numeric()
                             ->disabled()
                             ->label(__('Tax Amount')),
 
                         Forms\Components\TextInput::make('subtotal')
+                            ->live()
                             ->numeric()
                             ->disabled()
                             ->label(__('Subtotal')),
 
                         Forms\Components\TextInput::make('total')
+                            ->live()
                             ->numeric()
                             ->disabled()
                             ->label(__('Total')),
                     ])->columns(2),
             ])->columnSpanFull()
+
         ]);
     }
-
 
     public static function form2(Form $form): Form
     {
@@ -777,26 +828,74 @@ class OrderResource extends Resource
             ]);
     }
 
-
-
-    private static function updateShippingCost(callable $set, $shippingTypeId, $cityId, $governorateId, $countryId): void
+    private static function recalculateTotal(callable $set, Get $get): void
     {
-        $shippingCost = self::calculateShippingCost($shippingTypeId, $cityId, $governorateId, $countryId);
-        $set('shipping_cost', $shippingCost);
+        $subtotal = collect($get('items'))->sum(function ($item) {
+            return $item['subtotal'] ?? 0;
+        });
+
+        $taxPercentage = Setting::first()?->tax_percentage ?? 0;
+        $taxAmount = ($subtotal * $taxPercentage) / 100;
+
+        $shippingCost = $get('shipping_cost') ?? 0;
+        $total = $subtotal + $taxAmount + $shippingCost;
+
+        $set('subtotal', $subtotal);
+        $set('tax_amount', $taxAmount);
+        $set('total', $total);
     }
 
-    private static function calculateShippingCost($shippingTypeId, $cityId = null, $governorateId = null, $countryId = null): float
+    private static function updateShippingCost(callable $set, $shippingTypeId, $items, $cityId, $governorateId, $countryId): void
     {
-        $shippingCost = 0.0;
+        $totalShippingCost = 0.0;
+
+        if (!empty($items)) {
+            foreach ($items as $item) {
+                $product = Product::find($item['product_id'] ?? null);
+                if ($product) {
+                    $totalShippingCost += self::calculateProductShippingCost($product, $cityId, $governorateId, $countryId);
+                }
+            }
+        }
 
         if ($shippingTypeId) {
             $shippingType = ShippingType::find($shippingTypeId);
-            $shippingCost += $shippingType?->shipping_cost ?? 0.0;
+            $totalShippingCost += $shippingType?->shipping_cost ?? 0.0;
         }
 
-        $locationCost = self::getLocationBasedShippingCost($cityId, $governorateId, $countryId);
+        $set('shipping_cost', $totalShippingCost);
+    }
 
-        return $shippingCost + $locationCost;
+    private static function calculateProductShippingCost(Product $product, $cityId, $governorateId, $countryId): float
+    {
+        $shippingCost = 0.0;
+        $productShippingCost = self::getProductShippingCost($product, $cityId, $governorateId, $countryId);
+
+        if ($productShippingCost !== null) {
+            return $productShippingCost;
+        }
+
+        // If no product-specific shipping cost, use location-based cost
+        return self::getLocationBasedShippingCost($cityId, $governorateId, $countryId);
+    }
+
+    private static function getProductShippingCost(Product $product, $cityId, $governorateId, $countryId): ?float
+    {
+        $shippingCosts = $product->shippingCosts()->get();
+
+        if ($cityId && $shippingCosts->where('city_id', $cityId)->isNotEmpty()) {
+            return $shippingCosts->where('city_id', $cityId)->first()->cost;
+        }
+
+        if ($governorateId && $shippingCosts->where('governorate_id', $governorateId)->isNotEmpty()) {
+            return $shippingCosts->where('governorate_id', $governorateId)->first()->cost;
+        }
+
+        if ($countryId && $shippingCosts->where('country_id', $countryId)->isNotEmpty()) {
+            return $shippingCosts->where('country_id', $countryId)->first()->cost;
+        }
+
+        return $product->cost ?? null;
     }
 
     private static function getLocationBasedShippingCost($cityId, $governorateId, $countryId): float
@@ -804,21 +903,21 @@ class OrderResource extends Resource
         if ($cityId) {
             $city = City::find($cityId);
             if ($city && $city->cost !== null) {
-                return (float) $city->cost;
+                return (float)$city->cost;
             }
         }
 
         if ($governorateId) {
             $governorate = Governorate::find($governorateId);
             if ($governorate && $governorate->cost !== null) {
-                return (float) $governorate->cost;
+                return (float)$governorate->cost;
             }
         }
 
         if ($countryId) {
             $country = Country::find($countryId);
             if ($country && $country->cost !== null) {
-                return (float) $country->cost;
+                return (float)$country->cost;
             }
         }
 
