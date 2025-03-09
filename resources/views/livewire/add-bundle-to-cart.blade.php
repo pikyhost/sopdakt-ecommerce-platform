@@ -231,24 +231,31 @@
                                     </div>
                                 @endfor
                             @endforeach
+                                @if ($errors->has('cart_bundle_error'))
+                                    <div class="alert alert-danger">
+                                        {{ $errors->first('cart_bundle_error') }}
+                                    </div>
+                                @endif
                         </div>
                     </div>
 
                     <!-- 🟡 Footer -->
-                    <div class="modal-footer d-flex justify-content-between px-5 py-4">
-                        <button class="btn btn-outline-secondary btn-lg rounded-pill px-5 py-3 fs-5 fw-bold"
-                                wire:click="$set('showModal', false)">
-                            <i class="fas fa-times me-2"></i> {{ __('Cancel') }}
-                        </button>
-                        <button wire:click="addToCart"
-                                wire:loading.attr="disabled"
-                                wire:target="addToCart"
-                                class="btn btn-primary btn-lg rounded-pill d-flex align-items-center px-5 py-3 fs-5 fw-bold">
-                            <i class="fas fa-cart-plus me-2"></i> {{ __('Add to Cart') }}
-                            <span wire:loading wire:target="addToCart" class="ms-2">
-                            <i class="fas fa-spinner fa-spin"></i>
-                        </span>
-                        </button>
+                    <div class="modal-footer d-flex flex-column align-items-center px-5 py-4">
+                        <div class="d-flex justify-content-between w-100">
+                            <button class="btn btn-outline-secondary btn-lg rounded-pill px-5 py-3 fs-5 fw-bold"
+                                    wire:click="$set('showModal', false)">
+                                <i class="fas fa-times me-2"></i> {{ __('Cancel') }}
+                            </button>
+                            <button wire:click="addToCart"
+                                    wire:loading.attr="disabled"
+                                    wire:target="addToCart"
+                                    class="btn btn-primary btn-lg rounded-pill d-flex align-items-center px-5 py-3 fs-5 fw-bold">
+                                <i class="fas fa-cart-plus me-2"></i> {{ __('Add to Cart') }}
+                                <span wire:loading wire:target="addToCart" class="ms-2">
+                <i class="fas fa-spinner fa-spin"></i>
+            </span>
+                            </button>
+                        </div>
                     </div>
 
                 </div>

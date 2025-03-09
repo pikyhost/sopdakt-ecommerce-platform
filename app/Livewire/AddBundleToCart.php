@@ -110,7 +110,7 @@ class AddBundleToCart extends Component
     {
         $this->validate();
         if (!$this->selectedBundle || ($this->product->quantity ?? 0) <= 0) {
-            $this->addError('cart_error', 'This product is out of stock!');
+            $this->addError('cart_bundle_error', 'This product is out of stock!');
             return;
         }
 

@@ -14,14 +14,14 @@ class CartIcon extends Component
     public $cartItems = [];
     public $subtotal = 0;
 
-    protected $listeners = ['cartUpdated' => 'loadCart'];
+    protected $listeners = ['cartUpdated' => 'updateCart'];
 
     public function mount()
     {
-        $this->loadCart();
+        $this->updateCart();
     }
 
-    public function loadCart()
+    public function updateCart()
     {
         $cart = $this->getCart();
 
@@ -37,15 +37,9 @@ class CartIcon extends Component
             : Cart::where('session_id', Session::getId())->with('items')->first();
     }
 
-    public function removeCartItem($id)
+    public function removeFromCart($itemId)
     {
-        $cart = $this->getCart();
-
-        if (!$cart) {
-            return;
-        }
-
-        $cartItem = CartItem::where('cart_id', $cart->id)->find($id);
+        $cartItem = CartItem::find($itemId);
 
         if (!$cartItem) {
             return;
@@ -59,7 +53,7 @@ class CartIcon extends Component
             $cartItem->delete();
         }
 
-        $this->loadCart(); // Refresh the cart items
+        $this->updateCart(); // Refresh the cart items
         $this->dispatch('cartUpdated'); // Notify frontend of the update
     }
 
