@@ -17,12 +17,23 @@ class AddToCartAction extends Component
     public $product;
     public ?int $sizeId = null;
     public ?int $colorId = null;
-    public $quantity;
+    public $quantity= 1;
     public bool $showModal = false;
 
     public function mount(Product $product)
     {
         $this->product = $product;
+    }
+    public function increaseQuantity()
+    {
+        $this->quantity++;
+    }
+
+    public function decreaseQuantity()
+    {
+        if ($this->quantity > 1) {
+            $this->quantity--;
+        }
     }
 
     public function openModal()

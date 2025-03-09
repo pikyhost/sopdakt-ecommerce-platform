@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Session;
 class AddToCart extends Component
 {
     public int $productId;
-    public $quantity;
+    public $quantity = 1;
     public int $cartTotalQuantity = 0;
     public int $productCartQuantity = 0;
     public array $cartItems = [];
@@ -152,6 +152,17 @@ class AddToCart extends Component
         session()->flash('success', 'Product added to cart!');
     }
 
+    public function increaseQuantity()
+    {
+        $this->quantity++;
+    }
+
+    public function decreaseQuantity()
+    {
+        if ($this->quantity > 1) {
+            $this->quantity--;
+        }
+    }
 
     public function render()
     {
