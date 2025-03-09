@@ -54,13 +54,13 @@
         <!-- Cart Actions -->
         <div class="d-flex flex-column flex-md-row align-items-center gap-3 mt-4">
             <button wire:click="addToCart" class="btn btn-primary btn-lg d-flex align-items-center px-4 py-3" wire:loading.attr="disabled" wire:target="addToCart">
-                <i class="fa fa-shopping-cart me-2"></i> Add to Cart ({{ $cartTotalQuantity }})
+                <i class="fa fa-shopping-cart me-2"></i> Add to Cart
                 <span wire:loading wire:target="addToCart" class="ms-2">
                     <i class="fa fa-spinner fa-spin"></i>
                 </span>
             </button>
             <a href="{{ route('cart.index') }}" class="btn btn-dark btn-lg px-4 py-3">
-                <i class="fa fa-shopping-bag me-2"></i> View Cart
+                <i class="fa fa-shopping-bag me-2"></i> View Cart ({{ $cartTotalQuantity }})
             </a>
         </div>
 
