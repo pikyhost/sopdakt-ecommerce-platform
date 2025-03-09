@@ -292,7 +292,7 @@ class ProductResource extends Resource
                             ->schema([
                                 SpatieMediaLibraryFileUpload::make('feature_product_image')
                                     ->label(__('Feature Image'))
-
+                                    ->required()
                                     ->collection('feature_product_image')
                                     ->image()
                                     ->maxSize(5120),
