@@ -14,20 +14,20 @@ class CartIcon extends Component
     public $cartItems = [];
     public $subtotal = 0;
 
-    protected $listeners = ['cartUpdated' => 'updateCart'];
+    protected $listeners = ['cartUpdated' => 'loadCart'];
 
     public function mount()
     {
-        $this->updateCart();
+        $this->loadCart();
     }
 
-    public function updateCart()
+    public function loadCart()
     {
         $cart = $this->getCart();
 
         $this->cartCount = $cart?->items()->sum('quantity') ?? 0;
         $this->cartItems = $cart?->items()->with(['product', 'size', 'color'])->get() ?? [];
-        $this->subtotal = $cart?->items()->sum('subtotal') ?? 0; // Fix: Sum subtotal of all cart items
+        $this->subtotal = $cart?->items()->sum('subtotal') ?? 0;
     }
 
     private function getCart()
@@ -37,14 +37,30 @@ class CartIcon extends Component
             : Cart::where('session_id', Session::getId())->with('items')->first();
     }
 
-    public function removeFromCart($itemId)
+    public function removeCartItem($id)
     {
-        $cartItem = CartItem::find($itemId);
-        if ($cartItem) {
-            $cartItem->delete();
-            $this->updateCart();
-            $this->dispatch('cartUpdated');
+        $cart = $this->getCart();
+
+        if (!$cart) {
+            return;
         }
+
+        $cartItem = CartItem::where('cart_id', $cart->id)->find($id);
+
+        if (!$cartItem) {
+            return;
+        }
+
+        if ($cartItem->bundle_id) {
+            // Remove all cart items with the same bundle_id
+            CartItem::where('bundle_id', $cartItem->bundle_id)->delete();
+        } else {
+            // Remove only this cart item if it's not part of a bundle
+            $cartItem->delete();
+        }
+
+        $this->loadCart(); // Refresh the cart items
+        $this->dispatch('cartUpdated'); // Notify frontend of the update
     }
 
     public function render()
