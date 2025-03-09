@@ -73,9 +73,16 @@
                         <button wire:click="closeModal" class="btn btn-outline-secondary">
                             <i class="fas fa-times"></i> Cancel
                         </button>
-                        <button wire:click="addToCart" class="btn btn-success">
+                        <button wire:click="addToCart"
+                                class="btn btn-success"
+                                wire:loading.attr="disabled"
+                                wire:target="addToCart">
                             <i class="fas fa-cart-plus me-1"></i> Add to Cart
+                            <span wire:loading wire:target="addToCart">
+        <i class="fa fa-spinner fa-spin ms-1"></i>
+    </span>
                         </button>
+
                     </div>
                 </div>
             </div>

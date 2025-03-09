@@ -6,6 +6,7 @@ use App\Enums\BundleType;
 use App\Models\Color;
 use App\Models\ProductColor;
 use App\Models\ProductColorSize;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use App\Models\Bundle;
 use App\Models\Cart;
@@ -28,70 +29,87 @@ class AddBundleToCart extends Component
     {
         $this->product = $product;
     }
+
     public function selectBundle($bundleId)
     {
         $this->selectedBundle = Bundle::with('products')->find($bundleId);
-
         if (!$this->selectedBundle) {
             return;
         }
 
-        $this->selections = []; // Reset selections
+        $this->selections = [];
+        $this->colors = [];
+        $this->sizes = [];
 
         foreach ($this->selectedBundle->products as $bundleProduct) {
-            // Get available colors
             $colorIds = ProductColor::where('product_id', $bundleProduct->id)->pluck('color_id')->unique();
-            $this->colors[$bundleProduct->id] = Color::whereIn('id', $colorIds)->get();
+            $colors = Color::whereIn('id', $colorIds)->get();
 
-            // Fix totalInputs calculation for buy_x_get_y bundles
-            $totalInputs = 1; // Default for 'fixed_price'
-            if ($this->selectedBundle->bundle_type === BundleType::BUY_X_GET_Y) {
-                $totalInputs = (int) $this->selectedBundle->buy_x + (int) $this->selectedBundle->get_y;
+            if ($colors->isNotEmpty()) {
+                $this->colors[$bundleProduct->id] = $colors;
             }
+
+            $totalInputs = ($this->selectedBundle->bundle_type === BundleType::BUY_X_GET_Y)
+                ? (int) $this->selectedBundle->buy_x + (int) $this->selectedBundle->get_y
+                : 1;
 
             for ($i = 0; $i < $totalInputs; $i++) {
                 $this->selections[$bundleProduct->id][$i] = [
-                    'color_id' => null,
-                    'size_id' => null,
+                    'color_id' => $colors->isNotEmpty() ? null : '',
+                    'size_id' => $colors->isNotEmpty() ? null : '',
                 ];
             }
         }
 
+        Log::info('Selections after selectBundle:', ['selections' => $this->selections]);
         $this->showModal = true;
     }
 
     public function updatedSelections($value, $key)
     {
         $keys = explode('.', $key);
+        if (count($keys) >= 3) {
+            [$productId, $index, $field] = $keys;
 
-        if (count($keys) >= 2) {
-            $productId = $keys[0];
-            $field = last($keys);
-
-            if ($field === 'color_id') {
-                $selectedColorId = $value;
-
-                // Fetch sizes dynamically using ProductColorSize
-                $sizes = ProductColorSize::whereHas('productColor', function ($query) use ($productId, $selectedColorId) {
-                    $query->where('product_id', $productId)->where('color_id', $selectedColorId);
+            if ($field === 'color_id' && isset($this->colors[$productId]) && $this->colors[$productId]->isNotEmpty()) {
+                $sizes = ProductColorSize::whereHas('productColor', function ($query) use ($productId, $value) {
+                    $query->where('product_id', $productId)->where('color_id', $value);
                 })->with('size')->get();
 
-                // Assign sizes
-                $this->sizes[$productId] = $sizes->isNotEmpty() ? $sizes->pluck('size') : collect();
+                $this->sizes[$productId][$index] = $sizes->map(fn ($item) => $item->size);
             }
         }
     }
 
+    public function rules()
+    {
+        $rules = [];
+        foreach ($this->selectedBundle->products as $bundleProduct) {
+            if (!empty($this->colors[$bundleProduct->id])) {
+                foreach ($this->selections[$bundleProduct->id] ?? [] as $index => $selection) {
+                    $rules["selections.{$bundleProduct->id}.{$index}.color_id"] = 'required';
+                    $rules["selections.{$bundleProduct->id}.{$index}.size_id"] = 'required';
+                }
+            }
+        }
+        return $rules;
+    }
+
+    protected $messages = [
+        'selections.*.*.color_id.required' => 'The color selection is required.',
+        'selections.*.*.size_id.required' => 'The size selection is required.',
+    ];
+
+    protected $validationAttributes = [
+        'selections.*.*.color_id' => 'color',
+        'selections.*.*.size_id' => 'size',
+    ];
+
+
     public function addToCart()
     {
-        if (!$this->selectedBundle) {
-            return;
-        }
-
-        $availableStock = $this->product->quantity;
-
-        // Stock validation
-        if ($availableStock <= 0) {
+        $this->validate();
+        if (!$this->selectedBundle || ($this->product->quantity ?? 0) <= 0) {
             $this->addError('cart_error', 'This product is out of stock!');
             return;
         }
@@ -102,12 +120,12 @@ class AddBundleToCart extends Component
                 : Cart::firstOrCreate(['session_id' => session()->getId()]);
 
             $groupedItems = [];
-            $totalDiscountPrice = (float) $this->selectedBundle->discount_price; // Bundle discount price
-            $isFirstItem = true; // Flag to assign price only to the first item
+            $totalDiscountPrice = (float) $this->selectedBundle->discount_price;
+            $isFirstItem = true;
 
             foreach ($this->selectedBundle->products as $bundleProduct) {
-                foreach ($this->selections[$bundleProduct->id] as $selection) {
-                    $key = $bundleProduct->id . '-' . ($selection['color_id'] ?? 'null') . '-' . ($selection['size_id'] ?? 'null');
+                foreach ($this->selections[$bundleProduct->id] ?? [] as $selection) {
+                    $key = implode('-', [$bundleProduct->id, $selection['color_id'] ?? 'null', $selection['size_id'] ?? 'null']);
 
                     if (isset($groupedItems[$key])) {
                         $groupedItems[$key]['quantity']++;
@@ -116,27 +134,23 @@ class AddBundleToCart extends Component
                             'cart_id' => $cart->id,
                             'product_id' => $bundleProduct->id,
                             'bundle_id' => $this->selectedBundle->id,
-                            'size_id' => $selection['size_id'] ?? null,
-                            'color_id' => $selection['color_id'] ?? null,
+                            'size_id' => $selection['size_id'] ?: null,
+                            'color_id' => $selection['color_id'] ?: null,
                             'quantity' => 1,
-                            'price_per_unit' => $isFirstItem ? $totalDiscountPrice : 0, // First item gets total bundle price
-                            'subtotal' => $isFirstItem ? $totalDiscountPrice : 0, // First item stores subtotal
+                            'price_per_unit' => $isFirstItem ? $totalDiscountPrice : 0,
+                            'subtotal' => $isFirstItem ? $totalDiscountPrice : 0,
                         ];
-                        $isFirstItem = false; // Ensure only one item holds the bundle price
+                        $isFirstItem = false;
                     }
                 }
             }
 
-            // Insert grouped items into the cart
-            foreach ($groupedItems as $item) {
-                CartItem::create($item);
-            }
+            CartItem::insert($groupedItems);
         });
 
         $this->showModal = false;
         $this->dispatch('cartUpdated');
     }
-
 
     public function render()
     {
