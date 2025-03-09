@@ -562,11 +562,11 @@
 									</ul>
 
                                     @if($product->productColors->isNotEmpty())
-                                    <div class="product-filters-container custom-product-filters">
-                                        <!-- Size Selection -->
-                                        <div>
+                                        <div class="product-filters-container custom-product-filters">
+                                      <div>
+                                        <div class="product-single-filter">
                                             <label>Size:</label>
-                                            <ul class="size-badge-list">
+                                            <ul class="config-size-list">
                                                 @php
                                                     $sizeIds = collect();
                                                     foreach ($product->productColors as $productColor) {
@@ -575,37 +575,15 @@
                                                     $sizes = \App\Models\Size::whereIn('id', $sizeIds->unique())->get();
                                                 @endphp
                                                 @foreach($sizes as $size)
-                                                    <li class="size-badge">{{ $size->name }}</li>
+                                                    <li>
+                                                        <a class="d-flex align-items-center justify-content-center">{{ $size->name }}</a>
+                                                    </li>
                                                 @endforeach
                                             </ul>
                                         </div>
-                                        @endif
-
-                                        <style>
-                                            .size-badge-list {
-                                                list-style: none;
-                                                padding: 0;
-                                                display: flex;
-                                                gap: 8px;
-                                            }
-
-                                            .size-badge {
-                                                display: inline-block;
-                                                padding: 6px 12px;
-                                                background-color: #007bff;
-                                                color: white;
-                                                border-radius: 12px;
-                                                font-size: 14px;
-                                                font-weight: bold;
-                                                cursor: pointer;
-                                                transition: background 0.3s;
-                                            }
-
-                                            .size-badge:hover {
-                                                background-color: #0056b3;
-                                            }
-                                        </style>
-
+                                      </div>
+                                    @endif
+                                            <br>
 
                                         <!-- Color Selection -->
                                         @if($product->productColors->isNotEmpty())
@@ -685,164 +663,6 @@
 
                                     <livewire:wishlist-button :product-id="$product->id" />
 
-                                    <style>
-                                        /* Bundle Section */
-                                        .product-bundles {
-                                            background: #fff;
-                                            border-radius: 12px;
-                                            padding: 20px;
-                                            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08);
-                                            margin-bottom: 25px;
-                                            transition: all 0.3s ease-in-out;
-                                        }
-
-                                        /* Bundle Header */
-                                        .bundle-header {
-                                            display: flex;
-                                            justify-content: space-between;
-                                            align-items: center;
-                                            margin-bottom: 15px;
-                                        }
-
-                                        .bundle-title {
-                                            font-size: 22px;
-                                            font-weight: 600;
-                                            color: #222;
-                                        }
-
-                                        /* Toggle Button */
-                                        .toggle-button {
-                                            background: #007bff;
-                                            color: #fff;
-                                            border: none;
-                                            padding: 8px 14px;
-                                            font-size: 14px;
-                                            border-radius: 6px;
-                                            cursor: pointer;
-                                            display: flex;
-                                            align-items: center;
-                                            gap: 6px;
-                                            transition: background 0.3s ease;
-                                        }
-
-                                        .toggle-button:hover {
-                                            background: #0056b3;
-                                        }
-
-                                        /* Bundle List */
-                                        .bundle-list {
-                                            padding: 0;
-                                            margin-top: 10px;
-                                        }
-
-                                        /* Bundle Item */
-                                        .bundle-item {
-                                            background: #f8f9fa;
-                                            padding: 15px;
-                                            border-radius: 8px;
-                                            margin-bottom: 12px;
-                                            border: 1px solid #e0e0e0;
-                                            box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.05);
-                                            transition: transform 0.2s ease-in-out;
-                                        }
-
-                                        .bundle-item:hover {
-                                            transform: translateY(-3px);
-                                        }
-
-                                        /* Bundle Details */
-                                        .bundle-text {
-                                            font-size: 14px;
-                                            color: #555;
-                                            margin-bottom: 10px;
-                                        }
-
-                                        /* Bundle Products Grid */
-                                        .bundle-products {
-                                            display: flex;
-                                            flex-wrap: wrap;
-                                            gap: 12px;
-                                            margin-top: 10px;
-                                        }
-
-                                        /* Product Item */
-                                        .product-item {
-                                            display: flex;
-                                            align-items: center;
-                                            background: #fff;
-                                            padding: 10px;
-                                            border-radius: 8px;
-                                            border: 1px solid #ddd;
-                                            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05);
-                                            transition: all 0.3s ease-in-out;
-                                        }
-
-                                        .product-item:hover {
-                                            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-                                        }
-
-                                        /* Product Image */
-                                        .product-image {
-                                            width: 50px;
-                                            height: 50px;
-                                            object-fit: cover;
-                                            border-radius: 6px;
-                                            margin-right: 10px;
-                                        }
-
-                                        /* Product Info */
-                                        .product-info {
-                                            display: flex;
-                                            flex-direction: column;
-                                            font-size: 14px;
-                                        }
-
-                                        .product-name {
-                                            font-weight: 500;
-                                            color: #333;
-                                        }
-
-                                        .product-quantity {
-                                            font-size: 12px;
-                                            color: #777;
-                                        }
-
-                                        /* Buy Button */
-                                        .bundle-buy {
-                                            display: flex;
-                                            justify-content: flex-end;
-                                            margin-top: 12px;
-                                        }
-
-                                        .buy-button {
-                                            background: #28a745;
-                                            color: white;
-                                            font-size: 14px;
-                                            padding: 8px 14px;
-                                            border-radius: 6px;
-                                            text-decoration: none;
-                                            transition: background 0.3s ease;
-                                        }
-
-                                        .buy-button:hover {
-                                            background: #218838;
-                                        }
-
-                                        /* Icon Animation */
-                                        .icon {
-                                            width: 18px;
-                                            height: 18px;
-                                            transition: transform 0.3s ease;
-                                        }
-
-                                        .rotate-180 {
-                                            transform: rotate(180deg);
-                                        }
-
-                                    </style>
-
-                                    <br>
-
                                 @livewire('add-bundle-to-cart', ['product' => $product])
 
                                 @if (session()->has('success'))
@@ -857,33 +677,30 @@
                                         </div>
                                     @endif
 
-
                                 </div><!-- End .product-single-details -->
 							</div>
 						</div><!-- End .col-md-7 -->
 					</div>
+                <div class="row align-items-start">
+                    <div
+                        class="product-single-share col-md-3 col-xl-6 align-items-start justify-content-md-end mt-0">
+                        <label class="sr-only">Share:</label>
 
-					<div class="row align-items-start">
-                        <div
-							class="product-single-share col-md-3 col-xl-6 align-items-start justify-content-md-end mt-0">
-							<label class="sr-only">Share:</label>
-
-							<div class="social-icons mt-0 pb-5 pb-md-0">
-								<a href="#" class="social-icon social-facebook icon-facebook" target="_blank"
-									title="Facebook"></a>
-								<a href="#" class="social-icon social-twitter icon-twitter" target="_blank"
-									title="Twitter"></a>
-								<a href="#" class="social-icon social-linkedin fab fa-linkedin-in" target="_blank"
-									title="Linkedin"></a>
-								<a href="#" class="social-icon social-gplus fab fa-google-plus-g" target="_blank"
-									title="Google +"></a>
-								<a href="#" class="social-icon social-mail icon-mail-alt" target="_blank"
-									title="Mail"></a>
-							</div><!-- End .social-icons -->
-						</div><!-- End .product-single-share -->
-					</div><!-- End .row -->
+                        <div class="social-icons mt-0 pb-5 pb-md-0">
+                            <a href="#" class="social-icon social-facebook icon-facebook" target="_blank"
+                               title="Facebook"></a>
+                            <a href="#" class="social-icon social-twitter icon-twitter" target="_blank"
+                               title="Twitter"></a>
+                            <a href="#" class="social-icon social-linkedin fab fa-linkedin-in" target="_blank"
+                               title="Linkedin"></a>
+                            <a href="#" class="social-icon social-gplus fab fa-google-plus-g" target="_blank"
+                               title="Google +"></a>
+                            <a href="#" class="social-icon social-mail icon-mail-alt" target="_blank"
+                               title="Mail"></a>
+                        </div><!-- End .social-icons -->
+                    </div><!-- End .product-single-share -->
+                </div><!-- End .row -->
 				</div><!-- End .product-single-container -->
-			</div><!-- End .products-section -->
 
 			<div class="product-single-tabs custom-product-single-tabs bg-gray mb-4">
 				<div class="container">

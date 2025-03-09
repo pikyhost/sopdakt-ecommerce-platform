@@ -1,75 +1,79 @@
-<div>
-    <!-- Color Selection (Comes First) -->
-    @if(\App\Models\Product::find($productId)->productColors->isNotEmpty())
-    <div class="mb-3">
-        <label for="color" class="block text-sm font-medium text-gray-700">Select Color</label>
-        <select wire:model.live="colorId" id="color" class="form-control border-gray-300 rounded-md shadow-sm">
-            <option value="">-- Choose Color --</option>
-            @foreach($colors as $color)
-                <option value="{{ $color->id }}">{{ $color->name }}</option>
-            @endforeach
-        </select>
-        @error('colorId') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-    </div>
+<div class="container py-4">
+    <div class="card shadow-lg p-4">
+        <!-- Color & Size Selection -->
+        @if(\App\Models\Product::find($productId)->productColors->isNotEmpty())
+            <div class="row g-4 mb-4">
+                <!-- Color Selection -->
+                <div class="col-md-6">
+                    <label for="color" class="form-label fw-bold">Select Color</label>
+                    <select wire:model.live="colorId" id="color" class="form-select form-select-lg">
+                        <option value="">-- Choose Color --</option>
+                        @foreach($colors as $color)
+                            <option value="{{ $color->id }}">{{ $color->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('colorId') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                </div>
 
-    <!-- Size Selection (Shows Only After Color is Selected) -->
-    @if(!empty($sizes))
-        <div class="mb-3">
-            <label for="size" class="block text-sm font-medium text-gray-700">Select Size</label>
-            <select wire:model.live="sizeId" id="size" class="form-control border-gray-300 rounded-md shadow-sm">
-                <option value="">-- Choose Size --</option>
-                @foreach($sizes as $size)
-                    <option value="{{ $size->id }}">{{ $size->name }}</option>
-                @endforeach
-            </select>
-            @error('sizeId') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                <!-- Size Selection -->
+                @if(!empty($sizes))
+                    <div class="col-md-6">
+                        <label for="size" class="form-label fw-bold">Select Size</label>
+                        <select wire:model.live="sizeId" id="size" class="form-select form-select-lg">
+                            <option value="">-- Choose Size --</option>
+                            @foreach($sizes as $size)
+                                <option value="{{ $size->id }}">{{ $size->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('sizeId') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+                    </div>
+                @endif
+            </div>
+        @endif
+
+        <!-- Product Actions -->
+        <div class="d-flex flex-column flex-md-row align-items-center gap-4">
+            <!-- Quantity Input -->
+            <div class="d-flex align-items-center gap-3">
+                <label class="fw-bold mb-0">Quantity:</label>
+                <div class="d-flex align-items-center border rounded-3 overflow-hidden">
+                    <button class="btn btn-outline-danger px-3" type="button" wire:click="decreaseQuantity">
+                        <i class="fa fa-minus"></i>
+                    </button>
+                    <span class="px-4 py-2 bg-light text-dark fw-bold" style="min-width: 50px; text-align: center;">
+                        {{ $quantity }}
+                    </span>
+                    <button class="btn btn-outline-success px-3" type="button" wire:click="increaseQuantity">
+                        <i class="fa fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+            @error('quantity') <div class="text-danger small">{{ $message }}</div> @enderror
         </div>
-    @endif
 
-    @endif
-
-    <!-- Product Action -->
-    <div class="product-action flex items-center space-x-4">
-        <!-- Quantity Input -->
-        <div class="product-single-qty">
-            <input type="number" min="1" step="1" wire:model="quantity"
-                   class="horizontal-quantity form-control w-20 text-center border-gray-300 rounded-md shadow-sm">
-            @error('quantity')  <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+        <!-- Cart Actions -->
+        <div class="d-flex flex-column flex-md-row align-items-center gap-3 mt-4">
+            <button wire:click="addToCart" class="btn btn-primary btn-lg d-flex align-items-center px-4 py-3" wire:loading.attr="disabled" wire:target="addToCart">
+                <i class="fa fa-shopping-cart me-2"></i> Add to Cart ({{ $cartTotalQuantity }})
+                <span wire:loading wire:target="addToCart" class="ms-2">
+                    <i class="fa fa-spinner fa-spin"></i>
+                </span>
+            </button>
+            <a href="{{ route('cart.index') }}" class="btn btn-dark btn-lg px-4 py-3">
+                <i class="fa fa-shopping-bag me-2"></i> View Cart
+            </a>
         </div>
 
-        <!-- Cart Error Message -->
+        <!-- Messages -->
         @if ($errors->has('cart_error'))
             <div class="alert alert-danger mt-3">
                 {{ $errors->first('cart_error') }}
             </div>
         @endif
-
-        <!-- Add to Cart Button -->
-        <button wire:click="addToCart"
-                class="btn btn-dark add-cart flex items-center px-4 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700"
-                wire:loading.attr="disabled"
-                wire:target="addToCart">
-            Add to Cart ({{ $cartTotalQuantity }})
-            <span wire:loading wire:target="addToCart">
-        <i class="fa fa-spinner fa-spin ml-2"></i>
-    </span>
-        </button>
-
-
-        <!-- View Cart -->
-        <a href="{{ route('cart.index') }}"
-           class="btn btn-gray view-cart px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600">
-            View Cart
-        </a>
+        @if (session()->has('success'))
+            <div class="alert alert-success mt-3 fade show" role="alert">
+                {{ session('success') }}
+            </div>
+        @endif
     </div>
-
-    <!-- Success Message -->
-    @if (session()->has('success'))
-        <div class="bg-green-500 text-white p-3 mt-3 rounded-md shadow-md"
-             x-data="{ show: true }"
-             x-show="show"
-             x-init="setTimeout(() => show = false, 3000)">
-            {{ session('success') }}
-        </div>
-    @endif
 </div>
