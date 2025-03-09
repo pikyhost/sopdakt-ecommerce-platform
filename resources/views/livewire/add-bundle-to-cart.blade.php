@@ -89,9 +89,16 @@
                                         {{ $errors->first('cart_error') }}
                                     </div>
                                 @endif
-                                <button wire:click="selectBundle({{ $bundle->id }})" class="btn btn-success">
+                                <button wire:click="selectBundle({{ $bundle->id }})"
+                                        class="btn btn-success"
+                                        wire:loading.attr="disabled"
+                                        wire:target="selectBundle">
                                     <i class="fas fa-cart-plus me-1"></i> Add to Cart
+                                    <span wire:loading wire:target="selectBundle">
+        <i class="fa fa-spinner fa-spin ms-1"></i>
+    </span>
                                 </button>
+
                             </div>
                         </li>
                     @endforeach
@@ -121,32 +128,50 @@
                                 <div class="mb-3">
                                     <h6>{{ $bundleProduct->name }} ({{ __('Item') }} {{ $i + 1 }})</h6>
 
-                                    {{-- Color Selection --}}
-                                    <label>{{ __('Color') }}</label>
-                                    <select wire:model.live="selections.{{ $bundleProduct->id }}.{{ $i }}.color_id" class="form-control">
-                                        <option value="">{{ __('Select Color') }}</option>
-                                        @foreach ($colors[$bundleProduct->id] ?? [] as $color)
-                                            <option value="{{ $color->id }}">{{ $color->name }}</option>
-                                        @endforeach
-                                    </select>
+                                    {{-- Only show color & size inputs if the product has color options --}}
+                                    @if (isset($colors[$bundleProduct->id]) && $colors[$bundleProduct->id]->isNotEmpty())
+                                        <label>{{ __('Color') }}</label>
+                                        <select wire:model.live="selections.{{ $bundleProduct->id }}.{{ $i }}.color_id" class="form-control">
+                                            <option value="">{{ __('Select Color') }}</option>
+                                            @foreach ($colors[$bundleProduct->id] ?? [] as $color)
+                                                <option value="{{ $color->id }}">{{ $color->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error("selections.{$bundleProduct->id}.{$i}.color_id")
+                                        <span class="text-danger">{{ $message }}</span>
+                                        <br>
+                                        @enderror
 
-                                    {{-- Size Selection (Filtered by Color) --}}
-                                    <label>{{ __('Size') }}</label>
-                                    <select wire:model.live="selections.{{ $bundleProduct->id }}.{{ $i }}.size_id" class="form-control">
-                                        <option value="">{{ __('Select Size') }}</option>
-                                        @foreach ($sizes[$bundleProduct->id] ?? [] as $size)
-                                            <option value="{{ $size->id }}">{{ $size->name }}</option>
-                                        @endforeach
-                                    </select>
+                                        <label>{{ __('Size') }}</label>
+                                        <select wire:model.live="selections.{{ $bundleProduct->id }}.{{ $i }}.size_id" class="form-control">
+                                            <option value="">{{ __('Select Size') }}</option>
+                                            @foreach ($sizes[$bundleProduct->id][$i] ?? [] as $size)
+                                                <option value="{{ $size->id }}">{{ $size->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error("selections.{$bundleProduct->id}.{$i}.size_id")
+                                        <span class="text-danger">{{ $message }}</span>
+                                        @enderror
+                                    @endif
                                 </div>
                             @endfor
                         @endforeach
-
                     </div>
+
                     <div class="modal-footer">
-                        <button wire:click="addToCart" class="btn btn-success">
-                            <i class="fas fa-cart-plus me-1"></i>  {{ __('Add to Cart') }}
+                        <button wire:click="addToCart"
+                                wire:loading.attr="disabled"
+                                wire:target="addToCart"
+                                class="btn btn-success">
+                            <i class="fas fa-cart-plus me-1"></i>
+                            {{ __('Add to Cart') }}
+
+                            {{-- Loader Icon (Only Shows When addToCart is Processing) --}}
+                            <span wire:loading wire:target="addToCart">
+        <i class="fas fa-spinner fa-spin ms-2"></i>
+    </span>
                         </button>
+
                         <button class="btn btn-secondary" wire:click="$set('showModal', false)">{{ __('Cancel') }}</button>
                     </div>
                 </div>

@@ -47,9 +47,14 @@
         <!-- Add to Cart Button -->
         <button wire:click="addToCart"
                 class="btn btn-dark add-cart flex items-center px-4 py-2 rounded-lg text-white bg-blue-600 hover:bg-blue-700"
-                wire:loading.attr="disabled">
+                wire:loading.attr="disabled"
+                wire:target="addToCart">
             Add to Cart ({{ $cartTotalQuantity }})
+            <span wire:loading wire:target="addToCart">
+        <i class="fa fa-spinner fa-spin ml-2"></i>
+    </span>
         </button>
+
 
         <!-- View Cart -->
         <a href="{{ route('cart.index') }}"

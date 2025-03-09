@@ -50,6 +50,8 @@
 
             <div class="dropdown-cart-action">
                 <a href="{{ route('cart.index') }}" class="btn btn-gray btn-block view-cart">View Cart</a>
+                <a href="{{ route('checkout.index') }}" class="btn btn-dark btn-block">Checkout</a>
+
             </div><!-- End .dropdown-cart-total -->
         </div><!-- End .dropdownmenu-wrapper -->
     </div><!-- End .dropdown-menu -->
