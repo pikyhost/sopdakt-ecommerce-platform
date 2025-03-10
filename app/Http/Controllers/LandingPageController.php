@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
+use App\Models\LandingPageSetting;
 use App\Services\JtExpressService;
 use Illuminate\Support\Facades\Log;
 use App\Http\Requests\LandingPage\{OrderLandingRequest, OrderLandingPageBundleRequest};
@@ -154,7 +155,7 @@ class LandingPageController extends Controller
             }
 
             $request->session()->forget('landing_pages_orders');
-            return redirect()->route('landing-page.show-by-slug', $landingPage->slug)->with('success', 'Order has been placed successfully');
+            return redirect()->route('landing-pages.thanks', $landingPage->slug)->with('success', 'Order has been placed successfully');
         } catch (Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
@@ -209,10 +210,19 @@ class LandingPageController extends Controller
             }
 
             $request->session()->forget('landing_pages_orders');
-            return redirect()->back()->with('success', 'Order has been placed successfully');
+            return redirect()->route('landing-pages.thanks', $landingPage->slug)->with('success', 'Order has been placed successfully');
         } catch (Exception $e) {
             Log::error('create order', [$e->getMessage()]);
             return redirect()->back()->with('error', $e->getMessage());
         }
+    }
+
+    public function thanks($slug)
+    {
+        return view('landing-pages.landing-page-thanks', [
+            'landingPage'          => LandingPage::where('slug', $slug)->firstOrFail(),
+            'settings'             => WebsiteSetting::query()->latest()->first(),
+            'landingPageSettings'  => LandingPageSetting::latest()->first(),
+        ]);
     }
 }
