@@ -13,7 +13,7 @@
     // Get site name based on locale or fallback to default
     $siteName = $siteSettings["site_name_{$locale}"] ?? $siteSettings["site_name_en"] ?? 'Default Site Name';
 @endphp
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     @livewireStyles
@@ -55,13 +55,10 @@
     <link rel="stylesheet" href="{{ asset('assets/css/style.min.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/fontawesome-free/css/all.min.css') }}">
 
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap JS (for modals) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
     <!-- Ensure Bootstrap JS loads properly -->
     <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}" defer></script>
+    {{-- Page-specific styles --}}
+    @stack('styles')
 </head>
 
 <body>
