@@ -10,6 +10,7 @@ use App\Models\City;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Models\ShippingType;
+use App\Services\CartService;
 use Illuminate\Support\Facades\Route;
 use Livewire\Component;
 use Illuminate\Support\Facades\Session;
@@ -34,71 +35,66 @@ class ShoppingCart extends Component
 
     public function mount()
     {
-        $this->currentRoute = Route::currentRouteName(); // Set route in mount
+        $this->currentRoute = Route::currentRouteName();
+
         $this->loadCart();
         $this->loadCountries();
         $this->loadShippingTypes();
 
         // Load dependent dropdowns if values exist
-        $this->governorates = $this->country_id ? Governorate::where('country_id', $this->country_id)->get() : [];
-        $this->cities = $this->governorate_id ? City::where('governorate_id', $this->governorate_id)->get() : [];
+        $this->governorates = $this->country_id ? Governorate::where('country_id', $this->country_id)->get() : []; // line 44
+        $this->cities = $this->governorate_id ? City::where('governorate_id', $this->governorate_id)->get() : []; // line 55
     }
 
     public function loadCart()
     {
-        if (auth()->check()) {
-            $this->cart = Cart::firstOrCreate(['user_id' => auth()->id()], ['session_id' => null]);
-        } else {
-            $session_id = Session::get('cart_session', Session::getId());
-            Session::put('cart_session', $session_id);
+        $this->cart = CartService::getCart();
 
-            $this->cart = Cart::firstOrCreate(['session_id' => $session_id], ['user_id' => null]);
+        if (!$this->cart) {
+            $this->cart = auth()->check()
+                ? Cart::create(['user_id' => auth()->id()])
+                : Cart::create(['session_id' => Session::get('cart_session', Session::getId())]);
         }
 
-        // Load shipping info into Livewire properties
         $this->selected_shipping = $this->cart->shipping_type_id;
         $this->country_id = $this->cart->country_id;
         $this->governorate_id = $this->cart->governorate_id;
         $this->city_id = $this->cart->city_id;
 
-        // Ensure dependent dropdowns are populated
-        $this->governorates = $this->country_id ? Governorate::where('country_id', $this->country_id)->get() : [];
-        $this->cities = $this->governorate_id ? City::where('governorate_id', $this->governorate_id)->get() : [];
+        // Fetch governorates and cities in ONE query instead of multiple queries
+        if ($this->country_id) {
+            $this->governorates = Governorate::where('country_id', $this->country_id)->with('cities')->get();
+            $this->cities = $this->governorates->flatMap->cities;
+        } else {
+            $this->governorates = [];
+            $this->cities = [];
+        }
 
-        $this->cartItems = CartItem::where('cart_id', $this->cart->id)
-            ->with(['product', 'bundle', 'size', 'color']) // Load all related models
-            ->get()
-            ->map(fn($item) => [
-                'id' => $item->id,
-                'quantity' => $item->quantity,
-                'price_per_unit' => $item->price_per_unit,
-                'subtotal' => $item->subtotal,
-                'product' => $item->product ? [
-                    'id' => $item->product->id,
-                    'name' => $item->product->name,
-                    'slug' => $item->product->slug,
-                    'feature_product_image_url' => $item->product->getFeatureProductImageUrl() ?? '',
-                    'price' => $item->product->discount_price_for_current_country ?? 0,
-                ] : null,
-                'bundle' => $item->bundle ? [
-                    'id' => $item->bundle->id,
-                    'name' => $item->bundle->name,
-                    'price' => $item->bundle->discount_price ?? 0,
-                ] : null,
-                'size' => $item->size ? [
-                    'id' => $item->size->id,
-                    'name' => $item->size->name,
-                ] : null,
-                'color' => $item->color ? [
-                    'id' => $item->color->id,
-                    'name' => $item->color->name,
-                    'code' => $item->color->code, // Assuming colors have a hex code
-                ] : null,
-            ])
-            ->toArray();
+        // Fetch cart items
+        $this->cartItems = $this->cart->items->map(fn($item) => [
+            'id' => $item->id,
+            'quantity' => $item->quantity,
+            'price_per_unit' => $item->price_per_unit,
+            'subtotal' => $item->subtotal,
+            'product' => $item->product ? [
+                'id' => $item->product->id,
+                'name' => $item->product->name,
+                'slug' => $item->product->slug,
+                'feature_product_image_url' => $item->product->getFeatureProductImageUrl() ?? '',
+                'price' => $item->product->discount_price_for_current_country ?? 0,
+            ] : null,
+            'bundle' => $item->bundle ? [
+                'id' => $item->bundle->id,
+                'name' => $item->bundle->name,
+                'price' => $item->bundle->discount_price ?? 0,
+            ] : null,
+            'size' => $item->size ? ['id' => $item->size->id, 'name' => $item->size->name] : null,
+            'color' => $item->color ? ['id' => $item->color->id, 'name' => $item->color->name, 'code' => $item->color->code] : null,
+        ])->toArray();
 
         $this->calculateTotals();
     }
+
 
     public function loadCountries()
     {
@@ -324,8 +320,22 @@ class ShoppingCart extends Component
         $seenBundles = [];
         $locationBasedShippingCost = 0;
 
+        // Fetch Cart once to avoid multiple queries
+        static $cart = null;
+        if ($cart === null) {
+            $cart = CartService::getCart();
+        }
+
+        // Fetch all product IDs in one query
+        $productIds = collect($this->cartItems)->pluck('product.id')->filter()->toArray();
+
+        // Load Products with Media and Inventory in one query
+        $products = Product::whereIn('id', $productIds)
+            ->with(['media', 'inventory'])  // Eager load media and inventory
+            ->get()
+            ->keyBy('id');
+
         foreach ($this->cartItems as $item) {
-            // Calculate subtotal
             if (!empty($item['bundle']['id'])) {
                 if (!in_array($item['bundle']['id'], $seenBundles)) {
                     $this->subtotal += $item['quantity'] * (float) $item['price_per_unit'];
@@ -335,36 +345,19 @@ class ShoppingCart extends Component
                 $this->subtotal += $item['quantity'] * (float) $item['price_per_unit'];
             }
 
-            // Calculate shipping cost
-            if (isset($item['product']['id']) && !empty($item['product']['id'])) {
-                $product = Product::find($item['product']['id']);
-                if ($product) {
-                    $locationBasedShippingCost += $this->calculateProductShippingCost($product);
-                }
-            } elseif (isset($item['bundle']['id']) && !empty($item['bundle']['id'])) {
-                // Get all products in the bundle
-                $bundleProducts = Product::where('bundle_id', $item['bundle']['id'])->get();
-                foreach ($bundleProducts as $product) {
-                    $locationBasedShippingCost += $this->calculateProductShippingCost($product);
-                }
+            // Fetch product details without multiple queries
+            if (isset($item['product']['id']) && isset($products[$item['product']['id']])) {
+                $locationBasedShippingCost += $this->calculateProductShippingCost($products[$item['product']['id']]);
             }
         }
 
-        // Calculate shipping type cost
-        $shippingTypeCost = $this->selected_shipping
-            ? ShippingType::find($this->selected_shipping)?->shipping_cost ?? 0.0
-            : 0.0;
+        // Get tax percentage using the cached function
+        $taxPercentage = Setting::getTaxPercentage();
 
-        // Assign total shipping cost
-        $this->shippingCost = max(0, $shippingTypeCost + $locationBasedShippingCost);
-
-        // Retrieve tax percentage from settings
-        $taxPercentage = Setting::first()?->tax_percentage ?? 0;
-
-        // Calculate tax if applicable
+        // Calculate tax
         $this->tax = ($taxPercentage > 0) ? ($this->subtotal * $taxPercentage / 100) : 0;
 
-        // Final total: subtotal + shipping + tax
+        // Final total
         $this->total = $this->subtotal + $this->shippingCost + $this->tax;
     }
 
@@ -435,7 +428,7 @@ class ShoppingCart extends Component
             'cities' => $this->cities,
             'shipping_types' => $this->shipping_types,
             'shippingCost' => $this->shippingCost,
-            'taxPercentage' =>  Setting::first()?->tax_percentage ?? 0,
+            'taxPercentage' =>  Setting::getTaxPercentage(),
             'currentRoute' => $this->currentRoute, // Now comes from public property
         ]);
     }

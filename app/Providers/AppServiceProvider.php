@@ -65,17 +65,17 @@ class AppServiceProvider extends ServiceProvider
                 ->middleware(['web', 'localeSessionRedirect', 'localizationRedirect', 'localeViewPath']);
         });
 
-        View::composer('*', function ($view) {
-            $landingPageSetting = LandingPageSetting::latest()->first();
-
-            $data = [];
-            $data['currency_code']  = $landingPageSetting?->currency_code ?? 'USD';
-            $data['address']        = $landingPageSetting?->address ?? 'Not Available';
-            $data['map_link']       = $landingPageSetting?->map_link ?? '#';
-            $data['header_image']   = $landingPageSetting?->landing_page_header_image ?? 'default-image.jpg';
-
-            $view->with('settingData', $data);
-        });
+//        View::composer('*', function ($view) {
+//            $landingPageSetting = LandingPageSetting::latest()->first();
+//
+//            $data = [];
+//            $data['currency_code']  = $landingPageSetting?->currency_code ?? 'USD';
+//            $data['address']        = $landingPageSetting?->address ?? 'Not Available';
+//            $data['map_link']       = $landingPageSetting?->map_link ?? '#';
+//            $data['header_image']   = $landingPageSetting?->landing_page_header_image ?? 'default-image.jpg';
+//
+//            $view->with('settingData', $data);
+//        });
     }
 
 

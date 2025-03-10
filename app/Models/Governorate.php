@@ -29,4 +29,9 @@ class Governorate extends Model
         return $this->belongsToMany(ShippingZone::class, 'governorate_shipping_zone');
     }
 
+    public function cities()
+    {
+        return $this->hasMany(City::class);
+    }
+
 }
