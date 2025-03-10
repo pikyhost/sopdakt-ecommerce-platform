@@ -29,10 +29,9 @@ class AddBundleToCart extends Component
     {
         $this->product = $product;
     }
-
     public function selectBundle($bundleId)
     {
-        $this->selectedBundle = Bundle::with('products')->find($bundleId);
+        $this->selectedBundle = Bundle::with(['products.colors'])->find($bundleId);
         if (!$this->selectedBundle) {
             return;
         }
@@ -42,8 +41,7 @@ class AddBundleToCart extends Component
         $this->sizes = [];
 
         foreach ($this->selectedBundle->products as $bundleProduct) {
-            $colorIds = ProductColor::where('product_id', $bundleProduct->id)->pluck('color_id')->unique();
-            $colors = Color::whereIn('id', $colorIds)->get();
+            $colors = $bundleProduct->colors; // Use eager-loaded relation
 
             if ($colors->isNotEmpty()) {
                 $this->colors[$bundleProduct->id] = $colors;
@@ -61,7 +59,6 @@ class AddBundleToCart extends Component
             }
         }
 
-        Log::info('Selections after selectBundle:', ['selections' => $this->selections]);
         $this->showModal = true;
     }
 

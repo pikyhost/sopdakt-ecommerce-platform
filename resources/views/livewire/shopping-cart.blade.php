@@ -21,7 +21,7 @@
                             <td>
                                 <figure class="product-image-container">
                                     <!-- Product Image Link -->
-                                    <a href="product.html" class="product-image">
+                                    <a href="{{ route('product.show', $cartItem['product']['slug']) }}" class="product-image">
                                         <img src="{{ $cartItem['product']['feature_product_image_url'] ?? $cartItem['bundle']['feature_image_url'] ?? '#' }}"
                                              alt="Product Image">
                                     </a>
