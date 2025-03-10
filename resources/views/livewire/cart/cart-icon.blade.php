@@ -17,7 +17,7 @@
                     <div class="product">
                         <div class="product-details">
                             <h4 class="product-title">
-                                <a href="{{ route('product.show', $item->product->id) }}">
+                                <a href="">
                                     {{ $item->product->name }}
                                 </a>
                             </h4>
@@ -29,7 +29,7 @@
                         </div><!-- End .product-details -->
 
                         <figure class="product-image-container">
-                            <a href="{{ route('product.show', $item->product->id) }}" class="product-image">
+                            <a href="{{ route('product.show', $item->product->slug) }}" class="product-image">
                                 <img src="{{ $item->product->getFeatureProductImageUrl() }}" alt="{{ $item->product->name }}"
                                      width="80" height="80">
                             </a>

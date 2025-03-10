@@ -64,29 +64,37 @@
                                 <div class="bundle-products mt-4 flex-grow-1">
                                     <div class="d-flex flex-wrap justify-content-center gap-3">
                                         @foreach ($bundle->products as $bundleProduct)
+                                            @php
+                                                $imageUrl = $bundleProduct->getFeatureProductImageUrl();
+                                                $productUrl = route('product.show', $bundleProduct->slug);
+                                                $productName = $bundleProduct->name;
+                                                $discountPrice = number_format((float) $bundleProduct->discount_price_for_current_country, 2);
+                                            @endphp
+
                                             <div class="card shadow-sm border-0 rounded-3 text-center p-2 d-flex flex-column align-items-center product-card">
-                                                <a href="{{ route('product.show', $bundleProduct->slug) }}" class="text-decoration-none">
-                                                    <img src="{{ $bundleProduct->getFeatureProductImageUrl() }}"
+                                                <a href="{{ $productUrl }}" class="text-decoration-none">
+                                                    <img src="{{ $imageUrl }}"
                                                          class="card-img-top rounded-top"
                                                          style="height: 120px; object-fit: contain; width: 100%;">
                                                 </a>
                                                 <div class="card-body p-2">
-                                                    <span class="fw-bold fs-6 d-block text-truncate">{{ $bundleProduct->name }}</span>
+                                                    <span class="fw-bold fs-6 d-block text-truncate">{{ $productName }}</span>
 
                                                     @if ($bundle->bundle_type !== \App\Enums\BundleType::BUY_X_GET_Y)
                                                         <span class="badge bg-secondary px-3 py-2 fs-6 d-block mt-2">
-                                                        {{ __('Quantity: 1') }}
-                                                    </span>
+                            {{ __('Quantity: 1') }}
+                        </span>
                                                     @endif
 
                                                     <span class="text-muted fs-6 d-block mt-2 mb-0">
-                                                    <s class="text-danger">${{ number_format((float) $bundleProduct->discount_price_for_current_country, 2) }}</s>
-                                                </span>
+                        <s class="text-danger">${{ $discountPrice }}</s>
+                    </span>
                                                 </div>
                                             </div>
                                         @endforeach
                                     </div>
                                 </div>
+
                             </div>
 
                             <!-- Error Message -->

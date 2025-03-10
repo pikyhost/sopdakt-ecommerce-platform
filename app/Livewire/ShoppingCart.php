@@ -76,6 +76,7 @@ class ShoppingCart extends Component
                 'product' => $item->product ? [
                     'id' => $item->product->id,
                     'name' => $item->product->name,
+                    'slug' => $item->product->slug,
                     'feature_product_image_url' => $item->product->getFeatureProductImageUrl() ?? '',
                     'price' => $item->product->discount_price_for_current_country ?? 0,
                 ] : null,

@@ -2,15 +2,13 @@
 
 namespace App\Livewire;
 
-use App\Mail\OrderConfirmationMail;
 use App\Models\Contact;
 use App\Models\Country;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Setting;
-use App\Services\JtExpressService;
+use App\Services\CartService;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
@@ -47,23 +45,17 @@ class Checkout extends Component
     {
         $this->currentRoute = Route::currentRouteName();
 
-        // Load cart data
-        $session_id = session()->getId();
-        $this->cart = Auth::check()
-            ? Cart::where('user_id', Auth::id())->latest()->first()
-            : Cart::where('session_id', $session_id)->latest()->first();
+        // Load cart using CartService
+        $this->cart = CartService::getCart();
 
         if (Auth::check()) {
-            // Load data for authenticated users
             $user = Auth::user();
             $this->name = $user->name;
             $this->email = $user->email;
             $this->phone = $user->phone;
             $this->address = $user->address;
         } else {
-            // Load data for guest users using session_id
-            $session_id = session()->getId();
-            $guestContact = Contact::where('session_id', $session_id)->first();
+            $guestContact = CartService::getGuestContact();
 
             if ($guestContact) {
                 $this->name = $guestContact->name;
@@ -78,13 +70,7 @@ class Checkout extends Component
 
     public function loadCartItems()
     {
-        $session_id = session()->getId();
-
-        $cart = Auth::check()
-            ? Cart::where('user_id', Auth::id())->latest()->first()
-            : Cart::where('session_id', $session_id)->latest()->first();
-
-        if (!$cart) {
+        if (!$this->cart) {
             $this->cartItems = [];
             $this->subTotal = 0;
             $this->total = 0;
@@ -92,9 +78,7 @@ class Checkout extends Component
             return;
         }
 
-        $cartItems = CartItem::where('cart_id', $cart->id)
-            ->with('product') // Ensure product is loaded
-            ->get();
+        $cartItems = $this->cart->items->load('product');
 
         $this->cartItems = $cartItems->map(fn($item) => [
             'id' => $item->id,
@@ -108,9 +92,9 @@ class Checkout extends Component
             ] : null,
         ])->toArray();
 
-        $this->subTotal = $cart->subtotal ?? 0;
-        $this->total = $cart->total ?? 0;
-        $this->shippingCost = $cart->shipping_cost ?? 0;
+        $this->subTotal = $this->cart->subtotal ?? 0;
+        $this->total = $this->cart->total ?? 0;
+        $this->shippingCost = $this->cart->shipping_cost ?? 0;
 
         $this->taxPercentage = Setting::first()?->tax_percentage ?? 0;
         $this->taxAmount = ($this->taxPercentage > 0) ? ($this->subTotal * $this->taxPercentage / 100) : 0;

@@ -41,8 +41,13 @@ class AddToCart extends Component
             } else {
                 $query->where('session_id', Session::getId());
             }
-        })->with('items.product')->first();
+        })->with([
+            'items.product' => function ($query) {
+                $query->with(['media', 'inventory', 'category']); // Load related data in one query
+            }
+        ])->first();
     }
+
 
     private function loadCartData(): void
     {

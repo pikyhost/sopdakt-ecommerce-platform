@@ -3,10 +3,8 @@
 namespace App\Livewire\Cart;
 
 use Livewire\Component;
-use App\Models\Cart;
 use App\Models\CartItem;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
+use App\Services\CartService;
 
 class CartIcon extends Component
 {
@@ -23,38 +21,69 @@ class CartIcon extends Component
 
     public function updateCart()
     {
-        $cart = $this->getCart();
+        $cart = CartService::getCart();
 
-        $this->cartCount = $cart?->items()->sum('quantity') ?? 0;
-        $this->cartItems = $cart?->items()->with(['product', 'size', 'color'])->get() ?? [];
-        $this->subtotal = $cart?->items()->sum('subtotal') ?? 0;
-    }
+        if (!$cart) {
+            $this->cartCount = 0;
+            $this->cartItems = [];
+            $this->subtotal = 0;
+            return;
+        }
 
-    private function getCart()
-    {
-        return Auth::check()
-            ? Cart::where('user_id', Auth::id())->with('items')->first()
-            : Cart::where('session_id', Session::getId())->with('items')->first();
+        $items = $cart->items()->with(['product', 'size', 'color'])->get();
+
+        $this->cartCount = $items->sum('quantity');
+        $this->subtotal = $items->sum('subtotal');
+
+        $this->cartItems = $items->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'quantity' => $item->quantity,
+                'price_per_unit' => $item->price_per_unit,
+                'subtotal' => $item->subtotal,
+                'product' => $item->product ? [
+                    'id' => $item->product->id,
+                    'name' => $item->product->name,
+                    'slug' => $item->product->slug,
+                    'feature_product_image_url' => $item->product->getFeatureProductImageUrl() ?? '',
+                    'price' => $item->product->discount_price_for_current_country ?? 0,
+                ] : null,
+                'size' => $item->size ? [
+                    'id' => $item->size->id,
+                    'name' => $item->size->name,
+                ] : null,
+                'color' => $item->color ? [
+                    'id' => $item->color->id,
+                    'name' => $item->color->name,
+                    'code' => $item->color->code,
+                ] : null,
+            ];
+        })->toArray();
     }
 
     public function removeFromCart($itemId)
     {
-        $cartItem = CartItem::find($itemId);
+        $cart = CartService::getCart();
+
+        if (!$cart) {
+            return;
+        }
+
+        $cartItem = $cart->items->find($itemId);
 
         if (!$cartItem) {
             return;
         }
 
         if ($cartItem->bundle_id) {
-            // Remove all cart items with the same bundle_id
             CartItem::where('bundle_id', $cartItem->bundle_id)->delete();
         } else {
-            // Remove only this cart item if it's not part of a bundle
             $cartItem->delete();
         }
 
-        $this->updateCart(); // Refresh the cart items
-        $this->dispatch('cartUpdated'); // Notify frontend of the update
+        $cart->refresh(); // Refresh cart after changes
+        $this->updateCart();
+        $this->dispatch('cartUpdated');
     }
 
     public function render()
