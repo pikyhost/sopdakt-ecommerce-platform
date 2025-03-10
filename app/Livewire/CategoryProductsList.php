@@ -59,7 +59,7 @@ class CategoryProductsList extends Component
     public function getProductsQuery()
     {
         $query = $this->category->products()
-            ->with(['media', 'colorsWithImages'])
+            ->with(['media', 'productColors'])
             ->where('is_published', 1)
             ->withAvg('ratings', 'rating');
 
