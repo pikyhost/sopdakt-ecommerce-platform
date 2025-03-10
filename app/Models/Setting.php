@@ -96,4 +96,13 @@ class Setting extends Model
         });
     }
 
+    /**
+     * Get the tax percentage from settings with caching.
+     */
+    public static function getTaxPercentage(): float
+    {
+        return Cache::rememberForever(self::$cacheKey . '_tax_percentage', function () {
+            return self::getAllSettings()['tax_percentage'] ?? 0.0;
+        });
+    }
 }

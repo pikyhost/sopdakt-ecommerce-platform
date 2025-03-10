@@ -21,7 +21,7 @@ class CartIcon extends Component
 
     public function updateCart()
     {
-        $cart = CartService::getCart();
+        $cart = CartService::getCart(); // Use cached cart
 
         if (!$cart) {
             $this->cartCount = 0;
@@ -30,12 +30,10 @@ class CartIcon extends Component
             return;
         }
 
-        $items = $cart->items()->with(['product', 'size', 'color'])->get();
+        $this->cartCount = $cart->items->sum('quantity');
+        $this->subtotal = $cart->items->sum('subtotal');
 
-        $this->cartCount = $items->sum('quantity');
-        $this->subtotal = $items->sum('subtotal');
-
-        $this->cartItems = $items->map(function ($item) {
+        $this->cartItems = $cart->items->map(function ($item) {
             return [
                 'id' => $item->id,
                 'quantity' => $item->quantity,

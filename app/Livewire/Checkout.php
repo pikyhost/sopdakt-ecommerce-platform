@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Route;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Cart;
-use App\Models\CartItem;
 
 class Checkout extends Component
 {
@@ -44,32 +43,12 @@ class Checkout extends Component
     public function mount()
     {
         $this->currentRoute = Route::currentRouteName();
-
-        // Load cart using CartService
-        $this->cart = CartService::getCart();
-
-        if (Auth::check()) {
-            $user = Auth::user();
-            $this->name = $user->name;
-            $this->email = $user->email;
-            $this->phone = $user->phone;
-            $this->address = $user->address;
-        } else {
-            $guestContact = CartService::getGuestContact();
-
-            if ($guestContact) {
-                $this->name = $guestContact->name;
-                $this->email = $guestContact->email;
-                $this->phone = $guestContact->phone;
-                $this->address = $guestContact->address;
-            }
-        }
-
-        $this->loadCartItems(); // Ensure cart items are loaded
     }
 
     public function loadCartItems()
     {
+        $this->cart = CartService::getCart(); // Use cached cart
+
         if (!$this->cart) {
             $this->cartItems = [];
             $this->subTotal = 0;
@@ -78,9 +57,7 @@ class Checkout extends Component
             return;
         }
 
-        $cartItems = $this->cart->items->load('product');
-
-        $this->cartItems = $cartItems->map(fn($item) => [
+        $this->cartItems = $this->cart->items->map(fn($item) => [
             'id' => $item->id,
             'quantity' => $item->quantity,
             'subtotal' => $item->subtotal,
@@ -212,18 +189,9 @@ class Checkout extends Component
             $cart->items()->delete();
             $cart->delete();
 
-//            $JtExpressOrderData =  $this->prepareJtExpressOrderData($order);
-//            $jtExpressResponse = app(JtExpressService::class)->createOrder($JtExpressOrderData);
-//            $this->updateJtExpressOrder($order, 'pending', $JtExpressOrderData,  $jtExpressResponse);
-
             DB::commit();
 
-//            // Send order confirmation email
-//            Mail::to(Auth::user()->email ?? $contact->email)->queue(new OrderConfirmationMail($order));
-
-            // Set session message for order completion
             session()->flash('success', 'Order placed successfully! A confirmation email has been sent.');
-
 
             return redirect()->route('order.complete')->with('order_success', true);
         } catch (\Exception $e) {
