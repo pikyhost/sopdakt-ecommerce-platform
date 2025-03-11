@@ -18,13 +18,13 @@ return new class extends Migration
             $table->string('name');
             $table->string('sku')->unique(); // Unique identifier for the product
             $table->integer('price');
+            $table->integer('after_discount_price')->nullable();
             $table->integer('cost')->nullable();
             $table->string('shipping_estimate_time')->nullable();
             $table->text('description');
             $table->string('slug')->unique();
             $table->string('meta_title')->nullable();
             $table->string('meta_description')->nullable();
-            $table->integer('after_discount_price')->nullable();
             $table->dateTime('discount_start')->nullable();
             $table->dateTime('discount_end')->nullable();
             $table->integer('views')->default(0);
