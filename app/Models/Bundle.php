@@ -24,15 +24,15 @@ class Bundle extends Model
     ];
 
 
-    public function formatPrice($amount)
+    public static function formatPrice($amount): string
     {
         $locale = app()->getLocale(); // Get current locale
         $currency = Setting::getCurrency()?->code ?? 'USD'; // Retrieve currency code from settings
 
-        $formatter = new NumberFormatter($locale, NumberFormatter::CURRENCY);
-        return $formatter->formatCurrency($amount, $currency);
-    }
+        $formatter = new \NumberFormatter($locale, \NumberFormatter::CURRENCY);
 
+        return $formatter->formatCurrency((float) $amount, $currency);
+    }
 
     public function mainProduct()
     {
