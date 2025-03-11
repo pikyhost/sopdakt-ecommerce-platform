@@ -18,6 +18,7 @@ use App\Models\ShippingType;
 use App\Services\JtExpressService;
 use Carbon\Carbon;
 use Filament\Forms;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -33,6 +34,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\HtmlString;
 
 class OrderResource extends Resource
 {
@@ -500,59 +502,6 @@ class OrderResource extends Resource
 
                 Step::make('Order Items')
                     ->schema([
-                        Placeholder::make('desc')
-                            ->hiddenLabel()
-                            ->columnSpanFull()
-                            ->content('Note: Only one bundle can be created per order. If you wish to add a bundle with products, please make sure to select the desired bundle first.'),
-                        Select::make('bundle_id')
-                            ->label(__('Select Bundle'))
-                            ->options(Bundle::pluck('name', 'id'))
-                            ->searchable()
-                            ->live()
-                            ->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
-                                if (!$state) {
-                                    $set('items', []);
-                                    $set('subtotal', 0);
-                                    $set('bundle_discount', 0);
-                                    return;
-                                }
-
-                                $bundle = Bundle::with('products')->find($state);
-                                if (!$bundle) return;
-
-                                $items = [];
-                                $bundleDiscount = (float) $bundle->discount_price;
-
-                                foreach ($bundle->products as $product) {
-                                    $totalInputs = ($bundle->bundle_type === BundleType::BUY_X_GET_Y)
-                                        ? (int) $bundle->buy_x + (int) $bundle->get_y
-                                        : 1;
-
-                                    for ($i = 0; $i < $totalInputs; $i++) {
-                                        $items[] = [
-                                            'product_id' => $product->id,
-                                            'quantity' => 1,
-                                            'price_per_unit' => 0,
-                                            'subtotal' => 0,
-                                            'is_bundle_item' => true,
-                                        ];
-                                    }
-                                }
-
-                                $set('items', $items);
-                                $set('bundle_discount', $bundleDiscount);
-                                $set('subtotal', $bundleDiscount);
-                            }),
-
-                        Placeholder::make('bundle_discount')
-                            ->label(__('Bundle Discount Price'))
-                            ->content(fn (Get $get) =>
-                            !empty($get('bundle_id'))
-                                ? __('Discount Price: ') . Bundle::find($get('bundle_id'))?->discount_price
-                                : ''
-                            )
-                            ->hidden(fn (Get $get) => empty($get('bundle_id'))),
-
                         Repeater::make('items')
                             ->label(__('Order Items'))
                             ->relationship('items')
@@ -562,10 +511,10 @@ class OrderResource extends Resource
                                     ->options(Product::pluck('name', 'id'))
                                     ->searchable()
                                     ->live()
-                                    ->disabled(fn (Get $get) => $get('is_bundle_item') ?? false)
                                     ->afterStateUpdated(fn ($state, Forms\Set $set) =>
                                     $set('price_per_unit', Product::find($state)?->price ?? 0)
-                                    ),
+                                    )
+                                    ->hidden(fn (Get $get) => $get('bundle_id') !== null), // Hide when bundle is selected
 
                                 Select::make('color_id')
                                     ->label(__('Color'))
@@ -594,33 +543,30 @@ class OrderResource extends Resource
                                     ->numeric()
                                     ->minValue(1)
                                     ->live()
-                                    ->default(1)
-                                    ->hidden(fn (Get $get) => $get('is_bundle_item') ?? false)
+                                    ->hidden(fn (Get $get) => $get('bundle_id') !== null) // Hide when bundle is selected
                                     ->afterStateUpdated(fn ($state, callable $set, Get $get) =>
                                     $set('subtotal', ($get('price_per_unit') ?? 0) * ($state ?? 1))
                                     ),
 
                                 TextInput::make('price_per_unit')
-                                    ->default(fn (Get $get) => $get('is_bundle_item') ?? false
-                                        ? 0
-                                        : (Product::find($get('product_id'))?->price ?? 0))
+                                    ->default(fn (Get $get) => Product::find($get('product_id'))?->price ?? 0)
                                     ->readOnly()
                                     ->label(__('Price per Unit'))
                                     ->numeric()
-                                    ->hidden(fn (Get $get) => $get('is_bundle_item') ?? false),
+                                    ->hidden(fn (Get $get) => $get('bundle_id') !== null), // Hide when bundle is selected
 
                                 TextInput::make('subtotal')
                                     ->readOnly()
                                     ->label(__('Subtotal'))
                                     ->numeric()
-                                    ->hidden(fn (Get $get) => $get('is_bundle_item') ?? false),
+                                    ->hidden(fn (Get $get) => $get('bundle_id') !== null), // Hide when bundle is selected
                             ])
                             ->columns(3)
                             ->collapsible()
                             ->afterStateUpdated(function (Get $get, Forms\Set $set) {
                                 $items = $get('items') ?? [];
                                 $subtotal = collect($items)
-                                    ->filter(fn ($item) => !($item['is_bundle_item'] ?? false))
+                                    ->filter(fn ($item) => !isset($item['bundle_id']) || empty($item['bundle_id']))
                                     ->sum(fn ($item) => ($item['subtotal'] ?? 0));
 
                                 if ($get('bundle_id')) {
@@ -691,7 +637,7 @@ class OrderResource extends Resource
 
                         Forms\Components\TextInput::make('shipping_cost')
                             ->numeric()
-                            ->disabled()
+                            ->readOnly()
                             ->label(__('Shipping Cost'))
                             ->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
                                 self::recalculateTotal($set, $get);
@@ -729,13 +675,13 @@ class OrderResource extends Resource
                         Forms\Components\TextInput::make('subtotal')
                             ->live()
                             ->numeric()
-                            ->disabled()
+                            ->readOnly()
                             ->label(__('Subtotal')),
 
                         Forms\Components\TextInput::make('total')
                             ->live()
                             ->numeric()
-                            ->disabled()
+                            ->readOnly()
                             ->label(__('Total')),
                     ])->columns(2),
             ])->columnSpanFull()->skippable()
