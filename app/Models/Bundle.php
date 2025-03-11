@@ -50,11 +50,14 @@ class Bundle extends Model
 
         if ($specialPrice) {
             $amount = $specialPrice->special_price_after_discount ?? $specialPrice->special_price;
-            $currency = $specialPrice->currency_id ?? $currency;
+            $currency = $specialPrice?->currency_id
+                ? Currency::find($specialPrice->currency_id)?->code
+                : $currency;
         }
 
         return GeneralHelper::formatBundlePrice($amount, $currency);
     }
+
 
     public function mainProduct()
     {
