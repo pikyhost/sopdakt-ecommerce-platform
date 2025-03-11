@@ -195,7 +195,7 @@ class OrderResource extends Resource
                         ->icon('heroicon-o-check-circle')
                         ->color('primary')
                         ->visible(fn (Order $record): bool =>
-                            !is_null($record->tracking_number)
+                        !is_null($record->tracking_number)
                         )
                         ->action(function (Order $record): void {
                             $shipping_response = json_decode($record->shipping_response);
@@ -223,7 +223,7 @@ class OrderResource extends Resource
                         ->icon('heroicon-o-clipboard-document-list')
                         ->color('info')
                         ->visible(fn (Order $record): bool =>
-                            !is_null($record->tracking_number)
+                        !is_null($record->tracking_number)
                         )
                         ->action(function (Order $record): void {
                             $shipping_response = json_decode($record->shipping_response);
@@ -258,7 +258,7 @@ class OrderResource extends Resource
                         ->icon('heroicon-o-arrow-path')
                         ->color('gray')
                         ->visible(fn (Order $record): bool =>
-                            !is_null($record->tracking_number)
+                        !is_null($record->tracking_number)
                         )
                         ->action(function (Order $record): void {
                             $shipping_response = json_decode($record->shipping_response);
@@ -692,7 +692,7 @@ class OrderResource extends Resource
                             ->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
                                 self::recalculateTotal($set, $get);
                             }),
-        ]),
+                    ]),
 
                 // **Moved Billing Information to a separate step**
                 Step::make('Billing Information')
