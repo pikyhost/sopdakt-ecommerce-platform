@@ -206,11 +206,12 @@ class GeneralHelper
             ?? $bundle->discount_price
             ?? $bundle->price;
 
-        $currency = $specialPriceData?->currency_id ?? $bundle->currency;
+        $currency = $specialPriceData?->currency_id ?? config('app.default_currency');
 
         self::$bundlePrices[$bundle->id] = self::formatBundlePrice($finalPrice, $currency);
         return self::$bundlePrices[$bundle->id];
     }
+
 
     public static function getBundlePrice(Bundle $bundle): string
     {
