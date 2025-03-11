@@ -58,7 +58,7 @@
                             <tr>
                                 <th class="property-title">Price</th>
                                 @foreach($landingPage->comparesItems as $compareItem)
-                                    <th class="price text-center">{{$settingData['currency_code']}} {{$compareItem->price}}</th>
+                                    <th class="price text-center">{{$landingPageSettings?->currency_code}} {{$compareItem->price}}</th>
                                 @endforeach
                             </tr>
                         @endif

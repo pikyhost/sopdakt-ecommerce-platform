@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources;
 
-
 use App\Enums\OrderStatus;
 use Filament\Tables\Table;
 use App\Models\LandingPageOrder;
@@ -20,55 +19,84 @@ use Filament\Forms\Form;
 class LandingPageOrderResource extends Resource
 {
     protected static ?string $model = LandingPageOrder::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
-    protected static ?string $navigationGroup = 'Orders & Contacts';
-    protected static ?string $navigationLabel = 'Landing Page Orders';
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('landing_page_order.orders_contacts');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('landing_page_order.landing_page_orders');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('landing_page_order.landing_page_order');
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return __('landing_page_order.landing_page_orders');
+    }
+
+    public static function getLabel(): ?string
+    {
+        return __('landing_page_order.landing_page_order');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('landing_page_order.landing_page_orders');
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Section::make('Order Details')
+                Section::make(__('landing_page_order.order_details'))
                     ->schema([
                         Grid::make()
                             ->schema([
-                                Select::make('landing_page_id')->relationship('landingPage', 'slug')->required()->label('Landing Page'),
-                                Select::make('governorate_id')->relationship('governorate', 'name')->required()->label('Governorate'),
-                                Select::make('country_id')->relationship('country', 'name')->required()->label('Country'),
-                                Select::make('shipping_type_id')->relationship('shippingType', 'name')->required()->label('Shipping Type'),
-                                TextInput::make('quantity')->numeric()->minValue(1)->required()->label('Quantity'),
-                                Select::make('status')->options(collect(OrderStatus::cases())->mapWithKeys(fn ($status) => [$status->value => $status->getLabel()]))->required()->label('Order Status'),
+                                Select::make('landing_page_id')->relationship('landingPage', 'slug')->required()->label(__('landing_page_order.landing_page')),
+                                Select::make('governorate_id')->relationship('governorate', 'name')->required()->label(__('landing_page_order.governorate')),
+                                Select::make('country_id')->relationship('country', 'name')->required()->label(__('landing_page_order.country')),
+                                Select::make('shipping_type_id')->relationship('shippingType', 'name')->required()->label(__('landing_page_order.shipping_type')),
+                                TextInput::make('quantity')->numeric()->minValue(1)->required()->label(__('landing_page_order.quantity')),
+                                Select::make('status')->options(collect(OrderStatus::cases())->mapWithKeys(fn ($status) => [$status->value => $status->getLabel()]))->required()->label(__('landing_page_order.status')),
                             ]),
                     ]),
 
-                Section::make('Customer Information')
+                Section::make(__('landing_page_order.customer_information'))
                     ->schema([
                         Grid::make(2)
                             ->schema([
-                                TextInput::make('name')->required()->label('Customer Name'),
-                                TextInput::make('phone')->tel()->required()->label('Phone Number'),
-                                TextInput::make('another_phone')->tel()->label('Alternate Phone Number'),
-                                Textarea::make('address')->required()->rows(3)->label('Address'),
+                                TextInput::make('name')->required()->label(__('landing_page_order.customer_name')),
+                                TextInput::make('phone')->tel()->required()->label(__('landing_page_order.phone_number')),
+                                TextInput::make('another_phone')->tel()->label(__('landing_page_order.alternate_phone_number')),
+                                Textarea::make('address')->required()->rows(3)->label(__('landing_page_order.address')),
                             ]),
                     ]),
 
-                Section::make('Pricing')
+                Section::make(__('landing_page_order.pricing'))
                     ->schema([
                         Grid::make(3)
                             ->schema([
-                                TextInput::make('subtotal')->numeric()->prefix('$')->required()->label('Subtotal'),
-                                TextInput::make('shipping_cost')->numeric()->prefix('$')->required()->label('Shipping Cost'),
-                                TextInput::make('total')->numeric()->prefix('$')->required()->label('Total Price'),
+                                TextInput::make('subtotal')->numeric()->prefix('$')->required()->label(__('landing_page_order.subtotal')),
+                                TextInput::make('shipping_cost')->numeric()->prefix('$')->required()->label(__('landing_page_order.shipping_cost')),
+                                TextInput::make('total')->numeric()->prefix('$')->required()->label(__('landing_page_order.total_price')),
                             ]),
                     ]),
 
-                Section::make('Shipping Information')
+                Section::make(__('landing_page_order.shipping_information'))
                     ->schema([
                         Grid::make(2)
                             ->schema([
-                                TextInput::make('tracking_number')->label('Tracking Number'),
-                                TextInput::make('shipping_status')->label('Shipping Status'),
-                                Textarea::make('notes')->rows(3)->label('Notes'),
+                                TextInput::make('tracking_number')->label(__('landing_page_order.tracking_number')),
+                                TextInput::make('shipping_status')->label(__('landing_page_order.shipping_status')),
+                                Textarea::make('notes')->rows(3)->label(__('landing_page_order.notes')),
                             ]),
                     ]),
             ]);
@@ -78,30 +106,30 @@ class LandingPageOrderResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')->label('Order ID')->sortable(),
-                TextColumn::make('landingPage.slug')->label('Landing Page')->sortable(),
-                TextColumn::make('governorate.name')->label('Governorate')->sortable(),
-                TextColumn::make('country.name')->label('Country')->sortable(),
-                TextColumn::make('shippingType.name')->label('Shipping Type')->sortable(),
-                TextColumn::make('name')->label('Customer Name')->sortable()->searchable(),
-                TextColumn::make('phone')->label('Phone Number')->sortable()->searchable(),
-                TextColumn::make('another_phone')->label('Alternate Phone')->sortable()->searchable(),
-                TextColumn::make('address')->label('Address')->sortable()->limit(50),
-                TextColumn::make('quantity')->label('Quantity')->sortable(),
-                TextColumn::make('subtotal')->label('Subtotal')->money('USD')->sortable(),
-                TextColumn::make('shipping_cost')->label('Shipping Cost')->money('USD')->sortable(),
-                TextColumn::make('total')->label('Total Price')->money('USD')->sortable(),
-                TextColumn::make('status')->label('Status')->badge()->sortable(),
-                TextColumn::make('tracking_number')->label('Tracking Number'),
-                TextColumn::make('notes')->label('Notes')->limit(100),
-                TextColumn::make('created_at')->label('Order Date')->dateTime('M d, Y H:i A')->sortable(),
+                TextColumn::make('id')->label(__('landing_page_order.order_id'))->sortable(),
+                TextColumn::make('landingPage.slug')->label(__('landing_page_order.landing_page'))->sortable(),
+                TextColumn::make('governorate.name')->label(__('landing_page_order.governorate'))->sortable(),
+                TextColumn::make('country.name')->label(__('landing_page_order.country'))->sortable(),
+                TextColumn::make('shippingType.name')->label(__('landing_page_order.shipping_type'))->sortable(),
+                TextColumn::make('name')->label(__('landing_page_order.customer_name'))->sortable()->searchable(),
+                TextColumn::make('phone')->label(__('landing_page_order.phone_number'))->sortable()->searchable(),
+                TextColumn::make('another_phone')->label(__('landing_page_order.alternate_phone_number'))->sortable()->searchable(),
+                TextColumn::make('address')->label(__('landing_page_order.address'))->sortable()->limit(50),
+                TextColumn::make('quantity')->label(__('landing_page_order.quantity'))->sortable(),
+                TextColumn::make('subtotal')->label(__('landing_page_order.subtotal'))->money('USD')->sortable(),
+                TextColumn::make('shipping_cost')->label(__('landing_page_order.shipping_cost'))->money('USD')->sortable(),
+                TextColumn::make('total')->label(__('landing_page_order.total_price'))->money('USD')->sortable(),
+                TextColumn::make('status')->label(__('landing_page_order.status'))->badge()->sortable(),
+                TextColumn::make('tracking_number')->label(__('landing_page_order.tracking_number')),
+                TextColumn::make('notes')->label(__('landing_page_order.notes'))->limit(100),
+                TextColumn::make('created_at')->label(__('landing_page_order.created_at'))->dateTime('M d, Y H:i A')->sortable(),
             ])
             ->actions([
                 EditAction::make()->color('primary'),
                 ActionGroup::make([
                     Action::make(OrderStatus::Shipping->getLabel())->label('Change To (Shipping)')->icon('heroicon-m-truck')->color('primary')->action(fn ($record) => self::updateOrderStatus($record, OrderStatus::Shipping)),
                     Action::make('trackOrder')
-                        ->label('Track Order')
+                        ->label(__('landing_page_order.track_order'))
                         ->icon('heroicon-o-map')
                         ->color('success')
                         ->visible(fn (LandingPageOrder $record): bool =>
@@ -127,7 +155,7 @@ class LandingPageOrderResource extends Resource
                             }
                         }),
                     Action::make('checkOrder')
-                        ->label('Check Order Status')
+                        ->label(__('landing_page_order.check_order_status'))
                         ->icon('heroicon-o-check-circle')
                         ->color('primary')
                         ->visible(fn (LandingPageOrder $record): bool =>
@@ -152,7 +180,7 @@ class LandingPageOrderResource extends Resource
                             }
                         }),
                     Action::make('getOrderStatus')
-                        ->label('Get Detailed Status')
+                        ->label(__('landing_page_order.get_detailed_status'))
                         ->icon('heroicon-o-clipboard-document-list')
                         ->color('info')
                         ->visible(fn (LandingPageOrder $record): bool =>
@@ -184,7 +212,7 @@ class LandingPageOrderResource extends Resource
                             }
                         }),
                     Action::make('getTrajectory')
-                        ->label('View Delivery Trajectory')
+                        ->label(__('landing_page_order.view_delivery_trajectory'))
                         ->icon('heroicon-o-arrow-path')
                         ->color('gray')
                         ->visible(fn (LandingPageOrder $record): bool =>
@@ -213,7 +241,7 @@ class LandingPageOrderResource extends Resource
                             }
                         }),
                     Action::make('cancelOrder')
-                        ->label('Cancel Order')
+                        ->label(__('landing_page_order.cancel_order'))
                         ->icon('heroicon-o-x-circle')
                         ->color('danger')
                         ->visible(fn (LandingPageOrder $record): bool =>
@@ -247,7 +275,7 @@ class LandingPageOrderResource extends Resource
                             }
                         }),
                 ])
-                ->label('Shipping Actions')
+                ->label(__('landing_page_order.shipping_actions'))
                 ->icon('heroicon-o-truck')
                 ->button()
             ]);

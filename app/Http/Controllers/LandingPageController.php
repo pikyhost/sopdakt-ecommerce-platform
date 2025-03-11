@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
-use App\Services\JtExpressService;
+use App\Models\LandingPageSetting;
 use Illuminate\Support\Facades\Log;
 use App\Http\Requests\LandingPage\{OrderLandingRequest, OrderLandingPageBundleRequest};
-use App\Models\{Governorate, ShippingType, Region, LandingPage, WebsiteSetting, LandingPageNavbarItems, LandingPageOrder};
+use App\Models\{Governorate, ShippingType, Region, LandingPage, WebsiteSetting, LandingPageNavbarItems};
 
 class LandingPageController extends Controller
 {
@@ -24,13 +24,14 @@ class LandingPageController extends Controller
         $totalPrice = $landingPage->after_discount_price ? $landingPage->after_discount_price : $landingPage->price;
 
         return view('landing-pages.landing-page', [
-            'landingPage'         => $landingPage,
-            'settings'            => WebsiteSetting::query()->latest()->first(),
-            'governorates'        => Governorate::all(),
-            'landingPageNavItems' => LandingPageNavbarItems::all(),
-            'media'               => $landingPage->media,
-            'totalPrice'          => $totalPrice,
-            'productFeatures'     => $landingPage->features
+            'landingPage'          => $landingPage,
+            'landingPageSettings'  => LandingPageSetting::latest()->first(),
+            'settings'             => WebsiteSetting::query()->latest()->first(),
+            'governorates'         => Governorate::all(),
+            'landingPageNavItems'  => LandingPageNavbarItems::all(),
+            'media'                => $landingPage->media,
+            'totalPrice'           => $totalPrice,
+            'productFeatures'      => $landingPage->features
         ]);
     }
 
@@ -82,13 +83,13 @@ class LandingPageController extends Controller
         if (!$landingPageOrder) return back()->with('error', 'Please select a bundle first');
 
         return view('landing-pages.landing-page-purhcase-form', [
-            'landingPage'         => $landingPage,
-            'governorates'        => Governorate::all(),
-            'settings'            => WebsiteSetting::latest()->first(),
-            'bundle'              => $landingPage->bundles->where('id', $landingPageOrder->bundle_landing_page_id)->first(),
-            'totalPrice'          => $landingPageOrder->total_price,
-            'varieties'           => $landingPageOrder->varieties,
-            'quantity'            => $landingPageOrder->quantity,
+            'landingPage'          => $landingPage,
+            'landingPageSettings'  => LandingPageSetting::latest()->first(),
+            'governorates'         => Governorate::all(),
+            'bundle'               => $landingPage->bundles->where('id', $landingPageOrder->bundle_landing_page_id)->first(),
+            'totalPrice'           => $landingPageOrder->total_price,
+            'varieties'            => $landingPageOrder->varieties,
+            'quantity'             => $landingPageOrder->quantity,
         ]);
     }
 
@@ -154,7 +155,7 @@ class LandingPageController extends Controller
             }
 
             $request->session()->forget('landing_pages_orders');
-            return redirect()->route('landing-page.show-by-slug', $landingPage->slug)->with('success', 'Order has been placed successfully');
+            return redirect()->route('landing-pages.thanks', $landingPage->slug)->with('success', 'Order has been placed successfully');
         } catch (Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
@@ -209,10 +210,19 @@ class LandingPageController extends Controller
             }
 
             $request->session()->forget('landing_pages_orders');
-            return redirect()->back()->with('success', 'Order has been placed successfully');
+            return redirect()->route('landing-pages.thanks', $landingPage->slug)->with('success', 'Order has been placed successfully');
         } catch (Exception $e) {
             Log::error('create order', [$e->getMessage()]);
             return redirect()->back()->with('error', $e->getMessage());
         }
+    }
+
+    public function thanks($slug)
+    {
+        return view('landing-pages.landing-page-thanks', [
+            'landingPage'          => LandingPage::where('slug', $slug)->firstOrFail(),
+            'settings'             => WebsiteSetting::query()->latest()->first(),
+            'landingPageSettings'  => LandingPageSetting::latest()->first(),
+        ]);
     }
 }

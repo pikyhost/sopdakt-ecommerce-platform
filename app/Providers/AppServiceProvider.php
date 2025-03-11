@@ -5,10 +5,8 @@ namespace App\Providers;
 use Livewire\Livewire;
 use App\Enums\UserRole;
 use Filament\Tables\Table;
-use App\Models\LandingPageSetting;
 use App\Services\JtExpressService;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\ProfileContactDetails;
 use Filament\Tables\Columns\TextColumn;
@@ -63,18 +61,6 @@ class AppServiceProvider extends ServiceProvider
         Livewire::setScriptRoute(function ($handle) {
             return Route::get(LaravelLocalization::setLocale() . '/livewire/livewire.js', $handle)
                 ->middleware(['web', 'localeSessionRedirect', 'localizationRedirect', 'localeViewPath']);
-        });
-
-        View::composer('*', function ($view) {
-            $landingPageSetting = LandingPageSetting::latest()->first();
-
-            $data = [];
-            $data['currency_code']  = $landingPageSetting?->currency_code ?? 'USD';
-            $data['address']        = $landingPageSetting?->address ?? 'Not Available';
-            $data['map_link']       = $landingPageSetting?->map_link ?? '#';
-            $data['header_image']   = $landingPageSetting?->landing_page_header_image ?? 'default-image.jpg';
-
-            $view->with('settingData', $data);
         });
     }
 

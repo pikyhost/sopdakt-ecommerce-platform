@@ -15,6 +15,7 @@ use App\Models\Product;
 use App\Models\ProductColor;
 use App\Models\Setting;
 use App\Models\ShippingType;
+use App\Models\{Bundle, City, Country, Governorate, Order, Product, ProductColor, ProductColorSize, Setting, ShippingType};
 use App\Services\JtExpressService;
 use Carbon\Carbon;
 use Filament\Forms;
@@ -39,6 +40,17 @@ class OrderResource extends Resource
     protected static ?string $model = Order::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
+
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('landing_page_order.orders_contacts');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('landing_page_order.orders');
+    }
 
     public static function table(Table $table): Table
     {

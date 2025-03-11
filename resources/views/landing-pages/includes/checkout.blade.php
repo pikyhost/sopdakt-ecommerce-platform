@@ -82,17 +82,17 @@
                     <div class="row mb-3">
                         <div class="col-12 d-flex justify-content-between align-items-center my-2 border-bottom border border-2 py-2">
                             <h6>{{__('Sub total')}}</h6>
-                            <h6 id="price">{{$totalPrice}} {{$settingData['currency_code']}}</h6>
+                            <h6 id="price">{{$totalPrice}} {{$landingPageSettings?->currency_code}}</h6>
                         </div>
 
                         <div class="col-12 d-flex justify-content-between align-items-center my-2 border-bottom border border-2 py-2">
                             <h6>{{__('Shipping Cost')}}</h6>
-                            <h6 id="shipping_cost">0 {{$settingData['currency_code']}}</h6>
+                            <h6 id="shipping_cost">0 {{$landingPageSettings?->currency_code}}</h6>
                         </div>
 
                         <div class="col-12 d-flex justify-content-between align-items-center my-2 border-bottom border border-2 py-2">
                             <h6>{{__('Total')}}</h6>
-                            <h6 id="total">{{$totalPrice}} {{$settingData['currency_code']}}</h6>
+                            <h6 id="total">{{$totalPrice}} {{$landingPageSettings?->currency_code}}</h6>
                         </div>
                     </div>
                 </form>

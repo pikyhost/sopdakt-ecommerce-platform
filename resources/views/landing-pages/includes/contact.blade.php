@@ -61,7 +61,7 @@
                     </div>
                 </div>
             @endif
-            @if($settingData['address'])
+            @if($landingPageSettings?->address)
 
                 <div class="col-lg-4 col-md-6">
                     <div class="info-box box3">
@@ -72,7 +72,7 @@
                         </div>
                         <div class="right">
                             <div class="content">
-                                <p>{{$settingData['address']}}</p>
+                                <p>{{$landingPageSettings?->address}}</p>
                             </div>
                         </div>
                     </div>
@@ -115,11 +115,11 @@
                     </form>
                 </div>
             </div>
-            @if($settingData['map_link'])
+            @if($landingPageSettings?->map_link)
                 <div class="col-lg-6">
                     <div class="google_map_wrapper h-100 d-flex justify-content-center align-items-center">
                         <iframe
-                            src="{{$settingData['map_link']}}"
+                            src="{{$landingPageSettings?->map_link}}"
                             frameborder="0" style="border:0;" allowfullscreen="" aria-hidden="false"
                             tabindex="0"></iframe>
                     </div>
