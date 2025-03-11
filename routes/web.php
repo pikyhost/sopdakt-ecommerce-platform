@@ -13,6 +13,8 @@ use App\Http\Controllers\{CartController,
     ShippingController,
     CategoryProductController};
 
+Route::get('jt-express-webhook', [ShippingController::class, 'handleWebhook']);
+
 Route::get('/', function () {
     return view('welcome');
 });
@@ -43,11 +45,4 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
     Route::get('/my-cart', [CartController::class, 'index'])->name('cart.index');
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::get('/order-complete', [OrderCompleteController::class, 'index'])->name('order.complete');
-});
-
-Route::post('/jt-express-webhook', [ShippingController::class, 'handleWebhook']);
-
-Route::get('/test', function () {
-    Log::info(Filament::auth()->user());
-    Log::info(auth()->user());
 });
