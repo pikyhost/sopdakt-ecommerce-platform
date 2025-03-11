@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use App\Enums\BundleType;
+use App\Helpers\GeneralHelper;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Spatie\Translatable\HasTranslations;
 
 class Bundle extends Model
@@ -29,27 +31,29 @@ class Bundle extends Model
 
     public function formatPrice(): string
     {
-        $locale = app()->getLocale();
-        $currency = Setting::getCurrency()?->code ?? 'USD'; // Default currency from settings
+        $countryId = GeneralHelper::getCountryId();
+        $currency = Setting::getCurrency()?->code ?? 'USD'; // Default currency
         $amount = $this->default_price ?? 0; // Default price
 
-        // Retrieve special price for the current country or country group
-        $specialPrice = $this->specialPrices()
-            ->where(function ($query) {
-                $query->where('country_id', app()->currentCountry->id)
-                    ->orWhere('country_group_id', app()->currentCountry->country_group_id);
+        $specialPrice = BundleSpecialPrice::where('bundle_id', $this->id)
+            ->where(function ($query) use ($countryId) {
+                $query->where('country_id', $countryId)
+                    ->orWhereNull('country_id')
+                    ->whereExists(fn ($existsQuery) => $existsQuery->select(DB::raw(1))
+                        ->from('country_group_country')
+                        ->whereRaw('bundle_special_prices.country_group_id = country_group_country.country_group_id')
+                        ->where('country_group_country.country_id', $countryId)
+                    );
             })
-            ->first();
+            ->orderByRaw('CASE WHEN country_id IS NOT NULL THEN 1 ELSE 2 END')
+            ->first(['special_price', 'special_price_after_discount', 'currency_id']);
 
         if ($specialPrice) {
-            // Use special price after discount if available; otherwise, use the special price
             $amount = $specialPrice->special_price_after_discount ?? $specialPrice->special_price;
-            $currency = $specialPrice->currency?->code ?? $currency; // Use special price currency if available
+            $currency = $specialPrice->currency_id ?? $currency;
         }
 
-        $formatter = new \NumberFormatter($locale, \NumberFormatter::CURRENCY);
-
-        return $formatter->formatCurrency((float) $amount, $currency);
+        return GeneralHelper::formatBundlePrice($amount, $currency);
     }
 
     public function mainProduct()

@@ -18,7 +18,7 @@ class GeneralHelper
     private static array $bundlePrices = [];
     private static ?int $countryId = null;
 
-    private static function getCountryId(): ?int
+    public static function getCountryId(): ?int
     {
         if (self::$countryId === null) {
             $ip = request()->ip();
@@ -143,7 +143,6 @@ class GeneralHelper
 
 
 
-
     public static function getBundlePriceForCountry(Bundle $bundle): string
     {
         $countryId = self::getCountryId();
@@ -251,7 +250,7 @@ class GeneralHelper
         return self::$bundlePrices[$bundle->id] = self::formatBundlePrice($totalPrice, $bundle->currency);
     }
 
-    private static function formatBundlePrice(float $price, ?string $currency): string
+    public static function formatBundlePrice(float $price, ?string $currency): string
     {
         return number_format($price, 2) . ' ' . ($currency ?? 'USD');
     }
