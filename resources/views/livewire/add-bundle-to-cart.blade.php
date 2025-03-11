@@ -19,7 +19,7 @@
                             <div class="card-body p-4 d-flex flex-column flex-grow-1">
                                 <div class="text-center mb-4">
                                 <span class="badge bg-success fs-3 px-4 py-2 shadow-sm old-price">
-                                    <i class="fas fa-tag me-2"></i> {{ $bundle->formatPrice($bundle->special_price) }}
+                                    <i class="fas fa-tag me-2"></i> {{ $bundle->formatPrice($bundle->bundle__price_for_current_country) }}
                                 </span>
                                 </div>
 
@@ -96,7 +96,6 @@
             </div>
         @endif
     </div>
-
 
     <style>
         /* Hover Scale Effect */
