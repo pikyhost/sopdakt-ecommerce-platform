@@ -18,7 +18,7 @@
 
                             <div class="card-body p-4 d-flex flex-column flex-grow-1">
                                 <div class="text-center mb-4">
-                                <span class="badge bg-success fs-3 px-4 py-2 shadow-sm old-price">
+                                <span class="badge bg-success fs-3 px-4 py-2 shadow-sm">
                                     <i class="fas fa-tag me-2"></i> {{ $bundle->bundle_discount_price_for_current_country }}
                                 </span>
                                 </div>
@@ -46,7 +46,7 @@
                                             @endphp
                                             <p class="fs-5 text-muted">
                                                 <i class="fas fa-tag text-danger me-2 fs-4"></i>
-                                                {{ __('Get this bundle now' }}
+                                                {{ __('Get this bundle now') }}
                                                 <br>
                                                 <span class="badge bg-warning text-dark fs-5 mt-2">
                                                 {{ __('Discount Price: :price', ['price' => $discountPrice]) }}
