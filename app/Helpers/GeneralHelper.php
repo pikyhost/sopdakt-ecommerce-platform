@@ -144,14 +144,12 @@ class GeneralHelper
 
 
 
-
-
-    public static function getBundlePriceForCountry(Bundle $bundle): float
+    public static function getBundlePriceForCountry(Bundle $bundle): string
     {
         $countryId = self::getCountryId();
 
         if (!$countryId) {
-            return (float) $bundle->price;
+            return self::formatBundlePrice($bundle->price, $bundle->currency);
         }
 
         if (isset(self::$bundlePrices[$bundle->id])) {
@@ -169,19 +167,21 @@ class GeneralHelper
                     );
             })
             ->orderByRaw('CASE WHEN country_id IS NOT NULL THEN 1 ELSE 2 END')
-            ->first(['special_price']);
+            ->first(['special_price', 'currency_id']);
 
         $finalPrice = $specialPriceData?->special_price ?? $bundle->discount_price ?? $bundle->price;
-        self::$bundlePrices[$bundle->id] = $finalPrice;
-        return (float) $finalPrice;
+        $currency = $specialPriceData?->currency_id ?? $bundle->currency;
+
+        self::$bundlePrices[$bundle->id] = self::formatBundlePrice($finalPrice, $currency);
+        return self::$bundlePrices[$bundle->id];
     }
 
-    public static function getBundlePriceForCountryWithDiscount(Bundle $bundle): float
+    public static function getBundlePriceForCountryWithDiscount(Bundle $bundle): string
     {
         $countryId = self::getCountryId();
 
         if (!$countryId) {
-            return (float) ($bundle->after_discount_price ?? $bundle->price);
+            return self::formatBundlePrice($bundle->after_discount_price ?? $bundle->price, $bundle->currency);
         }
 
         if (isset(self::$bundlePrices[$bundle->id])) {
@@ -199,7 +199,7 @@ class GeneralHelper
                     );
             })
             ->orderByRaw('CASE WHEN country_id IS NOT NULL THEN 1 ELSE 2 END')
-            ->first(['special_price', 'special_price_after_discount']);
+            ->first(['special_price', 'special_price_after_discount', 'currency_id']);
 
         $finalPrice = $specialPriceData?->special_price_after_discount
             ?? $specialPriceData?->special_price
@@ -207,21 +207,13 @@ class GeneralHelper
             ?? $bundle->discount_price
             ?? $bundle->price;
 
-        self::$bundlePrices[$bundle->id] = (float) $finalPrice;
-        return (float) $finalPrice;
+        $currency = $specialPriceData?->currency_id ?? $bundle->currency;
+
+        self::$bundlePrices[$bundle->id] = self::formatBundlePrice($finalPrice, $currency);
+        return self::$bundlePrices[$bundle->id];
     }
 
-    public static function getBundlePriceForCountryFormatted(Bundle $bundle): string
-    {
-        return self::formatPrice(self::getBundlePriceForCountry($bundle), $bundle->currency_id);
-    }
-
-    public static function getBundlePriceForCountryWithDiscountFormatted(Bundle $bundle): string
-    {
-        return self::formatPrice(self::getBundlePriceForCountryWithDiscount($bundle), $bundle->currency_id);
-    }
-
-    public static function getBundlePrice(Bundle $bundle): float
+    public static function getBundlePrice(Bundle $bundle): string
     {
         $countryId = self::getCountryId();
 
@@ -242,62 +234,26 @@ class GeneralHelper
                     );
             })
             ->orderByRaw('CASE WHEN country_id IS NOT NULL THEN 1 ELSE 2 END')
-            ->first(['special_price']);
+            ->first(['special_price', 'currency_id']);
 
         if ($specialPriceData) {
-            return self::$bundlePrices[$bundle->id] = (float) $specialPriceData->special_price;
+            return self::$bundlePrices[$bundle->id] = self::formatBundlePrice($specialPriceData->special_price, $specialPriceData->currency_id);
         }
 
         // 2️⃣ If no special bundle price, check bundle discount price
         if ($bundle->discount_price) {
-            return self::$bundlePrices[$bundle->id] = (float) $bundle->discount_price;
+            return self::$bundlePrices[$bundle->id] = self::formatBundlePrice($bundle->discount_price, $bundle->currency);
         }
 
         // 3️⃣ If no special price or discount, sum the product prices
         $totalPrice = $bundle->products->sum(fn ($product) => self::getProductPriceForCountry($product, $countryId));
 
-        return self::$bundlePrices[$bundle->id] = (float) $totalPrice;
+        return self::$bundlePrices[$bundle->id] = self::formatBundlePrice($totalPrice, $bundle->currency);
     }
 
-    public static function getBundlePriceWithDiscount(Bundle $bundle): float
+    private static function formatBundlePrice(float $price, ?string $currency): string
     {
-        $countryId = self::getCountryId();
-
-        if (isset(self::$bundlePrices[$bundle->id])) {
-            return self::$bundlePrices[$bundle->id];
-        }
-
-        // 1️⃣ Check for a special bundle price with discount
-        $specialPriceData = BundleSpecialPrice::where('bundle_id', $bundle->id)
-            ->where(function ($query) use ($countryId) {
-                $query->where('country_id', $countryId)
-                    ->orWhereNull('country_id')
-                    ->whereExists(fn ($existsQuery) => $existsQuery->select(DB::raw(1))
-                        ->from('country_group_country')
-                        ->whereRaw('bundle_special_prices.country_group_id = country_group_country.country_group_id')
-                        ->where('country_group_country.country_id', $countryId)
-                    );
-            })
-            ->orderByRaw('CASE WHEN country_id IS NOT NULL THEN 1 ELSE 2 END')
-            ->first(['special_price', 'special_price_after_discount']);
-
-        if ($specialPriceData) {
-            return self::$bundlePrices[$bundle->id] = (float) ($specialPriceData->special_price_after_discount ?? $specialPriceData->special_price);
-        }
-
-        // 2️⃣ If no special bundle price, check bundle `after_discount_price`
-        if ($bundle->after_discount_price) {
-            return self::$bundlePrices[$bundle->id] = (float) $bundle->after_discount_price;
-        }
-
-        // 3️⃣ If no discount, sum discounted product prices
-        $totalPrice = $bundle->products->sum(fn ($product) => self::getProductPriceForCountry($product, $countryId));
-
-        return self::$bundlePrices[$bundle->id] = (float) $totalPrice;
+        return number_format($price, 2) . ' ' . ($currency ?? 'USD');
     }
 
-    public static function getBundlePriceFormatted(Bundle $bundle): string
-    {
-        return self::formatPrice(self::getBundlePrice($bundle), $bundle->currency_id);
-    }
 }
