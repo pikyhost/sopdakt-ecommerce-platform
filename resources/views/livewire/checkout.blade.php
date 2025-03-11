@@ -243,9 +243,14 @@
     </span>
                     </button>
                 @else
-                    <div class="alert alert-warning">
+                    <div class="alert alert-warning text-dark" style="display: block; text-align: left;">
+                        <strong>Attention!</strong> Some steps are missing.
+                        <br>
                         Please complete all required steps before placing your order.
+                        <br><br>
+                        Click <a href="{{ route('cart.index') }}" class="alert-link"><strong>here</strong></a> to review your cart and complete your purchase steps.
                     </div>
+
                 @endif
             </div>
         <!-- End .col-lg-4 -->
