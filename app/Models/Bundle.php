@@ -105,12 +105,12 @@ class Bundle extends Model
 
     public function getBundlePriceForCurrentCountryAttribute()
     {
-        return (float) \App\Helpers\GeneralHelper::getBundlePriceForCountry($this);
+        return \App\Helpers\GeneralHelper::getBundlePriceForCountry($this); // bundle_discount_price_for_current_country
     }
 
     public function getBundleDiscountPriceForCurrentCountryAttribute()
     {
-        return (float) \App\Helpers\GeneralHelper::getBundlePriceForCountryWithDiscount($this);
+        return \App\Helpers\GeneralHelper::getBundlePriceForCountryWithDiscount($this);
     }
 
     /**
