@@ -1,7 +1,5 @@
 <?php
 
-use Filament\Facades\Filament;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use App\Http\Controllers\{CartController,
@@ -12,8 +10,6 @@ use App\Http\Controllers\{CartController,
     RegionsController,
     ShippingController,
     CategoryProductController};
-
-Route::get('jt-express-webhook', [ShippingController::class, 'handleWebhook']);
 
 Route::get('/', function () {
     return view('welcome');
@@ -41,7 +37,6 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
     Route::post('/landing-pages/{id}/get-combination-price', [LandingPageController::class, 'getCombinationPrice'])->name('landing-page.get-combination-price');
     Route::post('landing-pages/{id}/order', [LandingPageController::class, 'saveOrder'])->name('landing-page.purchase-form.order');
     Route::get('landing-pages/{slug}/thanks', [LandingPageController::class, 'thanks'])->name('landing-pages.thanks');
-
     Route::get('/my-cart', [CartController::class, 'index'])->name('cart.index');
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::get('/order-complete', [OrderCompleteController::class, 'index'])->name('order.complete');
