@@ -2,13 +2,25 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\BundleType;
 use App\Enums\OrderStatus;
 use App\Filament\Resources\OrderResource\Pages;
 use App\Mail\OrderConfirmationMail;
+use App\Models\Bundle;
+use App\Models\City;
+use App\Models\Country;
+use App\Models\Governorate;
+use App\Models\Order;
+use App\Models\Product;
+use App\Models\ProductColor;
+use App\Models\Setting;
+use App\Models\ShippingType;
 use App\Models\{Bundle, City, Country, Governorate, Order, Product, ProductColor, ProductColorSize, Setting, ShippingType};
 use App\Services\JtExpressService;
 use Carbon\Carbon;
 use Filament\Forms;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Wizard;
@@ -135,6 +147,7 @@ class OrderResource extends Resource
             ], Tables\Enums\FiltersLayout::Modal)
             ->actions([
                 Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
                     ...collect(OrderStatus::cases())->map(fn ($status) =>
                     Tables\Actions\Action::make($status->value)
                         ->label(__($status->getLabel()))
@@ -144,7 +157,6 @@ class OrderResource extends Resource
                     )->toArray(),
 
                     Tables\Actions\DeleteAction::make(),
-
 
                     Tables\Actions\Action::make('trackOrder')
                         ->visible(fn (Order $record): bool =>
@@ -489,60 +501,137 @@ class OrderResource extends Resource
 
                 Step::make('Order Items')
                     ->schema([
-                        Forms\Components\Repeater::make('items')
+                        Select::make('bundle_id')
+                            ->label(__('Select Bundle'))
+                            ->options(Bundle::pluck('name', 'id'))
+                            ->searchable()
+                            ->live()
+                            ->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
+                                if (!$state) {
+                                    $set('items', []); // Reset when bundle is removed
+                                    $set('subtotal', 0);
+                                    $set('bundle_discount', 0);
+                                    return;
+                                }
+
+                                $bundle = Bundle::with('products')->find($state);
+                                if (!$bundle) return;
+
+                                $items = [];
+                                $bundleDiscount = (float) $bundle->discount_price;
+
+                                foreach ($bundle->products as $product) {
+                                    $totalInputs = ($bundle->bundle_type === BundleType::BUY_X_GET_Y)
+                                        ? (int) $bundle->buy_x + (int) $bundle->get_y
+                                        : 1;
+
+                                    for ($i = 0; $i < $totalInputs; $i++) {
+                                        $items[] = [
+                                            'product_id' => $product->id,
+                                            'quantity' => 1,
+                                            'price_per_unit' => 0, // Price handled by bundle
+                                            'subtotal' => 0,
+                                            'is_bundle_item' => true, // Flag for bundle items
+                                        ];
+                                    }
+                                }
+
+                                $set('items', $items);
+                                $set('bundle_discount', $bundleDiscount);
+                                $set('subtotal', $bundleDiscount);
+                            }),
+
+                        Repeater::make('items')
+                            ->label(__('Order Items'))
                             ->relationship('items')
                             ->schema([
                                 Select::make('product_id')
-                                    ->columnSpanFull()
                                     ->label(__('Product'))
                                     ->options(Product::pluck('name', 'id'))
                                     ->searchable()
+                                    ->live()
+                                    ->disabled(fn (Get $get) => $get('is_bundle_item') ?? false), // Only disable if it's a bundle item
+
+                                Select::make('color_id')
+                                    ->label(__('Color'))
+                                    ->options(fn (Get $get) => ProductColor::where('product_id', $get('product_id'))
+                                        ->with('color')
+                                        ->get()
+                                        ->pluck('color.name', 'color.id'))
                                     ->reactive()
-                                    ->afterStateUpdated(fn ($state, Forms\Set $set) =>
-                                    $set('price_per_unit', Product::find($state)?->price ?? 0)
-                                    ),
+                                    ->afterStateUpdated(fn ($state, Forms\Set $set) => $set('size_id', null))
+                                    ->visible(fn (Get $get) => Product::find($get('product_id'))?->productColors()->exists()),
+
+                                Select::make('size_id')
+                                    ->label(__('Size'))
+                                    ->options(fn (Get $get) => ProductColor::where([
+                                        ['product_id', $get('product_id')],
+                                        ['color_id', $get('color_id')],
+                                    ])
+                                        ->with('sizes')
+                                        ->first()?->sizes
+                                        ->pluck('name', 'id') ?? [])
+                                    ->reactive()
+                                    ->visible(fn (Get $get) => Product::find($get('product_id'))?->productColors()->exists()),
 
                                 TextInput::make('quantity')
                                     ->label(__('Quantity'))
                                     ->numeric()
                                     ->minValue(1)
                                     ->live()
+                                    ->default(1)
+                                    ->hidden(fn (Get $get) => $get('is_bundle_item') ?? false) // Hide for bundle items
                                     ->afterStateUpdated(fn ($state, callable $set, Get $get) =>
                                     $set('subtotal', ($get('price_per_unit') ?? 0) * ($state ?? 1))
                                     ),
 
                                 TextInput::make('price_per_unit')
-                                    ->default(fn (Get $get) => Product::find($get('../product_id'))?->price ?? 0)
+                                    ->default(fn (Get $get) => $get('is_bundle_item') ?? false
+                                        ? 0
+                                        : (Product::find($get('product_id'))?->price ?? 0))
                                     ->readOnly()
                                     ->label(__('Price per Unit'))
-                                    ->numeric(),
+                                    ->numeric()
+                                    ->hidden(fn (Get $get) => $get('is_bundle_item') ?? false),
 
                                 TextInput::make('subtotal')
                                     ->readOnly()
                                     ->label(__('Subtotal'))
-                                    ->numeric(),
+                                    ->numeric()
+                                    ->hidden(fn (Get $get) => $get('is_bundle_item') ?? false),
                             ])
                             ->columns(3)
                             ->collapsible()
                             ->afterStateUpdated(function (Get $get, Forms\Set $set) {
-                                // Calculate subtotal
-                                $subtotal = collect($get('items') ?? [])->sum(fn ($item) => ($item['subtotal'] ?? 0));
+                                // Calculate total excluding bundle items
+                                $items = $get('items') ?? [];
+                                $subtotal = collect($items)
+                                    ->filter(fn ($item) => !($item['is_bundle_item'] ?? false)) // Exclude bundle items
+                                    ->sum(fn ($item) => ($item['subtotal'] ?? 0));
 
-                                // Fetch tax percentage from settings
+                                // Include bundle discount price separately
+                                if ($get('bundle_id')) {
+                                    $subtotal += Bundle::find($get('bundle_id'))?->discount_price ?? 0;
+                                }
+
                                 $taxPercentage = Setting::first()?->tax_percentage ?? 0;
                                 $taxAmount = ($subtotal * $taxPercentage) / 100;
-
-                                // Get shipping cost
                                 $shippingCost = $get('shipping_cost') ?? 0;
-
-                                // Calculate total
                                 $total = $subtotal + $taxAmount + $shippingCost;
 
-                                // Set the values
                                 $set('subtotal', $subtotal);
                                 $set('tax_amount', $taxAmount);
                                 $set('total', $total);
                             }),
+
+                        Placeholder::make('bundle_discount')
+                            ->label(__('Bundle Discount Price'))
+                            ->content(fn (Get $get) =>
+                            !empty($get('bundle_id'))
+                                ? __('Discount Price: ') . Bundle::find($get('bundle_id'))?->discount_price
+                                : ''
+                            )
+                            ->hidden(fn (Get $get) => empty($get('bundle_id'))),
                     ]),
 
                 Step::make('Shipping Information')
@@ -622,14 +711,15 @@ class OrderResource extends Resource
                         Forms\Components\TextInput::make('tax_percentage')
                             ->required()
                             ->numeric()
+                            ->readOnly()
                             ->default(self::getTaxPercentage())
                             ->live()
                             ->label(__('Tax Percentage')),
 
                         Forms\Components\TextInput::make('tax_amount')
                             ->live()
+                            ->readOnly()
                             ->numeric()
-                            ->disabled()
                             ->label(__('Tax Amount')),
 
                         Forms\Components\TextInput::make('subtotal')
@@ -644,207 +734,39 @@ class OrderResource extends Resource
                             ->disabled()
                             ->label(__('Total')),
                     ])->columns(2),
-            ])->columnSpanFull()
-
+            ])->columnSpanFull()->skippable()
         ]);
-    }
-
-    public static function form2(Form $form): Form
-    {
-        return $form
-            ->schema([
-                Select::make('user_id')
-                    ->hidden(fn (Get $get) => $get('contact_id'))
-                    ->relationship('user', 'name')
-                    ->label(__('user_id')),
-
-                Select::make('contact_id')
-                    ->hidden(fn (Get $get) => $get('user_id'))
-                    ->relationship('contact', 'name')
-                    ->label(__('contact_id')),
-
-                Forms\Components\TextInput::make('status')
-                    ->required()
-                    ->label(__('status')),
-
-                Select::make('shipping_type_id')
-                    ->relationship('shippingType', 'name')
-                    ->required()
-                    ->label(__('shipping_type_id'))
-                    ->live()
-                    ->afterStateUpdated(fn ($state, callable $set, Get $get) =>
-                    self::updateShippingCost($set, $state, $get('city_id'), $get('governorate_id'), $get('country_id'))
-                    ),
-
-                Select::make('payment_method_id')
-                    ->relationship('paymentMethod', 'name')
-                    ->required()
-                    ->label(__('payment_method_id')),
-
-                Select::make('coupon_id')
-                    ->relationship('coupon', 'id')
-                    ->label(__('coupon_id')),
-
-                Select::make('country_id')
-                    ->label(__('country_id'))
-                    ->options(Country::pluck('name', 'id'))
-                    ->live()
-                    ->afterStateUpdated(function (callable $set, Get $get) {
-                        $set('governorate_id', null);
-                        $set('city_id', null);
-                        self::updateShippingCost($set, $get('shipping_type_id'), null, null, $get('country_id'));
-                    }),
-
-                Select::make('governorate_id')
-                    ->label(__('governorate_id'))
-                    ->options(fn (Get $get) => Governorate::where('country_id', $get('country_id'))->pluck('name', 'id'))
-                    ->live()
-                    ->placeholder(fn (Get $get) => empty($get('country_id')) ? 'Select a country first' : 'Select a governorate')
-                    ->afterStateUpdated(fn ($state, callable $set, Get $get) =>
-                    self::updateShippingCost($set, $get('shipping_type_id'), null, $state, $get('country_id'))
-                    ),
-
-                Select::make('city_id')
-                    ->label(__('city_id'))
-                    ->options(fn (Get $get) => City::where('governorate_id', $get('governorate_id'))->pluck('name', 'id'))
-                    ->live()
-                    ->placeholder(fn (Get $get) => empty($get('governorate_id')) ? 'Select a governorate first' : 'Select a city')
-                    ->afterStateUpdated(fn ($state, callable $set, Get $get) =>
-                    self::updateShippingCost($set, $get('shipping_type_id'), $state, $get('governorate_id'), $get('country_id'))
-                    ),
-
-                Forms\Components\TextInput::make('shipping_cost')
-                    ->numeric()
-                    ->disabled()
-                    ->label(__('shipping_cost')),
-
-                Forms\Components\Repeater::make('items')
-                    ->relationship('items') // Defines the relationship with OrderItem model
-                    ->schema([
-                        Select::make('bundle_id')
-                            ->label(__('Bundle'))
-                            ->options(Bundle::pluck('name', 'id'))
-                            ->searchable()
-                            ->reactive()
-                            ->afterStateUpdated(fn ($state, Forms\Set $set) =>
-                            $set('price_per_unit', Bundle::find($state)?->price ?? 0)
-                            ),
-
-                        Select::make('product_id')
-                            ->label(__('Product'))
-                            ->options(Product::pluck('name', 'id'))
-                            ->searchable()
-                            ->afterStateUpdated(function ($state, Forms\Set $set) {
-                                $set('color_id', null); // Reset color when product changes
-                                $set('price_per_unit', Product::find($state)?->price ?? 0); // Set price based on product
-                            })
-                            ->reactive(),
-
-                        Select::make('color_id')
-                            ->label(__('Color'))
-                            ->options(fn (Get $get) =>
-                            ProductColor::where('product_id', $get('product_id'))
-                                ->with('color')
-                                ->get()
-                                ->pluck('color.name', 'color.id')
-                            )
-                            ->live()
-                            ->disabled(fn (Get $get) => empty($get('product_id')))
-                            ->afterStateUpdated(fn ($state, callable $set) => $set('size_id', null)), // Reset size when color changes
-
-                        Select::make('size_id')
-                            ->label(__('Size'))
-                            ->options(fn (Get $get) =>
-                            ProductColorSize::whereHas('productColor', function ($query) use ($get) {
-                                $query->where('product_id', $get('product_id'))
-                                    ->where('color_id', $get('color_id'));
-                            })
-                                ->with('size')
-                                ->get()
-                                ->pluck('size.name', 'size.id')
-                            )
-                            ->disabled(fn (Get $get) => empty($get('color_id'))),
-
-                        TextInput::make('quantity')
-                            ->label(__('Quantity'))
-                            ->numeric()
-                            ->minValue(1)
-                            ->live()
-                            ->afterStateUpdated(fn ($state, callable $set, Get $get) =>
-                            $set('subtotal', ($get('price_per_unit') ?? 0) * ($state ?? 1))
-                            ),
-
-                        TextInput::make('price_per_unit')
-                            ->default(fn (Get $get) => Product::find($get('../product_id'))?->id ?? 0) // Get price based on product_id
-                            ->readOnly()
-                            ->label(__('Price per Unit'))
-                            ->numeric(),
-
-
-                        TextInput::make('subtotal')
-                            ->readOnly()
-                            ->label(__('Subtotal'))
-                            ->numeric(),
-                    ])
-                    ->columnSpanFull()
-                    ->collapsible(),
-
-                Forms\Components\TextInput::make('tax_percentage')
-                    ->numeric()
-                    ->default(self::getTaxPercentage())
-                    ->live()
-                    ->afterStateUpdated(function (Get $get, Forms\Set $set) {
-                        $subtotal = collect($get('items'))
-                            ->sum(fn ($item) => $item['subtotal'] ?? 0);
-
-                        $taxPercentage = $get('tax_percentage') ?? 0;
-                        $taxAmount = ($subtotal * $taxPercentage) / 100;
-                        $shippingCost = $get('shipping_cost') ?? 0;
-                        $total = $subtotal + $taxAmount + $shippingCost;
-
-                        $set('subtotal', $subtotal);
-                        $set('tax_amount', $taxAmount);
-                        $set('total', $total);
-                    })
-                    ->label(__('Tax Percentage')),
-
-                Forms\Components\TextInput::make('tax_amount')
-                    ->numeric()
-                    ->disabled()
-                    ->label(__('Tax Amount')),
-
-                Forms\Components\TextInput::make('subtotal')
-                    ->numeric()
-                    ->disabled()
-                    ->label(__('Subtotal')),
-
-                Forms\Components\TextInput::make('total')
-                    ->numeric()
-                    ->disabled()
-                    ->label(__('Total')),
-
-                Forms\Components\Textarea::make('notes')
-                    ->columnSpanFull()
-                    ->label(__('notes')),
-            ]);
     }
 
     private static function recalculateTotal(callable $set, Get $get): void
     {
-        $subtotal = collect($get('items'))->sum(function ($item) {
-            return $item['subtotal'] ?? 0;
-        });
+        $items = collect($get('items') ?? []);
 
-        $taxPercentage = Setting::first()?->tax_percentage ?? 0;
+        // Calculate subtotal from individual items
+        $subtotal = $items->sum(fn ($item) => $item['subtotal'] ?? 0);
+
+        // Include bundle discount price if a bundle is selected
+        if ($bundleId = $get('bundle_id')) {
+            $bundleSubtotal = Bundle::find($bundleId)?->discount_price ?? 0;
+            $subtotal += $bundleSubtotal;
+        }
+
+        // Calculate tax amount
+        $taxPercentage = self::getTaxPercentage();
         $taxAmount = ($subtotal * $taxPercentage) / 100;
 
+        // Get shipping cost
         $shippingCost = $get('shipping_cost') ?? 0;
+
+        // Calculate total
         $total = $subtotal + $taxAmount + $shippingCost;
 
+        // Update state
         $set('subtotal', $subtotal);
         $set('tax_amount', $taxAmount);
         $set('total', $total);
     }
+
 
     private static function updateShippingCost(callable $set, $shippingTypeId, $items, $cityId, $governorateId, $countryId): void
     {
@@ -927,6 +849,6 @@ class OrderResource extends Resource
 
     private static function getTaxPercentage(): float
     {
-        return Setting::first()?->tax_percentage ?? 0;
+        return Setting::getTaxPercentage() ?? 0;
     }
 }
