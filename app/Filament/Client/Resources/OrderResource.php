@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Client\Resources;
 
 use App\Enums\OrderStatus;
-use App\Filament\Resources\OrderResource\Pages;
-use App\Mail\OrderConfirmationMail;
+use App\Filament\Client\Resources\OrderResource\Pages\CreateOrder;
+use App\Filament\Client\Resources\OrderResource\Pages\EditOrder;
+use App\Filament\Client\Resources\OrderResource\Pages\ListOrders;
 use App\Models\Bundle;
 use App\Models\City;
 use App\Models\Country;
@@ -14,7 +15,6 @@ use App\Models\Product;
 use App\Models\ProductColor;
 use App\Models\Setting;
 use App\Models\ShippingType;
-use App\Services\JtExpressService;
 use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\Repeater;
@@ -24,13 +24,11 @@ use Filament\Forms\Components\Wizard;
 use Filament\Forms\Components\Wizard\Step;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
-use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\ActionSize;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Mail;
 
 class OrderResource extends Resource
 {
@@ -38,11 +36,7 @@ class OrderResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
 
-
-    public static function getNavigationGroup(): ?string
-    {
-        return __('landing_page_order.orders_contacts');
-    }
+    protected static ?string $slug = 'my-orders';
 
     public static function getNavigationLabel(): string
     {
@@ -59,16 +53,6 @@ class OrderResource extends Resource
                     })
                     ->label('Number')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('user.name')
-                    ->searchable()
-                    ->placeholder('-')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('contact.name')
-                    ->searchable()
-                    ->placeholder('-')
-                    ->numeric()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('shippingType.name')
@@ -77,24 +61,29 @@ class OrderResource extends Resource
                     ->placeholder('-')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('paymentMethod.name')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable()
                     ->numeric()
                     ->placeholder('-')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('coupon.id')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable()
                     ->numeric()
                     ->placeholder('-')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('shipping_cost')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->numeric()
                     ->placeholder('-')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('tax_percentage')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->numeric()
                     ->placeholder('-')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('tax_amount')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->numeric()
                     ->placeholder('-')
                     ->sortable(),
@@ -149,357 +138,20 @@ class OrderResource extends Resource
             ->actions([
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
-                    ...collect(OrderStatus::cases())->map(fn ($status) =>
-                    Tables\Actions\Action::make($status->value)
-                        ->label(__($status->getLabel()))
-                        ->icon($status->getIcon())
-                        ->color($status->getColor())
-                        ->action(fn ($record) => self::updateOrderStatus($record, $status))
-                    )->toArray(),
-
+                    Tables\Actions\EditAction::make(),
                     Tables\Actions\DeleteAction::make(),
-
-                    Tables\Actions\Action::make('trackOrder')
-                        ->visible(fn (Order $record): bool =>
-                        !is_null($record->tracking_number)
-                        )
-                        ->label('Track Order')
-                        ->icon('heroicon-o-map')
-                        ->color('success')
-                        ->visible(fn (Order $record): bool =>
-                            !is_null($record->tracking_number) &&
-                            !is_null($record->shipping_status)
-                        )
-                        ->action(function (Order $record): void {
-                            $shipping_response = json_decode($record->shipping_response);
-                            $trackingInfo = app(JtExpressService::class)->trackLogistics($shipping_response->data);
-
-                            if (isset($trackingInfo['code']) && $trackingInfo['code'] == 1) {
-                                Notification::make()
-                                    ->title('Tracking Information')
-                                    ->body('Tracking details retrieved successfully: ' . ($trackingInfo['data']['billCode'] ?? $record->tracking_number))
-                                    ->success()
-                                    ->send();
-                            } else {
-                                Notification::make()
-                                    ->title('Tracking Error')
-                                    ->body($trackingInfo['msg'] ?? 'Unable to retrieve tracking information')
-                                    ->danger()
-                                    ->send();
-                            }
-                        }),
-                    Tables\Actions\Action::make('checkOrder')
-                        ->visible(fn (Order $record): bool =>
-                        !is_null($record->tracking_number)
-                        )
-                        ->label('Check Order Status')
-                        ->icon('heroicon-o-check-circle')
-                        ->color('primary')
-                        ->visible(fn (Order $record): bool =>
-                        !is_null($record->tracking_number)
-                        )
-                        ->action(function (Order $record): void {
-                            $shipping_response = json_decode($record->shipping_response);
-                            $orderInfo = app(JtExpressService::class)->checkingOrder($shipping_response->data);
-
-                            if (isset($orderInfo['code']) && $orderInfo['code'] == 1) {
-                                Notification::make()
-                                    ->title('Order Status')
-                                    ->body('Order exists: ' . ($orderInfo['data']['isExist'] ?? 'Unknown'))
-                                    ->success()
-                                    ->send();
-                            } else {
-                                Notification::make()
-                                    ->title('Check Error')
-                                    ->body($orderInfo['msg'] ?? 'Unable to check order status')
-                                    ->danger()
-                                    ->send();
-                            }
-                        }),
-                    Tables\Actions\Action::make('getOrderStatus')
-                        ->visible(fn (Order $record): bool =>
-                        !is_null($record->tracking_number)
-                        )
-                        ->label('Get Detailed Status')
-                        ->icon('heroicon-o-clipboard-document-list')
-                        ->color('info')
-                        ->visible(fn (Order $record): bool =>
-                        !is_null($record->tracking_number)
-                        )
-                        ->action(function (Order $record): void {
-                            $shipping_response = json_decode($record->shipping_response);
-                            $statusInfo = app(JtExpressService::class)->getOrderStatus($shipping_response->data);
-
-                            if (isset($statusInfo['code']) && $statusInfo['code'] == 1) {
-                                $status = $statusInfo['data']['deliveryStatus'] ?? 'Unknown';
-
-                                $record->update([
-                                    'shipping_status' => $status,
-                                    'shipping_response' => json_encode($statusInfo)
-                                ]);
-
-                                Notification::make()
-                                    ->title('Order Status Updated')
-                                    ->body('Current status: ' . $status)
-                                    ->success()
-                                    ->send();
-                            } else {
-                                Notification::make()
-                                    ->title('Status Error')
-                                    ->body($statusInfo['msg'] ?? 'Unable to get order status')
-                                    ->danger()
-                                    ->send();
-                            }
-                        }),
-                    Tables\Actions\Action::make('getTrajectory')
-                        ->visible(fn (Order $record): bool =>
-                        !is_null($record->tracking_number)
-                        )
-                        ->label('View Delivery Trajectory')
-                        ->icon('heroicon-o-arrow-path')
-                        ->color('gray')
-                        ->visible(fn (Order $record): bool =>
-                        !is_null($record->tracking_number)
-                        )
-                        ->action(function (Order $record): void {
-                            $shipping_response = json_decode($record->shipping_response);
-                            $trajectoryInfo = app(JtExpressService::class)->getLogisticsTrajectory($shipping_response->data);
-
-                            if (isset($trajectoryInfo['code']) && $trajectoryInfo['code'] == 1) {
-                                $steps = count($trajectoryInfo['data']['details'] ?? []);
-
-                                Notification::make()
-                                    ->title('Delivery Trajectory')
-                                    ->body("Retrieved {$steps} tracking events for this shipment.")
-                                    ->success()
-                                    ->send();
-
-                                // You could store this information or display it in a modal
-                            } else {
-                                Notification::make()
-                                    ->title('Trajectory Error')
-                                    ->body($trajectoryInfo['msg'] ?? 'Unable to get trajectory information')
-                                    ->danger()
-                                    ->send();
-                            }
-                        }),
-                    Tables\Actions\Action::make('cancelOrder')
-                        ->visible(fn (Order $record): bool =>
-                        !is_null($record->tracking_number)
-                        )
-                        ->label('Cancel Order')
-                        ->icon('heroicon-o-x-circle')
-                        ->color('danger')
-                        ->visible(fn (Order $record): bool =>
-                            !is_null($record->tracking_number) &&
-                            $record->shipping_status !== 'delivered' &&
-                            $record->shipping_status !== 'cancelled'
-                        )
-                        ->requiresConfirmation()
-                        ->action(function (Order $record): void {
-                            $shipping_response = json_decode($record->shipping_response);
-                            $cancelResult = app(JtExpressService::class)->cancelOrder($shipping_response->data);
-
-                            if (isset($cancelResult['code']) && $cancelResult['code'] == 1) {
-                                $record->update([
-                                    'status'            => OrderStatus::Cancelled,
-                                    'shipping_status'   => 'cancelled',
-                                    'shipping_response' => json_encode($cancelResult)
-                                ]);
-
-                                Notification::make()
-                                    ->title('Order Cancelled')
-                                    ->body('The order has been successfully cancelled.')
-                                    ->success()
-                                    ->send();
-                            } else {
-                                Notification::make()
-                                    ->title('Cancellation Error')
-                                    ->body($cancelResult['msg'] ?? 'Unable to cancel the order')
-                                    ->danger()
-                                    ->send();
-                            }
-                        }),
                 ])->label(__('Actions'))
                     ->icon('heroicon-m-ellipsis-vertical')
                     ->size(ActionSize::Small)
                     ->color('primary')
                     ->button(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    ...collect(OrderStatus::cases())->map(fn ($status) =>
-                    Tables\Actions\BulkAction::make($status->value)
-                        ->label(__($status->getLabel()))
-                        ->icon($status->getIcon())
-                        ->color($status->getColor())
-                        ->action(fn ($records) => $records->each(fn ($record) => $record->update(['status' => $status->value])))
-                    )->toArray(),
-
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
             ]);
-    }
-
-    public static function updateOrderStatus($order, OrderStatus $status)
-    {
-        $previousStatus = OrderStatus::tryFrom($order->status);
-
-        // Restore stock when an order is cancelled or refunded
-        if (
-            in_array($previousStatus, [OrderStatus::Pending, OrderStatus::Preparing, OrderStatus::Shipping]) &&
-            in_array($status, [OrderStatus::Cancelled, OrderStatus::Refund])
-        ) {
-            foreach ($order->items as $item) {
-                if ($item->product_id) {
-                    $product = Product::find($item->product_id);
-                    if ($product) {
-                        $product->increment('quantity', $item->quantity);
-                        $product->inventory()->increment('quantity', $item->quantity);
-                    }
-                }
-            }
-        }
-
-        // Update order status
-        $order->update(['status' => $status->value]);
-
-        // Handle JT Express when the status is set to "Shipping"
-        if ($status === OrderStatus::Shipping) {
-            $JtExpressOrderData = self::prepareJtExpressOrderData($order);
-            $jtExpressResponse = app(JtExpressService::class)->createOrder($JtExpressOrderData);
-            self::updateJtExpressOrder($order, 'pending', $JtExpressOrderData, $jtExpressResponse);
-
-            // Send order confirmation email
-            $email = $order->user->email ?? $order->contact->email;
-            if ($email) {
-                Mail::to($email)->queue(new OrderConfirmationMail($order));
-            }
-        }
-    }
-
-    private static function prepareJtExpressOrderData($order): array
-    {
-        $data = [
-            'tracking_number'   => '#'. $order->id. ' EGY' . time() . rand(1000, 9999),
-            'weight'            => 1.0, // You might want to calculate the total weight dynamically
-            'quantity'          => 1,  // $order->items->sum('quantity') Sum of all item quantities in the order
-
-            'remark'            => implode(' , ', array_filter([
-                'Notes: ' . ($order->notes ?? 'No notes'),
-                $order->user?->name ? 'User: ' . $order->user->name : null,
-                $order->user?->email ? 'Email: ' . $order->user->email : null,
-                $order->user?->phone ? 'Phone: ' . $order->user->phone : null,
-                $order->user?->address ? 'Address: ' . $order->user->address : null,
-                $order->contact?->name ? 'Contact: ' . $order->contact->name : null,
-                $order->contact?->email ? 'Contact Email: ' . $order->contact->email : null,
-                $order->contact?->phone ? 'Contact Phone: ' . $order->contact->phone : null,
-                $order->contact?->address ? 'Contact Address: ' . $order->contact->address : null,
-            ])),
-
-            'item_name'         => $order->items->pluck('product.name')->implode(', '), // Concatenated product names
-            'item_quantity'     => $order->items->count(), // Total distinct items in the order
-            'item_value'        => $order->total, // Order total amount
-            'item_currency'     => 'EGP',
-            'item_description'  => $order->notes ?? 'No description provided',
-        ];
-
-        $data['sender'] = [
-            'name'                   => 'Your Company Name',
-            'company'                => 'Your Company',
-            'city'                   => 'Your City',
-            'address'                => 'Your Full Address',
-            'mobile'                 => 'Your Contact Number',
-            'countryCode'            => 'Your Country Code',
-            'prov'                   => 'Your Prov',
-            'area'                   => 'Your Area',
-            'town'                   => 'Your Town',
-            'street'                 => 'Your Street',
-            'addressBak'             => 'Your Address Bak',
-            'postCode'               => 'Your Post Code',
-            'phone'                  => 'Your Phone',
-            'mailBox'                => 'Your Mail Box',
-            'areaCode'               => 'Your Area Code',
-            'building'               => 'Your Building',
-            'floor'                  => 'Your Floor',
-            'flats'                  => 'Your Flats',
-            'alternateSenderPhoneNo' => 'Your Alternate Sender Phone No',
-        ];
-
-        $data['receiver'] = [
-            'name'                      => 'test', // $order->name,
-            'prov'                      => 'أسيوط', // $order->region->governorate->name,
-            'city'                      => 'القوصية', // $order->region->name,
-            'address'                   => 'sdfsacdscdscdsa', // $order->address,
-            'mobile'                    => '1441234567', // $order->phone,
-            'company'                   => 'guangdongshengshenzhe',
-            'countryCode'               => 'EGY',
-            'area'                      => 'الصبحه',
-            'town'                      => 'town',
-            'addressBak'                => 'receivercdsfsafdsaf lkhdlksjlkfjkndskjfnhskjlkafdslkjdshflksjal',
-            'street'                    => 'street',
-            'postCode'                  => '54830',
-            'phone'                     => '23423423423',
-            'mailBox'                   => 'ant_li123@qq.com',
-            'areaCode'                  => '2342343',
-            'building'                  => '13',
-            'floor'                     => '25',
-            'flats'                     => '47',
-            'alternateReceiverPhoneNo'  => $order->another_phone ?? '1231321322',
-        ];
-
-        return $data;
-    }
-
-    private static function updateJtExpressOrder(Order $order, string $shipping_status, $JtExpressOrderData, $jtExpressResponse)
-    {
-        if (isset($jtExpressResponse['code']) && $jtExpressResponse['code'] == 1) {
-            $order->update([
-                'tracking_number'   => $JtExpressOrderData['tracking_number'] ?? null,
-                'shipping_status'   => $shipping_status,
-                'shipping_response' => json_encode($jtExpressResponse)
-            ]);
-        }
-    }
-
-    public static function getPages(): array
-    {
-        return [
-            'index' => Pages\ListOrders::route('/'),
-            'create' => Pages\CreateOrder::route('/create'),
-            'edit' => Pages\EditOrder::route('/{record}/edit'),
-        ];
     }
 
     public static function form(Form $form): Form
     {
         return $form->schema([
             Wizard::make([
-                Step::make('Order Details')
-                    ->schema([
-                        Select::make('user_id')
-                            ->live()
-                            ->hidden(fn (Get $get) => $get('contact_id'))
-                            ->relationship('user', 'name')
-                            ->label(__('Customer')),
-
-                        Select::make('contact_id')
-                            ->live()
-                            ->hidden(fn (Get $get) => $get('user_id'))
-                            ->relationship('contact', 'name')
-                            ->label(__('Contact')),
-
-                        Forms\Components\ToggleButtons::make('status')
-                            ->label(__('Status'))
-                            ->inline()
-                            ->options(OrderStatus::class)
-                            ->required(),
-
-                        Forms\Components\MarkdownEditor::make('notes')
-                            ->label(__('Notes'))
-                            ->columnSpan('full'),
-                    ]),
-
                 Step::make('Order Items')
                     ->schema([
                         Repeater::make('items')
@@ -643,7 +295,6 @@ class OrderResource extends Resource
                                 self::recalculateTotal($set, $get);
                             }),
                     ]),
-
                 // **Moved Billing Information to a separate step**
                 Step::make('Billing Information')
                     ->schema([
@@ -684,6 +335,15 @@ class OrderResource extends Resource
                             ->readOnly()
                             ->label(__('Total')),
                     ])->columns(2),
+
+                Step::make('Order Details')
+                    ->schema([
+                        Forms\Components\MarkdownEditor::make('notes')
+                            ->label(__('Notes'))
+                            ->columnSpan('full'),
+                    ]),
+
+
             ])->columnSpanFull()->skippable()
         ]);
     }
@@ -716,7 +376,6 @@ class OrderResource extends Resource
         $set('tax_amount', $taxAmount);
         $set('total', $total);
     }
-
 
     private static function updateShippingCost(callable $set, $shippingTypeId, $items, $cityId, $governorateId, $countryId): void
     {
@@ -800,5 +459,19 @@ class OrderResource extends Resource
     private static function getTaxPercentage(): float
     {
         return Setting::getTaxPercentage() ?? 0;
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => ListOrders::route('/'),
+            'create' => CreateOrder::route('/create'),
+            'edit' => EditOrder::route('/{record}/edit'),
+        ];
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->where('user_id', auth()->id());
     }
 }

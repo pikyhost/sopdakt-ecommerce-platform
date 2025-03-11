@@ -182,6 +182,7 @@
                         </tr>
                     @endforelse
                     </tbody>
+                    @if ($isCheckoutReady)
                     <tfoot>
                     <tr class="cart-subtotal">
                         <td><h4>Subtotal</h4></td>
@@ -215,8 +216,9 @@
                             </b></td>
                     </tr>
                     </tfoot>
+                    @endif
                 </table>
-
+                @if ($isCheckoutReady)
                 <div class="payment-methods">
                     <h4 class="">Payment methods</h4>
                     <div class="info-box with-icon p-0">
@@ -225,6 +227,7 @@
                         </p>
                     </div>
                 </div>
+                @endif
 
                 @if ($errors->has('order'))
                     <div class="alert alert-danger">

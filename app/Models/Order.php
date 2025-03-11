@@ -36,12 +36,6 @@ class Order extends Model
         });
     }
 
-    public function bundles()
-    {
-        return $this->hasManyThrough(Bundle::class, OrderItem::class, 'order_id', 'id', 'id', 'bundle_id')
-            ->whereNotNull('bundle_id'); // Ensure it only fetches bundle items
-    }
-
     public function setStatusAttribute($value)
     {
         // If order is being canceled or refunded, restore stock
