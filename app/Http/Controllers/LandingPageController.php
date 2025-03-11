@@ -6,10 +6,9 @@ use Exception;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use App\Models\LandingPageSetting;
-use App\Services\JtExpressService;
 use Illuminate\Support\Facades\Log;
 use App\Http\Requests\LandingPage\{OrderLandingRequest, OrderLandingPageBundleRequest};
-use App\Models\{Governorate, ShippingType, Region, LandingPage, WebsiteSetting, LandingPageNavbarItems, LandingPageOrder};
+use App\Models\{Governorate, ShippingType, Region, LandingPage, WebsiteSetting, LandingPageNavbarItems};
 
 class LandingPageController extends Controller
 {
@@ -25,13 +24,14 @@ class LandingPageController extends Controller
         $totalPrice = $landingPage->after_discount_price ? $landingPage->after_discount_price : $landingPage->price;
 
         return view('landing-pages.landing-page', [
-            'landingPage'         => $landingPage,
-            'settings'            => WebsiteSetting::query()->latest()->first(),
-            'governorates'        => Governorate::all(),
-            'landingPageNavItems' => LandingPageNavbarItems::all(),
-            'media'               => $landingPage->media,
-            'totalPrice'          => $totalPrice,
-            'productFeatures'     => $landingPage->features
+            'landingPage'          => $landingPage,
+            'landingPageSettings'  => LandingPageSetting::latest()->first(),
+            'settings'             => WebsiteSetting::query()->latest()->first(),
+            'governorates'         => Governorate::all(),
+            'landingPageNavItems'  => LandingPageNavbarItems::all(),
+            'media'                => $landingPage->media,
+            'totalPrice'           => $totalPrice,
+            'productFeatures'      => $landingPage->features
         ]);
     }
 
@@ -83,13 +83,13 @@ class LandingPageController extends Controller
         if (!$landingPageOrder) return back()->with('error', 'Please select a bundle first');
 
         return view('landing-pages.landing-page-purhcase-form', [
-            'landingPage'         => $landingPage,
-            'governorates'        => Governorate::all(),
-            'settings'            => WebsiteSetting::latest()->first(),
-            'bundle'              => $landingPage->bundles->where('id', $landingPageOrder->bundle_landing_page_id)->first(),
-            'totalPrice'          => $landingPageOrder->total_price,
-            'varieties'           => $landingPageOrder->varieties,
-            'quantity'            => $landingPageOrder->quantity,
+            'landingPage'          => $landingPage,
+            'landingPageSettings'  => LandingPageSetting::latest()->first(),
+            'governorates'         => Governorate::all(),
+            'bundle'               => $landingPage->bundles->where('id', $landingPageOrder->bundle_landing_page_id)->first(),
+            'totalPrice'           => $landingPageOrder->total_price,
+            'varieties'            => $landingPageOrder->varieties,
+            'quantity'             => $landingPageOrder->quantity,
         ]);
     }
 

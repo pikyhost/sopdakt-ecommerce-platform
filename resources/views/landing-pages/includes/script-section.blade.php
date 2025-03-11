@@ -73,10 +73,10 @@
                         let shippingCost = data.shipping_cost;
                         let total = subtotal + shippingCost;
 
-                        document.getElementById('shipping_cost').innerText = shippingCost + ' {{$settingData['currency_code']}}';
-                        document.getElementById('total').innerText = total + ' {{$settingData['currency_code']}}';
+                        document.getElementById('shipping_cost').innerText = shippingCost + ' {{$landingPageSettings?->currency_code}}';
+                        document.getElementById('total').innerText = total + ' {{$landingPageSettings?->currency_code}}';
                     } else {
-                        document.getElementById('shipping_cost').innerText = '0 {{$settingData['currency_code']}}';
+                        document.getElementById('shipping_cost').innerText = '0 {{$landingPageSettings?->currency_code}}';
                     }
                 } else {
                     Swal.fire({
@@ -241,8 +241,8 @@
                     subtotal = data.price * quantity;
                     total = subtotal + shippingCost;
 
-                    document.getElementById('price').innerText = subtotal + ' {{$settingData['currency_code']}}';
-                    document.getElementById('total').innerText = total + ' {{$settingData['currency_code']}}';
+                    document.getElementById('price').innerText = subtotal + ' {{$landingPageSettings?->currency_code}}';
+                    document.getElementById('total').innerText = total + ' {{$landingPageSettings?->currency_code}}';
                 }
             } else {
                 Swal.fire({
