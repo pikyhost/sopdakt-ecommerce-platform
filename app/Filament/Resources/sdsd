@@ -18,6 +18,7 @@ use App\Models\ShippingType;
 use App\Services\JtExpressService;
 use Carbon\Carbon;
 use Filament\Forms;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -33,12 +34,24 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\HtmlString;
 
 class OrderResource extends Resource
 {
     protected static ?string $model = Order::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
+
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('landing_page_order.orders_contacts');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('landing_page_order.orders');
+    }
 
     public static function table(Table $table): Table
     {
@@ -183,7 +196,7 @@ class OrderResource extends Resource
                         ->icon('heroicon-o-check-circle')
                         ->color('primary')
                         ->visible(fn (Order $record): bool =>
-                            !is_null($record->tracking_number)
+                        !is_null($record->tracking_number)
                         )
                         ->action(function (Order $record): void {
                             $shipping_response = json_decode($record->shipping_response);
@@ -211,7 +224,7 @@ class OrderResource extends Resource
                         ->icon('heroicon-o-clipboard-document-list')
                         ->color('info')
                         ->visible(fn (Order $record): bool =>
-                            !is_null($record->tracking_number)
+                        !is_null($record->tracking_number)
                         )
                         ->action(function (Order $record): void {
                             $shipping_response = json_decode($record->shipping_response);
@@ -246,7 +259,7 @@ class OrderResource extends Resource
                         ->icon('heroicon-o-arrow-path')
                         ->color('gray')
                         ->visible(fn (Order $record): bool =>
-                            !is_null($record->tracking_number)
+                        !is_null($record->tracking_number)
                         )
                         ->action(function (Order $record): void {
                             $shipping_response = json_decode($record->shipping_response);
@@ -489,6 +502,10 @@ class OrderResource extends Resource
 
                 Step::make('Order Items')
                     ->schema([
+                        Placeholder::make('desc')
+                            ->hiddenLabel()
+                            ->columnSpanFull()
+                            ->content('Note: Only one bundle can be created per order. If you wish to add a bundle with products, please make sure to select the desired bundle first.'),
                         Select::make('bundle_id')
                             ->label(__('Select Bundle'))
                             ->options(Bundle::pluck('name', 'id'))
@@ -496,7 +513,7 @@ class OrderResource extends Resource
                             ->live()
                             ->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
                                 if (!$state) {
-                                    $set('items', []); // Reset when bundle is removed
+                                    $set('items', []);
                                     $set('subtotal', 0);
                                     $set('bundle_discount', 0);
                                     return;
@@ -516,10 +533,11 @@ class OrderResource extends Resource
                                     for ($i = 0; $i < $totalInputs; $i++) {
                                         $items[] = [
                                             'product_id' => $product->id,
+                                            'bundle_id' => $bundle->id, // Save bundle_id in order_items
                                             'quantity' => 1,
-                                            'price_per_unit' => 0, // Price handled by bundle
+                                            'price_per_unit' => 0,
                                             'subtotal' => 0,
-                                            'is_bundle_item' => true, // Flag for bundle items
+                                            'is_bundle_item' => true,
                                         ];
                                     }
                                 }
@@ -528,6 +546,15 @@ class OrderResource extends Resource
                                 $set('bundle_discount', $bundleDiscount);
                                 $set('subtotal', $bundleDiscount);
                             }),
+
+                        Placeholder::make('bundle_discount')
+                            ->label(__('Bundle Discount Price'))
+                            ->content(fn (Get $get) =>
+                            !empty($get('bundle_id'))
+                                ? __('Discount Price: ') . Bundle::find($get('bundle_id'))?->discount_price
+                                : ''
+                            )
+                            ->hidden(fn (Get $get) => empty($get('bundle_id'))),
 
                         Repeater::make('items')
                             ->label(__('Order Items'))
@@ -538,7 +565,9 @@ class OrderResource extends Resource
                                     ->options(Product::pluck('name', 'id'))
                                     ->searchable()
                                     ->live()
-                                    ->disabled(fn (Get $get) => $get('is_bundle_item') ?? false), // Only disable if it's a bundle item
+                                    ->afterStateUpdated(fn ($state, Forms\Set $set) =>
+                                    $set('price_per_unit', Product::find($state)?->price ?? 0)
+                                    ),
 
                                 Select::make('color_id')
                                     ->label(__('Color'))
@@ -567,8 +596,7 @@ class OrderResource extends Resource
                                     ->numeric()
                                     ->minValue(1)
                                     ->live()
-                                    ->default(1)
-                                    ->hidden(fn (Get $get) => $get('is_bundle_item') ?? false) // Hide for bundle items
+                                    ->hidden(fn (Get $get) => $get('is_bundle_item') ?? false)
                                     ->afterStateUpdated(fn ($state, callable $set, Get $get) =>
                                     $set('subtotal', ($get('price_per_unit') ?? 0) * ($state ?? 1))
                                     ),
@@ -582,22 +610,35 @@ class OrderResource extends Resource
                                     ->numeric()
                                     ->hidden(fn (Get $get) => $get('is_bundle_item') ?? false),
 
+
+                                Hidden::make('price_per_unit')
+                                    ->default(fn (Get $get) => $get('is_bundle_item') ?? false
+                                        ? 0
+                                        : (Product::find($get('product_id'))?->price ?? 0))
+                                    ->label(__('Price per Unit'))
+                                    ->hidden(fn (Get $get) => !$get('is_bundle_item') ?? false),
+
                                 TextInput::make('subtotal')
                                     ->readOnly()
                                     ->label(__('Subtotal'))
                                     ->numeric()
                                     ->hidden(fn (Get $get) => $get('is_bundle_item') ?? false),
+
+                                Hidden::make('subtotal')
+                                    ->default(fn (Get $get) => $get('is_bundle_item') ?? false
+                                        ? 0
+                                        : (Product::find($get('product_id'))?->price ?? 0))
+                                    ->label(__('Subtotal'))
+                                    ->hidden(fn (Get $get) => !$get('is_bundle_item') ?? false),
                             ])
                             ->columns(3)
                             ->collapsible()
                             ->afterStateUpdated(function (Get $get, Forms\Set $set) {
-                                // Calculate total excluding bundle items
                                 $items = $get('items') ?? [];
                                 $subtotal = collect($items)
-                                    ->filter(fn ($item) => !($item['is_bundle_item'] ?? false)) // Exclude bundle items
+                                    ->filter(fn ($item) => !($item['is_bundle_item'] ?? false))
                                     ->sum(fn ($item) => ($item['subtotal'] ?? 0));
 
-                                // Include bundle discount price separately
                                 if ($get('bundle_id')) {
                                     $subtotal += Bundle::find($get('bundle_id'))?->discount_price ?? 0;
                                 }
@@ -611,15 +652,6 @@ class OrderResource extends Resource
                                 $set('tax_amount', $taxAmount);
                                 $set('total', $total);
                             }),
-
-                        Placeholder::make('bundle_discount')
-                            ->label(__('Bundle Discount Price'))
-                            ->content(fn (Get $get) =>
-                            !empty($get('bundle_id'))
-                                ? __('Discount Price: ') . Bundle::find($get('bundle_id'))?->discount_price
-                                : ''
-                            )
-                            ->hidden(fn (Get $get) => empty($get('bundle_id'))),
                     ]),
 
                 Step::make('Shipping Information')
@@ -680,7 +712,7 @@ class OrderResource extends Resource
                             ->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
                                 self::recalculateTotal($set, $get);
                             }),
-        ]),
+                    ]),
 
                 // **Moved Billing Information to a separate step**
                 Step::make('Billing Information')
