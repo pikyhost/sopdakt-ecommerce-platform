@@ -21,8 +21,8 @@
                             <div class="card-body p-4 d-flex flex-column flex-grow-1">
                                 <!-- Discount Badge -->
                                 <div class="text-center mb-4">
-                                <span class="badge bg-success fs-3 px-4 py-2 shadow-sm">
-                                    <i class="fas fa-tag me-2"></i> ${{ number_format($bundle->discount_price, 2) }}
+                                <span class="badge bg-success fs-3 px-4 py-2 shadow-sm old-price">
+                                    <i class="fas fa-tag me-2"></i> {{ $bundle->bundle_discount_price_for_current_country }}
                                 </span>
                                 </div>
 
@@ -37,7 +37,7 @@
                                                     @if (!is_null($bundle->bundle_discount_price_for_current_country))
                                                         <br>
                                                         <span class="badge bg-warning text-dark fs-5 mt-2">
-                                                        {{ __('Discount Price: $:price', ['price' => number_format($bundle->bundle_discount_price_for_current_country, 2)]) }}
+                                                        {{ __('Discount Price: :price', ['price' => $bundle->bundle_discount_price_for_current_country] }}
                                                     </span>
                                                     @endif
                                                 </p>
@@ -50,10 +50,10 @@
                                             @endphp
                                             <p class="fs-5 text-muted">
                                                 <i class="fas fa-tag text-danger me-2 fs-4"></i>
-                                                {{ __('Get this bundle for :price', ['price' => number_format($discountPrice, 2)]) }}
+                                                {{ __('Get this bundle for :price', ['price' => $discountPrice]) }}
                                                 <br>
                                                 <span class="badge bg-warning text-dark fs-5 mt-2">
-                                                {{ __('Discount Price: $:price', ['price' => number_format($discountPrice, 2)]) }}
+                                                {{ __('Discount Price: :price', ['price' => $discountPrice]) }}
                                             </span>
                                             </p>
                                             @break
@@ -68,7 +68,7 @@
                                                 $imageUrl = $bundleProduct->getFeatureProductImageUrl();
                                                 $productUrl = route('product.show', $bundleProduct->slug);
                                                 $productName = $bundleProduct->name;
-                                                $discountPrice = number_format((float) $bundleProduct->discount_price_for_current_country, 2);
+                                                $discountPrice = $bundleProduct->discount_price_for_current_country;
                                             @endphp
 
                                             <div class="card shadow-sm border-0 rounded-3 text-center p-2 d-flex flex-column align-items-center product-card">
@@ -87,7 +87,7 @@
                                                     @endif
 
                                                     <span class="text-muted fs-6 d-block mt-2 mb-0">
-                        <s class="text-danger">${{ $discountPrice }}</s>
+                        <s class="text-danger">{{ $discountPrice }}</s>
                     </span>
                                                 </div>
                                             </div>
