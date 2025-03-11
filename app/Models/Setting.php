@@ -57,12 +57,20 @@ class Setting extends Model
     }
 
     /**
-     * Reload settings cache.
+     * Reload settings cache and clear related cached values.
      */
     public static function reloadCache(): void
     {
         Cache::forget(self::$cacheKey);
-        Cache::forever(self::$cacheKey, self::first()?->toArray() ?? []);
+        Cache::forget(self::$cacheKey . '_tax_percentage');
+
+        $settings = self::first()?->toArray() ?? [];
+        Cache::forever(self::$cacheKey, $settings);
+
+        // If currency_id exists, clear its cache as well
+        if (isset($settings['currency_id'])) {
+            Cache::forget("currency_{$settings['currency_id']}");
+        }
     }
 
     /**
