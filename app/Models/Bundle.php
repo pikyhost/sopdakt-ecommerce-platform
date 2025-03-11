@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Enums\BundleType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use NumberFormatter;
 use Spatie\Translatable\HasTranslations;
 
 class Bundle extends Model
@@ -23,11 +22,30 @@ class Bundle extends Model
         'bundle_type' => BundleType::class,
     ];
 
-
-    public static function formatPrice($amount): string
+    public function specialPrices()
     {
-        $locale = app()->getLocale(); // Get current locale
-        $currency = Setting::getCurrency()?->code ?? 'USD'; // Retrieve currency code from settings
+        return $this->hasMany(BundleSpecialPrice::class);
+    }
+
+    public function formatPrice(): string
+    {
+        $locale = app()->getLocale();
+        $currency = Setting::getCurrency()?->code ?? 'USD'; // Default currency from settings
+        $amount = $this->default_price ?? 0; // Default price
+
+        // Retrieve special price for the current country or country group
+        $specialPrice = $this->specialPrices()
+            ->where(function ($query) {
+                $query->where('country_id', app()->currentCountry->id)
+                    ->orWhere('country_group_id', app()->currentCountry->country_group_id);
+            })
+            ->first();
+
+        if ($specialPrice) {
+            // Use special price after discount if available; otherwise, use the special price
+            $amount = $specialPrice->special_price_after_discount ?? $specialPrice->special_price;
+            $currency = $specialPrice->currency?->code ?? $currency; // Use special price currency if available
+        }
 
         $formatter = new \NumberFormatter($locale, \NumberFormatter::CURRENCY);
 
@@ -76,11 +94,6 @@ class Bundle extends Model
             default:
                 return $productsTotal;
         }
-    }
-
-    public function specialPrices()
-    {
-        return $this->hasMany(BundleSpecialPrice::class);
     }
 
     public function getBundlePriceForCurrentCountryAttribute()
