@@ -12,21 +12,17 @@
                 @foreach ($product->bundles as $bundle)
                     <div class="col-md-6 col-lg-6">
                         <div class="card shadow-lg border-0 rounded-4 h-100 d-flex flex-column overflow-hidden hover-scale">
-                            <!-- Card Header -->
                             <div class="card-header bg-gradient-primary text-white text-center py-4 rounded-top">
                                 <h3 class="fw-bold mb-0">{{ $bundle->getTranslation('name', app()->getLocale()) }}</h3>
                             </div>
 
-                            <!-- Card Body -->
                             <div class="card-body p-4 d-flex flex-column flex-grow-1">
-                                <!-- Discount Badge -->
                                 <div class="text-center mb-4">
                                 <span class="badge bg-success fs-3 px-4 py-2 shadow-sm old-price">
                                     <i class="fas fa-tag me-2"></i> {{ $bundle->bundle_discount_price_for_current_country }}
                                 </span>
                                 </div>
 
-                                <!-- Bundle Details -->
                                 <div class="text-center mb-4">
                                     @switch($bundle->bundle_type)
                                         @case(\App\Enums\BundleType::BUY_X_GET_Y)
@@ -37,7 +33,7 @@
                                                     @if (!is_null($bundle->bundle_discount_price_for_current_country))
                                                         <br>
                                                         <span class="badge bg-warning text-dark fs-5 mt-2">
-                                                        {{ __('Discount Price: :price', ['price' => $bundle->bundle_discount_price_for_current_country] }}
+                                                        {{ __('Discount Price: :price', ['price' => $bundle->bundle_discount_price_for_current_country]) }}
                                                     </span>
                                                     @endif
                                                 </p>
@@ -60,7 +56,6 @@
                                     @endswitch
                                 </div>
 
-                                <!-- Bundle Products -->
                                 <div class="bundle-products mt-4 flex-grow-1">
                                     <div class="d-flex flex-wrap justify-content-center gap-3">
                                         @foreach ($bundle->products as $bundleProduct)
@@ -82,29 +77,26 @@
 
                                                     @if ($bundle->bundle_type !== \App\Enums\BundleType::BUY_X_GET_Y)
                                                         <span class="badge bg-secondary px-3 py-2 fs-6 d-block mt-2">
-                            {{ __('Quantity: 1') }}
-                        </span>
+                                                        {{ __('Quantity: 1') }}
+                                                    </span>
                                                     @endif
 
                                                     <span class="text-muted fs-6 d-block mt-2 mb-0">
-                        <s class="text-danger">{{ $discountPrice }}</s>
-                    </span>
+                                                    <s class="text-danger">{{ $discountPrice }}</s>
+                                                </span>
                                                 </div>
                                             </div>
                                         @endforeach
                                     </div>
                                 </div>
-
                             </div>
 
-                            <!-- Error Message -->
                             @if ($errors->has('cart_error'))
                                 <div class="alert alert-danger text-center fs-5 m-3">
                                     {{ $errors->first('cart_error') }}
                                 </div>
                             @endif
 
-                            <!-- Card Footer -->
                             <div class="card-footer text-center bg-light py-3 rounded-bottom">
                                 <button wire:click="selectBundle({{ $bundle->id }})"
                                         class="btn btn-lg btn-primary w-100 fw-bold d-flex align-items-center justify-content-center py-3 hover-effect"
@@ -122,6 +114,7 @@
             </div>
         @endif
     </div>
+
 
     <style>
         /* Hover Scale Effect */
