@@ -489,6 +489,10 @@ class OrderResource extends Resource
 
                 Step::make('Order Items')
                     ->schema([
+                        Placeholder::make('desc')
+                            ->hiddenLabel()
+                            ->columnSpanFull()
+                            ->content('Note: Only one bundle can be created per order. If you wish to add a bundle with products, please make sure to select the desired bundle first.'),
                         Select::make('bundle_id')
                             ->label(__('Select Bundle'))
                             ->options(Bundle::pluck('name', 'id'))
@@ -496,7 +500,7 @@ class OrderResource extends Resource
                             ->live()
                             ->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
                                 if (!$state) {
-                                    $set('items', []); // Reset when bundle is removed
+                                    $set('items', []);
                                     $set('subtotal', 0);
                                     $set('bundle_discount', 0);
                                     return;
@@ -517,9 +521,9 @@ class OrderResource extends Resource
                                         $items[] = [
                                             'product_id' => $product->id,
                                             'quantity' => 1,
-                                            'price_per_unit' => 0, // Price handled by bundle
+                                            'price_per_unit' => 0,
                                             'subtotal' => 0,
-                                            'is_bundle_item' => true, // Flag for bundle items
+                                            'is_bundle_item' => true,
                                         ];
                                     }
                                 }
@@ -528,6 +532,15 @@ class OrderResource extends Resource
                                 $set('bundle_discount', $bundleDiscount);
                                 $set('subtotal', $bundleDiscount);
                             }),
+
+                        Placeholder::make('bundle_discount')
+                            ->label(__('Bundle Discount Price'))
+                            ->content(fn (Get $get) =>
+                            !empty($get('bundle_id'))
+                                ? __('Discount Price: ') . Bundle::find($get('bundle_id'))?->discount_price
+                                : ''
+                            )
+                            ->hidden(fn (Get $get) => empty($get('bundle_id'))),
 
                         Repeater::make('items')
                             ->label(__('Order Items'))
@@ -538,7 +551,10 @@ class OrderResource extends Resource
                                     ->options(Product::pluck('name', 'id'))
                                     ->searchable()
                                     ->live()
-                                    ->disabled(fn (Get $get) => $get('is_bundle_item') ?? false), // Only disable if it's a bundle item
+                                    ->disabled(fn (Get $get) => $get('is_bundle_item') ?? false)
+                                    ->afterStateUpdated(fn ($state, Forms\Set $set) =>
+                                    $set('price_per_unit', Product::find($state)?->price ?? 0)
+                                    ),
 
                                 Select::make('color_id')
                                     ->label(__('Color'))
@@ -568,7 +584,7 @@ class OrderResource extends Resource
                                     ->minValue(1)
                                     ->live()
                                     ->default(1)
-                                    ->hidden(fn (Get $get) => $get('is_bundle_item') ?? false) // Hide for bundle items
+                                    ->hidden(fn (Get $get) => $get('is_bundle_item') ?? false)
                                     ->afterStateUpdated(fn ($state, callable $set, Get $get) =>
                                     $set('subtotal', ($get('price_per_unit') ?? 0) * ($state ?? 1))
                                     ),
@@ -591,13 +607,11 @@ class OrderResource extends Resource
                             ->columns(3)
                             ->collapsible()
                             ->afterStateUpdated(function (Get $get, Forms\Set $set) {
-                                // Calculate total excluding bundle items
                                 $items = $get('items') ?? [];
                                 $subtotal = collect($items)
-                                    ->filter(fn ($item) => !($item['is_bundle_item'] ?? false)) // Exclude bundle items
+                                    ->filter(fn ($item) => !($item['is_bundle_item'] ?? false))
                                     ->sum(fn ($item) => ($item['subtotal'] ?? 0));
 
-                                // Include bundle discount price separately
                                 if ($get('bundle_id')) {
                                     $subtotal += Bundle::find($get('bundle_id'))?->discount_price ?? 0;
                                 }
@@ -611,15 +625,6 @@ class OrderResource extends Resource
                                 $set('tax_amount', $taxAmount);
                                 $set('total', $total);
                             }),
-
-                        Placeholder::make('bundle_discount')
-                            ->label(__('Bundle Discount Price'))
-                            ->content(fn (Get $get) =>
-                            !empty($get('bundle_id'))
-                                ? __('Discount Price: ') . Bundle::find($get('bundle_id'))?->discount_price
-                                : ''
-                            )
-                            ->hidden(fn (Get $get) => empty($get('bundle_id'))),
                     ]),
 
                 Step::make('Shipping Information')
