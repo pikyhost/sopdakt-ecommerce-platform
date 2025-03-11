@@ -44,6 +44,8 @@
                 @endforelse
             </div><!-- End .cart-product -->
 
+            @if($cartCount > 0)
+
             <div class="dropdown-cart-total">
                 <span>SUBTOTAL:</span>
                 <span class="cart-total-price float-right">${{ number_format($subtotal, 2) }}</span>
@@ -54,6 +56,7 @@
                 <a href="{{ route('checkout.index') }}" class="btn btn-dark btn-block">Checkout</a>
 
             </div><!-- End .dropdown-cart-total -->
+            @endif
         </div><!-- End .dropdownmenu-wrapper -->
     </div><!-- End .dropdown-menu -->
 </div>

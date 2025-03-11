@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Filament\Resources\OrderResource\Pages;
+namespace App\Filament\Client\Resources\OrderResource\Pages;
 
-use App\Filament\Resources\OrderResource;
+use App\Filament\Client\Resources\OrderResource;
 use Filament\Actions;
-use Filament\Resources\Pages\ListRecords;
 use Filament\Resources\Components\Tab;
+use Filament\Resources\Pages\ListRecords;
 
 class ListOrders extends ListRecords
 {

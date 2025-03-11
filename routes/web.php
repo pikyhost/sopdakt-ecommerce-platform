@@ -1,5 +1,7 @@
 <?php
 
+use Filament\Facades\Filament;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use App\Http\Controllers\{CartController,
@@ -44,3 +46,8 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
 });
 
 Route::post('/jt-express-webhook', [ShippingController::class, 'handleWebhook']);
+
+Route::get('/test', function () {
+    Log::info(Filament::auth()->user());
+    Log::info(auth()->user());
+});
