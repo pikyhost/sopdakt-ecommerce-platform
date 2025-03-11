@@ -5,7 +5,7 @@ namespace App\Models;
 use App\Enums\BundleType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Log;
+use NumberFormatter;
 use Spatie\Translatable\HasTranslations;
 
 class Bundle extends Model
@@ -22,6 +22,17 @@ class Bundle extends Model
     protected $casts = [
         'bundle_type' => BundleType::class,
     ];
+
+
+    public function formatPrice($amount)
+    {
+        $locale = app()->getLocale(); // Get current locale
+        $currency = Setting::getCurrency()?->code ?? 'USD'; // Retrieve currency code from settings
+
+        $formatter = new NumberFormatter($locale, NumberFormatter::CURRENCY);
+        return $formatter->formatCurrency($amount, $currency);
+    }
+
 
     public function mainProduct()
     {

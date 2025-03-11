@@ -19,7 +19,7 @@
                             <div class="card-body p-4 d-flex flex-column flex-grow-1">
                                 <div class="text-center mb-4">
                                 <span class="badge bg-success fs-3 px-4 py-2 shadow-sm old-price">
-                                    <i class="fas fa-tag me-2"></i> {{ $bundle->bundle_discount_price_for_current_country }}
+                                    <i class="fas fa-tag me-2"></i> {{ $bundle->formatPrice($bundle->special_price) }}
                                 </span>
                                 </div>
 
@@ -30,27 +30,18 @@
                                                 <p class="fs-5 text-muted">
                                                     <i class="fas fa-cart-plus text-warning me-2 fs-4"></i>
                                                     {{ __('Buy :x and get :y free', ['x' => $bundle->buy_x, 'y' => $bundle->get_y]) }}
-                                                    @if (!is_null($bundle->bundle_discount_price_for_current_country))
-                                                        <br>
-                                                        <span class="badge bg-warning text-dark fs-5 mt-2">
-                                                        {{ __('Discount Price: :price', ['price' => $bundle->bundle_discount_price_for_current_country]) }}
-                                                    </span>
-                                                    @endif
                                                 </p>
+                                                @if (!is_null($bundle->bundle_discount_price_for_current_country))
+                                                    <span class="badge bg-warning text-dark fs-5 mt-2">
+                                                    {{ __('Discount Price: :price', ['price' => $bundle->formatPrice($bundle->bundle_discount_price_for_current_country)]) }}
+                                                </span>
+                                                @endif
                                             @endif
                                             @break
                                         @case(\App\Enums\BundleType::FIXED_PRICE)
-                                            @php
-                                                $discountPrice = $bundle->bundle_discount_price_for_current_country;
-                                                $originalPrice = $bundle->bundle_price_for_current_country;
-                                            @endphp
                                             <p class="fs-5 text-muted">
                                                 <i class="fas fa-tag text-danger me-2 fs-4"></i>
-                                                {{ __('Get this bundle for :price', ['price' => $discountPrice]) }}
-                                                <br>
-                                                <span class="badge bg-warning text-dark fs-5 mt-2">
-                                                {{ __('Discount Price: :price', ['price' => $discountPrice]) }}
-                                            </span>
+                                                {{ __('Get this bundle for :price', ['price' => $bundle->formatPrice($bundle->bundle_discount_price_for_current_country)]) }}
                                             </p>
                                             @break
                                     @endswitch
@@ -59,30 +50,21 @@
                                 <div class="bundle-products mt-4 flex-grow-1">
                                     <div class="d-flex flex-wrap justify-content-center gap-3">
                                         @foreach ($bundle->products as $bundleProduct)
-                                            @php
-                                                $imageUrl = $bundleProduct->getFeatureProductImageUrl();
-                                                $productUrl = route('product.show', $bundleProduct->slug);
-                                                $productName = $bundleProduct->name;
-                                                $discountPrice = $bundleProduct->discount_price_for_current_country;
-                                            @endphp
-
                                             <div class="card shadow-sm border-0 rounded-3 text-center p-2 d-flex flex-column align-items-center product-card">
-                                                <a href="{{ $productUrl }}" class="text-decoration-none">
-                                                    <img src="{{ $imageUrl }}"
+                                                <a href="{{ route('product.show', $bundleProduct->slug) }}" class="text-decoration-none">
+                                                    <img src="{{ $bundleProduct->getFeatureProductImageUrl() }}"
                                                          class="card-img-top rounded-top"
                                                          style="height: 120px; object-fit: contain; width: 100%;">
                                                 </a>
                                                 <div class="card-body p-2">
-                                                    <span class="fw-bold fs-6 d-block text-truncate">{{ $productName }}</span>
-
+                                                    <span class="fw-bold fs-6 d-block text-truncate">{{ $bundleProduct->name }}</span>
                                                     @if ($bundle->bundle_type !== \App\Enums\BundleType::BUY_X_GET_Y)
                                                         <span class="badge bg-secondary px-3 py-2 fs-6 d-block mt-2">
                                                         {{ __('Quantity: 1') }}
                                                     </span>
                                                     @endif
-
                                                     <span class="text-muted fs-6 d-block mt-2 mb-0">
-                                                    <s class="text-danger">{{ $discountPrice }}</s>
+                                                    <s class="text-danger">{{ $bundle->formatPrice($bundleProduct->discount_price_for_current_country) }}</s>
                                                 </span>
                                                 </div>
                                             </div>
