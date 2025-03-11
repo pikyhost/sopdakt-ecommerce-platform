@@ -1,4 +1,49 @@
 <div>
+    <?php
+
+    namespace App\Models;
+
+    use Illuminate\Database\Eloquent\Model;
+    use Illuminate\Support\Facades\DB;
+    use App\Helpers\GeneralHelper;
+    use App\Settings;
+
+    class Bundle extends Model
+    {
+        protected $fillable = ['name', 'bundle_type', 'buy_x', 'get_y', 'default_price'];
+
+        public function formatPrice(): string
+        {
+            $countryId = GeneralHelper::getCountryId();
+            $currency = Setting::getCurrency()?->code ?? 'USD';
+            $amount = $this->default_price ?? 0;
+
+            $specialPrice = BundleSpecialPrice::where('bundle_id', $this->id)
+                ->where(function ($query) use ($countryId) {
+                    $query->where('country_id', $countryId)
+                        ->orWhereNull('country_id')
+                        ->whereExists(fn ($existsQuery) => $existsQuery->select(DB::raw(1))
+                            ->from('country_group_country')
+                            ->whereRaw('bundle_special_prices.country_group_id = country_group_country.country_group_id')
+                            ->where('country_group_country.country_id', $countryId)
+                        );
+                })
+                ->orderByRaw('CASE WHEN country_id IS NOT NULL THEN 1 ELSE 2 END')
+                ->first(['special_price', 'special_price_after_discount', 'currency_id']);
+
+            if ($specialPrice) {
+                $amount = $specialPrice->special_price_after_discount ?? $specialPrice->special_price;
+                $currency = $specialPrice?->currency_id
+                    ? Currency::find($specialPrice->currency_id)?->code
+                    : $currency;
+            }
+
+            return GeneralHelper::formatBundlePrice($amount, $currency);
+        }
+    }
+
+    ?>
+
     <div class="container py-5">
         @if ($product->bundles->isNotEmpty())
             <div class="text-center mb-5">
@@ -18,8 +63,8 @@
 
                             <div class="card-body p-4 d-flex flex-column flex-grow-1">
                                 <div class="text-center mb-4">
-                                <span class="badge bg-success fs-3 px-4 py-2 shadow-sm">
-                                    <i class="fas fa-tag me-2"></i> {{ $bundle->formatPrice($bundle->bundle_discount_price_for_current_country) }}
+                                <span class="badge bg-success fs-3 px-4 py-2 shadow-sm old-price">
+                                    <i class="fas fa-tag me-2"></i> {{ $bundle->formatPrice() }}
                                 </span>
                                 </div>
 
@@ -33,7 +78,7 @@
                                                 </p>
                                                 @if (!is_null($bundle->bundle_discount_price_for_current_country))
                                                     <span class="badge bg-warning text-dark fs-5 mt-2">
-                                                    {{ __('Discount Price: :price', ['price' => $bundle->formatPrice($bundle->bundle_discount_price_for_current_country)]) }}
+                                                    {{ __('Discount Price: :price', ['price' => formatPrice($bundle->bundle_discount_price_for_current_country)]) }}
                                                 </span>
                                                 @endif
                                             @endif
@@ -41,7 +86,7 @@
                                         @case(\App\Enums\BundleType::FIXED_PRICE)
                                             <p class="fs-5 text-muted">
                                                 <i class="fas fa-tag text-danger me-2 fs-4"></i>
-                                                {{ __('Get this bundle for :price', ['price' => $bundle->formatPrice($bundle->bundle_discount_price_for_current_country)]) }}
+                                                {{ __('Get this bundle for :price', ['price' => formatPrice($bundle->bundle_discount_price_for_current_country)]) }}
                                             </p>
                                             @break
                                     @endswitch
@@ -64,7 +109,7 @@
                                                     </span>
                                                     @endif
                                                     <span class="text-muted fs-6 d-block mt-2 mb-0">
-                                                    <s class="text-danger">{{ $bundle->formatPrice($bundleProduct->discount_price_for_current_country) }}</s>
+                                                    <s class="text-danger">{{ formatPrice($bundleProduct->discount_price_for_current_country) }}</s>
                                                 </span>
                                                 </div>
                                             </div>
@@ -97,6 +142,7 @@
         @endif
     </div>
 
+    
     <style>
         /* Hover Scale Effect */
         .hover-scale {
