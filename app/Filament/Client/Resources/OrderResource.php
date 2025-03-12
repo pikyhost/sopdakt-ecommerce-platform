@@ -166,7 +166,7 @@ class OrderResource extends Resource
                                     ->afterStateUpdated(fn ($state, Forms\Set $set) =>
                                     $set('price_per_unit', Product::find($state)?->price ?? 0)
                                     )
-                                    ->hidden(fn (Get $get) => $get('bundle_id') !== null), // Hide when bundle is selected
+                                    ->disabled(fn ($record) => $record->bundle_id), // Hide when bundle is selected
 
                                 Select::make('color_id')
                                     ->label(__('Color'))
@@ -195,7 +195,7 @@ class OrderResource extends Resource
                                     ->numeric()
                                     ->minValue(1)
                                     ->live()
-                                    ->hidden(fn (Get $get) => $get('bundle_id') !== null) // Hide when bundle is selected
+                                    ->disabled(fn ($record) => $record->bundle_id) // Hide when bundle is selected
                                     ->afterStateUpdated(fn ($state, callable $set, Get $get) =>
                                     $set('subtotal', ($get('price_per_unit') ?? 0) * ($state ?? 1))
                                     ),
@@ -205,13 +205,13 @@ class OrderResource extends Resource
                                     ->readOnly()
                                     ->label(__('Price per Unit'))
                                     ->numeric()
-                                    ->hidden(fn (Get $get) => $get('bundle_id') !== null), // Hide when bundle is selected
+                                    ->hidden(fn ($record) => $record->bundle_id), // Hide when bundle is selected
 
                                 TextInput::make('subtotal')
                                     ->readOnly()
                                     ->label(__('Subtotal'))
                                     ->numeric()
-                                    ->hidden(fn (Get $get) => $get('bundle_id') !== null), // Hide when bundle is selected
+                                    ->hidden(fn ($record) => $record->bundle_id),
                             ])
                             ->columns(3)
                             ->collapsible()
