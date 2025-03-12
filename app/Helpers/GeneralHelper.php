@@ -187,6 +187,8 @@ class GeneralHelper
             return self::$bundlePrices[$bundle->id];
         }
 
+        $defaultCurrency = Setting::getCurrency()?->code ?? 'USD';
+
         $specialPriceData = BundleSpecialPrice::where('bundle_id', $bundle->id)
             ->where(function ($query) use ($countryId) {
                 $query->where('country_id', $countryId)
@@ -206,11 +208,14 @@ class GeneralHelper
             ?? $bundle->discount_price
             ?? $bundle->price;
 
-        $currency = $specialPriceData?->currency_id ?? config('app.default_currency');
+        $currency = $specialPriceData?->currency_id
+            ? Currency::find($specialPriceData->currency_id)?->code
+            : $defaultCurrency;
 
         self::$bundlePrices[$bundle->id] = self::formatBundlePrice($finalPrice, $currency);
         return self::$bundlePrices[$bundle->id];
     }
+
 
 
     public static function getBundlePrice(Bundle $bundle): string
