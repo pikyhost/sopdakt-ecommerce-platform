@@ -512,9 +512,9 @@ class OrderResource extends Resource
                                     ->searchable()
                                     ->live()
                                     ->afterStateUpdated(fn ($state, Forms\Set $set) =>
-                                    $set('price_per_unit', Product::find($state)?->price ?? 0)
+                                    $set('price_per_unit', (float) Product::find($state)?->discount_price_for_current_country ?? 0)
                                     )
-                                    ->disabled(fn ($record) => $record->bundle_id), // Hide when bundle is selected
+                                ,
 
                                 Select::make('color_id')
                                     ->label(__('Color'))
@@ -543,23 +543,23 @@ class OrderResource extends Resource
                                     ->numeric()
                                     ->minValue(1)
                                     ->live()
-                                    ->disabled(fn ($record) => $record->bundle_id) // Hide when bundle is selected
+
                                     ->afterStateUpdated(fn ($state, callable $set, Get $get) =>
                                     $set('subtotal', ($get('price_per_unit') ?? 0) * ($state ?? 1))
                                     ),
 
                                 TextInput::make('price_per_unit')
-                                    ->default(fn (Get $get) => Product::find($get('product_id'))?->price ?? 0)
+                                    ->default(fn (Get $get) => (float) Product::find($get('product_id'))?->discount_price_for_current_country ?? 0)
                                     ->readOnly()
                                     ->label(__('Price per Unit'))
-                                    ->numeric()
-                                    ->hidden(fn ($record) => $record->bundle_id), // Hide when bundle is selected
+                                    ->numeric(),
+                                // Hide when bundle is selected
 
                                 TextInput::make('subtotal')
                                     ->readOnly()
                                     ->label(__('Subtotal'))
                                     ->numeric()
-                                    ->hidden(fn ($record) => $record->bundle_id),
+                                ,
                             ])
                             ->columns(3)
                             ->collapsible()
@@ -573,7 +573,7 @@ class OrderResource extends Resource
                                     $subtotal += Bundle::find($get('bundle_id'))?->discount_price ?? 0;
                                 }
 
-                                $taxPercentage = Setting::first()?->tax_percentage ?? 0;
+                                $taxPercentage = Setting::getTaxPercentage();
                                 $taxAmount = ($subtotal * $taxPercentage) / 100;
                                 $shippingCost = $get('shipping_cost') ?? 0;
                                 $total = $subtotal + $taxAmount + $shippingCost;
