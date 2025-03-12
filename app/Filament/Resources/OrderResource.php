@@ -513,7 +513,8 @@ class OrderResource extends Resource
                                     ->live()
                                     ->afterStateUpdated(fn ($state, Forms\Set $set) =>
                                     $set('price_per_unit', (float) Product::find($state)?->discount_price_for_current_country ?? 0)
-                                    )
+                                    )->disabled(fn ($record, $operation) => $operation === 'edit'
+                                        && $record?->bundle_id !== null)
                                 ,
 
                                 Select::make('color_id')
@@ -543,7 +544,8 @@ class OrderResource extends Resource
                                     ->numeric()
                                     ->minValue(1)
                                     ->live()
-
+                                    ->disabled(fn ($record, $operation) => $operation === 'edit'
+                                        && $record?->bundle_id !== null)
                                     ->afterStateUpdated(fn ($state, callable $set, Get $get) =>
                                     $set('subtotal', ($get('price_per_unit') ?? 0) * ($state ?? 1))
                                     ),
