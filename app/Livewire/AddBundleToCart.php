@@ -3,10 +3,7 @@
 namespace App\Livewire;
 
 use App\Enums\BundleType;
-use App\Models\Color;
-use App\Models\ProductColor;
 use App\Models\ProductColorSize;
-use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use App\Models\Bundle;
 use App\Models\Cart;

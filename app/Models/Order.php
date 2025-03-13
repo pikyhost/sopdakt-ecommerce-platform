@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\OrderStatus;
+use App\Enums\TransactionType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -23,13 +24,44 @@ class Order extends Model
         static::created(function (Order $order) {
             foreach ($order->items as $item) {
                 if ($item->product_id) {
-                    // Deduct from the products table
+                    // Find the product
                     $product = Product::find($item->product_id);
+
                     if ($product) {
+                        // Deduct quantity from product
                         $product->decrement('quantity', $item->quantity);
 
-                        // Deduct from inventory table
+                        // Deduct quantity from inventory
                         $product->inventory()->decrement('quantity', $item->quantity);
+
+                        Transaction::create([
+                            'product_id' => $item->product_id,
+                            'type'       => TransactionType::SALE, // Enum type
+                            'quantity'   => $item->quantity,
+                            'notes'      => "Sale of {$item->quantity} units for Order #{$order->id}",
+                        ]);
+                    }
+                }
+            }
+        });
+
+        static::deleting(function (Order $order) {
+            foreach ($order->items as $item) {
+                if ($item->product_id) {
+                    $product = Product::find($item->product_id);
+
+                    if ($product) {
+                        // ✅ Restore stock
+                        $product->increment('quantity', $item->quantity);
+                        $product->inventory()->increment('quantity', $item->quantity);
+
+                        // ✅ Create a restock transaction
+                        Transaction::create([
+                            'product_id' => $item->product_id,
+                            'type'       => TransactionType::RESTOCK,
+                            'quantity'   => $item->quantity,
+                            'notes'      => "Restock of {$item->quantity} units due to order #{$order->id} deletion.",
+                        ]);
                     }
                 }
             }
@@ -38,21 +70,32 @@ class Order extends Model
 
     public function setStatusAttribute($value)
     {
-        // If order is being canceled or refunded, restore stock
+        // If order is being cancelled or refunded, restore stock
         if (in_array($this->status, ['pending', 'preparing', 'shipping']) &&
             in_array($value, ['cancelled', 'refund'])) {
 
             foreach ($this->items as $item) {
                 if ($item->product_id) {
                     $product = Product::find($item->product_id);
+
                     if ($product) {
+                        // ✅ Restore stock
                         $product->increment('quantity', $item->quantity);
                         $product->inventory()->increment('quantity', $item->quantity);
+
+                        // ✅ Create a restock transaction
+                        Transaction::create([
+                            'product_id' => $item->product_id,
+                            'type'       => TransactionType::RESTOCK,
+                            'quantity'   => $item->quantity,
+                            'notes'      => "Restock of {$item->quantity} units due to order #{$this->id} cancellation.",
+                        ]);
                     }
                 }
             }
         }
 
+        // ✅ Set the order status
         $this->attributes['status'] = $value;
     }
 
