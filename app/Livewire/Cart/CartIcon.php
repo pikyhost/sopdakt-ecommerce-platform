@@ -37,7 +37,7 @@ class CartIcon extends Component
             return [
                 'id' => $item->id,
                 'quantity' => $item->quantity,
-                'price_per_unit' => $item->price_per_unit,
+                'price_per_unit' => $item->discount_price_for_current_country,
                 'subtotal' => $item->subtotal,
                 'product' => $item->product ? [
                     'id' => $item->product->id,
