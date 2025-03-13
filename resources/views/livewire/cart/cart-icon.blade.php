@@ -24,7 +24,7 @@
 
                             <span class="cart-product-info">
                                 <span class="cart-product-qty">{{ $item['quantity'] }}</span>
-                                × ${{ number_format($item['price_per_unit'], 2) }}
+                                × {{ $item['price_per_unit'] }}
                             </span>
                         </div><!-- End .product-details -->
 
@@ -48,7 +48,7 @@
 
             <div class="dropdown-cart-total">
                 <span>SUBTOTAL:</span>
-                <span class="cart-total-price float-right">${{ number_format($subtotal, 2) }}</span>
+                <span class="cart-total-price float-right">{{ $subtotal }}</span>
             </div><!-- End .dropdown-cart-total -->
 
             <div class="dropdown-cart-action">
