@@ -76,6 +76,23 @@ class Checkout extends Component
         $this->loadCartItems(); // Ensure cart items are loaded
     }
 
+    private function extractPrice($priceString)
+    {
+        return (float) preg_replace('/[^0-9.]/', '', $priceString); // Extract numeric value
+    }
+
+    private function extractCurrency($priceString)
+    {
+        return preg_replace('/[\d.]/', '', trim($priceString)); // Extract currency
+    }
+
+    private function calculateSubtotal($priceString, $quantity)
+    {
+        $price = $this->extractPrice($priceString);
+        $currency = $this->extractCurrency($priceString);
+        return number_format($price * $quantity, 2) . ' ' . $currency;
+    }
+
     public function loadCartItems()
     {
         $session_id = session()->getId();
@@ -96,25 +113,36 @@ class Checkout extends Component
             ->with('product') // Ensure product is loaded
             ->get();
 
-        $this->cartItems = $cartItems->map(fn($item) => [
-            'id' => $item->id,
-            'quantity' => $item->quantity,
-            'subtotal' => $item->subtotal,
-            'product' => $item->product ? [
-                'id' => $item->product->id,
-                'name' => $item->product->name,
-                'price' => $item->product->discount_price_for_current_country ?? 0,
-                'feature_product_image_url' => $item->product->getFeatureProductImageUrl() ?? '',
-            ] : null,
-        ])->toArray();
+        $this->cartItems = $cartItems->map(function ($item) {
+            // Extract price and currency
+            $priceString = $item->product ? $item->product->discount_price_for_current_country : '0 USD';
+            $price = $this->extractPrice($priceString);
+            $currency = $this->extractCurrency($priceString);
 
-        $this->subTotal = $cart->subtotal ?? 0;
-        $this->total = $cart->total ?? 0;
-        $this->shippingCost = $cart->shipping_cost ?? 0;
+            return [
+                'id' => $item->id,
+                'quantity' => $item->quantity,
+                'subtotal' => number_format($item->subtotal, 2) . ' ' . $currency, // Format subtotal for display
+                'currency' => $currency,
+                'product' => $item->product ? [
+                    'id' => $item->product->id,
+                    'name' => $item->product->name,
+                    'price' => number_format($price, 2) . ' ' . $currency, // Format price for display
+                    'feature_product_image_url' => $item->product->getFeatureProductImageUrl() ?? '',
+                ] : null,
+            ];
+        })->toArray();
 
+        // Ensure subtotal is numeric for calculations
+        $this->subTotal = (float) $cart->subtotal ?? 0;
+        $this->total = (float) $cart->total ?? 0;
+        $this->shippingCost = (float) $cart->shipping_cost ?? 0;
+
+        // Tax calculations
         $this->taxPercentage = Setting::first()?->tax_percentage ?? 0;
         $this->taxAmount = ($this->taxPercentage > 0) ? ($this->subTotal * $this->taxPercentage / 100) : 0;
     }
+
 
     public function save()
     {
@@ -228,25 +256,17 @@ class Checkout extends Component
             $cart->items()->delete();
             $cart->delete();
 
-//            $JtExpressOrderData =  $this->prepareJtExpressOrderData($order);
-//            $jtExpressResponse = app(JtExpressService::class)->createOrder($JtExpressOrderData);
-//            $this->updateJtExpressOrder($order, 'pending', $JtExpressOrderData,  $jtExpressResponse);
-
             DB::commit();
 
-//            // Send order confirmation email
-//            Mail::to(Auth::user()->email ?? $contact->email)->queue(new OrderConfirmationMail($order));
-
-            // Set session message for order completion
-            session()->flash('success', 'Order placed successfully! A confirmation email has been sent.');
-
+            session()->flash('success', __('order_success_message'));
 
             return redirect()->route('order.complete')->with('order_success', true);
         } catch (\Exception $e) {
             DB::rollBack();
 
-            $this->addError('order', 'Something went wrong: ' . $e->getMessage());
+            $this->addError('order', __('order_error_message', ['error' => $e->getMessage()]));
         }
+
     }
 
     public function getIsCheckoutReadyProperty()

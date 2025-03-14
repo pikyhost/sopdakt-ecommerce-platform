@@ -12,9 +12,10 @@ class OrderCompleteController extends Controller
         $currentRoute = Route::currentRouteName(); // Set route in mount
         // Check if the user is redirected from order placement
         if (!session()->has('order_success')) {
-            return redirect()->route('cart.index')->with('error', 'You have no recent order.');
+            return redirect()->route('cart.index')->with('error', __('no_recent_order'));
         }
 
         return view('front.order-complete', compact('currentRoute'));
     }
+
 }
