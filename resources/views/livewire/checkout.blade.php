@@ -173,7 +173,7 @@
                                 </h3>
                             </td>
                             <td class="price-col">
-                                <span>${{ number_format((float) $item['product']['price'] * $item['quantity'], 2) }}</span>
+                                <span>{{ $item['subtotal'] }}</span>
                             </td>
                         </tr>
                     @empty
@@ -187,7 +187,7 @@
                     <tr class="cart-subtotal">
                         <td><h4>Subtotal</h4></td>
                         <td class="price-col">
-                            <span>${{ number_format($subTotal, 2) }}</span>
+                            <span>{{ number_format($subTotal, 2) }}</span>
                         </td>
                     </tr>
 
@@ -198,7 +198,7 @@
                             </h4>
                         </td>
                         <td class="text-end">
-                            <span>${{ number_format($shippingCost, 2) }}</span>
+                            <span>{{ number_format($shippingCost, 2) }}</span>
                         </td>
                     </tr>
                     <tr class="cart-subtotal">
@@ -212,7 +212,7 @@
                     <tr class="order-total">
                         <td><h4>Total</h4></td>
                         <td><b class="total-price">
-                                <span>${{ number_format($total, 2) }}</span>
+                                <span>{{ number_format($total, 2) }}</span>
                             </b></td>
                     </tr>
                     </tfoot>

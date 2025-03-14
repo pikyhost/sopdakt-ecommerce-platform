@@ -24,7 +24,7 @@
 
                             <span class="cart-product-info">
                                 <span class="cart-product-qty">{{ $item['quantity'] }}</span>
-                                × {{ $item['price_per_unit'] }}
+                                × {{ $item['product']['price'] ?? '' }}
                             </span>
                         </div><!-- End .product-details -->
 

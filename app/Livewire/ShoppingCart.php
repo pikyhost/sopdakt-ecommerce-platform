@@ -44,6 +44,25 @@ class ShoppingCart extends Component
         $this->cities = $this->governorate_id ? City::where('governorate_id', $this->governorate_id)->get() : [];
     }
 
+    private function extractPrice($priceString)
+    {
+        return (float) preg_replace('/[^0-9.]/', '', $priceString); // Extract numeric value
+    }
+
+    private function extractCurrency($priceString)
+    {
+        return preg_replace('/[\d.]/', '', trim($priceString)); // Extract currency
+    }
+
+    private function calculateSubtotal($priceString, $quantity)
+    {
+        $price = $this->extractPrice($priceString);
+        $currency = $this->extractCurrency($priceString);
+        return number_format($price * $quantity, 2) . ' ' . $currency;
+    }
+
+
+
     public function loadCart()
     {
         if (auth()->check()) {
@@ -71,8 +90,11 @@ class ShoppingCart extends Component
             ->map(fn($item) => [
                 'id' => $item->id,
                 'quantity' => $item->quantity,
-                'price_per_unit' => $item->price_per_unit,
-                'subtotal' => $item->subtotal,
+                'price_per_unit' => $this->extractPrice($item->product ? $item->product->discount_price_for_current_country : '0 USD'),
+                'subtotal' => $this->calculateSubtotal(
+                    $item->product ? $item->product->discount_price_for_current_country : '0 USD',
+                    $item->quantity
+                ),
                 'product' => $item->product ? [
                     'id' => $item->product->id,
                     'name' => $item->product->name,
@@ -195,16 +217,26 @@ class ShoppingCart extends Component
             return;
         }
 
-        // Update subtotal dynamically
+        // Get price string from the product
+        $priceString = $cartItem->product ? $cartItem->product->discount_price_for_current_country : '0 USD';
+
+        // Extract price and currency separately
+        $price = $this->extractPrice($priceString);
+        $currency = $this->extractCurrency($priceString);
+
+        // Calculate subtotal (only numeric value for DB)
+        $subtotal = $price * $cartItem->quantity;
+
         $cartItem->update([
-            'subtotal' => $cartItem->quantity * $cartItem->price_per_unit
+            'subtotal' => $subtotal,  // Store numeric value only
         ]);
 
         // Convert cart items to a collection, update only the changed item
-        $this->cartItems = collect($this->cartItems)->map(function ($item) use ($cartItem) {
+        $this->cartItems = collect($this->cartItems)->map(function ($item) use ($cartItem, $subtotal, $currency) {
             if ($item['id'] === $cartItem->id) {
                 $item['quantity'] = $cartItem->quantity;
-                $item['subtotal'] = $cartItem->subtotal;
+                $item['subtotal'] = number_format($subtotal, 2) . ' ' . $currency; // Format for display
+                $item['currency'] = $currency;
             }
             return $item;
         })->toArray(); // Convert back to array for Livewire
@@ -212,6 +244,8 @@ class ShoppingCart extends Component
         $this->calculateTotals();
         $this->dispatch('cartUpdated');
     }
+
+
 
     public function removeCartItem($id)
     {

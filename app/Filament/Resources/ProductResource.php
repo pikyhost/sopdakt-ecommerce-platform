@@ -350,7 +350,7 @@ class ProductResource extends Resource
                                ])->columns(2),
                                 Repeater::make('shipping_costs')
                                     ->defaultItems(0)
-                                    ->label(__('Shipping Costs'))
+                                    ->label(__('shipping_cost.navigation_label'))
                                     ->relationship('shippingCosts')
                                     ->schema([
                                         Select::make('country_group_id')

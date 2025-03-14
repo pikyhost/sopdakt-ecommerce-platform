@@ -52,7 +52,7 @@
                                     N/A
                                 @endif
                             </td>
-                            <td>${{ number_format($cartItem['price_per_unit'] ?? 0, 2) }}</td>
+                            <td>{{ $cartItem['product']['price'] }}</td>
                             <td>
                                 @if ($cartItem['bundle'])
                                     <span class="fw-semibold text-primary fs-6">{{ $cartItem['quantity'] }}</span>
@@ -78,8 +78,11 @@
                             </td>
 
                             <td class="text-right">
-                                $<span wire:key="subtotal-{{ $cartItem['id'] }}">{{ number_format($cartItem['subtotal'], 2) }}</span>
+    <span wire:key="subtotal-{{ $cartItem['id'] }}">
+        {{ $cartItem['subtotal'] }}
+    </span>
                             </td>
+
                         </tr>
                     @empty
                         <tr>
@@ -100,7 +103,7 @@
                     <tbody>
                     <tr>
                         <td>Subtotal</td>
-                        <td>${{ number_format((float) $subtotal, 2) }}</td>
+                        <td>{{ number_format((float) $subtotal, 2) }}</td>
                     </tr>
                     </tbody>
 
@@ -173,7 +176,7 @@
                     <tr class="cart-subtotal">
                         <td><h4>Shipping Cost</h4></td>
                         <td class="price-col">
-                            <span>${{ number_format($shippingCost, 2) }}</span>
+                            <span>{{ number_format($shippingCost, 2) }}</span>
                         </td>
                     </tr>
                     <tr class="cart-subtotal">
@@ -186,7 +189,7 @@
                     </tr>
                     <tr>
                         <td>Total</td>
-                        <td>${{ number_format((float) $total, 2) }}</td>
+                        <td>{{ number_format((float) $total, 2) }}</td>
                     </tr>
                     </tfoot>
                 </table>

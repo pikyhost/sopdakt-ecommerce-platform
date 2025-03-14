@@ -18,10 +18,10 @@ class GeneralHelper
     private static array $bundlePrices = [];
     private static ?int $countryId = null;
 
-    public static function getCountryId(): ?int
+    private static function getCountryId(): ?int
     {
         if (self::$countryId === null) {
-            $ip = request()->ip();
+            $ip = app()->isLocal() ? '156.221.68.3' : request()->ip();
             $countryCode = geoip($ip)['country_code2'] ?? 'US';
             self::$countryId = Country::where('code', $countryCode)->value('id') ?? null;
         }
@@ -260,5 +260,17 @@ class GeneralHelper
     {
         return number_format($price, 2) . ' ' . ($currency ?? 'USD');
     }
+
+    // at production
+    //    public static function getCountryId(): ?int
+//    {
+//        if (self::$countryId === null) {
+//            $ip = request()->ip();
+//            $countryCode = geoip($ip)['country_code2'] ?? 'US';
+//            self::$countryId = Country::where('code', $countryCode)->value('id') ?? null;
+//        }
+//        return self::$countryId;
+//    }
+
 
 }

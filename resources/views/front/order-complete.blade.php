@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'order complete')
+@section('title', __('order_complete'))
 
 @php
     $mainClass = 'main main-test';
@@ -15,10 +15,10 @@
             </div>
         @endif
 
-        <h1>Order Created Successfully</h1>
-        <p>Your order has been placed successfully. A confirmation email has been sent to your email address.</p>
+        <h1>{{ __('order_created_successfully') }}</h1>
+        <p>{{ __('order_confirmation_message') }}</p>
         <br>
-        <a href="{{ url('/') }}" class="btn btn-primary">Go to Home</a>
+        <a href="{{ url('/') }}" class="btn btn-primary">{{ __('go_to_home') }}</a>
     </div>
     <br>
 @endsection
