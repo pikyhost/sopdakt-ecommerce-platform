@@ -211,6 +211,7 @@ class OrderResource extends Resource
                     Tables\Actions\DeleteAction::make(),
 
                     Tables\Actions\Action::make('trackOrder')
+                        ->label(__('actions.track_order'))
                         ->visible(fn (Order $record): bool =>
                         !is_null($record->tracking_number)
                         )
@@ -240,6 +241,7 @@ class OrderResource extends Resource
                             }
                         }),
                     Tables\Actions\Action::make('checkOrder')
+                        ->label(__('actions.check_order'))
                         ->visible(fn (Order $record): bool =>
                         !is_null($record->tracking_number)
                         )
@@ -268,6 +270,7 @@ class OrderResource extends Resource
                             }
                         }),
                     Tables\Actions\Action::make('getOrderStatus')
+                        ->label(__('actions.get_order_status'))
                         ->visible(fn (Order $record): bool =>
                         !is_null($record->tracking_number)
                         )
@@ -303,6 +306,7 @@ class OrderResource extends Resource
                             }
                         }),
                     Tables\Actions\Action::make('getTrajectory')
+                        ->label(__('actions.get_trajectory'))
                         ->visible(fn (Order $record): bool =>
                         !is_null($record->tracking_number)
                         )
@@ -335,6 +339,7 @@ class OrderResource extends Resource
                             }
                         }),
                     Tables\Actions\Action::make('cancelOrder')
+                        ->label(__('actions.cancel_order'))
                         ->visible(fn (Order $record): bool =>
                         !is_null($record->tracking_number)
                         )
