@@ -193,4 +193,9 @@ class RoleResource extends Resource implements HasShieldPermissions
     {
         return $record->name !== UserRole::SuperAdmin->value;
     }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasAnyRole(['super_admin', 'admin']);
+    }
 }

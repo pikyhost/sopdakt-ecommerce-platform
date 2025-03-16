@@ -22,6 +22,8 @@ return new class extends Migration
             $table->unsignedInteger('price_per_unit'); // Price per item/bundle
             $table->unsignedInteger('subtotal'); // quantity * price_per_unit
             $table->timestamps();
+            $table->foreignId('currency_id')->constrained('currencies')->cascadeOnDelete(); // العملة الأصلية
+
         });
     }
 

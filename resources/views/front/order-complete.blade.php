@@ -3,14 +3,15 @@
 @section('title', __('order_complete'))
 
 @php
-    $mainClass = 'main main-test';
+    $direction = app()->getLocale() === 'ar' ? 'rtl' : 'ltr';
 @endphp
 
 @section('content')
     @include('order-wizard')
-    <div class="container text-center">
+
+    <div class="container text-center" dir="{{ $direction }}">
         @if(session('success'))
-            <div class="alert alert-success">
+            <div class="alert alert-success text-{{ $direction === 'rtl' ? 'right' : 'left' }}">
                 {{ session('success') }}
             </div>
         @endif

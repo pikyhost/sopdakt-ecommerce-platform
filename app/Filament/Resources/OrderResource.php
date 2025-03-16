@@ -38,7 +38,6 @@ class OrderResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
 
-
     public static function getNavigationGroup(): ?string
     {
         return __('landing_page_order.orders_contacts');
@@ -49,68 +48,116 @@ class OrderResource extends Resource
         return __('landing_page_order.orders');
     }
 
+    public static function getModelLabel(): string
+    {
+        return __('order');
+    }
+
+    /**
+     * @return string|null
+     */
+    public static function getPluralLabel(): ?string
+    {
+        return __('landing_page_order.orders');
+    }
+
+    public static function getLabel(): ?string
+    {
+        return __('order');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('landing_page_order.orders');
+    }
+
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
-                    ->formatStateUsing(function ($state) {
-                        return '#'. $state;
-                    })
-                    ->label('Number')
+                    ->formatStateUsing(fn($state) => '#' . $state)
+                    ->label(__('Number'))
                     ->searchable(),
+
                 Tables\Columns\TextColumn::make('user.name')
+                    ->label(__('User Name'))
                     ->searchable()
                     ->placeholder('-')
                     ->numeric()
                     ->sortable(),
+
                 Tables\Columns\TextColumn::make('contact.name')
+                    ->label(__('Contact Name'))
                     ->searchable()
                     ->placeholder('-')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('status')->badge()
+
+                Tables\Columns\TextColumn::make('status')
+                    ->label(__('Status'))
+                    ->badge()
                     ->searchable(),
+
                 Tables\Columns\TextColumn::make('shippingType.name')
+                    ->label(__('Shipping Type'))
                     ->searchable()
                     ->numeric()
                     ->placeholder('-')
                     ->sortable(),
+
                 Tables\Columns\TextColumn::make('paymentMethod.name')
+                    ->label(__('Payment Method'))
                     ->searchable()
                     ->numeric()
                     ->placeholder('-')
                     ->sortable(),
+
                 Tables\Columns\TextColumn::make('coupon.id')
+                    ->label(__('Coupon ID'))
                     ->searchable()
                     ->numeric()
                     ->placeholder('-')
                     ->sortable(),
+
                 Tables\Columns\TextColumn::make('shipping_cost')
+                    ->label(__('Shipping Cost'))
                     ->numeric()
                     ->placeholder('-')
                     ->sortable(),
+
                 Tables\Columns\TextColumn::make('tax_percentage')
+                    ->label(__('Tax Percentage'))
                     ->numeric()
                     ->placeholder('-')
                     ->sortable(),
+
                 Tables\Columns\TextColumn::make('tax_amount')
+                    ->label(__('Tax Amount'))
                     ->numeric()
                     ->placeholder('-')
                     ->sortable(),
+
                 Tables\Columns\TextColumn::make('subtotal')
+                    ->label(__('Subtotal'))
                     ->numeric()
                     ->placeholder('-')
                     ->sortable(),
+
                 Tables\Columns\TextColumn::make('total')
+                    ->label(__('Total'))
                     ->numeric()
                     ->placeholder('-')
                     ->sortable(),
+
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('Created At'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label(__('Updated At'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -119,8 +166,10 @@ class OrderResource extends Resource
                 Tables\Filters\Filter::make('created_at')
                     ->form([
                         Forms\Components\DatePicker::make('created_from')
+                            ->label(__('تم إنشاؤه من'))
                             ->placeholder(fn ($state): string => 'Dec 18, ' . now()->subYear()->format('Y')),
                         Forms\Components\DatePicker::make('created_until')
+                            ->label(__('تم إنشاؤها ل'))
                             ->placeholder(fn ($state): string => now()->format('M d, Y')),
                     ])
                     ->query(function (Builder $query, array $data): Builder {

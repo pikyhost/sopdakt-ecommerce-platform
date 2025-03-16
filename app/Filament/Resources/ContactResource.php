@@ -2,13 +2,12 @@
 
 namespace App\Filament\Resources;
 
-
-use App\Models\Contact;
-use Filament\Forms\Form;
-use Filament\Tables\Table;
-use Filament\Resources\Resource;
-use Filament\Tables\Columns\TextColumn;
 use App\Filament\Resources\ContactResource\Pages;
+use App\Models\Contact;
+use Filament\Resources\Resource;
+use Filament\Tables;
+use Filament\Tables\Table;
+use Webbingbrasil\FilamentAdvancedFilter\Filters\DateFilter;
 
 class ContactResource extends Resource
 {
@@ -48,31 +47,65 @@ class ContactResource extends Resource
         return __('landing_page_order.contacts.contacts');
     }
 
-    public static function form(Form $form): Form
-    {
-        return $form->schema([]);
-    }
-
     public static function table(Table $table): Table
     {
         return $table
             ->columns([
-                TextColumn::make('id')->label(__('landing_page_order.contacts.id'))->sortable(),
-                TextColumn::make('name')->label(__('landing_page_order.contacts.name'))->sortable(),
-                TextColumn::make('email')->label(__('landing_page_order.contacts.email'))->sortable(),
-                TextColumn::make('phone')->label(__('landing_page_order.contacts.phone'))->sortable(),
-                TextColumn::make('message')->label(__('landing_page_order.contacts.message'))->limit(100),
-                TextColumn::make('created_at')->label(__('landing_page_order.contacts.created_at'))->dateTime('M d, Y H:i A')->sortable(),
+                Tables\Columns\TextColumn::make('session_id')
+                    ->label(__('Session ID'))
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('name')
+                    ->label(__('Name'))
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('email')
+                    ->label(__('Email'))
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('phone')
+                    ->label(__('Phone'))
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('Created At'))
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label(__('Updated At'))
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('landing_page_id')
+                    ->label(__('Landing Page ID'))
+                    ->placeholder(__('Not Available'))
+                    ->numeric()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([])
-            ->actions([])
-            ->bulkActions([]);
+            ->filters([
+                DateFilter::make('created_at')
+                    ->label(__('Created At')),
+            ], Tables\Enums\FiltersLayout::Modal)
+            ->actions([
+                Tables\Actions\DeleteAction::make()
+                    ->label(__('Delete')),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label(__('Delete Selected')),
+                ]),
+            ]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListContacts::route('/'),
+            'index' => Pages\ManageContacts::route('/'),
         ];
     }
 }

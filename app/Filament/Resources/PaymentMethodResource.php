@@ -2,8 +2,8 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\TypeResource\Pages;
-use App\Models\Type;
+use App\Filament\Resources\PaymentMethodResource\Pages;
+use App\Models\PaymentMethod;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Concerns\Translatable;
@@ -11,45 +11,42 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 
-class TypeResource extends Resource
+class PaymentMethodResource extends Resource
 {
     use Translatable;
 
-    protected static ?string $model = Type::class;
+    protected static ?string $model = PaymentMethod::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-banknotes';
 
     public static function getNavigationGroup(): ?string
     {
-        return __('navigation.products_management');
+        return __('Payment Management') ;
     }
 
     public static function getNavigationLabel(): string
     {
-        return __('Types');
+        return __('Payment Methods');
     }
 
     public static function getModelLabel(): string
     {
-        return __('Type');
+        return __('Payment Method');
     }
 
-    /**
-     * @return string|null
-     */
     public static function getPluralLabel(): ?string
     {
-        return __('Types');
+        return __('Payment Methods');
     }
 
     public static function getLabel(): ?string
     {
-        return __('Type');
+        return __('Payment Method');
     }
 
     public static function getPluralModelLabel(): string
     {
-        return __('Types');
+        return __('Payment Methods');
     }
 
     public static function form(Form $form): Form
@@ -57,9 +54,19 @@ class TypeResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
+                    ->label(__('Name'))
                     ->required()
+                    ->columnSpanFull()
                     ->maxLength(255),
-                Forms\Components\Toggle::make('is_active')
+
+                Forms\Components\Textarea::make('description')
+                    ->columnSpanFull()
+                    ->label(__('Description'))
+                    ->maxLength(255),
+
+                Forms\Components\Checkbox::make('is_active')
+                    ->columnSpanFull()
+                    ->label(__('Active'))
                     ->required(),
             ]);
     }
@@ -69,38 +76,44 @@ class TypeResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
+                    ->label(__('Name'))
                     ->searchable(),
+
+                Tables\Columns\TextColumn::make('description')
+                    ->label(__('Description'))
+                    ->searchable(),
+
                 Tables\Columns\IconColumn::make('is_active')
+                    ->label(__('Active'))
                     ->boolean(),
+
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('Created At'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label(__('Updated At'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()->label(__('Edit')),
+                Tables\Actions\DeleteAction::make()->label(__('Delete')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()->label(__('Delete Selected')),
                 ]),
             ]);
-    }
-
-    public static function canAccess(): bool
-    {
-        return false;
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageTypes::route('/'),
+            'index' => Pages\ManagePaymentMethods::route('/'),
         ];
     }
 }

@@ -22,7 +22,7 @@ class LandingPageResource extends Resource
 {
     protected static ?string $model = LandingPage::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-home';
+    protected static ?string $navigationIcon = 'heroicon-o-home-modern';
 
     public static function getNavigationGroup(): ?string
     {

@@ -9,11 +9,5 @@ class Contact extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'session_id',
-        'name',
-        'phone',
-        'email',
-        'address',
-    ];
+    protected $guarded = [];
 }
