@@ -96,115 +96,115 @@
         </div>
         @if (!empty($cartItems))
             <div class="col-lg-4">
-            <div class="cart-summary">
-                <h3>CART TOTALS</h3>
+                <div class="cart-summary">
+                    <h3>CART TOTALS</h3>
 
-                <table class="table table-totals">
-                    <tbody>
-                    <tr>
-                        <td>Subtotal</td>
-                        <td>{{ number_format((float) $subtotal, 2) }}</td>
-                    </tr>
-                    </tbody>
+                    <table class="table table-totals">
+                        <tbody>
+                        <tr>
+                            <td>Subtotal</td>
+                            <td>{{ number_format((float) $subtotal, 2) }}</td>
+                        </tr>
+                        </tbody>
 
-                    <tr>
-                        <td colspan="2" class="text-left">
-                            <h4>Shipping</h4>
+                        <tr>
+                            <td colspan="2" class="text-left">
+                                <h4>Shipping</h4>
 
-                            @foreach ($shipping_types as $shippingMethod)
-                                <div class="form-group form-group-custom-control">
-                                    <div class="custom-control custom-radio">
-                                        <input type="radio" class="custom-control-input"
-                                               wire:model.live="selected_shipping"
-                                               value="{{ $shippingMethod->id }}">
-                                        <label class="custom-control-label">{{ $shippingMethod->name }}</label>
+                                @foreach ($shipping_types as $shippingMethod)
+                                    <div class="form-group form-group-custom-control">
+                                        <div class="custom-control custom-radio">
+                                            <input type="radio" class="custom-control-input"
+                                                   wire:model.live="selected_shipping"
+                                                   value="{{ $shippingMethod->id }}">
+                                            <label class="custom-control-label">{{ $shippingMethod->name }}</label>
+                                        </div>
                                     </div>
-                                </div>
-                            @endforeach
-                            @error('selected_shipping')
-                            <span class="text-danger">{{ $message }}</span>
-                            @enderror
+                                @endforeach
+                                @error('selected_shipping')
+                                <span class="text-danger">{{ $message }}</span>
+                                @enderror
 
-                            <form action="#">
-                                <div class="form-group form-group-sm">
-                                    <label>Shipping to <strong>{{ $country_id ? optional(\App\Models\Country::find($country_id))->name : 'Select Country' }}</strong></label>
-                                    <div class="select-custom">
-                                        <select class="form-control form-control-sm" wire:model.live="country_id">
-                                            <option value="">Select Country</option>
-                                            @foreach ($countries as $country)
-                                                <option value="{{ $country->id }}">{{ $country->name }}</option>
-                                            @endforeach
-                                        </select>
+                                <form action="#">
+                                    <div class="form-group form-group-sm">
+                                        <label>Shipping to <strong>{{ $country_id ? optional(\App\Models\Country::find($country_id))->name : 'Select Country' }}</strong></label>
+                                        <div class="select-custom">
+                                            <select class="form-control form-control-sm" wire:model.live="country_id">
+                                                <option value="">Select Country</option>
+                                                @foreach ($countries as $country)
+                                                    <option value="{{ $country->id }}">{{ $country->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        @error('country_id')
+                                        <span class="text-danger">{{ $message }}</span>
+                                        @enderror
                                     </div>
-                                    @error('country_id')
-                                    <span class="text-danger">{{ $message }}</span>
-                                    @enderror
-                                </div>
 
-                                <div class="form-group form-group-sm">
-                                    <div class="select-custom">
-                                        <select class="form-control form-control-sm" wire:model.live="governorate_id">
-                                            <option value="">Select Governorate</option>
-                                            @foreach ($governorates as $governorate)
-                                                <option value="{{ $governorate->id }}">{{ $governorate->name }}</option>
-                                            @endforeach
-                                        </select>
+                                    <div class="form-group form-group-sm">
+                                        <div class="select-custom">
+                                            <select class="form-control form-control-sm" wire:model.live="governorate_id">
+                                                <option value="">Select Governorate</option>
+                                                @foreach ($governorates as $governorate)
+                                                    <option value="{{ $governorate->id }}">{{ $governorate->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        @error('governorate_id')
+                                        <span class="text-danger">{{ $message }}</span>
+                                        @enderror
                                     </div>
-                                    @error('governorate_id')
-                                    <span class="text-danger">{{ $message }}</span>
-                                    @enderror
-                                </div>
 
-                                <div class="form-group form-group-sm">
-                                    <div class="select-custom">
-                                        <select class="form-control form-control-sm" wire:model.live="city_id">
-                                            <option value="">Select City</option>
-                                            @foreach ($cities as $city)
-                                                <option value="{{ $city->id }}">{{ $city->name }}</option>
-                                            @endforeach
-                                        </select>
+                                    <div class="form-group form-group-sm">
+                                        <div class="select-custom">
+                                            <select class="form-control form-control-sm" wire:model.live="city_id">
+                                                <option value="">Select City</option>
+                                                @foreach ($cities as $city)
+                                                    <option value="{{ $city->id }}">{{ $city->name }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        @error('city_id')
+                                        <span class="text-danger">{{ $message }}</span>
+                                        @enderror
                                     </div>
-                                    @error('city_id')
-                                    <span class="text-danger">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                            </form>
-                        </td>
-                    </tr>
-                    <tfoot>
+                                </form>
+                            </td>
+                        </tr>
+                        <tfoot>
 
-                    <tr class="cart-subtotal">
-                        <td><h4>Shipping Cost</h4></td>
-                        <td class="price-col">
-                            <span>{{ number_format($shippingCost, 2) }}</span>
-                        </td>
-                    </tr>
-                    <tr class="cart-subtotal">
-                        <td><h4>Tax ({{ $taxPercentage }}%)</h4></td>
-                        <td class="price-col">
+                        <tr class="cart-subtotal">
+                            <td><h4>Shipping Cost</h4></td>
+                            <td class="price-col">
+                                <span>{{ number_format($shippingCost, 2) }}</span>
+                            </td>
+                        </tr>
+                        <tr class="cart-subtotal">
+                            <td><h4>Tax ({{ $taxPercentage }}%)</h4></td>
+                            <td class="price-col">
                               <span>
                                   {{ $tax }}
                               </span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Total</td>
-                        <td>{{ number_format((float) $total, 2) }}</td>
-                    </tr>
-                    </tfoot>
-                </table>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Total</td>
+                            <td>{{ number_format((float) $total, 2) }}</td>
+                        </tr>
+                        </tfoot>
+                    </table>
 
-                <div class="checkout-methods">
-                    <button wire:click="proceedToCheckout" class="btn btn-block btn-dark" wire:loading.attr="disabled">
-                        Proceed to Checkout <i class="fa fa-arrow-right"></i>
-                        <span wire:loading wire:target="proceedToCheckout">
+                    <div class="checkout-methods">
+                        <button wire:click="proceedToCheckout" class="btn btn-block btn-dark" wire:loading.attr="disabled">
+                            Proceed to Checkout <i class="fa fa-arrow-right"></i>
+                            <span wire:loading wire:target="proceedToCheckout">
         <i class="fa fa-spinner fa-spin"></i>
     </span>
-                    </button>
-                </div>
+                        </button>
+                    </div>
 
+                </div>
             </div>
-        </div>
         @endif
     </div>
 </div>

@@ -10,6 +10,7 @@ use App\Models\OrderItem;
 use App\Models\Setting;
 use App\Services\JtExpressService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Livewire\Component;
@@ -208,9 +209,12 @@ class Checkout extends Component
         try {
             // Get the cart for user or guest session
             $cart = Cart::where(function ($query) {
-                $query->where('user_id', Auth::id())
-                    ->orWhere('session_id', session()->getId());
-            })->first();
+                if (Auth::check()) {
+                    $query->where('user_id', Auth::id());
+                } else {
+                    $query->where('session_id', session()->getId());
+                }
+            })->with('items')->first();
 
             if (!$cart || $cart->items->isEmpty()) {
                 return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
@@ -263,10 +267,8 @@ class Checkout extends Component
             return redirect()->route('order.complete')->with('order_success', true);
         } catch (\Exception $e) {
             DB::rollBack();
-
             $this->addError('order', __('order_error_message', ['error' => $e->getMessage()]));
         }
-
     }
 
     public function getIsCheckoutReadyProperty()

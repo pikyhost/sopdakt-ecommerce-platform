@@ -123,13 +123,14 @@ class AdminPanelProvider extends PanelProvider
     private function getNavigationGroups(): array
     {
         $groups = [
-            'Products Management',
-            'Inventory Management',
-            'Orders',
-            'Orders & Contacts',
-            'Shipping Management',
-            'user_experience',
-            'Settings Management',
+            __('Products Management'),
+            __('Inventory Management'),
+            __('Orders'),
+            __('Orders & Contacts'),
+            __('Payment Methods'),
+            __('Shipping Management'),
+            __('user_experience'),
+            __('Settings Management'),
         ];
 
         $navigationGroups = array_map(fn($group) => NavigationGroup::make(__($group)), $groups);
