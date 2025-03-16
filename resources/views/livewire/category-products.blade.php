@@ -91,9 +91,9 @@
                         </div>
                         <div class="price-box">
                             @if ($product->after_discount_price)
-                                <del class="old-price">${{ $product->price_for_current_country }}</del>
+                                <del class="old-price">{{ $product->price_for_current_country }}</del>
                             @endif
-                            <span class="product-price">${{ $product->discount_price_for_current_country }}</span>
+                            <span class="product-price">{{ $product->discount_price_for_current_country }}</span>
                         </div>
                         <livewire:product-actions :product="$product" wire:key="product-{{ $product->id }}" />
                     </div>

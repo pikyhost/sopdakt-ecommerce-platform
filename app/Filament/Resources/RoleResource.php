@@ -25,6 +25,8 @@ class RoleResource extends Resource implements HasShieldPermissions
 
     protected static ?string $recordTitleAttribute = 'name';
 
+    protected static ?int $navigationSort = 60;
+
     public static function getPermissionPrefixes(): array
     {
         return [
@@ -155,11 +157,6 @@ class RoleResource extends Resource implements HasShieldPermissions
     public static function getNavigationIcon(): string
     {
         return __('filament-shield::filament-shield.nav.role.icon');
-    }
-
-    public static function getNavigationSort(): ?int
-    {
-        return Utils::getResourceNavigationSort();
     }
 
     public static function getSlug(): string

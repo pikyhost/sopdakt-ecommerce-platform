@@ -447,9 +447,9 @@
                             </div>
                             <div class="price-box">
                                 @if ($relatedProduct->after_discount_price)
-                                    <del class="old-price">${{ $relatedProduct->price_for_current_country }}</del>
+                                    <del class="old-price">{{ $relatedProduct->price_for_current_country }}</del>
                                 @endif
-                                <span class="product-price">${{ $relatedProduct->discount_price_for_current_country }}</span>
+                                <span class="product-price">{{ $relatedProduct->discount_price_for_current_country }}</span>
                             </div>
                             <livewire:product-actions :product="$relatedProduct" wire:key="relatedProduct-{{ $product->id }}" />
                         </div>
@@ -491,7 +491,7 @@
                             </div>
 
                             <div class="price-box">
-                                <span class="product-price">${{ $featuredProduct->discount_price_for_current_country }}</span>
+                                <span class="product-price">{{ $featuredProduct->discount_price_for_current_country }}</span>
                             </div>
                         </div>
                     </div>
@@ -528,7 +528,7 @@
                             </div>
 
                             <div class="price-box">
-                                <span class="product-price">${{ $bestProduct->discount_price_for_current_country }}</span>
+                                <span class="product-price">{{ $bestProduct->discount_price_for_current_country }}</span>
                             </div>
                         </div>
                     </div>
@@ -565,9 +565,9 @@
 
                             <div class="price-box">
                                 @if ($latestProduct->after_discount_price)
-                                    <del class="old-price">${{ $latestProduct->price_for_current_country }}</del>
+                                    <del class="old-price">{{ $latestProduct->price_for_current_country }}</del>
                                 @endif
-                                <span class="product-price">${{ $latestProduct->discount_price_for_current_country }}</span>
+                                <span class="product-price">{{ $latestProduct->discount_price_for_current_country }}</span>
                             </div>
                         </div>
                     </div>
@@ -603,7 +603,7 @@
                             </div>
 
                             <div class="price-box">
-                                <span class="product-price">${{ $topRatedProduct->discount_price_for_current_country }}</span>
+                                <span class="product-price">{{ $topRatedProduct->discount_price_for_current_country }}</span>
                             </div>
                         </div>
                     </div>

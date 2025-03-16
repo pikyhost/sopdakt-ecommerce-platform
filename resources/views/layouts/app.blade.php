@@ -85,12 +85,12 @@
                         <a href="#">Links</a>
                         <div class="header-menu">
                             <ul>
-                                <li><a href="dashboard.html">My Account</a></li>
-                                <li><a href="about.html">About Us</a></li>
-                                <li><a href="blog.html">Blog</a></li>
-                                <li><a href="wishlist.html">My Wishlist</a></li>
-                                <li><a href="cart.html">Cart</a></li>
-                                <li><a href="login.html" class="login-link">Log In</a></li>
+                                <li><a href="{{ url('/client/my-profile') }}">My Account</a></li>
+                                <li><a href="{{ url('/about-us') }}">About Us</a></li>
+                                <li><a href="{{ url('/blogs') }}">Blogs</a></li>
+                                <li><a href="{{ url('/client/my-wishlist') }}">My Wishlist</a></li>
+                                <li><a href="{{ url('/cart') }}">Cart</a></li>
+                                <li><a href="{{ url('/client/login') }}" class="login-link">Log In</a></li>
                             </ul>
                         </div><!-- End .header-menu -->
                     </div><!-- End .header-dropown -->
@@ -124,16 +124,6 @@
                         </div><!-- End .header-menu -->
                     </div><!-- End .header-dropdown -->
 
-                    <div class="header-dropdown mr-auto mr-sm-3 mr-md-0">
-                        <a href="#">USD</a>
-                        <div class="header-menu">
-                            <ul>
-                                <li><a href="#">EUR</a></li>
-                                <li><a href="#">USD</a></li>
-                            </ul>
-                        </div><!-- End .header-menu -->
-                    </div><!-- End .header-dropown -->
-
                     <span class="separator"></span>
 
                     <div class="social-icons">
@@ -152,7 +142,7 @@
                         <i class="fas fa-bars"></i>
                     </button>
 
-                    <a href="demo4.html" class="logo">
+                    <a href="{{ route('homepage') }}" class="logo">
                         <!-- Logo -->
                         <!-- Logo -->
                         <img src="{{ $logo }}"
@@ -231,7 +221,7 @@
                 <nav class="main-nav w-100">
                     <ul class="menu">
                         <li>
-                            <a href="demo4.html">Home</a>
+                            <a href="/">Home</a>
                         </li>
                         <li>
                             <a href="category.html">Categories</a>
@@ -523,9 +513,9 @@
         <span class="mobile-menu-close"><i class="fa fa-times"></i></span>
         <nav class="mobile-nav">$
             <ul class="mobile-menu">
-                <li><a href="demo4.html">Home</a></li>
+                <li><a href="/">Home</a></li>
                 <li>
-                    <a href="category.html">Categories</a>
+                    <a href="">Categories</a>
                     <ul>
                         <li><a href="category.html">Full Width Banner</a></li>
                         <li><a href="category-banner-boxed-slider.html">Boxed Slider Banner</a></li>
