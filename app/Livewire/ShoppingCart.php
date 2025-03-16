@@ -322,10 +322,10 @@ class ShoppingCart extends Component
 
     private function getLocationBasedShippingCost()
     {
-        // Check if city has a shipping cost
+        // Check if city has a shipping cost greater than 0
         if ($this->city_id) {
             $city = City::find($this->city_id);
-            if ($city && $city->cost !== null) {
+            if ($city && $city->cost > 0) {
                 return $city->cost;
             }
         }
@@ -333,26 +333,23 @@ class ShoppingCart extends Component
         // If no city, check governorate
         if ($this->governorate_id) {
             $governorate = Governorate::find($this->governorate_id);
-            if ($governorate && $governorate->cost !== null) {
+            if ($governorate && $governorate->cost > 0) {
                 return $governorate->cost;
             }
-        }
 
-        // If no governorate cost, check shipping zones
-        if ($this->governorate_id) {
-            $governorate = Governorate::find($this->governorate_id);
+            // If no governorate cost, check shipping zones
             if ($governorate) {
-                $shippingZone = $governorate->shippingZones()->first();
-                if ($shippingZone && $shippingZone->cost !== null) {
+                $shippingZone = $governorate->shippingZones()->first(); // Get the first related shipping zone
+                if ($shippingZone && $shippingZone->cost > 0) {
                     return $shippingZone->cost;
                 }
             }
         }
 
-        // If no city and no governorate and no shipping zone, check country
+        // If no city, governorate, or shipping zone cost, check country
         if ($this->country_id) {
             $country = Country::find($this->country_id);
-            if ($country && $country->cost !== null) {
+            if ($country && $country->cost > 0) {
                 return $country->cost;
             }
         }
@@ -360,7 +357,8 @@ class ShoppingCart extends Component
         // Default to 0 if no cost is found
         return 0;
     }
-    
+
+
     public function calculateTotals()
     {
         $this->subtotal = 0;
