@@ -245,8 +245,6 @@ class ShoppingCart extends Component
         $this->dispatch('cartUpdated');
     }
 
-
-
     public function removeCartItem($id)
     {
         $cartItem =  CartItem::where('cart_id', $this->cart->id)->find($id);
@@ -340,7 +338,18 @@ class ShoppingCart extends Component
             }
         }
 
-        // If no governorate, check country
+        // If no governorate cost, check shipping zones
+        if ($this->governorate_id) {
+            $governorate = Governorate::find($this->governorate_id);
+            if ($governorate) {
+                $shippingZone = $governorate->shippingZones()->first();
+                if ($shippingZone && $shippingZone->cost !== null) {
+                    return $shippingZone->cost;
+                }
+            }
+        }
+
+        // If no city and no governorate and no shipping zone, check country
         if ($this->country_id) {
             $country = Country::find($this->country_id);
             if ($country && $country->cost !== null) {
@@ -351,7 +360,7 @@ class ShoppingCart extends Component
         // Default to 0 if no cost is found
         return 0;
     }
-
+    
     public function calculateTotals()
     {
         $this->subtotal = 0;
