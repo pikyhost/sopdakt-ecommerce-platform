@@ -215,7 +215,6 @@ class OrderResource extends Resource
                         ->visible(fn (Order $record): bool =>
                         !is_null($record->tracking_number)
                         )
-                        ->label('Track Order')
                         ->icon('heroicon-o-map')
                         ->color('success')
                         ->visible(fn (Order $record): bool =>
@@ -245,7 +244,6 @@ class OrderResource extends Resource
                         ->visible(fn (Order $record): bool =>
                         !is_null($record->tracking_number)
                         )
-                        ->label('Check Order Status')
                         ->icon('heroicon-o-check-circle')
                         ->color('primary')
                         ->visible(fn (Order $record): bool =>
@@ -274,7 +272,6 @@ class OrderResource extends Resource
                         ->visible(fn (Order $record): bool =>
                         !is_null($record->tracking_number)
                         )
-                        ->label('Get Detailed Status')
                         ->icon('heroicon-o-clipboard-document-list')
                         ->color('info')
                         ->visible(fn (Order $record): bool =>
@@ -310,7 +307,6 @@ class OrderResource extends Resource
                         ->visible(fn (Order $record): bool =>
                         !is_null($record->tracking_number)
                         )
-                        ->label('View Delivery Trajectory')
                         ->icon('heroicon-o-arrow-path')
                         ->color('gray')
                         ->visible(fn (Order $record): bool =>
@@ -343,7 +339,6 @@ class OrderResource extends Resource
                         ->visible(fn (Order $record): bool =>
                         !is_null($record->tracking_number)
                         )
-                        ->label('Cancel Order')
                         ->icon('heroicon-o-x-circle')
                         ->color('danger')
                         ->visible(fn (Order $record): bool =>
