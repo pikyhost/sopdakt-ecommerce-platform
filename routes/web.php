@@ -1,7 +1,5 @@
 <?php
 
-use Filament\Facades\Filament;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use App\Http\Controllers\{CartController,
@@ -51,11 +49,4 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::get('/order-success', [OrderCompleteController::class, 'index'])->name('order.complete');
-});
-
-Route::post('/jt-express-webhook', [ShippingController::class, 'handleWebhook']);
-
-Route::get('/test', function () {
-    Log::info(Filament::auth()->user());
-    Log::info(auth()->user());
 });
