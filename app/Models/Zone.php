@@ -20,6 +20,4 @@ class Zone extends Model
     {
         return $this->belongsToMany(ShippingType::class, 'shipping_type_zones', 'zone_id', 'shipping_type_id')->withPivot(['shipping_cost','status']);
     }
-
-
 }
