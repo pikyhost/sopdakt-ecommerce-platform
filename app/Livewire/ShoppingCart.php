@@ -294,70 +294,85 @@ class ShoppingCart extends Component
 
     private function getProductShippingCost(Product $product)
     {
-        // Fetch all related shipping costs
-        $shippingCosts = $product->shippingCosts()
-//            ->where('shipping_type_id', $this->selected_shipping)
-            ->get();
+        // Fetch all related shipping costs for the product
+        $shippingCosts = $product->shippingCosts()->get();
 
-        // Prioritize location: City → Governorate → Shipping Zone → Country
-        if ($shippingCosts->where('city_id', $this->city_id)->isNotEmpty()) {
-            return $shippingCosts->where('city_id', $this->city_id)->first()->cost;
-        }
-
-        if ($shippingCosts->where('governorate_id', $this->governorate_id)->isNotEmpty()) {
-            return $shippingCosts->where('governorate_id', $this->governorate_id)->first()->cost;
-        }
-
-        if ($shippingCosts->where('shipping_zone_id', $this->cart->shipping_zone_id)->isNotEmpty()) {
-            return $shippingCosts->where('shipping_zone_id', $this->cart->shipping_zone_id)->first()->cost;
-        }
-
-        if ($shippingCosts->where('country_id', $this->country_id)->isNotEmpty()) {
-            return $shippingCosts->where('country_id', $this->country_id)->first()->cost;
-        }
-
-        // If product does not have a shipping cost, return the default product shipping cost
-        return $product->cost ?? null;
-    }
-
-    private function getLocationBasedShippingCost()
-    {
-        // Check if city has a shipping cost greater than 0
+        // 🔹 Step 1: Check Shipping Costs from the Product’s `shippingCosts()`
         if ($this->city_id) {
-            $city = City::find($this->city_id);
-            if ($city && $city->cost > 0) {
-                return $city->cost;
-            }
+            $cityCost = $shippingCosts->firstWhere('city_id', $this->city_id)?->cost;
+            if (!is_null($cityCost)) return $cityCost;
         }
 
-        // If no city, check governorate
         if ($this->governorate_id) {
-            $governorate = Governorate::find($this->governorate_id);
-            if ($governorate && $governorate->cost > 0) {
-                return $governorate->cost;
-            }
+            $governorateCost = $shippingCosts->firstWhere('governorate_id', $this->governorate_id)?->cost;
+            if (!is_null($governorateCost)) return $governorateCost;
 
-            // If no governorate cost, check shipping zones
-            if ($governorate) {
-                $shippingZone = $governorate->shippingZones()->first(); // Get the first related shipping zone
-                if ($shippingZone && $shippingZone->cost > 0) {
-                    return $shippingZone->cost;
-                }
-            }
+            // 🔹 Check if this governorate belongs to a zone with a shipping cost in `shippingCosts()`
+            $zoneCost = $this->getZoneShippingCostFromProduct($shippingCosts, $this->governorate_id);
+            if (!is_null($zoneCost)) return $zoneCost;
         }
 
-        // If no city, governorate, or shipping zone cost, check country
         if ($this->country_id) {
-            $country = Country::find($this->country_id);
-            if ($country && $country->cost > 0) {
-                return $country->cost;
-            }
+            $countryCost = $shippingCosts->firstWhere('country_id', $this->country_id)?->cost;
+            if (!is_null($countryCost)) return $countryCost;
         }
 
-        // Default to 0 if no cost is found
-        return 0;
+        // 🔹 Step 2: If No `shippingCosts()` Found, Fallback to Model-Based Costs
+        return $this->getFallbackLocationBasedCost() ?? $product->cost ?? 0.0;
     }
 
+    /**
+     * Check if the governorate belongs to a shipping zone that has a cost in the product's shippingCosts().
+     */
+    private function getZoneShippingCostFromProduct($shippingCosts, $governorateId): ?float
+    {
+        if (!$governorateId) return null;
+
+        $governorate = Governorate::find($governorateId);
+        if (!$governorate) return null;
+
+        // 🔹 Check if this governorate belongs to a shipping zone
+        $zone = $governorate->shippingZones()->first();
+        if (!$zone) return null;
+
+        // 🔹 Check if this shipping zone has a cost inside the product’s `shippingCosts()`
+        return $shippingCosts->firstWhere('shipping_zone_id', $zone->id)?->cost;
+    }
+
+    /**
+     * Get fallback location-based cost (City → Governorate → Zone → Country).
+     */
+    private function getFallbackLocationBasedCost(): ?float
+    {
+        if ($this->city_id) {
+            $cityCost = City::where('id', $this->city_id)->value('cost');
+            if (!is_null($cityCost) && $cityCost > 0) return $cityCost;
+        }
+
+        if ($this->governorate_id) {
+            $governorateCost = Governorate::where('id', $this->governorate_id)->value('cost');
+            if (!is_null($governorateCost) && $governorateCost > 0) return $governorateCost;
+
+            // 🔹 If no governorate cost, check its related shipping zone
+            $zoneCost = Governorate::find($this->governorate_id)?->shippingZones()->pluck('cost')->first();
+            if (!is_null($zoneCost) && $zoneCost > 0) return $zoneCost;
+        }
+
+        if ($this->country_id) {
+            $countryCost = Country::where('id', $this->country_id)->value('cost');
+            if (!is_null($countryCost) && $countryCost > 0) return $countryCost;
+        }
+
+        return null;
+    }
+
+    /**
+     * Final calculation method.
+     */
+    private function calculateProductShippingCost(Product $product): float
+    {
+        return $this->getProductShippingCost($product);
+    }
 
     public function calculateTotals()
     {
@@ -409,22 +424,6 @@ class ShoppingCart extends Component
         $this->total = $this->subtotal + $this->shippingCost + $this->tax;
     }
 
-    /**
-     * Calculate the shipping cost for a given product.
-     */
-    private function calculateProductShippingCost(Product $product): float
-    {
-        $productShippingCost = $product->getShippingCostByLocation(
-            $this->city_id,
-            $this->governorate_id,
-            $this->country_id
-        );
-
-        return $productShippingCost > 0
-            ? $productShippingCost
-            : $this->getLocationBasedShippingCost();
-    }
-
     public function proceedToCheckout()
     {
         $this->validate([
@@ -463,7 +462,6 @@ class ShoppingCart extends Component
             $this->cart->governorate_id &&
             $this->cart->subtotal > 0;
     }
-
 
     public function render()
     {
