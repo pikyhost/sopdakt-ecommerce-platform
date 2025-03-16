@@ -37,8 +37,7 @@ class AdminPanelProvider extends PanelProvider
     {
         $settings = Setting::getAllSettings();
 
-        // Get the correct favicon path based on locale
-        $faviconPath = $settings["favicon_en"] ?? null;
+        $faviconPath = $settings["favicon"] ?? null;
 
         $favicon = $faviconPath ? Storage::url($faviconPath) : asset('images/clients/client1.png');
 
@@ -80,7 +79,6 @@ class AdminPanelProvider extends PanelProvider
                     ->icon('heroicon-m-user-circle'),
                 'logout' => MenuItem::make(),
             ])
-//            ->brandName('Ｐｉｋｙ Ｈｏｓｔ')
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

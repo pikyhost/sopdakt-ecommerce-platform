@@ -53,7 +53,7 @@ class SettingResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make(__('Website Information'))
-                    ->description(__('Update website name and currency'))
+                    ->description(__('Update website name and currency and tax percentage'))
                     ->schema([
                         TextInput::make('site_name_en')
                             ->label(__('Website Name (English)'))
@@ -66,7 +66,7 @@ class SettingResource extends Resource
                         TextInput::make('tax_percentage')
                             ->numeric()
                             ->prefix("%")
-                            ->label(__('Website Products Tax Percentage'))
+                            ->label(__('Tax Percentage'))
                             ->required(),
 
                         Select::make('currency_id')
