@@ -38,11 +38,6 @@ class OrderResource extends Resource
 
     protected static ?string $slug = 'my-orders';
 
-    public static function getNavigationGroup(): ?string
-    {
-        return __('landing_page_order.orders_contacts');
-    }
-
     public static function getNavigationLabel(): string
     {
         return __('landing_page_order.orders');

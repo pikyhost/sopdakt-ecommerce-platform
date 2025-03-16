@@ -164,13 +164,15 @@ class OrderResource extends Resource
             ])
             ->filters([
                 Tables\Filters\Filter::make('created_at')
+                    ->label(__('Created At')) // Translatable label
                     ->form([
                         Forms\Components\DatePicker::make('created_from')
-                            ->label(__('تم إنشاؤه من'))
-                            ->placeholder(fn ($state): string => 'Dec 18, ' . now()->subYear()->format('Y')),
+                            ->label(__('Created From')) // Translatable label
+                            ->placeholder(fn ($state): string => __('Dec 18, ') . now()->subYear()->format('Y')),
+
                         Forms\Components\DatePicker::make('created_until')
-                            ->label(__('تم إنشاؤها ل'))
-                            ->placeholder(fn ($state): string => now()->format('M d, Y')),
+                            ->label(__('Created Until')) // Translatable label
+                            ->placeholder(fn ($state): string => now()->format(__('M d, Y'))),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query
@@ -186,10 +188,10 @@ class OrderResource extends Resource
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
                         if ($data['created_from'] ?? null) {
-                            $indicators['created_from'] = 'Order from ' . Carbon::parse($data['created_from'])->toFormattedDateString();
+                            $indicators['created_from'] = __('Order from') . ' ' . Carbon::parse($data['created_from'])->toFormattedDateString();
                         }
                         if ($data['created_until'] ?? null) {
-                            $indicators['created_until'] = 'Order until ' . Carbon::parse($data['created_until'])->toFormattedDateString();
+                            $indicators['created_until'] = __('Order until') . ' ' . Carbon::parse($data['created_until'])->toFormattedDateString();
                         }
 
                         return $indicators;

@@ -15,6 +15,14 @@ use App\Http\Controllers\{CartController,
 
 Route::get('/', function () {
     return view('welcome');
+})->name('homepage');
+
+Route::get('/about-us', function () {
+    return 'To be the about us page';
+});
+
+Route::get('/blogs', function () {
+    return 'To be the blogs page';
 });
 
 Route::get('/category-page', function () {
@@ -40,9 +48,9 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
     Route::post('landing-pages/{id}/order', [LandingPageController::class, 'saveOrder'])->name('landing-page.purchase-form.order');
     Route::get('landing-pages/{slug}/thanks', [LandingPageController::class, 'thanks'])->name('landing-pages.thanks');
 
-    Route::get('/my-cart', [CartController::class, 'index'])->name('cart.index');
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
-    Route::get('/order-complete', [OrderCompleteController::class, 'index'])->name('order.complete');
+    Route::get('/order-success', [OrderCompleteController::class, 'index'])->name('order.complete');
 });
 
 Route::post('/jt-express-webhook', [ShippingController::class, 'handleWebhook']);

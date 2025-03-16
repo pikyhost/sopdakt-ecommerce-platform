@@ -15,8 +15,8 @@ use Filament\Forms\Components\FileUpload;
 class SettingResource extends Resource
 {
     protected static ?string $model = Setting::class;
-    protected static ?string $navigationIcon = 'heroicon-o-cog';
-    protected static ?int $navigationSort = 1;
+    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
+    protected static ?int $navigationSort = 2;
 
     public static function getPluralModelLabel(): string
     {
