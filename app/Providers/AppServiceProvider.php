@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Http\Responses\LogoutResponse;
+use Filament\Http\Responses\Auth\Contracts\LogoutResponse as LogoutResponseContract;
 use Livewire\Livewire;
 use App\Enums\UserRole;
 use Filament\Tables\Table;
@@ -23,6 +25,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(LogoutResponseContract::class, LogoutResponse::class);
+
         $this->app->singleton(JtExpressService::class, function ($app) {
             return new JtExpressService();
         });
