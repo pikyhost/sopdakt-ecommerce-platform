@@ -397,10 +397,11 @@ class OrderResource extends Resource
     {
         $previousStatus = OrderStatus::tryFrom($order->status);
 
-        // Restore stock when an order is cancelled or refunded
+        // Ensure previous status is valid before performing stock restoration
         if (
-            in_array($previousStatus, [OrderStatus::Pending, OrderStatus::Preparing, OrderStatus::Shipping]) &&
-            in_array($status, [OrderStatus::Cancelled, OrderStatus::Refund])
+            $previousStatus !== null && // Check if previousStatus is valid
+            in_array($previousStatus, [OrderStatus::Pending, OrderStatus::Preparing, OrderStatus::Shipping], true) &&
+            in_array($status, [OrderStatus::Cancelled, OrderStatus::Refund], true)
         ) {
             foreach ($order->items as $item) {
                 if ($item->product_id) {
@@ -429,6 +430,7 @@ class OrderResource extends Resource
             }
         }
     }
+
 
     private static function prepareJtExpressOrderData($order): array
     {
