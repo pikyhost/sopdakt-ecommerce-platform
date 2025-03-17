@@ -25,4 +25,11 @@ return [
     'Get this bundle for :price instead of :original' => 'احصل على هذه الباقة بسعر :price بدلاً من :original',
     'Buy this bundle and save :discount%' => 'اشترِ هذه الباقة ووفر :discount%',
     'Quantity:' => 'الكمية:',
+    'select_color' => 'اختر اللون',
+    'select_size' => 'اختر المقاس',
+    'quantity' => 'الكمية:',
+    'choose_color' => '-- اختر لونًا --',
+    'choose_size' => '-- اختر مقاسًا --',
+    'add_to_cart' => 'أضف إلى السلة',
+    'view_cart' => 'عرض السلة',
 ];
