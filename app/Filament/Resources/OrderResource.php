@@ -395,7 +395,7 @@ class OrderResource extends Resource
 
     public static function updateOrderStatus($order, OrderStatus $status)
     {
-        $previousStatus = OrderStatus::tryFrom($order->status);
+        $previousStatus = $order->status; // No need to use tryFrom()
 
         // Ensure previous status is valid before performing stock restoration
         if (
@@ -415,7 +415,7 @@ class OrderResource extends Resource
         }
 
         // Update order status
-        $order->update(['status' => $status->value]);
+        $order->update(['status' => $status]); // Directly assign the enum value
 
         // Handle JT Express when the status is set to "Shipping"
         if ($status === OrderStatus::Shipping) {
