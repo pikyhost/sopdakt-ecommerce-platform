@@ -1,5 +1,5 @@
 <div>
-    <div class="container py-5">
+    <div class="container py-5" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
         @if ($product->bundles->isNotEmpty())
             <div class="text-center mb-5">
                 <h1 class="fw-bold text-dark display-5">
@@ -18,9 +18,9 @@
 
                             <div class="card-body p-4 d-flex flex-column flex-grow-1">
                                 <div class="text-center mb-4">
-                                <span class="badge bg-success fs-3 px-4 py-2 shadow-sm">
-                                    <i class="fas fa-tag me-2"></i> {{ $bundle->bundle_discount_price_for_current_country }}
-                                </span>
+                                    <span class="badge bg-success fs-3 px-4 py-2 shadow-sm">
+                                        <i class="fas fa-tag me-2"></i> {{ $bundle->bundle_discount_price_for_current_country }}
+                                    </span>
                                 </div>
 
                                 <div class="text-center mb-4">
@@ -33,8 +33,8 @@
                                                     @if (!is_null($bundle->bundle_discount_price_for_current_country))
                                                         <br>
                                                         <span class="badge bg-warning text-dark fs-5 mt-2">
-                                                        {{ __('Discount Price: :price', ['price' => $bundle->bundle_discount_price_for_current_country]) }}
-                                                    </span>
+                                                            {{ __('Discount Price: :price', ['price' => $bundle->bundle_discount_price_for_current_country]) }}
+                                                        </span>
                                                     @endif
                                                 </p>
                                             @endif
@@ -42,15 +42,14 @@
                                         @case(\App\Enums\BundleType::FIXED_PRICE)
                                             @php
                                                 $discountPrice = $bundle->bundle_discount_price_for_current_country;
-                                                $originalPrice = $bundle->bundle_price_for_current_country;
                                             @endphp
                                             <p class="fs-5 text-muted">
                                                 <i class="fas fa-tag text-danger me-2 fs-4"></i>
                                                 {{ __('Get this bundle now') }}
                                                 <br>
                                                 <span class="badge bg-warning text-dark fs-5 mt-2">
-                                                {{ __('Discount Price: :price', ['price' => $discountPrice]) }}
-                                            </span>
+                                                    {{ __('Discount Price: :price', ['price' => $discountPrice]) }}
+                                                </span>
                                             </p>
                                             @break
                                     @endswitch
@@ -77,13 +76,13 @@
 
                                                     @if ($bundle->bundle_type !== \App\Enums\BundleType::BUY_X_GET_Y)
                                                         <span class="badge bg-secondary px-3 py-2 fs-6 d-block mt-2">
-                                                        {{ __('Quantity: 1') }}
-                                                    </span>
+                                                            {{ __('Quantity: 1') }}
+                                                        </span>
                                                     @endif
 
                                                     <span class="text-muted fs-6 d-block mt-2 mb-0">
-                                                    <s class="text-danger">{{ $discountPrice }}</s>
-                                                </span>
+                                                        <s class="text-danger">{{ $discountPrice }}</s>
+                                                    </span>
                                                 </div>
                                             </div>
                                         @endforeach
@@ -99,15 +98,16 @@
 
                             <div class="card-footer text-center bg-light py-3 rounded-bottom">
                                 <button wire:click="selectBundle({{ $bundle->id }})"
-                                        class="btn btn-lg btn-primary w-100 fw-bold d-flex align-items-center justify-content-center py-3 hover-effect"
+                                        class="btn btn-primary btn-lg w-100 px-4 py-3 shadow-sm rounded-pill fw-bold d-flex align-items-center justify-content-center"
                                         wire:loading.attr="disabled"
                                         wire:target="selectBundle">
-                                    <i class="fas fa-cart-plus me-2"></i> {{ __('Add to Cart') }}
-                                    <span wire:loading wire:target="selectBundle">
-                                    <i class="fa fa-spinner fa-spin ms-2"></i>
-                                </span>
+                                    <i class="fa fa-shopping-cart me-2"></i> {{ __('Add to Cart') }}
+                                    <span wire:loading wire:target="selectBundle" class="ms-2">
+            <i class="fa fa-spinner fa-spin"></i>
+        </span>
                                 </button>
                             </div>
+
                         </div>
                     </div>
                 @endforeach
@@ -115,7 +115,7 @@
         @endif
     </div>
 
-    <style>
+<style>
         /* Hover Scale Effect */
         .hover-scale {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -167,17 +167,19 @@
             padding-bottom: 1rem !important;
         }
     </style>
-@if ($showModal)
+    @if ($showModal)
         <div class="modal fade show d-block" tabindex="-1">
             <div class="modal-dialog modal-xl modal-dialog-centered">
-                <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-content border-0 shadow-lg rounded-4" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 
                     <!-- 🟢 Header -->
                     <div class="modal-header bg-gradient bg-primary text-white py-4">
                         <h3 class="modal-title fw-bold">
-                            <i class="fas fa-box-open me-2"></i> {{ __('Select Options for Bundle') }}
+                            <i class="fas fa-box-open me-2"></i> {{ __('bundle.select_options') }}
                         </h3>
-                        <button type="button" class="btn-close btn-close-white fs-3" wire:click="$set('showModal', false)"></button>
+                        <button type="button" class="btn-close btn-close-white fs-3"
+                                wire:click="$set('showModal', false)">
+                        </button>
                     </div>
 
                     <!-- 🔵 Body -->
@@ -195,33 +197,35 @@
                                         <div class="card border-0 shadow-sm p-4 rounded-3">
                                             <h5 class="fw-bold text-primary">
                                                 <i class="fas fa-tag me-1"></i> {{ $bundleProduct->name }}
-                                                <small class="text-muted">({{ __('Item') }} {{ $i + 1 }})</small>
+                                                <small class="text-muted">({{ __('bundle.item') }} {{ $i + 1 }})</small>
                                             </h5>
 
                                             @if (isset($colors[$bundleProduct->id]) && $colors[$bundleProduct->id]->isNotEmpty())
+                                                <!-- Color Selection -->
                                                 <div class="form-floating mb-4">
                                                     <select wire:model.live="selections.{{ $bundleProduct->id }}.{{ $i }}.color_id"
                                                             class="form-select form-control-lg border-primary shadow-sm">
-                                                        <option value="">{{ __('Select Color') }}</option>
+                                                        <option value="">{{ __('bundle.select_color') }}</option>
                                                         @foreach ($colors[$bundleProduct->id] ?? [] as $color)
                                                             <option value="{{ $color->id }}">{{ $color->name }}</option>
                                                         @endforeach
                                                     </select>
-                                                    <label class="fs-5">{{ __('Color') }}</label>
+                                                    <label class="fs-5">{{ __('bundle.color') }}</label>
                                                     @error("selections.{$bundleProduct->id}.{$i}.color_id")
                                                     <small class="text-danger fs-6">{{ $message }}</small>
                                                     @enderror
                                                 </div>
 
+                                                <!-- Size Selection -->
                                                 <div class="form-floating mb-4">
                                                     <select wire:model.live="selections.{{ $bundleProduct->id }}.{{ $i }}.size_id"
                                                             class="form-select form-control-lg border-primary shadow-sm">
-                                                        <option value="">{{ __('Select Size') }}</option>
+                                                        <option value="">{{ __('bundle.select_size') }}</option>
                                                         @foreach ($sizes[$bundleProduct->id][$i] ?? [] as $size)
                                                             <option value="{{ $size->id }}">{{ $size->name }}</option>
                                                         @endforeach
                                                     </select>
-                                                    <label class="fs-5">{{ __('Size') }}</label>
+                                                    <label class="fs-5">{{ __('bundle.size') }}</label>
                                                     @error("selections.{$bundleProduct->id}.{$i}.size_id")
                                                     <small class="text-danger fs-6">{{ $message }}</small>
                                                     @enderror
@@ -231,11 +235,12 @@
                                     </div>
                                 @endfor
                             @endforeach
-                                @if ($errors->has('cart_bundle_error'))
-                                    <div class="alert alert-danger">
-                                        {{ $errors->first('cart_bundle_error') }}
-                                    </div>
-                                @endif
+
+                            @if ($errors->has('cart_bundle_error'))
+                                <div class="alert alert-danger">
+                                    {{ $errors->first('cart_bundle_error') }}
+                                </div>
+                            @endif
                         </div>
                     </div>
 
@@ -244,16 +249,16 @@
                         <div class="d-flex justify-content-between w-100">
                             <button class="btn btn-outline-secondary btn-lg rounded-pill px-5 py-3 fs-5 fw-bold"
                                     wire:click="$set('showModal', false)">
-                                <i class="fas fa-times me-2"></i> {{ __('Cancel') }}
+                                <i class="fas fa-times me-2"></i> {{ __('bundle.cancel') }}
                             </button>
                             <button wire:click="addToCart"
                                     wire:loading.attr="disabled"
                                     wire:target="addToCart"
                                     class="btn btn-primary btn-lg rounded-pill d-flex align-items-center px-5 py-3 fs-5 fw-bold">
-                                <i class="fas fa-cart-plus me-2"></i> {{ __('Add to Cart') }}
+                                <i class="fas fa-cart-plus me-2"></i> {{ __('bundle.add_to_cart') }}
                                 <span wire:loading wire:target="addToCart" class="ms-2">
-                <i class="fas fa-spinner fa-spin"></i>
-            </span>
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </span>
                             </button>
                         </div>
                     </div>

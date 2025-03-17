@@ -13,29 +13,31 @@ use App\Http\Controllers\{CartController,
     ShippingController,
     CategoryProductController};
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('homepage');
-
-Route::get('/about-us', function () {
-    return 'To be the about us page';
-});
-
-Route::get('/blogs', function () {
-    return 'To be the blogs page';
-});
-
-Route::get('/category-page', function () {
-    return view('front.category-horizontal-filter2');
-});
-
-Route::get('/category-page', function () {
-    return view('front.category-horizontal-filter2');
-});
-
 Route::redirect('/admin/settings', '/admin/settings/1/edit');
 
 Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['localeSessionRedirect', 'localizationRedirect', 'localeViewPath']], function () {
+
+    Route::get('/', function () {
+        return view('welcome');
+    })->name('homepage');
+
+    Route::get('/about-us', function () {
+        return 'To be the about us page';
+    });
+
+    Route::get('/blogs', function () {
+        return 'To be the blogs page';
+    });
+
+    Route::get('/category-page', function () {
+        return view('front.category-horizontal-filter2');
+    });
+
+    Route::get('/category-page', function () {
+        return view('front.category-horizontal-filter2');
+    });
+
+
     Route::get('landing-page/{slug}', [LandingPageController::class, 'show'])->name('landing-page.show-by-slug');
     Route::get('/products/{slug}', [ProductController::class, 'show'])->name('product.show');
     Route::get('/category/{slug}', [CategoryProductController::class, 'show'])->name('category.products');
@@ -54,8 +56,3 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
 });
 
 Route::post('/jt-express-webhook', [ShippingController::class, 'handleWebhook']);
-
-Route::get('/test', function () {
-    Log::info(Filament::auth()->user());
-    Log::info(auth()->user());
-});

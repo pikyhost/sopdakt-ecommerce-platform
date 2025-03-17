@@ -25,5 +25,13 @@ return [
     'Get this bundle for :price instead of :original' => 'Get this bundle for :price instead of :original',
     'Buy this bundle and save :discount%' => 'Buy this bundle and save :discount%',
     'Quantity:' => 'Quantity:',
+    'select_color' => 'Select Color',
+    'select_size' => 'Select Size',
+    'quantity' => 'Quantity:',
+    'choose_color' => '-- Choose Color --',
+    'choose_size' => '-- Choose Size --',
+    'add_to_cart' => 'Add to Cart',
+    'view_cart' => 'View Cart',
+
 
 ];

@@ -1,11 +1,11 @@
-<div>
+<div dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
     <!-- Add to Cart Button -->
     <button wire:click="openModal" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm rounded-pill px-4 py-2"
             wire:loading.attr="disabled" wire:target="openModal">
-    <span wire:loading wire:target="openModal">
-        <i class="fa fa-spinner fa-spin"></i>
-    </span>
-        <i class="fas fa-shopping-cart"></i> Add to Cart
+        <span wire:loading wire:target="openModal">
+            <i class="fa fa-spinner fa-spin"></i>
+        </span>
+        <i class="fas fa-shopping-cart"></i> {{ __('Add to Cart') }}
     </button>
 
     <!-- Modal -->
@@ -28,9 +28,9 @@
                             <div class="row g-3">
                                 <!-- Color Selection -->
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold">Select Color</label>
-                                    <select wire:model.live="colorId" class="form-select shadow-sm rounded-pill">
-                                        <option value="">-- Choose Color --</option>
+                                    <label class="form-label fw-bold">{{ __('Select Color') }}</label>
+                                    <select wire:model.live="colorId" class="form-select shadow-sm rounded-pill text-{{ app()->getLocale() === 'ar' ? 'end' : 'start' }}">
+                                        <option value="">{{ __('-- Choose Color --') }}</option>
                                         @foreach($colors as $color)
                                             <option value="{{ $color->id }}">{{ $color->name }}</option>
                                         @endforeach
@@ -40,9 +40,9 @@
 
                                 <!-- Size Selection -->
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold">Select Size</label>
-                                    <select wire:model.live="sizeId" class="form-select shadow-sm rounded-pill">
-                                        <option value="">-- Choose Size --</option>
+                                    <label class="form-label fw-bold">{{ __('Select Size') }}</label>
+                                    <select wire:model.live="sizeId" class="form-select shadow-sm rounded-pill text-{{ app()->getLocale() === 'ar' ? 'end' : 'start' }}">
+                                        <option value="">{{ __('-- Choose Size --') }}</option>
                                         @foreach($sizes as $size)
                                             <option value="{{ $size->id }}">{{ $size->name }}</option>
                                         @endforeach
@@ -56,7 +56,7 @@
                         <div class="row g-3 mt-3">
                             <!-- Quantity Input -->
                             <div class="col-md-6">
-                                <label class="form-label fw-bold">Quantity</label>
+                                <label class="form-label fw-bold">{{ __('Quantity') }}</label>
                                 <div class="d-flex align-items-center border rounded-3 overflow-hidden">
                                     <button class="btn btn-outline-danger px-3" type="button" wire:click="decreaseQuantity">
                                         <i class="fa fa-minus"></i>
@@ -73,7 +73,7 @@
 
                             <!-- Price Display -->
                             <div class="col-md-6 d-flex align-items-center justify-content-center">
-                                <h4 class="fw-bold text-success mb-0">$ {{ number_format($product->price, 2) }}</h4>
+                                <h4 class="fw-bold text-success mb-0">{{ $product->discount_price_for_current_country }}</h4>
                             </div>
                         </div>
 
@@ -86,16 +86,16 @@
                     </div>
 
                     <!-- Modal Footer -->
-                    <div class="modal-footer bg-light rounded-bottom d-flex justify-content-between">
+                    <div class="modal-footer bg-light rounded-bottom d-flex justify-content-{{ app()->getLocale() === 'ar' ? 'start' : 'between' }}">
                         <button wire:click="closeModal" class="btn btn-outline-secondary rounded-pill px-3">
-                            <i class="fas fa-times"></i> Cancel
+                            <i class="fas fa-times"></i> {{ __('Cancel') }}
                         </button>
                         <button wire:click="addToCart" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm rounded-pill px-4 py-2"
                                 wire:loading.attr="disabled" wire:target="addToCart">
-        <span wire:loading wire:target="addToCart">
-            <i class="fa fa-spinner fa-spin"></i>
-        </span>
-                            <i class="fas fa-cart-plus"></i> Add to Cart
+                            <span wire:loading wire:target="addToCart">
+                                <i class="fa fa-spinner fa-spin"></i>
+                            </span>
+                            <i class="fas fa-cart-plus"></i> {{ __('Add to Cart') }}
                         </button>
                     </div>
 
