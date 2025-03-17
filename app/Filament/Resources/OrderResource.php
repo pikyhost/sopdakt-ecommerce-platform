@@ -430,8 +430,7 @@ class OrderResource extends Resource
             }
         }
     }
-
-
+    
     private static function prepareJtExpressOrderData($order): array
     {
         $data = [
