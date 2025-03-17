@@ -95,18 +95,21 @@
                                     {{ $errors->first('cart_error') }}
                                 </div>
                             @endif
-
                             <div class="card-footer text-center bg-light py-3 rounded-bottom">
                                 <button wire:click="selectBundle({{ $bundle->id }})"
                                         class="btn btn-primary btn-lg w-100 px-4 py-3 shadow-sm rounded-pill fw-bold d-flex align-items-center justify-content-center"
                                         wire:loading.attr="disabled"
-                                        wire:target="selectBundle">
-                                    <i class="fa fa-shopping-cart me-2"></i> {{ __('Add to Cart') }}
-                                    <span wire:loading wire:target="selectBundle" class="ms-2">
+                                        wire:target="selectBundle"
+                                        style="gap: 10px;">
+                                    <i class="fa fa-shopping-cart"></i>
+                                    {{ __('Add to Cart') }}
+                                    <span wire:loading wire:target="selectBundle">
             <i class="fa fa-spinner fa-spin"></i>
         </span>
                                 </button>
                             </div>
+
+
 
                         </div>
                     </div>
@@ -247,21 +250,27 @@
                     <!-- 🟡 Footer -->
                     <div class="modal-footer d-flex flex-column align-items-center px-5 py-4">
                         <div class="d-flex justify-content-between w-100">
-                            <button class="btn btn-outline-secondary btn-lg rounded-pill px-5 py-3 fs-5 fw-bold"
-                                    wire:click="$set('showModal', false)">
-                                <i class="fas fa-times me-2"></i> {{ __('bundle.cancel') }}
+                            <button class="btn btn-outline-secondary btn-lg rounded-pill d-flex align-items-center justify-content-center px-5 py-3 fs-5 fw-bold"
+                                    wire:click="$set('showModal', false)"
+                                    style="gap: 10px;">
+                                <i class="fas fa-times"></i>
+                                {{ __('bundle.cancel') }}
                             </button>
+
                             <button wire:click="addToCart"
                                     wire:loading.attr="disabled"
                                     wire:target="addToCart"
-                                    class="btn btn-primary btn-lg rounded-pill d-flex align-items-center px-5 py-3 fs-5 fw-bold">
-                                <i class="fas fa-cart-plus me-2"></i> {{ __('bundle.add_to_cart') }}
-                                <span wire:loading wire:target="addToCart" class="ms-2">
-                                <i class="fas fa-spinner fa-spin"></i>
-                            </span>
+                                    class="btn btn-primary btn-lg rounded-pill d-flex align-items-center justify-content-center px-5 py-3 fs-5 fw-bold"
+                                    style="gap: 10px;">
+                                <i class="fas fa-cart-plus"></i>
+                                {{ __('bundle.add_to_cart') }}
+                                <span wire:loading wire:target="addToCart">
+                <i class="fas fa-spinner fa-spin"></i>
+            </span>
                             </button>
                         </div>
                     </div>
+
 
                 </div>
             </div>
