@@ -254,10 +254,11 @@ class ProductResource extends Resource
                                             ->preload(),
 
                                         FileUpload::make('image')
+                                            ->columnSpanFull()
                                             ->label(__('Image'))
                                             ->imageEditor()
                                             ->required(),
-                                    ])
+                                    ])->columns(2)
                                     ->collapsible(),
 
 //                                Repeater::make('types')
