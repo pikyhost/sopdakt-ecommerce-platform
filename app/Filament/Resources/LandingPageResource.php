@@ -208,7 +208,7 @@ class LandingPageResource extends Resource
                     TextInput::make('quantity')->label(__('landing_page.quantity'))->required(),
                     TextInput::make('price')->label(__('landing_page.price'))->required(),
                     TextInput::make('after_discount_price')->label(__('landing_page.after_discount_price'))->required(),
-                    TextInput::make('rating')->label(__('landing_page.rating'))->required(),
+                    TextInput::make('rating')->label(__('landing_page.rating'))->required()->numeric(),
                     Grid::make()
                     ->schema([
                         Section::make(__('landing_page.combinations'))

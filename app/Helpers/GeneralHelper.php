@@ -256,13 +256,15 @@ class GeneralHelper
         return self::$bundlePrices[$bundle->id] = self::formatBundlePrice($totalPrice, $bundle->currency);
     }
 
-    public static function formatBundlePrice(float $price, ?string $currency): string
+    public static function formatBundlePrice(?float $price, ?string $currency): string
     {
+        $price = $price ?? 0.0; // Default to 0 if null
         return number_format($price, 2) . ' ' . ($currency ?? 'USD');
     }
 
+
     // at production
-    //    public static function getCountryId(): ?int
+//    public static function getCountryId(): ?int
 //    {
 //        if (self::$countryId === null) {
 //            $ip = request()->ip();
@@ -271,6 +273,5 @@ class GeneralHelper
 //        }
 //        return self::$countryId;
 //    }
-
 
 }
