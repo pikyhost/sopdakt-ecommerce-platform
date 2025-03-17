@@ -1,12 +1,15 @@
 <div dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
     <!-- Add to Cart Button -->
-    <button wire:click="openModal" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm rounded-pill px-4 py-2"
+    <button wire:click="openModal"
+            class="btn btn-primary d-flex align-items-center gap-2 shadow-sm rounded-pill px-4 py-2"
             wire:loading.attr="disabled" wire:target="openModal">
-        <span wire:loading wire:target="openModal">
-            <i class="fa fa-spinner fa-spin"></i>
-        </span>
-        <i class="fas fa-shopping-cart"></i> {{ __('Add to Cart') }}
+    <span wire:loading wire:target="openModal">
+        <i class="fa fa-spinner fa-spin"></i>
+    </span>
+        <i class="fas fa-shopping-cart"></i>
+        {{ __('Add to Cart') }}
     </button>
+
 
     <!-- Modal -->
     @if ($showModal)
@@ -87,17 +90,23 @@
 
                     <!-- Modal Footer -->
                     <div class="modal-footer bg-light rounded-bottom d-flex justify-content-{{ app()->getLocale() === 'ar' ? 'start' : 'between' }}">
-                        <button wire:click="closeModal" class="btn btn-outline-secondary rounded-pill px-3">
-                            <i class="fas fa-times"></i> {{ __('Cancel') }}
+                        <button wire:click="closeModal"
+                                class="btn btn-outline-secondary d-flex align-items-center gap-2 rounded-pill px-4 py-2">
+                            <i class="fas fa-times"></i>
+                            {{ __('Cancel') }}
                         </button>
-                        <button wire:click="addToCart" class="btn btn-primary d-flex align-items-center gap-2 shadow-sm rounded-pill px-4 py-2"
+
+                        <button wire:click="addToCart"
+                                class="btn btn-primary d-flex align-items-center gap-2 shadow-sm rounded-pill px-4 py-2"
                                 wire:loading.attr="disabled" wire:target="addToCart">
-                            <span wire:loading wire:target="addToCart">
-                                <i class="fa fa-spinner fa-spin"></i>
-                            </span>
-                            <i class="fas fa-cart-plus"></i> {{ __('Add to Cart') }}
+        <span wire:loading wire:target="addToCart">
+            <i class="fa fa-spinner fa-spin"></i>
+        </span>
+                            <i class="fas fa-cart-plus"></i>
+                            {{ __('Add to Cart') }}
                         </button>
                     </div>
+
 
                 </div>
             </div>

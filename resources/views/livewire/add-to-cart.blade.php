@@ -50,15 +50,24 @@
 
         <!-- Cart Actions -->
         <div class="d-flex flex-column flex-md-row align-items-center gap-3 mt-4">
-            <button wire:click="addToCart" class="btn btn-primary btn-lg px-4 py-3 shadow-sm rounded-pill" wire:loading.attr="disabled">
-                <i class="fa fa-shopping-cart me-2"></i> {{ __('Add to Cart') }}
-                <span wire:loading wire:target="addToCart" class="ms-2">
-                    <i class="fa fa-spinner fa-spin"></i>
-                </span>
+            <button wire:click="addToCart"
+                    class="btn btn-primary btn-lg px-4 py-3 shadow-sm rounded-pill d-flex align-items-center justify-content-center"
+                    wire:loading.attr="disabled"
+                    style="gap: 10px;">
+                <i class="fa fa-shopping-cart"></i>
+                {{ __('Add to Cart') }}
+                <span wire:loading wire:target="addToCart">
+        <i class="fa fa-spinner fa-spin"></i>
+    </span>
             </button>
-            <a href="{{ route('cart.index') }}" class="btn btn-dark btn-lg px-4 py-3 shadow-sm rounded-pill">
-                <i class="fa fa-shopping-bag me-2"></i> {{ __('view_cart', ['count' => $cartTotalQuantity]) }}
+
+            <a href="{{ route('cart.index') }}"
+               class="btn btn-dark btn-lg px-4 py-3 shadow-sm rounded-pill d-flex align-items-center justify-content-center"
+               style="gap: 10px;">
+                <i class="fa fa-shopping-bag"></i>
+                {{ __('view_cart', ['count' => $cartTotalQuantity]) }}
             </a>
+
         </div>
 
         <!-- Messages -->
