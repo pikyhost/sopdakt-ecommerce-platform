@@ -23,16 +23,16 @@ class EditOrder extends EditRecord
     {
         $order = $this->record;
 
-        // Convert string status to enum
-        $previousStatus = OrderStatus::tryFrom($order->status);
+        // Since $order->status is already an enum, use it directly
+        $previousStatus = $order->status;
+
+        // Convert the new status string from the form data into an enum
         $newStatus = OrderStatus::tryFrom($data['status']);
 
-        // Check if the order is being moved to "Cancelled" or "Refund" and was previously in a processable state
         if (
-            in_array($previousStatus, [OrderStatus::Pending, OrderStatus::Preparing, OrderStatus::Shipping]) &&
-            in_array($newStatus, [OrderStatus::Cancelled, OrderStatus::Refund])
+            in_array($previousStatus, [OrderStatus::Pending, OrderStatus::Preparing, OrderStatus::Shipping], true) &&
+            in_array($newStatus, [OrderStatus::Cancelled, OrderStatus::Refund], true)
         ) {
-            // Restore stock when an order is cancelled or refunded
             foreach ($order->items as $item) {
                 if ($item->product_id) {
                     $product = Product::find($item->product_id);
@@ -46,4 +46,5 @@ class EditOrder extends EditRecord
 
         return $data;
     }
+
 }

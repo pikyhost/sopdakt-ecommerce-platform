@@ -53,6 +53,7 @@ class SettingResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make(__('Website Information'))
+                    ->collapsed(true)
                     ->description(__('Update website name and currency and tax percentage'))
                     ->schema([
                         TextInput::make('site_name_en')
@@ -77,6 +78,7 @@ class SettingResource extends Resource
                     ])->columns(2),
 
                 Forms\Components\Section::make(__('Logos'))
+                     ->collapsed(true)
                     ->description(__('Upload logos for different languages'))
                     ->schema([
                         FileUpload::make('logo_en')
@@ -101,6 +103,7 @@ class SettingResource extends Resource
                     ])->columns(2),
 
                 Forms\Components\Section::make(__('Favicon'))
+                     ->collapsed(true)
                     ->description(__('Upload website favicon'))
                     ->schema([
                         FileUpload::make('favicon')
@@ -108,6 +111,47 @@ class SettingResource extends Resource
                             ->image()
                             ->imageEditor()
                             ->label(__('Favicon (English & Arabic)')),
+                    ])->columns(2),
+
+                Forms\Components\Section::make(__('contact_info'))
+                     ->collapsed(true)
+                    ->description(__('contact_info_description'))
+                    ->schema([
+                        Forms\Components\TextInput::make('phone')
+                            ->label(__('phone')),
+
+                        Forms\Components\TextInput::make('email')
+                            ->label(__('email'))
+                            ->email(),
+                    ])->columns(2),
+
+                Forms\Components\Section::make(__('social_media'))
+                     ->collapsed(true)
+                    ->description(__('social_media_description'))
+                    ->schema([
+                        Forms\Components\TextInput::make('facebook')
+                            ->label(__('facebook'))
+                            ->url(),
+
+                        Forms\Components\TextInput::make('youtube')
+                            ->label(__('youtube'))
+                            ->url(),
+
+                        Forms\Components\TextInput::make('instagram')
+                            ->label(__('instagram'))
+                            ->url(),
+
+                        Forms\Components\TextInput::make('x')
+                            ->label(__('x'))
+                            ->url(), // Twitter (X)
+
+                        Forms\Components\TextInput::make('snapchat')
+                            ->label(__('snapchat'))
+                            ->url(),
+
+                        Forms\Components\TextInput::make('tiktok')
+                            ->label(__('tiktok'))
+                            ->url(),
                     ])->columns(2),
             ]);
     }

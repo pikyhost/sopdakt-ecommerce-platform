@@ -17,10 +17,21 @@ class Setting extends Model
         'dark_logo_en',
         'dark_logo_ar',
         'favicon',
+        'phone',
+        'email',
+        'facebook',
+        'youtube',
+        'instagram',
+        'x',
+        'snapchat',
+        'tiktok',
     ];
 
     protected static string $cacheKey = 'app_settings';
 
+    /**
+     * Boot method to clear cache on updates.
+     */
     protected static function boot()
     {
         parent::boot();
@@ -35,7 +46,7 @@ class Setting extends Model
     public static function getAllSettings(): array
     {
         return Cache::rememberForever(self::$cacheKey, function () {
-            return self::first()?->toArray() ?? [];
+            return self::query()->first()?->toArray() ?? [];
         });
     }
 
@@ -52,7 +63,9 @@ class Setting extends Model
      */
     public static function updateSettings(array $data): void
     {
-        self::firstOrNew()->fill($data)->save();
+        $settings = self::firstOrNew();
+        $settings->fill($data);
+        $settings->save();
         self::reloadCache();
     }
 
@@ -62,15 +75,9 @@ class Setting extends Model
     public static function reloadCache(): void
     {
         Cache::forget(self::$cacheKey);
-        Cache::forget(self::$cacheKey . '_tax_percentage');
 
-        $settings = self::first()?->toArray() ?? [];
+        $settings = self::query()->first()?->toArray() ?? [];
         Cache::forever(self::$cacheKey, $settings);
-
-        // If currency_id exists, clear its cache as well
-        if (isset($settings['currency_id'])) {
-            Cache::forget("currency_{$settings['currency_id']}");
-        }
     }
 
     /**
@@ -109,8 +116,32 @@ class Setting extends Model
      */
     public static function getTaxPercentage(): float
     {
-        return Cache::rememberForever(self::$cacheKey . '_tax_percentage', function () {
-            return self::getAllSettings()['tax_percentage'] ?? 0.0;
-        });
+        return self::getAllSettings()['tax_percentage'] ?? 0.0;
+    }
+
+    /**
+     * Get contact details (phone & email).
+     */
+    public static function getContactDetails(): array
+    {
+        return [
+            'phone' => self::getSetting('phone'),
+            'email' => self::getSetting('email'),
+        ];
+    }
+
+    /**
+     * Get social media links.
+     */
+    public static function getSocialMediaLinks(): array
+    {
+        return [
+            'facebook'  => self::getSetting('facebook'),
+            'youtube'   => self::getSetting('youtube'),
+            'instagram' => self::getSetting('instagram'),
+            'x'         => self::getSetting('x'),
+            'snapchat'  => self::getSetting('snapchat'),
+            'tiktok'    => self::getSetting('tiktok'),
+        ];
     }
 }
