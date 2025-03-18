@@ -31,9 +31,9 @@
                             <div class="row g-3">
                                 <!-- Color Selection -->
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold">{{ __('Select Color') }}</label>
+                                    <label class="form-label fw-bold">{{ __('select_color') }}</label>
                                     <select wire:model.live="colorId" class="form-select shadow-sm rounded-pill text-{{ app()->getLocale() === 'ar' ? 'end' : 'start' }}">
-                                        <option value="">{{ __('-- Choose Color --') }}</option>
+                                        <option value="">{{ __('choose_color') }}</option>
                                         @foreach($colors as $color)
                                             <option value="{{ $color->id }}">{{ $color->name }}</option>
                                         @endforeach
@@ -43,9 +43,9 @@
 
                                 <!-- Size Selection -->
                                 <div class="col-md-6">
-                                    <label class="form-label fw-bold">{{ __('Select Size') }}</label>
+                                    <label class="form-label fw-bold">{{ __('select_size') }}</label>
                                     <select wire:model.live="sizeId" class="form-select shadow-sm rounded-pill text-{{ app()->getLocale() === 'ar' ? 'end' : 'start' }}">
-                                        <option value="">{{ __('-- Choose Size --') }}</option>
+                                        <option value="">{{ __('choose_size') }}</option>
                                         @foreach($sizes as $size)
                                             <option value="{{ $size->id }}">{{ $size->name }}</option>
                                         @endforeach
