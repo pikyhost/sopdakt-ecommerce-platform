@@ -1,5 +1,9 @@
 <?php
 
+use App\Mail\OrderConfirmationMail;
+use App\Models\Order;
+use Filament\Facades\Filament;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use App\Http\Controllers\{CartController,
@@ -53,4 +57,13 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
     Route::get('/order-success', [OrderCompleteController::class, 'index'])->name('order.complete');
 });
 Route::post('/jt-express-webhook', [ShippingController::class, 'handleWebhook']);
+
+Route::get('/test-email', function () {
+    $order = Order::find(8); // Replace with a valid ID
+    return new OrderConfirmationMail($order);
+});
+
+Route::get('/locale-user', function () {
+    return auth()->user()->preferred_language;
+});
 

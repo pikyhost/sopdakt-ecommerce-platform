@@ -14,6 +14,22 @@ use Illuminate\Support\Facades\DB;
 
 class GeneralHelper
 {
+    public static function getSocialMediaColor($platform) {
+        $colors = [
+            'facebook' => '#1877F2',
+            'twitter' => '#1DA1F2',
+            'instagram' => '#E4405F',
+            'youtube' => '#FF0000',
+            'linkedin' => '#0077B5',
+            'whatsapp' => '#25D366',
+            'snapchat' => '#FFFC00',
+            'tiktok' => '#000000',
+            'telegram' => '#0088CC'
+        ];
+
+        return $colors[strtolower($platform)] ?? '#333'; // Default to dark gray if unknown
+    }
+
     private static array $specialPrices = [];
     private static array $bundlePrices = [];
     private static ?int $countryId = null;
@@ -261,7 +277,6 @@ class GeneralHelper
         $price = $price ?? 0.0; // Default to 0 if null
         return number_format($price, 2) . ' ' . ($currency ?? 'USD');
     }
-
 
     // at production
 //    public static function getCountryId(): ?int

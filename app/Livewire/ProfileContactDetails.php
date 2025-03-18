@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -37,15 +38,33 @@ class ProfileContactDetails extends MyProfileComponent
             ->schema([
                 PhoneInput::make('phone')
                     ->unique(ignoreRecord: true)
-                    ->label(__('profile.phone'))
-                    ->nullable()
-                    ->label(__('Phone Number')),
+                    ->label(__('phone'))
+                    ->nullable(),
 
                 TextArea::make('address')
                     ->label(__('profile.address'))
                     ->nullable(),
+
+                Radio::make('preferred_language')
+                    ->label(__('Preferred Language'))
+                    ->options([
+                        'en' => __('English'),
+                        'ar' => __('Arabic'),
+                    ])
+                    ->formatStateUsing(fn () => auth()->user()?->preferred_language ?? $this->getBrowserPreferredLanguage())
+                    ->columns(2)
+
             ])
             ->statePath('data');
+    }
+
+    /**
+     * Get the browser's preferred language.
+     */
+    protected function getBrowserPreferredLanguage(): string
+    {
+        $preferredLanguages = request()->getPreferredLanguage(['en', 'ar']);
+        return $preferredLanguages ?: 'en'; // Default to English if no match found
     }
 
     public function submit(): void

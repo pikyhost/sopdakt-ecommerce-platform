@@ -22,15 +22,16 @@ class OrderConfirmationMail extends Mailable implements ShouldQueue
         $this->order = $order;
     }
 
-    /**
-     * Build the message.
-     */
     public function build()
     {
-        return $this->subject('Order Confirmation - ' . $this->order->id)
+        $locale = $this->order->user->preferred_language ?? config('app.locale');
+        app()->setLocale($locale);
+
+        return $this->subject((string) __('Order Confirmation') . ' - ' . $this->order->id)
             ->view('emails.order-confirmation')
             ->with([
                 'order' => $this->order
             ]);
     }
+
 }

@@ -4,7 +4,9 @@ namespace App\Filament\Client\Pages\Auth;
 
 use App\Enums\UserRole;
 use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Component;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\TextInput;
 use Filament\Pages\Auth\Register as BaseRegister;
 use Illuminate\Support\Facades\App;
@@ -27,11 +29,34 @@ class ClientRegister extends BaseRegister
                         $this->getPhoneFormComponent(),
                         $this->getPasswordFormComponent(),
                         $this->getPasswordConfirmationFormComponent(),
+                        $this->getPreferredLanguageFormComponent(),
                         $this->getTermsAndConditionsComponent(),
                     ])
                     ->statePath('data'),
             ),
         ];
+    }
+
+    protected function getPreferredLanguageFormComponent()
+    {
+        return Radio::make('preferred_language')
+            ->label(__('Preferred Language'))
+            ->options([
+                'en' => __('English'),
+                'ar' => __('Arabic'),
+            ])
+            ->default(fn () => $this->getBrowserPreferredLanguage())
+            ->columns(2)
+            ->required();
+    }
+
+    /**
+     * Get the browser's preferred language.
+     */
+    protected function getBrowserPreferredLanguage(): string
+    {
+        $preferredLanguages = request()->getPreferredLanguage(['en', 'ar']);
+        return $preferredLanguages ?: 'en'; // Default to English if no match found
     }
 
     protected function getTermsAndConditionsComponent()
