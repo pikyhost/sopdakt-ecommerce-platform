@@ -56,7 +56,6 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::get('/order-success', [OrderCompleteController::class, 'index'])->name('order.complete');
 });
-
 Route::post('/jt-express-webhook', [ShippingController::class, 'handleWebhook']);
 
 Route::get('/test-email', function () {
@@ -67,3 +66,4 @@ Route::get('/test-email', function () {
 Route::get('/locale-user', function () {
     return auth()->user()->preferred_language;
 });
+
