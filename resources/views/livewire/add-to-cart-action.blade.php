@@ -11,11 +11,23 @@
     </button>
 
 
+    <style>
+        /* Custom CSS for the close button */
+        .modal-header .btn-close {
+            margin-left: auto; /* Default for LTR */
+        }
+
+        [dir="rtl"] .modal-header .btn-close {
+            margin-left: 0; /* Reset for RTL */
+            margin-right: auto; /* Push to the left in RTL */
+        }
+    </style>
+
     <!-- Modal -->
     @if ($showModal)
         <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0, 0, 0, 0.5);">
             <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-content border-0 shadow-lg rounded-4" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 
                     <!-- Modal Header -->
                     <div class="modal-header bg-gradient-primary text-white rounded-top">
@@ -65,8 +77,8 @@
                                         <i class="fa fa-minus"></i>
                                     </button>
                                     <span class="px-4 py-2 bg-light text-dark fw-bold" style="min-width: 50px; text-align: center;">
-                                        {{ $quantity }}
-                                    </span>
+                                    {{ $quantity }}
+                                </span>
                                     <button class="btn btn-outline-success px-3" type="button" wire:click="increaseQuantity">
                                         <i class="fa fa-plus"></i>
                                     </button>
@@ -99,15 +111,13 @@
                         <button wire:click="addToCart"
                                 class="btn btn-primary d-flex align-items-center gap-2 shadow-sm rounded-pill px-4 py-2"
                                 wire:loading.attr="disabled" wire:target="addToCart">
-        <span wire:loading wire:target="addToCart">
-            <i class="fa fa-spinner fa-spin"></i>
-        </span>
+                        <span wire:loading wire:target="addToCart">
+                            <i class="fa fa-spinner fa-spin"></i>
+                        </span>
                             <i class="fas fa-cart-plus"></i>
                             {{ __('Add to Cart') }}
                         </button>
                     </div>
-
-
                 </div>
             </div>
         </div>
