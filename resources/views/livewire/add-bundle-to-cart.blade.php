@@ -170,6 +170,18 @@
             padding-bottom: 1rem !important;
         }
     </style>
+    <style>
+        /* Custom CSS for the close button */
+        .modal-header .btn-close {
+            margin-left: auto; /* Default for LTR */
+        }
+
+        [dir="rtl"] .modal-header .btn-close {
+            margin-left: 0; /* Reset for RTL */
+            margin-right: auto; /* Push to the left in RTL */
+        }
+    </style>
+
     @if ($showModal)
         <div class="modal fade show d-block" tabindex="-1">
             <div class="modal-dialog modal-xl modal-dialog-centered">
@@ -186,7 +198,7 @@
                     </div>
 
                     <!-- 🔵 Body -->
-                    <div class="modal-body p-5">
+                    <div class="modal-body p-4">
                         <div class="row row-cols-1 row-cols-md-2 g-4">
                             @foreach ($selectedBundle->products as $bundleProduct)
                                 @php
@@ -197,40 +209,38 @@
 
                                 @for ($i = 0; $i < $totalInputs; $i++)
                                     <div class="col">
-                                        <div class="card border-0 shadow-sm p-4 rounded-3">
-                                            <h5 class="fw-bold text-primary">
-                                                <i class="fas fa-tag me-1"></i> {{ $bundleProduct->name }}
+                                        <div class="card border-0 shadow-sm p-4 rounded-4">
+                                            <h5 class="fw-bold text-primary mb-3">
+                                                <i class="fas fa-tag me-2"></i> {{ $bundleProduct->name }}
                                                 <small class="text-muted">({{ __('bundle.item') }} {{ $i + 1 }})</small>
                                             </h5>
 
                                             @if (isset($colors[$bundleProduct->id]) && $colors[$bundleProduct->id]->isNotEmpty())
                                                 <!-- Color Selection -->
-                                                <div class="form-floating mb-4">
+                                                <div class="form-floating mb-3">
                                                     <select wire:model.live="selections.{{ $bundleProduct->id }}.{{ $i }}.color_id"
-                                                            class="form-select form-control-lg border-primary shadow-sm">
+                                                            class="form-select form-control-lg custom-select">
                                                         <option value="">{{ __('bundle.select_color') }}</option>
                                                         @foreach ($colors[$bundleProduct->id] ?? [] as $color)
                                                             <option value="{{ $color->id }}">{{ $color->name }}</option>
                                                         @endforeach
                                                     </select>
-                                                    <label class="fs-5">{{ __('bundle.color') }}</label>
                                                     @error("selections.{$bundleProduct->id}.{$i}.color_id")
-                                                    <small class="text-danger fs-6">{{ $message }}</small>
+                                                    <small class="text-danger fw-bold">{{ $message }}</small>
                                                     @enderror
                                                 </div>
 
                                                 <!-- Size Selection -->
-                                                <div class="form-floating mb-4">
+                                                <div class="form-floating mb-3">
                                                     <select wire:model.live="selections.{{ $bundleProduct->id }}.{{ $i }}.size_id"
-                                                            class="form-select form-control-lg border-primary shadow-sm">
+                                                            class="form-select form-control-lg custom-select">
                                                         <option value="">{{ __('bundle.select_size') }}</option>
                                                         @foreach ($sizes[$bundleProduct->id][$i] ?? [] as $size)
                                                             <option value="{{ $size->id }}">{{ $size->name }}</option>
                                                         @endforeach
                                                     </select>
-                                                    <label class="fs-5">{{ __('bundle.size') }}</label>
                                                     @error("selections.{$bundleProduct->id}.{$i}.size_id")
-                                                    <small class="text-danger fs-6">{{ $message }}</small>
+                                                    <small class="text-danger fw-bold">{{ $message }}</small>
                                                     @enderror
                                                 </div>
                                             @endif
@@ -238,15 +248,14 @@
                                     </div>
                                 @endfor
                             @endforeach
-
-                            @if ($errors->has('cart_bundle_error'))
-                                <div class="alert alert-danger">
-                                    {{ $errors->first('cart_bundle_error') }}
-                                </div>
-                            @endif
                         </div>
-                    </div>
 
+                        @if ($errors->has('cart_bundle_error'))
+                            <div class="alert alert-danger mt-3 rounded-3 p-3 fw-bold">
+                                {{ $errors->first('cart_bundle_error') }}
+                            </div>
+                        @endif
+                    </div>
                     <!-- 🟡 Footer -->
                     <div class="modal-footer d-flex flex-column align-items-center px-5 py-4">
                         <div class="d-flex justify-content-between w-100">
@@ -265,13 +274,11 @@
                                 <i class="fas fa-cart-plus"></i>
                                 {{ __('bundle.add_to_cart') }}
                                 <span wire:loading wire:target="addToCart">
-                <i class="fas fa-spinner fa-spin"></i>
-            </span>
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </span>
                             </button>
                         </div>
                     </div>
-
-
                 </div>
             </div>
         </div>
