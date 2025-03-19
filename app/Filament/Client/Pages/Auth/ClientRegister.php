@@ -37,7 +37,7 @@ class ClientRegister extends BaseRegister
         ];
     }
 
-    
+
     protected function getPreferredLanguageFormComponent()
     {
         return Radio::make('preferred_language')
