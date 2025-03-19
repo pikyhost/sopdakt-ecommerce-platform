@@ -110,68 +110,103 @@ class LandingPageResource extends Resource
                 ])->collapsed(),
 
                 Section::make(__('landing_page.home_section'))->schema([
-                    TextInput::make('home_title')->label(__('landing_page.title')),
-                    TextInput::make('home_subtitle')->label(__('landing_page.subtitle')),
-                    Toggle::make('is_home')->label(__('landing_page.status')),
-                    Toggle::make('home_show_cta_button')->label(__('landing_page.show_cta_button')),
-                    Toggle::make('is_home_section_top_image')->label(__('landing_page.show_top_image')),
-                    Toggle::make('is_home_section_bottom_image')->label(__('landing_page.show_bottom_image')),
+                    TextInput::make('home_title')
+                        ->label(__('landing_page.title'))
+                        ->required(fn ($get) => $get('is_home')),
+
+                    TextInput::make('home_subtitle')
+                        ->label(__('landing_page.subtitle'))
+                        ->required(fn ($get) => $get('is_home')),
+
+                    Toggle::make('is_home')
+                        ->label(__('landing_page.status')),
+
+                    Toggle::make('home_show_cta_button')
+                        ->label(__('landing_page.show_cta_button')),
+
+                    Toggle::make('is_home_section_top_image')
+                        ->label(__('landing_page.show_top_image')),
+
+                    Toggle::make('is_home_section_bottom_image')
+                        ->label(__('landing_page.show_bottom_image')),
+
                     FileUpload::make('home_section_top_image')
                         ->label(__('landing_page.home_section_top_image'))
                         ->directory('landing-page-home')
                         ->preserveFilenames()
-                        // ->acceptedFileTypes(self::$acceptedFileTypes)
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
-                        ->required(),
+                        ->required(fn ($get) => $get('is_home')),
+
                     FileUpload::make('home_section_bottom_image')
                         ->label(__('landing_page.home_section_bottom_image'))
                         ->directory('landing-page-home')
                         ->preserveFilenames()
-                        // ->acceptedFileTypes(self::$acceptedFileTypes)
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
-                        ->required(),
-                    TextInput::make('home_cta_button_text')->label(__('landing_page.home_cta_button_text')),
-                    TextInput::make('home_cta_button_link')->label(__('landing_page.home_cta_button_link')),
-                    TextInput::make('home_discount')->label(__('landing_page.home_discount'))->required(),
+                        ->required(fn ($get) => $get('is_home')),
+
+                    TextInput::make('home_cta_button_text')
+                        ->label(__('landing_page.home_cta_button_text'))
+                        ->required(fn ($get) => $get('is_home')),
+
+                    TextInput::make('home_cta_button_link')
+                        ->label(__('landing_page.home_cta_button_link'))
+                        ->required(fn ($get) => $get('is_home')),
+
+                    TextInput::make('home_discount')
+                        ->label(__('landing_page.home_discount'))
+                        ->required(fn ($get) => $get('is_home')),
+
                     FileUpload::make('home_image')
                         ->label(__('landing_page.home_image'))
                         ->directory('landing-page-home')
                         ->preserveFilenames()
-                        // ->acceptedFileTypes(self::$acceptedFileTypes)
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
-                        ->required(),
+                        ->required(fn ($get) => $get('is_home')),
+
                 ])->collapsed(),
 
                 Section::make(__('landing_page.about_section'))->schema([
-                    TextInput::make('about_title')->label(__('landing_page.title')),
-                    TextInput::make('about_subtitle')->label(__('landing_page.subtitle')),
-                    Toggle::make('is_about_section_top_image')->label(__('landing_page.show_top_image')),
-                    Toggle::make('is_about_section_bottom_image')->label(__('landing_page.show_bottom_image')),
+                    TextInput::make('about_title')
+                        ->label(__('landing_page.title'))
+                        ->required(fn ($get) => $get('is_about')),
+
+                    TextInput::make('about_subtitle')
+                        ->label(__('landing_page.subtitle'))
+                        ->required(fn ($get) => $get('is_about')),
+
+                    Toggle::make('is_about_section_top_image')
+                        ->label(__('landing_page.show_top_image')),
+
+                    Toggle::make('is_about_section_bottom_image')
+                        ->label(__('landing_page.show_bottom_image')),
+
                     FileUpload::make('about_section_top_image')
-                            ->label(__('landing_page.about_section_top_image'))
-                            ->directory('landing-page-about')
-                            ->preserveFilenames()
-                            // ->acceptedFileTypes(self::$acceptedFileTypes)
-                            ->maxSize(self::$fileMaxSize)
-                            ->downloadable()
-                            ->openable()
-                            ->required(),
+                        ->label(__('landing_page.about_section_top_image'))
+                        ->directory('landing-page-about')
+                        ->preserveFilenames()
+                        ->maxSize(self::$fileMaxSize)
+                        ->downloadable()
+                        ->openable()
+                        ->required(fn ($get) => $get('is_about')),
+
                     FileUpload::make('about_section_bottom_image')
-                            ->label(__('landing_page.about_section_bottom_image'))
-                            ->directory('landing-page-about')
-                            ->preserveFilenames()
-                            // ->acceptedFileTypes(self::$acceptedFileTypes)
-                            ->maxSize(self::$fileMaxSize)
-                            ->downloadable()
-                            ->openable()
-                            ->required(),
-                    Toggle::make('is_about')->label(__('landing_page.status')),
+                        ->label(__('landing_page.about_section_bottom_image'))
+                        ->directory('landing-page-about')
+                        ->preserveFilenames()
+                        ->maxSize(self::$fileMaxSize)
+                        ->downloadable()
+                        ->openable()
+                        ->required(fn ($get) => $get('is_about')),
+
+                    Toggle::make('is_about')
+                        ->label(__('landing_page.status')),
+
                     Repeater::make('about_content')
                         ->relationship('aboutItems')
                         ->schema([
@@ -179,22 +214,35 @@ class LandingPageResource extends Resource
                                 ->label(__('landing_page.icon'))
                                 ->directory('landing-page-about-icon')
                                 ->preserveFilenames()
-                                // ->acceptedFileTypes(self::$acceptedFileTypes)
                                 ->maxSize(self::$fileMaxSize)
                                 ->downloadable()
                                 ->openable()
-                                ->required(),
-                            TextInput::make('title')->label(__('landing_page.title'))->required(),
-                            TextInput::make('subtitle')->label(__('landing_page.subtitle')),
-                            Toggle::make('cta_button')->label(__('landing_page.show_cta_button')),
-                            TextInput::make('cta_button_text')->label(__('landing_page.cta_button_text')),
-                            TextInput::make('cta_button_link')->label(__('landing_page.cta_button_link')),
+                                ->required(fn ($get) => $get('is_about')),
+
+                            TextInput::make('title')
+                                ->label(__('landing_page.title'))
+                                ->required(fn ($get) => $get('is_about')),
+
+                            TextInput::make('subtitle')
+                                ->label(__('landing_page.subtitle'))
+                                ->required(fn ($get) => $get('is_about')),
+
+                            Toggle::make('cta_button')
+                                ->label(__('landing_page.show_cta_button')),
+
+                            TextInput::make('cta_button_text')
+                                ->label(__('landing_page.cta_button_text'))
+                                ->required(fn ($get) => $get('is_about')),
+
+                            TextInput::make('cta_button_link')
+                                ->label(__('landing_page.cta_button_link'))
+                                ->required(fn ($get) => $get('is_about')),
                         ])
                         ->label(__('landing_page.content'))
                         ->createItemButtonLabel(__('landing_page.add_content')),
-                ])->collapsed(),
-            ])
-            ->columns(2);
+                ])->collapsed()
+                    ->columns(2)
+            ]);
     }
 
     private static function Product(): Tab
@@ -208,7 +256,7 @@ class LandingPageResource extends Resource
                     TextInput::make('quantity')->label(__('landing_page.quantity'))->required(),
                     TextInput::make('price')->label(__('landing_page.price'))->required(),
                     TextInput::make('after_discount_price')->label(__('landing_page.after_discount_price'))->required(),
-                    TextInput::make('rating')->label(__('landing_page.rating'))->required()->numeric(),
+                    TextInput::make('  ')->label(__('landing_page.rating'))->required()->numeric(),
                     Grid::make()
                     ->schema([
                         Section::make(__('landing_page.combinations'))
@@ -886,8 +934,7 @@ class LandingPageResource extends Resource
                 TextColumn::make('updated_at')->label(__('landing_page.updated_at'))->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->actions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make(), DeleteAction::make(),
                 ActionGroup::make([
                     Action::make(__('landing_page.view'))
                         ->url(fn ($record) => route('landing-page.show-by-slug', ['slug' => $record->slug]))

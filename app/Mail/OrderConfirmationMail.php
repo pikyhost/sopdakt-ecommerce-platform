@@ -30,7 +30,8 @@ class OrderConfirmationMail extends Mailable implements ShouldQueue
         return $this->subject((string) __('Order Confirmation') . ' - ' . $this->order->id)
             ->view('emails.order-confirmation')
             ->with([
-                'order' => $this->order
+                'order' => $this->order,
+                'locale' => $locale // Pass locale explicitly
             ]);
     }
 

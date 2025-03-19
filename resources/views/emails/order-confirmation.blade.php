@@ -73,7 +73,7 @@
 
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Poppins', Arial, sans-serif;
             background-color: #f8f9fa;
             margin: 0;
             padding: 0;
@@ -85,8 +85,8 @@
             margin: 20px auto;
             background: #ffffff;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
         }
         h1 {
             color: #d63384;
@@ -104,20 +104,27 @@
             font-size: 16px;
             color: #333;
             line-height: 1.6;
-        }
-        .order-details {
-            background: #fce8f2;
-            padding: 15px;
-            border-radius: 8px;
             margin: 10px 0;
         }
-        .order-item {
-            background: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            border-left: 5px solid #d63384;
+
+
+        .order-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
         }
+
+        .order-item .product-details strong {
+            color: #d63384;
+        }
+
+
+        .order-item img {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
         .footer {
             text-align: center;
             font-size: 14px;
@@ -135,6 +142,7 @@
             height: 16px;
             border-radius: 50%;
             border: 1px solid #ddd;
+            margin: 0 5px;
         }
         .social-icons {
             margin-top: 10px;
@@ -155,9 +163,11 @@
 </head>
 <body>
 
+<@php $locale = app()->getLocale(); @endphp
+
 <div class="container">
     <h1 class="website-name">
-        {{ \App\Models\Setting::getSetting('site_name_' . app()->getLocale()) }}
+        {{ \App\Models\Setting::getSetting('site_name_' . $locale) }}
     </h1>
 
     <h3>{{ __('thank_you') }}</h3>
@@ -167,29 +177,50 @@
     <p><strong>{{ __('payment_method') }}:</strong> {{ $order->paymentMethod->name ?? 'N/A' }}</p>
 
     <h2>{{ __('order_details') }}:</h2>
-    <div class="order-details">
+    <div class="order-details"
+         style="display: flex; flex-direction: column; gap: 20px; padding: 15px; border: 2px solid #f8a3c4; border-radius: 10px; background: #fff5f9;">
+
         @foreach ($order->items as $item)
-            <div class="order-item">
-                <p><strong>{{ __('product') }}:</strong> {{ $item->product->name }}</p>
-                <p><strong>{{ __('quantity') }}:</strong> {{ $item->quantity }}</p>
-                <p><strong>{{ __('price') }}:</strong> {{ number_format($item->subtotal, 2) }}</p>
 
-                @if($item->product->productColors->isNotEmpty())
-                    @if($item->size_id)
-                        <p><strong>{{ __('size') }}:</strong> {{ $item->size->name }}</p>
-                    @endif
+            <div class="order-item"
+                 style="display: flex; align-items: center; width: 100%;
+                    flex-direction: {{ app()->getLocale() == 'ar' ? 'row-reverse' : 'row' }}; gap: 15px;">
+                <!-- Item Number -->
 
-                    <p><strong>{{ __('color') }}:</strong>
-                        @foreach($item->product->productColors as $productColor)
-                            <span class="color-box" style="background-color:{{ $productColor->color->code }};"></span> {{ $productColor->color->name }}
-                        @endforeach
-                    </p>
+                <!-- Product Image -->
+                @if($item->product->getFeatureProductImageUrl())
+                    <div style="flex-shrink: 0; order: {{ app()->getLocale() == 'ar' ? '1' : '2' }};">
+                        <img src="{{ $item->product->getFeatureProductImageUrl() }}"
+                             alt="{{ $item->product->getTranslation('name', app()->getLocale()) }}"
+                             style="width: 120px; height: auto; border-radius: 5px;">
+                    </div>
                 @endif
+
+                <!-- Product Details -->
+                <div style="flex: 1; text-align: {{ app()->getLocale() == 'ar' ? 'right' : 'left' }}; order: {{ app()->getLocale() == 'ar' ? '2' : '1' }};">
+                    <h3><strong><span style="color: black !important;">#{{ $loop->iteration }}</span></strong></h3>
+                    <p><strong>{{ __('product') }}:</strong> {{ $item->product->getTranslation('name', app()->getLocale()) }}</p>
+                    <p><strong>{{ __('quantity') }}:</strong> {{ $item->quantity }}</p>
+                    <p><strong>{{ __('price') }}:</strong> {{ number_format($item->subtotal, 2) }}</p>
+
+                    @if($item->product->productColors->isNotEmpty())
+                        @if($item->size_id)
+                            <p><strong>{{ __('size') }}:</strong> {{ $item->size->name }}</p>
+                        @endif
+
+                        <p><strong>{{ __('color') }}:</strong>
+                            @foreach($item->product->productColors as $productColor)
+                                <span class="color-box"
+                                      style="background-color:{{ $productColor->color->code }};">
+                                </span> {{ $productColor->color->name }}
+                            @endforeach
+                        </p>
+                    @endif
+                </div>
             </div>
         @endforeach
     </div>
-
-    @php
+@php
         $contact = \App\Models\Setting::getContactDetails();
     @endphp
     <p><strong>{{ __('order_status') }}:</strong> {{ __('shipping_now') }}</p>
