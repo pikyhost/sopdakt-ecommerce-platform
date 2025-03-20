@@ -374,53 +374,97 @@ class LandingPageResource extends Resource
                 ])->collapsed(),
 
                 Section::make(__('landing_page.products_section'))->schema([
-                    TextInput::make('product_title')->label(__('landing_page.title')),
-                    TextInput::make('product_subtitle')->label(__('landing_page.subtitle')),
-                    Toggle::make('is_products_section_top_image')->label(__('landing_page.show_top_image')),
-                    Toggle::make('is_products_section_bottom_image')->label(__('landing_page.show_bottom_image')),
+                    Toggle::make('is_products')
+                        ->live()
+                        ->label(__('landing_page.status')),
+
+                    TextInput::make('product_title')
+                        ->label(__('landing_page.title'))
+                        ->requiredIfAccepted('is_products'),
+
+                    TextInput::make('product_subtitle')
+                        ->label(__('landing_page.subtitle'))
+                        ->requiredIfAccepted('is_products'),
+
+                    Toggle::make('is_products_section_top_image')
+                        ->label(__('landing_page.show_top_image'))
+                        ->requiredIfAccepted('is_products'),
+
+                    Toggle::make('is_products_section_bottom_image')
+                        ->label(__('landing_page.show_bottom_image'))
+                        ->requiredIfAccepted('is_products'),
+
                     FileUpload::make('products_section_top_image')
+                        ->live()
                         ->label(__('landing_page.products_section_top_image'))
                         ->directory('landing-page-products-section')
                         ->preserveFilenames()
-                        // ->acceptedFileTypes(self::$acceptedFileTypes)
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
+                        ->visible(fn ($get) => $get('is_products'))
                         ->required(),
+
                     FileUpload::make('products_section_bottom_image')
+                        ->live()
                         ->label(__('landing_page.products_section_bottom_image'))
                         ->directory('landing-page-products-section')
                         ->preserveFilenames()
-                        // ->acceptedFileTypes(self::$acceptedFileTypes)
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
+                        ->visible(fn ($get) => $get('is_products'))
                         ->required(),
-                    Toggle::make('is_products')->label(__('landing_page.status')),
+
                     Repeater::make('products_content')
-                    ->relationship('productsItems')
-                    ->schema([
-                        TextInput::make('title')->label(__('landing_page.title'))->required(),
-                        TextInput::make('subtitle')->label(__('landing_page.subtitle')),
-                        FileUpload::make('image')
-                            ->label(__('landing_page.icon'))
-                            ->directory('landing-page-deal-of-the-week')
-                            ->preserveFilenames()
-                            // ->acceptedFileTypes(self::$acceptedFileTypes)
-                            ->maxSize(self::$fileMaxSize)
-                            ->downloadable()
-                            ->openable()
-                            ->required(),
-                        Toggle::make('status')->label(__('landing_page.status')),
-                        Toggle::make('cat_bottom')->label(__('landing_page.show_cat_bottom')),
-                        TextInput::make('cat_buttom_text')->label(__('landing_page.cta_button_text')),
-                        TextInput::make('cat_buttom_link')->label(__('landing_page.cta_button_link')),
-                        TextInput::make('price')->label(__('landing_page.price'))->required(),
-                        TextInput::make('after_discount_price')->label(__('landing_page.after_discount_price'))->required(),
-                    ])
-                    ->label(__('landing_page.content'))
-                    ->createItemButtonLabel(__('landing_page.add_content')),
-                ])->collapsed(),
+                        ->relationship('productsItems')
+                        ->requiredIfAccepted('is_products')
+                        ->schema([
+                            TextInput::make('title')
+                                ->label(__('landing_page.title'))
+                                ->requiredIfAccepted('is_products'),
+
+                            TextInput::make('subtitle')
+                                ->label(__('landing_page.subtitle'))
+                                ->requiredIfAccepted('is_products'),
+
+                            FileUpload::make('image')
+                                ->live()
+                                ->label(__('landing_page.icon'))
+                                ->directory('landing-page-deal-of-the-week')
+                                ->preserveFilenames()
+                                ->maxSize(self::$fileMaxSize)
+                                ->downloadable()
+                                ->openable()
+                                ->visible(fn ($get) => $get('is_products'))
+                                ->required(),
+
+                            Toggle::make('status')
+                                ->label(__('landing_page.status')),
+
+                            Toggle::make('cat_bottom')
+                                ->label(__('landing_page.show_cat_bottom'))
+                                ->requiredIfAccepted('is_products'),
+
+                            TextInput::make('cat_buttom_text')
+                                ->label(__('landing_page.cta_button_text'))
+                                ->requiredIfAccepted('is_products'),
+
+                            TextInput::make('cat_buttom_link')
+                                ->label(__('landing_page.cta_button_link'))
+                                ->requiredIfAccepted('is_products'),
+
+                            TextInput::make('price')
+                                ->label(__('landing_page.price'))
+                                ->requiredIfAccepted('is_products'),
+
+                            TextInput::make('after_discount_price')
+                                ->label(__('landing_page.after_discount_price'))
+                                ->requiredIfAccepted('is_products'),
+                        ])
+                        ->label(__('landing_page.content'))
+                        ->createItemButtonLabel(__('landing_page.add_content')),
+                ])->collapsed()
             ])
             ->columns(2);
     }
@@ -431,13 +475,17 @@ class LandingPageResource extends Resource
             ->icon('heroicon-o-information-circle')
             ->schema([
                 Section::make(__('landing_page.features_section'))->schema([
+                    Toggle::make('is_features')
+                        ->live()
+                        ->label(__('landing_page.status')),
+
                     TextInput::make('feature_title')
                         ->label(__('landing_page.title'))
-                        ->rules('required_with:is_features'),
+                        ->requiredIfAccepted('is_features'),
 
                     TextInput::make('feature_subtitle')
                         ->label(__('landing_page.subtitle'))
-                        ->rules('required_with:is_features'),
+                        ->requiredIfAccepted('is_features'),
 
                     Toggle::make('is_features3_section_top_image')
                         ->label(__('landing_page.show_top_image')),
@@ -452,7 +500,9 @@ class LandingPageResource extends Resource
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
-                        ->rules('required_with:is_features'),
+                        ->live()
+                        ->visible(fn ($get) => $get('is_features'))
+                        ->required(),
 
                     FileUpload::make('features3_section_bottom_image')
                         ->label(__('landing_page.features_1_section_bottom_image'))
@@ -461,21 +511,20 @@ class LandingPageResource extends Resource
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
-                        ->rules('required_with:is_features'),
-
-                    Toggle::make('is_features')
-                        ->label(__('landing_page.status')),
+                        ->live()
+                        ->visible(fn ($get) => $get('is_features'))
+                        ->required(),
 
                     Toggle::make('is_feature_cta_button')
                         ->label(__('landing_page.show_cat_bottom')),
 
                     TextInput::make('feature_cta_button_text')
                         ->label(__('landing_page.cta_button_text'))
-                        ->rules('required_with:is_features'),
+                        ->requiredIfAccepted('is_features'),
 
                     TextInput::make('feature_cta_button_link')
                         ->label(__('landing_page.cta_button_link'))
-                        ->rules('required_with:is_features'),
+                        ->requiredIfAccepted('is_features'),
 
                     FileUpload::make('feature_image')
                         ->label(__('landing_page.image'))
@@ -484,9 +533,14 @@ class LandingPageResource extends Resource
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
-                        ->rules('required_with:is_features'),
+                        ->live()
+                        ->visible(fn ($get) => $get('is_features'))
+                        ->required(),
 
                     Repeater::make('feature_content')
+                        ->live()
+                        ->visible(fn ($get) => $get('is_features'))
+                        ->required()
                         ->relationship('featuresItems')
                         ->schema([
                             FileUpload::make('image')
@@ -496,131 +550,202 @@ class LandingPageResource extends Resource
                                 ->maxSize(self::$fileMaxSize)
                                 ->downloadable()
                                 ->openable()
-                                ->rules('required_with:is_features'),
+                                ->live()
+                                ->visible(fn ($get) => $get('is_features'))
+                                ->required(),
 
                             TextInput::make('title')
-                                ->label(__('landing_page.title'))
-                                ->rules('required_with:is_features'),
+                                ->label(__('landing_page.title')),
 
                             TextInput::make('subtitle')
-                                ->label(__('landing_page.subtitle'))
-                                ->rules('required_with:is_features'),
+                                ->label(__('landing_page.subtitle')),
                         ])
                         ->label(__('landing_page.content'))
                         ->createItemButtonLabel(__('landing_page.add_content')),
                 ])->collapsed(),
 
+                Section::make(__('landing_page.features_1_section'))->schema([
+                    Toggle::make('is_features1')
+                        ->live()
+                        ->label(__('landing_page.status')),
 
-        Section::make(__('landing_page.features_1_section'))->schema([
-                    TextInput::make('feature1_title')->label(__('landing_page.title')),
-                    TextInput::make('feature1_subtitle')->label(__('landing_page.subtitle')),
-                    Toggle::make('is_features1_section_top_image')->label(__('landing_page.show_top_image')),
-                    Toggle::make('is_features1_section_bottom_image')->label(__('landing_page.show_bottom_image')),
+                    TextInput::make('feature1_title')
+                        ->label(__('landing_page.title'))
+                        ->requiredIfAccepted('is_features1'),
+
+                    TextInput::make('feature1_subtitle')
+                        ->label(__('landing_page.subtitle'))
+                        ->requiredIfAccepted('is_features1'),
+
+                    Toggle::make('is_features1_section_top_image')
+                        ->label(__('landing_page.show_top_image')),
+
+                    Toggle::make('is_features1_section_bottom_image')
+                        ->label(__('landing_page.show_bottom_image')),
+
                     FileUpload::make('features1_section_top_image')
                         ->label(__('landing_page.features_1_section_top_image'))
                         ->directory('landing-page-feature')
                         ->preserveFilenames()
-                        // ->acceptedFileTypes(self::$acceptedFileTypes)
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
+                        ->live()
+                        ->visible(fn ($get) => $get('is_features1'))
                         ->required(),
+
                     FileUpload::make('features1_section_bottom_image')
                         ->label(__('landing_page.features_1_section_bottom_image'))
                         ->directory('landing-page-feature')
                         ->preserveFilenames()
-                        // ->acceptedFileTypes(self::$acceptedFileTypes)
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
+                        ->live()
+                        ->visible(fn ($get) => $get('is_features1'))
                         ->required(),
-                    Toggle::make('is_features1')->label(__('landing_page.status')),
-                    Toggle::make('is_feature1_cta_button')->label(__('landing_page.show_cat_bottom')),
-                    TextInput::make('feature1_cta_button_text')->label(__('landing_page.cta_button_text')),
-                    TextInput::make('feature1_cta_button_link')->label(__('landing_page.cta_button_link')),
+
+                    Toggle::make('is_feature1_cta_button')
+                        ->label(__('landing_page.show_cat_bottom')),
+
+                    TextInput::make('feature1_cta_button_text')
+                        ->label(__('landing_page.cta_button_text'))
+                        ->requiredIfAccepted('is_features1'),
+
+                    TextInput::make('feature1_cta_button_link')
+                        ->label(__('landing_page.cta_button_link'))
+                        ->requiredIfAccepted('is_features1'),
+
                     FileUpload::make('feature1_image')
                         ->label(__('landing_page.image'))
                         ->directory('landing-page-feature')
                         ->preserveFilenames()
-                        // ->acceptedFileTypes(self::$acceptedFileTypes)
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
+                        ->live()
+                        ->visible(fn ($get) => $get('is_features1'))
                         ->required(),
+
                     Repeater::make('feature_content')
-                    ->relationship('featuresItems')
-                    ->schema([
-                        FileUpload::make('image')
-                            ->label(__('landing_page.icon'))
-                            ->directory('landing-page-feature-icon')
-                            ->preserveFilenames()
-                            // ->acceptedFileTypes(self::$acceptedFileTypes)
-                            ->maxSize(self::$fileMaxSize)
-                            ->downloadable()
-                            ->openable()
-                            ->required(),
-                        TextInput::make('title')->label(__('landing_page.title'))->required(),
-                        TextInput::make('subtitle')->label(__('landing_page.subtitle')),
-                    ])
-                    ->label(__('landing_page.content'))
-                    ->createItemButtonLabel(__('landing_page.add_content')),
+                        ->relationship('featuresItems')
+                        ->visible(fn ($get) => $get('is_features1'))
+                        ->required()
+                        ->schema([
+                            FileUpload::make('image')
+                                ->label(__('landing_page.icon'))
+                                ->directory('landing-page-feature-icon')
+                                ->preserveFilenames()
+                                ->maxSize(self::$fileMaxSize)
+                                ->downloadable()
+                                ->openable()
+                                ->live()
+                                ->visible(fn ($get) => $get('is_features1'))
+                                ->required(),
+
+                            TextInput::make('title')
+                                ->label(__('landing_page.title'))
+                                ->requiredIfAccepted('is_features1'),
+
+                            TextInput::make('subtitle')
+                                ->label(__('landing_page.subtitle'))
+                                ->requiredIfAccepted('is_features1'),
+                        ])
+                        ->label(__('landing_page.content'))
+                        ->createItemButtonLabel(__('landing_page.add_content')),
                 ])->collapsed(),
 
                 Section::make(__('landing_page.features_2_section'))->schema([
-                    TextInput::make('feature2_title')->label(__('landing_page.title')),
-                    TextInput::make('feature2_subtitle')->label(__('landing_page.subtitle')),
-                    Toggle::make('is_features2_section_top_image')->label(__('landing_page.show_top_image')),
-                    Toggle::make('is_features2_section_bottom_image')->label(__('landing_page.show_bottom_image')),
+                    Toggle::make('is_features2')
+                        ->live()
+                        ->label(__('landing_page.status')),
+
+                    TextInput::make('feature2_title')
+                        ->label(__('landing_page.title'))
+                        ->requiredIfAccepted('is_features2'),
+
+                    TextInput::make('feature2_subtitle')
+                        ->label(__('landing_page.subtitle'))
+                        ->requiredIfAccepted('is_features2'),
+
+                    Toggle::make('is_features2_section_top_image')
+                        ->label(__('landing_page.show_top_image')),
+
+                    Toggle::make('is_features2_section_bottom_image')
+                        ->label(__('landing_page.show_bottom_image')),
+
                     FileUpload::make('features2_section_top_image')
                         ->label(__('landing_page.features_2_section_top_image'))
                         ->directory('landing-page-feature')
                         ->preserveFilenames()
-                        // ->acceptedFileTypes(self::$acceptedFileTypes)
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
+                        ->live()
+                        ->visible(fn ($get) => $get('is_features2'))
                         ->required(),
+
                     FileUpload::make('features2_section_bottom_image')
                         ->label(__('landing_page.features_2_section_bottom_image'))
                         ->directory('landing-page-feature')
                         ->preserveFilenames()
-                        // ->acceptedFileTypes(self::$acceptedFileTypes)
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
+                        ->live()
+                        ->visible(fn ($get) => $get('is_features2'))
                         ->required(),
-                    Toggle::make('is_features2')->label(__('landing_page.status')),
-                    Toggle::make('is_feature2_cta_button')->label(__('landing_page.show_cat_bottom')),
-                    TextInput::make('feature2_cta_button_text')->label(__('landing_page.cta_button_text')),
-                    TextInput::make('feature2_cta_button_link')->label(__('landing_page.cta_button_link')),
+
+                    Toggle::make('is_feature2_cta_button')
+                        ->label(__('landing_page.show_cat_bottom')),
+
+                    TextInput::make('feature2_cta_button_text')
+                        ->label(__('landing_page.cta_button_text'))
+                        ->requiredIfAccepted('is_features2'),
+
+                    TextInput::make('feature2_cta_button_link')
+                        ->label(__('landing_page.cta_button_link'))
+                        ->requiredIfAccepted('is_features2'),
+
                     FileUpload::make('feature2_image')
                         ->label(__('landing_page.image'))
                         ->directory('landing-page-feature')
                         ->preserveFilenames()
-                        // ->acceptedFileTypes(self::$acceptedFileTypes)
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
+                        ->live()
+                        ->visible(fn ($get) => $get('is_features2'))
                         ->required(),
+
                     Repeater::make('feature_content')
-                    ->relationship('featuresItems')
-                    ->schema([
-                        FileUpload::make('image')
-                            ->label(__('landing_page.icon'))
-                            ->directory('landing-page-feature-icon')
-                            ->preserveFilenames()
-                            // ->acceptedFileTypes(self::$acceptedFileTypes)
-                            ->maxSize(self::$fileMaxSize)
-                            ->downloadable()
-                            ->openable()
-                            ->required(),
-                        TextInput::make('title')->label(__('landing_page.title'))->required(),
-                        TextInput::make('subtitle')->label(__('landing_page.subtitle')),
-                    ])
-                    ->label(__('landing_page.content'))
-                    ->createItemButtonLabel(__('landing_page.add_content')),
-                ])->collapsed(),
-            ])
+                        ->visible(fn ($get) => $get('is_features2'))
+                        ->required()
+                        ->relationship('featuresItems')
+                        ->schema([
+                            FileUpload::make('image')
+                                ->label(__('landing_page.icon'))
+                                ->directory('landing-page-feature-icon')
+                                ->preserveFilenames()
+                                ->maxSize(self::$fileMaxSize)
+                                ->downloadable()
+                                ->openable()
+                                ->live()
+                                ->visible(fn ($get) => $get('is_features2'))
+                                ->required(),
+
+                            TextInput::make('title')
+                                ->label(__('landing_page.title'))
+                                ->requiredIfAccepted('is_features2'),
+
+                            TextInput::make('subtitle')
+                                ->label(__('landing_page.subtitle'))
+                                ->requiredIfAccepted('is_features2'),
+                        ])
+                        ->label(__('landing_page.content'))
+                        ->createItemButtonLabel(__('landing_page.add_content')),
+                ])->collapsed()
+        ])
             ->columns(2);
     }
 
@@ -630,10 +755,26 @@ class LandingPageResource extends Resource
             ->icon('heroicon-o-information-circle')
             ->schema([
                 Section::make(__('landing_page.deal_of_the_week_section'))->schema([
-                    TextInput::make('deal_of_the_week_title')->label(__('landing_page.title')),
-                    TextInput::make('deal_of_the_week_subtitle')->label(__('landing_page.subtitle')),
-                    Toggle::make('is_deal_of_the_week_section_top_image')->label(__('landing_page.show_top_image')),
-                    Toggle::make('is_deal_of_the_week_section_bottom_image')->label(__('landing_page.show_bottom_image')),
+                    Toggle::make('is_deal_of_the_week')
+                        ->label(__('landing_page.status'))
+                        ->live(),
+
+                    TextInput::make('deal_of_the_week_title')
+                        ->label(__('landing_page.title'))
+                        ->requiredIfAccepted('is_deal_of_the_week'),
+
+                    TextInput::make('deal_of_the_week_subtitle')
+                        ->label(__('landing_page.subtitle'))
+                        ->requiredIfAccepted('is_deal_of_the_week'),
+
+                    Toggle::make('is_deal_of_the_week_section_top_image')
+                        ->label(__('landing_page.show_top_image'))
+                        ->live(),
+
+                    Toggle::make('is_deal_of_the_week_section_bottom_image')
+                        ->label(__('landing_page.show_bottom_image'))
+                        ->live(),
+
                     FileUpload::make('deal_of_the_week_section_top_image')
                         ->label(__('landing_page.top_image'))
                         ->directory('landing-page-deal-of-the-week')
@@ -641,7 +782,10 @@ class LandingPageResource extends Resource
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
-                        ->required(),
+                        ->live()
+                        ->visible(fn ($get) => $get('is_deal_of_the_week'))
+                        ->requiredIfAccepted('is_deal_of_the_week'),
+
                     FileUpload::make('deal_of_the_week_section_bottom_image')
                         ->label(__('landing_page.bottom_image'))
                         ->directory('landing-page-deal-of-the-week')
@@ -649,9 +793,13 @@ class LandingPageResource extends Resource
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
-                        ->required(),
-                    Toggle::make('is_deal_of_the_week')->label(__('landing_page.status')),
+                        ->live()
+                        ->visible(fn ($get) => $get('is_deal_of_the_week'))
+                        ->requiredIfAccepted('is_deal_of_the_week'),
+
                     Repeater::make('deals')
+                        ->visible(fn ($get) => $get('is_deal_of_the_week'))
+                        ->requiredIfAccepted('is_deal_of_the_week')
                         ->relationship('dealOfTheWeekItems')
                         ->schema([
                             FileUpload::make('image')
@@ -661,25 +809,73 @@ class LandingPageResource extends Resource
                                 ->maxSize(self::$fileMaxSize)
                                 ->downloadable()
                                 ->openable()
-                                ->required(),
-                            TextInput::make('rate')->label(__('landing_page.rate'))->live()->minValue(0)->required()->rule('gte:0')->extraAttributes(['oninput' => "this.value = Math.max(0, this.value)"]),
-                            TextInput::make('title')->label(__('landing_page.title'))->required(),
-                            TextInput::make('subtitle')->label(__('landing_page.subtitle'))->required(),
-                            TextInput::make('price')->label(__('landing_page.price'))->required(),
-                            TextInput::make('after_discount_price')->label(__('landing_page.after_discount_price'))->required(),
-                            DatePicker::make('date_of_birth')->label(__('landing_page.end_date'))->native(false),
-                            TextInput::make('cta_button_text')->label(__('landing_page.cta_button_text')),
-                            TextInput::make('cta_button_link')->label(__('landing_page.cta_button_link')),
+                                ->live()
+                                ->visible(fn ($get) => $get('is_deal_of_the_week'))
+                                ->requiredIfAccepted('is_deal_of_the_week'),
+
+                            TextInput::make('rate')
+                                ->label(__('landing_page.rate'))
+                                ->live()
+                                ->minValue(0)
+                                ->requiredIfAccepted('is_deal_of_the_week')
+                                ->rule('gte:0')
+                                ->extraAttributes(['oninput' => "this.value = Math.max(0, this.value)"]),
+
+                            TextInput::make('title')
+                                ->label(__('landing_page.title'))
+                                ->requiredIfAccepted('is_deal_of_the_week'),
+
+                            TextInput::make('subtitle')
+                                ->label(__('landing_page.subtitle'))
+                                ->requiredIfAccepted('is_deal_of_the_week'),
+
+                            TextInput::make('price')
+                                ->label(__('landing_page.price'))
+                                ->requiredIfAccepted('is_deal_of_the_week'),
+
+                            TextInput::make('after_discount_price')
+                                ->label(__('landing_page.after_discount_price'))
+                                ->requiredIfAccepted('is_deal_of_the_week'),
+
+                            DatePicker::make('date_of_birth')
+                                ->label(__('landing_page.end_date'))
+                                ->native(false)
+                                ->visible(fn ($get) => $get('is_deal_of_the_week')),
+
+                            TextInput::make('cta_button_text')
+                                ->label(__('landing_page.cta_button_text'))
+                                ->requiredIfAccepted('is_deal_of_the_week'),
+
+                            TextInput::make('cta_button_link')
+                                ->label(__('landing_page.cta_button_link'))
+                                ->requiredIfAccepted('is_deal_of_the_week'),
                         ])
                         ->label(__('landing_page.deals'))
-                        ->createItemButtonLabel(__('landing_page.add_deals')),
+                        ->createItemButtonLabel(__('landing_page.add_deals'))
+                        ->visible(fn ($get) => $get('is_deal_of_the_week')),
                 ])->collapsed(),
 
                 Section::make(__('landing_page.why_choose_us_section'))->schema([
-                    TextInput::make('why_choose_us_title')->label(__('landing_page.title')),
-                    TextInput::make('why_choose_us_subtitle')->label(__('landing_page.subtitle')),
-                    Toggle::make('is_why_choose_us_section_top_image')->label(__('landing_page.show_top_image')),
-                    Toggle::make('is_why_choose_us_section_bottom_image')->label(__('landing_page.show_bottom_image')),
+                    Toggle::make('is_why_choose_us')
+                        ->label(__('landing_page.status'))
+                        ->live(),
+
+                    TextInput::make('why_choose_us_title')
+                        ->label(__('landing_page.title'))
+                        ->requiredIfAccepted('is_why_choose_us'),
+
+                    TextInput::make('why_choose_us_subtitle')
+                        ->label(__('landing_page.subtitle'))
+                        ->requiredIfAccepted('is_why_choose_us'),
+
+                    Toggle::make('is_why_choose_us_section_top_image')
+                        ->label(__('landing_page.show_top_image'))
+                        ->live(),
+
+                    Toggle::make('is_why_choose_us_section_bottom_image')
+                        ->label(__('landing_page.show_bottom_image'))
+                        ->live(),
+
                     FileUpload::make('why_choose_us_section_top_image')
                         ->label(__('landing_page.top_image'))
                         ->directory('landing-page-why-choose-us-section')
@@ -687,7 +883,10 @@ class LandingPageResource extends Resource
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
-                        ->required(),
+                        ->live()
+                        ->visible(fn ($get) => $get('is_why_choose_us'))
+                        ->requiredIfAccepted('is_why_choose_us'),
+
                     FileUpload::make('why_choose_us_section_bottom_image')
                         ->label(__('landing_page.bottom_image'))
                         ->directory('landing-page-why-choose-us-section')
@@ -695,8 +894,10 @@ class LandingPageResource extends Resource
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
-                        ->required(),
-                    Toggle::make('is_why_choose_us')->label(__('landing_page.status')),
+                        ->live()
+                        ->visible(fn ($get) => $get('is_why_choose_us'))
+                        ->requiredIfAccepted('is_why_choose_us'),
+
                     FileUpload::make('why_choose_us_video')
                         ->label(__('landing_page.video'))
                         ->directory('landing-page-why-choose-us-section')
@@ -704,8 +905,13 @@ class LandingPageResource extends Resource
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
-                        ->required(),
+                        ->live()
+                        ->visible(fn ($get) => $get('is_why_choose_us'))
+                        ->requiredIfAccepted('is_why_choose_us'),
+
                     Repeater::make('why_choose_us_content')
+                        ->visible(fn ($get) => $get('is_why_choose_us'))
+                        ->requiredIfAccepted('is_why_choose_us')
                         ->relationship('whyChooseUsItems')
                         ->schema([
                             FileUpload::make('image')
@@ -715,35 +921,72 @@ class LandingPageResource extends Resource
                                 ->maxSize(self::$fileMaxSize)
                                 ->downloadable()
                                 ->openable()
-                                ->required(),
-                            TextInput::make('title')->label(__('landing_page.title'))->required(),
-                            ColorPicker::make('background_color')->label(__('landing_page.background_color'))->hex(),
-                            ColorPicker::make('text_color')->label(__('landing_page.text_color'))->hex(),
+                                ->live()
+                                ->visible(fn ($get) => $get('is_why_choose_us'))
+                                ->requiredIfAccepted('is_why_choose_us'),
+
+                            TextInput::make('title')
+                                ->label(__('landing_page.title'))
+                                ->requiredIfAccepted('is_why_choose_us'),
+
+                            ColorPicker::make('background_color')
+                                ->label(__('landing_page.background_color'))
+                                ->hex()
+                                ->visible(fn ($get) => $get('is_why_choose_us')),
+
+                            ColorPicker::make('text_color')
+                                ->label(__('landing_page.text_color'))
+                                ->hex()
+                                ->visible(fn ($get) => $get('is_why_choose_us')),
                         ])
                         ->label(__('landing_page.content'))
-                        ->createItemButtonLabel(__('landing_page.add_content')),
+                        ->createItemButtonLabel(__('landing_page.add_content'))
+                        ->visible(fn ($get) => $get('is_why_choose_us')),
                 ])->collapsed(),
 
                 Section::make(__('landing_page.compare_section'))->schema([
-                    TextInput::make('compare_title')->label(__('landing_page.title')),
-                    TextInput::make('compare_subtitle')->label(__('landing_page.subtitle')),
-                    Toggle::make('is_compares_section_top_image')->label(__('landing_page.show_top_image')),
-                    Toggle::make('is_compares_section_bottom_image')->label(__('landing_page.show_bottom_image')),
+                    Toggle::make('is_compare')
+                        ->label(__('landing_page.status'))
+                        ->live(),
+
+                    TextInput::make('compare_title')
+                        ->label(__('landing_page.title'))
+                        ->requiredIfAccepted('is_compare'),
+
+                    TextInput::make('compare_subtitle')
+                        ->label(__('landing_page.subtitle'))
+                        ->requiredIfAccepted('is_compare'),
+
+                    Toggle::make('is_compares_section_top_image')
+                        ->label(__('landing_page.show_top_image'))
+                        ->live(),
+
+                    Toggle::make('is_compares_section_bottom_image')
+                        ->label(__('landing_page.show_bottom_image'))
+                        ->live(),
+
                     FileUpload::make('compares_section_top_image')
                         ->label(__('landing_page.top_image'))
                         ->directory('landing-page-compare-section')
                         ->preserveFilenames()
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
-                        ->openable(),
+                        ->openable()
+                        ->live()
+                        ->visible(fn ($get) => $get('is_compare'))
+                        ->requiredIfAccepted('is_compare'),
+
                     FileUpload::make('compares_section_bottom_image')
                         ->label(__('landing_page.bottom_image'))
                         ->directory('landing-page-compare-section')
                         ->preserveFilenames()
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
-                        ->openable(),
-                    Toggle::make('is_compare')->label(__('landing_page.status')),
+                        ->openable()
+                        ->live()
+                        ->visible(fn ($get) => $get('is_compare'))
+                        ->requiredIfAccepted('is_compare'),
+
                     Repeater::make('compare_content')
                         ->relationship('comparesItems')
                         ->schema([
@@ -754,28 +997,83 @@ class LandingPageResource extends Resource
                                 ->maxSize(self::$fileMaxSize)
                                 ->downloadable()
                                 ->openable()
-                                ->required(),
-                            TextInput::make('title')->label(__('landing_page.title'))->required(),
-                            TextInput::make('subtitle')->label(__('landing_page.subtitle'))->required(),
-                            TextInput::make('price')->label(__('landing_page.price'))->required(),
-                            TextInput::make('brand')->label(__('landing_page.brand'))->required(),
-                            TextInput::make('color')->label(__('landing_page.color'))->required(),
-                            TextInput::make('dimensions')->label(__('landing_page.dimensions'))->required(),
-                            TextInput::make('weight')->label(__('landing_page.weight'))->required(),
-                            TextInput::make('attributes')->label(__('landing_page.attributes'))->required(),
-                            Toggle::make('cta_button')->label(__('landing_page.cta_button')),
-                            TextInput::make('cta_button_text')->label(__('landing_page.cta_button_text'))->required(),
-                            TextInput::make('cta_button_link')->label(__('landing_page.cta_button_link'))->required(),
+                                ->live()
+                                ->visible(fn ($get) => $get('is_compare'))
+                                ->requiredIfAccepted('is_compare'),
+
+                            TextInput::make('title')
+                                ->label(__('landing_page.title'))
+                                ->requiredIfAccepted('is_compare'),
+
+                            TextInput::make('subtitle')
+                                ->label(__('landing_page.subtitle'))
+                                ->requiredIfAccepted('is_compare'),
+
+                            TextInput::make('price')
+                                ->label(__('landing_page.price'))
+                                ->requiredIfAccepted('is_compare'),
+
+                            TextInput::make('brand')
+                                ->label(__('landing_page.brand'))
+                                ->requiredIfAccepted('is_compare'),
+
+                            TextInput::make('color')
+                                ->label(__('landing_page.color'))
+                                ->requiredIfAccepted('is_compare'),
+
+                            TextInput::make('dimensions')
+                                ->label(__('landing_page.dimensions'))
+                                ->requiredIfAccepted('is_compare'),
+
+                            TextInput::make('weight')
+                                ->label(__('landing_page.weight'))
+                                ->requiredIfAccepted('is_compare'),
+
+                            TextInput::make('attributes')
+                                ->label(__('landing_page.attributes'))
+                                ->requiredIfAccepted('is_compare'),
+
+                            Toggle::make('cta_button')
+                                ->label(__('landing_page.cta_button'))
+                                ->live(),
+
+                            TextInput::make('cta_button_text')
+                                ->label(__('landing_page.cta_button_text'))
+                                ->visible(fn ($get) => $get('cta_button'))
+                                ->requiredIfAccepted('cta_button'),
+
+                            TextInput::make('cta_button_link')
+                                ->label(__('landing_page.cta_button_link'))
+                                ->visible(fn ($get) => $get('cta_button'))
+                                ->requiredIfAccepted('cta_button'),
                         ])
                         ->label(__('landing_page.content'))
-                        ->createItemButtonLabel(__('landing_page.add_content')),
+                        ->createItemButtonLabel(__('landing_page.add_content'))
+                        ->visible(fn ($get) => $get('is_compare'))
+                        ->requiredIfAccepted('is_compare'),
                 ])->collapsed(),
 
                 Section::make(__('landing_page.feedbacks_section'))->schema([
-                    TextInput::make('feedback_title')->label(__('landing_page.title')),
-                    TextInput::make('feedback_subtitle')->label(__('landing_page.subtitle')),
-                    Toggle::make('is_feedbacks_section_top_image')->label(__('landing_page.show_top_image')),
-                    Toggle::make('is_feedbacks_section_bottom_image')->label(__('landing_page.show_bottom_image')),
+                    Toggle::make('is_feedbacks')
+                        ->label(__('landing_page.status'))
+                        ->live(),
+
+                    TextInput::make('feedback_title')
+                        ->label(__('landing_page.title'))
+                        ->requiredIfAccepted('is_feedbacks'),
+
+                    TextInput::make('feedback_subtitle')
+                        ->label(__('landing_page.subtitle'))
+                        ->requiredIfAccepted('is_feedbacks'),
+
+                    Toggle::make('is_feedbacks_section_top_image')
+                        ->label(__('landing_page.show_top_image'))
+                        ->live(),
+
+                    Toggle::make('is_feedbacks_section_bottom_image')
+                        ->label(__('landing_page.show_bottom_image'))
+                        ->live(),
+
                     FileUpload::make('feedbacks_section_top_image')
                         ->label(__('landing_page.top_image'))
                         ->directory('landing-page-feedbacks-section')
@@ -783,7 +1081,10 @@ class LandingPageResource extends Resource
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
-                        ->required(),
+                        ->live()
+                        ->visible(fn ($get) => $get('is_feedbacks'))
+                        ->requiredIfAccepted('is_feedbacks'),
+
                     FileUpload::make('feedbacks_section_bottom_image')
                         ->label(__('landing_page.bottom_image'))
                         ->directory('landing-page-feedbacks-section')
@@ -791,8 +1092,10 @@ class LandingPageResource extends Resource
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
-                        ->required(),
-                    Toggle::make('is_feedbacks')->label(__('landing_page.status')),
+                        ->live()
+                        ->visible(fn ($get) => $get('is_feedbacks'))
+                        ->requiredIfAccepted('is_feedbacks'),
+
                     Repeater::make('feedbacks_content')
                         ->relationship('feedbacksItems')
                         ->schema([
@@ -803,20 +1106,49 @@ class LandingPageResource extends Resource
                                 ->maxSize(self::$fileMaxSize)
                                 ->downloadable()
                                 ->openable()
-                                ->required(),
-                            TextInput::make('comment')->label(__('landing_page.comment'))->required(),
-                            TextInput::make('user_name')->label(__('landing_page.user_name'))->required(),
-                            TextInput::make('user_position')->label(__('landing_page.user_position'))->required(),
+                                ->live()
+                                ->visible(fn ($get) => $get('is_feedbacks'))
+                                ->requiredIfAccepted('is_feedbacks'),
+
+                            TextInput::make('comment')
+                                ->label(__('landing_page.comment'))
+                                ->requiredIfAccepted('is_feedbacks'),
+
+                            TextInput::make('user_name')
+                                ->label(__('landing_page.user_name'))
+                                ->requiredIfAccepted('is_feedbacks'),
+
+                            TextInput::make('user_position')
+                                ->label(__('landing_page.user_position'))
+                                ->requiredIfAccepted('is_feedbacks'),
                         ])
                         ->label(__('landing_page.content'))
-                        ->createItemButtonLabel(__('landing_page.add_content')),
+                        ->createItemButtonLabel(__('landing_page.add_content'))
+                        ->visible(fn ($get) => $get('is_feedbacks'))
+                        ->requiredIfAccepted('is_feedbacks'),
                 ])->collapsed(),
 
                 Section::make(__('landing_page.faq_section'))->schema([
-                    TextInput::make('faq_title')->label(__('landing_page.title')),
-                    TextInput::make('faq_subtitle')->label(__('landing_page.subtitle')),
-                    Toggle::make('is_faq_section_top_image')->label(__('landing_page.show_top_image')),
-                    Toggle::make('is_faq_section_bottom_image')->label(__('landing_page.show_bottom_image')),
+                    Toggle::make('is_faq')
+                        ->label(__('landing_page.status'))
+                        ->live(),
+
+                    TextInput::make('faq_title')
+                        ->label(__('landing_page.title'))
+                        ->requiredIfAccepted('is_faq'),
+
+                    TextInput::make('faq_subtitle')
+                        ->label(__('landing_page.subtitle'))
+                        ->requiredIfAccepted('is_faq'),
+
+                    Toggle::make('is_faq_section_top_image')
+                        ->label(__('landing_page.show_top_image'))
+                        ->live(),
+
+                    Toggle::make('is_faq_section_bottom_image')
+                        ->label(__('landing_page.show_bottom_image'))
+                        ->live(),
+
                     FileUpload::make('faq_section_top_image')
                         ->label(__('landing_page.top_image'))
                         ->directory('landing-page-faq-section')
@@ -824,7 +1156,10 @@ class LandingPageResource extends Resource
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
+                        ->live()
+                        ->visible(fn ($get) => $get('is_faq'))
                         ->required(),
+
                     FileUpload::make('faq_section_bottom_image')
                         ->label(__('landing_page.bottom_image'))
                         ->directory('landing-page-faq-section')
@@ -832,8 +1167,10 @@ class LandingPageResource extends Resource
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
+                        ->live()
+                        ->visible(fn ($get) => $get('is_faq'))
                         ->required(),
-                    Toggle::make('is_faq')->label(__('landing_page.status')),
+
                     FileUpload::make('faq_image')
                         ->label(__('landing_page.faq_image'))
                         ->directory('landing-page-faq-section')
@@ -841,22 +1178,48 @@ class LandingPageResource extends Resource
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
+                        ->live()
+                        ->visible(fn ($get) => $get('is_faq'))
                         ->required(),
+
                     Repeater::make('content')
+                        ->visible(fn ($get) => $get('is_faq'))
+                        ->required()
                         ->relationship('faqsItems')
                         ->schema([
-                            TextInput::make('question')->label(__('landing_page.question'))->required(),
-                            TextInput::make('answer')->label(__('landing_page.answer'))->required(),
+                            TextInput::make('question')
+                                ->label(__('landing_page.question'))
+                                ->requiredIfAccepted('is_faq'),
+
+                            TextInput::make('answer')
+                                ->label(__('landing_page.answer'))
+                                ->requiredIfAccepted('is_faq'),
                         ])
                         ->label(__('landing_page.content'))
                         ->createItemButtonLabel(__('landing_page.add_content')),
                 ])->collapsed(),
 
                 Section::make(__('landing_page.footer_section'))->schema([
-                    TextInput::make('footer_title')->label(__('landing_page.title')),
-                    TextInput::make('footer_subtitle')->label(__('landing_page.subtitle')),
-                    Toggle::make('is_footer_section_top_image')->label(__('landing_page.show_top_image')),
-                    Toggle::make('is_footer_section_bottom_image')->label(__('landing_page.show_bottom_image')),
+                    Toggle::make('is_footer')
+                        ->label(__('landing_page.status'))
+                        ->live(),
+
+                    TextInput::make('footer_title')
+                        ->label(__('landing_page.title'))
+                        ->requiredIfAccepted('is_footer'),
+
+                    TextInput::make('footer_subtitle')
+                        ->label(__('landing_page.subtitle'))
+                        ->requiredIfAccepted('is_footer'),
+
+                    Toggle::make('is_footer_section_top_image')
+                        ->label(__('landing_page.show_top_image'))
+                        ->live(),
+
+                    Toggle::make('is_footer_section_bottom_image')
+                        ->label(__('landing_page.show_bottom_image'))
+                        ->live(),
+
                     FileUpload::make('footer_section_top_image')
                         ->label(__('landing_page.top_image'))
                         ->directory('landing-page-footer-section')
@@ -864,7 +1227,10 @@ class LandingPageResource extends Resource
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
+                        ->live()
+                        ->visible(fn ($get) => $get('is_footer'))
                         ->required(),
+
                     FileUpload::make('footer_section_bottom_image')
                         ->label(__('landing_page.bottom_image'))
                         ->directory('landing-page-footer-section')
@@ -872,23 +1238,39 @@ class LandingPageResource extends Resource
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
-                        ->required(),
-                    Toggle::make('is_footer')->label(__('landing_page.status')),
+                        ->live()
+                        ->visible(fn ($get) => $get('is_footer'))
+                        ->requiredIfAccepted('is_footer'),
+
                     FileUpload::make('footer_image')
                         ->label(__('landing_page.footer_image'))
-                        ->directory('landing-page-faq-section')
+                        ->directory('landing-page-footer-section')
                         ->preserveFilenames()
                         ->maxSize(self::$fileMaxSize)
                         ->downloadable()
                         ->openable()
-                        ->required(),
+                        ->live()
+                        ->visible(fn ($get) => $get('is_footer'))
+                        ->requiredIfAccepted('is_footer'),
                 ])->collapsed(),
 
                 Section::make(__('landing_page.counter_section'))->schema([
-                    TextInput::make('counter_section_cta_button_text')->label(__('landing_page.cta_button_text')),
-                    TextInput::make('counter_section_cta_button_link')->label(__('landing_page.cta_button_link')),
-                    DatePicker::make('counter_section_end_date')->label(__('landing_page.end_date'))->native(false),
-                    Toggle::make('is_counter_section')->label(__('landing_page.status')),
+                    Toggle::make('is_counter_section')
+                        ->label(__('landing_page.status'))
+                        ->live(),
+
+                    TextInput::make('counter_section_cta_button_text')
+                        ->label(__('landing_page.cta_button_text'))
+                        ->requiredIfAccepted('is_counter_section'),
+
+                    TextInput::make('counter_section_cta_button_link')
+                        ->label(__('landing_page.cta_button_link'))
+                        ->requiredIfAccepted('is_counter_section'),
+
+                    DatePicker::make('counter_section_end_date')
+                        ->label(__('landing_page.end_date'))
+                        ->native(false)
+                        ->requiredIfAccepted('is_counter_section'),
                 ])->collapsed(),
             ])
             ->columns(2);

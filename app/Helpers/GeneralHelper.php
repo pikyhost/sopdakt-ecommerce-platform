@@ -34,7 +34,7 @@ class GeneralHelper
     private static array $bundlePrices = [];
     private static ?int $countryId = null;
 
-    private static function getCountryId(): ?int
+    public static function getCountryId(): ?int
     {
         if (self::$countryId === null) {
             $ip = app()->isLocal() ? '156.221.68.3' : request()->ip();

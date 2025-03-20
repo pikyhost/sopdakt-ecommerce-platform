@@ -11,6 +11,7 @@ class ProductController extends Controller
     {
         // Fetch the product with all required relationships in a single query
         $product = Product::where('slug', $slug)
+            ->availableInUserCountry() // Apply local scope
             ->with([
                 'labels',
                 'ratings',
@@ -21,7 +22,7 @@ class ProductController extends Controller
                 'bundles.products.media',
             ])
             ->withAvg('ratings', 'rating')
-            ->firstOrFail();  //this make query
+            ->firstOrFail();  // This makes the query
 
         // Use eager-loaded category data to avoid additional queries
         $category = $product->category; // Access the eager-loaded category
@@ -30,6 +31,7 @@ class ProductController extends Controller
 
         // Fetch related products efficiently
         $relatedProducts = Product::whereIn('category_id', array_filter([$subcategoryId, $parentCategoryId]))
+            ->availableInUserCountry() // Apply local scope
             ->where('id', '!=', $product->id)
             ->with('media')
             ->select([
@@ -38,10 +40,11 @@ class ProductController extends Controller
             ])
             ->inRandomOrder()
             ->limit(8)
-            ->get();  //this make query
+            ->get();  // This makes the query
 
         // Fetch products with ratings in a single optimized query
         $products = Product::whereIn('category_id', array_filter([$subcategoryId, $parentCategoryId]))
+            ->availableInUserCountry() // Apply local scope
             ->leftJoinSub(
                 DB::table('product_ratings')
                     ->select('product_id', DB::raw('AVG(rating) as avg_rating'))

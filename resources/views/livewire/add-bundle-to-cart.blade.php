@@ -118,7 +118,7 @@
         @endif
     </div>
 
-<style>
+    <style>
         /* Hover Scale Effect */
         .hover-scale {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -187,7 +187,7 @@
             <div class="modal-dialog modal-xl modal-dialog-centered">
                 <div class="modal-content border-0 shadow-lg rounded-4" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 
-                    <!-- 🟢 Header -->
+                    <!-- ðŸŸ¢ Header -->
                     <div class="modal-header bg-gradient bg-primary text-white py-4">
                         <h3 class="modal-title fw-bold">
                             <i class="fas fa-box-open me-2"></i> {{ __('bundle.select_options') }}
@@ -197,7 +197,7 @@
                         </button>
                     </div>
 
-                    <!-- 🔵 Body -->
+                    <!-- ðŸ”µ Body -->
                     <div class="modal-body p-4">
                         <div class="row row-cols-1 row-cols-md-2 g-4">
                             @foreach ($selectedBundle->products as $bundleProduct)
@@ -256,7 +256,7 @@
                             </div>
                         @endif
                     </div>
-                    <!-- 🟡 Footer -->
+                    <!-- ðŸŸ¡ Footer -->
                     <div class="modal-footer d-flex flex-column align-items-center px-5 py-4">
                         <div class="d-flex justify-content-between w-100">
                             <button class="btn btn-outline-secondary btn-lg rounded-pill d-flex align-items-center justify-content-center px-5 py-3 fs-5 fw-bold"

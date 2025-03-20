@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}" dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
 <head>
-    <?php $randomProduct = \App\Models\Product::inRandomOrder()->first(); ?>
+    <?php $randomProduct = \App\Models\Product::availableInUserCountry()->inRandomOrder()->first(); ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My E-Commerce</title>
