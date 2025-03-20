@@ -67,3 +67,7 @@ Route::get('/test-email', function () {
 Route::get('/locale-user', function () {
     return auth()->user()->preferred_language;
 });
+
+Route::get('/ip', function () {
+    return \App\Helpers\GeneralHelper::getCountryCode();
+});

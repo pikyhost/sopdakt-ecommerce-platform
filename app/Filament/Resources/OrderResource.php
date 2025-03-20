@@ -430,7 +430,7 @@ class OrderResource extends Resource
             }
         }
     }
-    
+
     private static function prepareJtExpressOrderData($order): array
     {
         $data = [
@@ -781,18 +781,22 @@ class OrderResource extends Resource
             $totalShippingCost += $shippingType?->shipping_cost ?? 0.0;
         }
 
-        // Add product-specific shipping costs only after location is selected
+        // Get the highest shipping cost per item instead of summing them
+        $highestShippingCost = 0.0;
         if (!empty($items) && ($cityId || $governorateId || $countryId)) {
             foreach ($items as $item) {
                 $product = Product::find($item['product_id'] ?? null);
                 if ($product) {
-                    $totalShippingCost += self::calculateProductShippingCost($product, $cityId, $governorateId, $countryId);
+                    $cost = self::calculateProductShippingCost($product, $cityId, $governorateId, $countryId);
+                    if ($cost > $highestShippingCost) {
+                        $highestShippingCost = $cost;
+                    }
                 }
             }
         }
 
-        // Set the final shipping cost
-        $set('shipping_cost', $totalShippingCost);
+        // Set the final shipping cost (highest among products)
+        $set('shipping_cost', $totalShippingCost + $highestShippingCost);
     }
 
     private static function calculateProductShippingCost(Product $product, $cityId, $governorateId, $countryId): float
@@ -801,55 +805,44 @@ class OrderResource extends Resource
             return $product->cost ?? 0.0;
         }
 
-        // First, check the relation (shippingCosts)
+        // Get the correct shipping cost based on priority rules
         $shippingCost = self::getProductShippingCost($product, $cityId, $governorateId, $countryId);
 
-        // If no shipping cost exists in the relation, fallback to location models
+        // If no product-specific cost, fallback to general location-based shipping cost
         return $shippingCost ?? self::getLocationBasedShippingCost($cityId, $governorateId, $countryId) ?? $product->cost ?? 0.0;
     }
 
     private static function getProductShippingCost(Product $product, $cityId, $governorateId, $countryId): ?float
     {
-        // Check city first
-        $cost = ShippingCost::where('product_id', $product->id)
-            ->whereNotNull('city_id')
-            ->where('city_id', $cityId)
-            ->value('cost');
+        // Priority Order: City → Governorate → Country (Without City)
 
-        if ($cost !== null) return $cost;
-
-        // Check governorate
-        $cost = ShippingCost::where('product_id', $product->id)
-            ->whereNotNull('governorate_id')
-            ->where('governorate_id', $governorateId)
-            ->value('cost');
-
-        if ($cost !== null) return $cost;
-
-        // Check zone related to governorate
-        $zoneCost = self::getZoneShippingCost($product, $governorateId);
-        if ($zoneCost !== null) return $zoneCost;
-
-        // Check country
-        return ShippingCost::where('product_id', $product->id)
-            ->whereNotNull('country_id')
-            ->where('country_id', $countryId)
-            ->value('cost');
-    }
-
-    private static function getZoneShippingCost(Product $product, $governorateId): ?float
-    {
-        if (!$governorateId) return null;
-
-        $governorate = Governorate::find($governorateId);
-        if (!$governorate) return null;
-
-        $zone = $governorate->shippingZones()->first();
-        if ($zone) {
-            return ShippingCost::where('product_id', $product->id)
-                ->whereNotNull('shipping_zone_id')
-                ->where('shipping_zone_id', $zone->id)
+        // If a city is selected, get city-specific cost
+        if ($cityId) {
+            $cost = $product->shippingCosts()
+                ->where('city_id', $cityId)
+                ->where('country_id', $countryId)
                 ->value('cost');
+            if ($cost !== null) return $cost;
+        }
+
+        // If a governorate is selected (and no city is found), get governorate-specific cost
+        if ($governorateId) {
+            $cost = $product->shippingCosts()
+                ->where('governorate_id', $governorateId)
+                ->where('country_id', $countryId)
+                ->whereNull('city_id')
+                ->value('cost');
+            if ($cost !== null) return $cost;
+        }
+
+        // If only country is selected (without city/governorate), get country-wide cost
+        if ($countryId) {
+            $cost = $product->shippingCosts()
+                ->where('country_id', $countryId)
+                ->whereNull('city_id')
+                ->whereNull('governorate_id')
+                ->value('cost');
+            return $cost;
         }
 
         return null;
@@ -879,7 +872,7 @@ class OrderResource extends Resource
             }
         }
 
-        // Check country
+        // Check country (without city/governorate)
         if ($countryId) {
             $country = Country::find($countryId);
             if ($country?->cost > 0) {

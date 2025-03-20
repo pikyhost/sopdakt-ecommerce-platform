@@ -297,34 +297,41 @@ class ShoppingCart extends Component
         $this->calculateTotals();
     }
 
-    private function getProductShippingCost(Product $product)
+
+    private function getProductShippingCost(Product $product): ?float
     {
-        // Fetch all related shipping costs for the product
         $shippingCosts = $product->shippingCosts()->get();
 
-        // 🔹 Step 1: Check Shipping Costs from the Product’s `shippingCosts()`
-        if ($this->city_id) {
-            $cityCost = $shippingCosts->firstWhere('city_id', $this->city_id)?->cost;
-            if (!is_null($cityCost)) return $cityCost;
+        // Step 1: Check City Shipping Cost (If Selected)
+        if (!empty($this->city_id)) {
+            $cityCost = $shippingCosts->where('city_id', $this->city_id)->first();
+            if ($cityCost) return $cityCost->cost;
         }
 
-        if ($this->governorate_id) {
-            $governorateCost = $shippingCosts->firstWhere('governorate_id', $this->governorate_id)?->cost;
-            if (!is_null($governorateCost)) return $governorateCost;
+        // Step 2: Check Governorate Shipping Cost (If Selected)
+        if (!empty($this->governorate_id)) {
+            $governorateCost = $shippingCosts
+                ->where('governorate_id', $this->governorate_id)
+                ->whereNull('city_id') // Ensure it's not a city-specific record
+                ->first();
 
-            // 🔹 Check if this governorate belongs to a zone with a shipping cost in `shippingCosts()`
-            $zoneCost = $this->getZoneShippingCostFromProduct($shippingCosts, $this->governorate_id);
-            if (!is_null($zoneCost)) return $zoneCost;
+            if ($governorateCost) return $governorateCost->cost;
         }
 
-        if ($this->country_id) {
-            $countryCost = $shippingCosts->firstWhere('country_id', $this->country_id)?->cost;
-            if (!is_null($countryCost)) return $countryCost;
+        // Step 3: Check Country Shipping Cost (If Selected)
+        if (!empty($this->country_id)) {
+            $countryCost = $shippingCosts
+                ->where('country_id', $this->country_id)
+                ->whereNull('governorate_id') // Ensure it's not a governorate-specific record
+                ->whereNull('city_id') // Ensure it's not a city-specific record
+                ->first();
+
+            if ($countryCost) return $countryCost->cost;
         }
 
-        // 🔹 Step 2: If No `shippingCosts()` Found, Fallback to Model-Based Costs
-        return $this->getFallbackLocationBasedCost() ?? $product->cost ?? 0.0;
+        return null; // No matching shipping cost found
     }
+
 
     /**
      * Check if the governorate belongs to a shipping zone that has a cost in the product's shippingCosts().

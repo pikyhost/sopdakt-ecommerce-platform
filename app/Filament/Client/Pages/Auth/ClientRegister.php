@@ -3,6 +3,7 @@
 namespace App\Filament\Client\Pages\Auth;
 
 use App\Enums\UserRole;
+use App\Helpers\GeneralHelper;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Component;
@@ -36,7 +37,6 @@ class ClientRegister extends BaseRegister
             ),
         ];
     }
-
 
     protected function getPreferredLanguageFormComponent()
     {
@@ -88,7 +88,6 @@ class ClientRegister extends BaseRegister
             ->dehydrated(false);
     }
 
-
     protected function getEmailFormComponent(): Component
     {
         return TextInput::make('email')
@@ -103,6 +102,9 @@ class ClientRegister extends BaseRegister
     protected function getPhoneFormComponent(): Component
     {
         return PhoneInput::make('phone')
+            ->defaultCountry(function () {
+                return GeneralHelper::getCountryCode();
+            })
             ->required()
             ->rules([
                 'max:20', // Match database column limit
@@ -111,7 +113,6 @@ class ClientRegister extends BaseRegister
             ->label(__('profile.phone'))
             ->columnSpanFull();
     }
-
 
     protected function handleRegistration(array $data): \Illuminate\Database\Eloquent\Model
     {

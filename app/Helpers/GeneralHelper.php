@@ -278,6 +278,12 @@ class GeneralHelper
         return number_format($price, 2) . ' ' . ($currency ?? 'USD');
     }
 
+    public static function getCountryCode(): string
+    {
+        $ip = request()->ip();
+        return geoip($ip)['country_code2'] ?? 'US';
+    }
+    
     // at production
 //    public static function getCountryId(): ?int
 //    {
