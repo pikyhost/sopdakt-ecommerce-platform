@@ -24,6 +24,16 @@ return new class extends Migration
             $table->string('favicon')->nullable();
             $table->timestamps();
 
+            $table->string('phone')->nullable();
+            $table->string('email')->nullable();
+            $table->string('facebook')->nullable();
+            $table->string('youtube')->nullable();
+            $table->string('instagram')->nullable();
+            $table->string('x')->nullable(); // Twitter is now X
+            $table->string('snapchat')->nullable();
+            $table->string('tiktok')->nullable();
+            $table->boolean('shipping_type_enabled')->default(true);
+
             // Indexing for faster lookup
             $table->index('currency_id');
         });

@@ -12,17 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('settings', function (Blueprint $table) {
-            $table->boolean('shipping_type_enabled')->default(true);
+            $table->dropColumn(['site_name_en', 'site_name_ar']); // Remove old columns
+            $table->string('site_name')->after('id'); // Add new column
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('settings', function (Blueprint $table) {
-            //
+            $table->string('site_name_en')->nullable();
+            $table->string('site_name_ar')->nullable();
+            $table->dropColumn('site_name');
         });
     }
 };
