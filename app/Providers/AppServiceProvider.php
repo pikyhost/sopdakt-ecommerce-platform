@@ -18,6 +18,8 @@ use Filament\Tables\Enums\FiltersLayout;
 use BezhanSalleh\FilamentLanguageSwitch\LanguageSwitch;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 
+use Spatie\Activitylog\Models\Activity;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**

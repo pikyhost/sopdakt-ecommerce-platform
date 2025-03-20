@@ -52,29 +52,21 @@ class SettingResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make(__('Website Information'))
+                Forms\Components\Section::make(__('Website & Contact Information'))
                     ->collapsed(true)
-                    ->description(__('Update website name and currency and tax percentage'))
+                    ->description(__('Update website name and contact info'))
                     ->schema([
                         TextInput::make('site_name_en')
-                            ->label(__('Website Name (English)'))
+                            ->label(__('Website Name'))
                             ->required(),
 
-                        TextInput::make('site_name_ar')
-                            ->label(__('Website Name (Arabic)'))
-                            ->required(),
+                        Forms\Components\TextInput::make('phone')
+                            ->label(__('phone')),
 
-                        TextInput::make('tax_percentage')
-                            ->numeric()
-                            ->prefix("%")
-                            ->label(__('Tax Percentage'))
-                            ->required(),
+                        Forms\Components\TextInput::make('email')
+                            ->label(__('email'))
+                            ->email(),
 
-                        Select::make('currency_id')
-                            ->label(__('Currency'))
-                            ->relationship('currency', 'name')
-                            ->getOptionLabelFromRecordUsing(fn (Currency $record) => "{$record->name} ({$record->symbol})")
-                            ->required(),
                     ])->columns(2),
 
                 Forms\Components\Section::make(__('Logos'))
@@ -113,18 +105,6 @@ class SettingResource extends Resource
                             ->label(__('Favicon (English & Arabic)')),
                     ])->columns(2),
 
-                Forms\Components\Section::make(__('contact_info'))
-                     ->collapsed(true)
-                    ->description(__('contact_info_description'))
-                    ->schema([
-                        Forms\Components\TextInput::make('phone')
-                            ->label(__('phone')),
-
-                        Forms\Components\TextInput::make('email')
-                            ->label(__('email'))
-                            ->email(),
-                    ])->columns(2),
-
                 Forms\Components\Section::make(__('social_media'))
                      ->collapsed(true)
                     ->description(__('social_media_description'))
@@ -152,6 +132,30 @@ class SettingResource extends Resource
                         Forms\Components\TextInput::make('tiktok')
                             ->label(__('tiktok'))
                             ->url(),
+                    ])->columns(2),
+
+                Forms\Components\Section::make(__('General Settings'))
+                    ->collapsed(true)
+                    ->description(__('Manage general settings for your store.'))
+                    ->schema([
+                        TextInput::make('tax_percentage')
+                            ->numeric()
+                            ->prefix("%")
+                            ->label(__('Tax Percentage'))
+                            ->required()
+                            ->helperText(__('Enter the applicable tax percentage for purchases.')),
+
+                        Select::make('currency_id')
+                            ->label(__('Currency'))
+                            ->relationship('currency', 'name')
+                            ->getOptionLabelFromRecordUsing(fn (Currency $record) => "{$record->name} ({$record->symbol})")
+                            ->required()
+                            ->helperText(__('Select the default currency for transactions.')),
+
+                        Forms\Components\Checkbox::make('shipping_type_enabled')
+                            ->label(__('Enable Shipping Types'))
+                            ->default(true)
+                            ->helperText(__('Enable or disable shipping type selection on checkout.')),
                     ])->columns(2),
             ]);
     }

@@ -34,10 +34,13 @@ class ShoppingCart extends Component
 
     public function mount()
     {
-        $this->currentRoute = Route::currentRouteName(); // Set route in mount
+        $this->currentRoute = Route::currentRouteName();
         $this->loadCart();
         $this->loadCountries();
-        $this->loadShippingTypes();
+
+        if (Setting::isShippingEnabled()) {
+            $this->loadShippingTypes();
+        }
 
         // Load dependent dropdowns if values exist
         $this->governorates = $this->country_id ? Governorate::where('country_id', $this->country_id)->get() : [];
@@ -60,8 +63,6 @@ class ShoppingCart extends Component
         $currency = $this->extractCurrency($priceString);
         return number_format($price * $quantity, 2) . ' ' . $currency;
     }
-
-
 
     public function loadCart()
     {
@@ -129,7 +130,7 @@ class ShoppingCart extends Component
 
     public function loadShippingTypes()
     {
-        $this->shipping_types = ShippingType::all();
+        $this->shipping_types = ShippingType::where('status', true)->get();
     }
 
     public function updateCartShipping()
@@ -268,7 +269,9 @@ class ShoppingCart extends Component
     public function updatedSelectedShipping()
     {
         $shippingType = ShippingType::find($this->selected_shipping);
-        $this->shippingCost = $shippingType ? $shippingType->cost : 0.0;
+        $shippingTypeCost = $shippingType ? $shippingType->cost : 0.0;
+
+        $locationBasedShippingCosts = [];
 
         foreach ($this->cartItems as $cartItem) {
             $product = Product::find($cartItem['product']['id']);
@@ -277,17 +280,19 @@ class ShoppingCart extends Component
                 continue;
             }
 
-            // Check product-specific shipping costs
+            // Get the shipping cost per product
             $productShippingCost = $this->getProductShippingCost($product);
 
-            // If product shipping cost is found, add to total shipping cost
             if ($productShippingCost !== null) {
-                $this->shippingCost += $productShippingCost;
+                $locationBasedShippingCosts[] = $productShippingCost;
             } else {
-                // If no product-specific cost, fallback to user-selected location
-                $this->shippingCost += $this->getLocationBasedShippingCost();
+                $locationBasedShippingCosts[] = $this->getLocationBasedShippingCost();
             }
         }
+
+        // Get the highest shipping cost among products and shipping type
+        $locationBasedShippingCost = !empty($locationBasedShippingCosts) ? max($locationBasedShippingCosts) : 0.0;
+        $this->shippingCost = max($shippingTypeCost, $locationBasedShippingCost);
 
         $this->calculateTotals();
     }
@@ -378,7 +383,7 @@ class ShoppingCart extends Component
     {
         $this->subtotal = 0;
         $seenBundles = [];
-        $locationBasedShippingCost = 0;
+        $locationBasedShippingCosts = [];
 
         foreach ($this->cartItems as $item) {
             // Calculate subtotal
@@ -391,28 +396,31 @@ class ShoppingCart extends Component
                 $this->subtotal += $item['quantity'] * (float) $item['price_per_unit'];
             }
 
-            // Calculate shipping cost
+            // Get shipping cost for each product/bundle
             if (isset($item['product']['id']) && !empty($item['product']['id'])) {
                 $product = Product::find($item['product']['id']);
                 if ($product) {
-                    $locationBasedShippingCost += $this->calculateProductShippingCost($product);
+                    $locationBasedShippingCosts[] = $this->calculateProductShippingCost($product);
                 }
             } elseif (isset($item['bundle']['id']) && !empty($item['bundle']['id'])) {
-                // Get all products in the bundle
+                // Get all products in the bundle and check their shipping costs
                 $bundleProducts = Product::where('bundle_id', $item['bundle']['id'])->get();
                 foreach ($bundleProducts as $product) {
-                    $locationBasedShippingCost += $this->calculateProductShippingCost($product);
+                    $locationBasedShippingCosts[] = $this->calculateProductShippingCost($product);
                 }
             }
         }
+
+        // Get the highest shipping cost among the products
+        $locationBasedShippingCost = !empty($locationBasedShippingCosts) ? max($locationBasedShippingCosts) : 0.0;
 
         // Calculate shipping type cost
         $shippingTypeCost = $this->selected_shipping
             ? ShippingType::find($this->selected_shipping)?->shipping_cost ?? 0.0
             : 0.0;
 
-        // Assign total shipping cost
-        $this->shippingCost = max(0, $shippingTypeCost + $locationBasedShippingCost);
+        // Assign total shipping cost as the maximum of the two
+        $this->shippingCost = max($shippingTypeCost, $locationBasedShippingCost);
 
         // Retrieve tax percentage from settings
         $taxPercentage = Setting::first()?->tax_percentage ?? 0;
@@ -420,18 +428,19 @@ class ShoppingCart extends Component
         // Calculate tax if applicable
         $this->tax = ($taxPercentage > 0) ? ($this->subtotal * $taxPercentage / 100) : 0;
 
-        // Final total: subtotal + shipping + tax
+        // Final total: subtotal + highest shipping + tax
         $this->total = $this->subtotal + $this->shippingCost + $this->tax;
     }
 
     public function proceedToCheckout()
     {
         $this->validate([
-            'selected_shipping' => 'required',
+            'selected_shipping' => Setting::isShippingEnabled() ? 'required' : 'nullable',
             'country_id' => 'required|exists:countries,id',
             'governorate_id' => 'required|exists:governorates,id',
             'city_id' => 'nullable|exists:cities,id',
         ]);
+
 
         $taxPercentage = Setting::first()?->tax_percentage ?? 0;
         $taxAmount = ($taxPercentage > 0) ? ($this->subtotal * $taxPercentage / 100) : 0;
@@ -446,7 +455,7 @@ class ShoppingCart extends Component
                 'country_id' => $this->country_id,
                 'governorate_id' => $this->governorate_id,
                 'city_id' => $this->city_id,
-                'shipping_type_id' => $this->selected_shipping,
+                'shipping_type_id' => $this->selected_shipping ?? null,
                 'shipping_cost' => $this->shippingCost,
             ]);
         }
@@ -456,8 +465,10 @@ class ShoppingCart extends Component
 
     public function getIsCheckoutReadyProperty()
     {
+        $isShippingEnabled = Setting::getSetting('shipping_type_enabled') ?? true;
+
         return $this->cart &&
-            $this->cart->shipping_type_id &&
+            ($isShippingEnabled ? $this->cart->shipping_type_id : true) &&
             $this->cart->country_id &&
             $this->cart->governorate_id &&
             $this->cart->subtotal > 0;
@@ -475,7 +486,7 @@ class ShoppingCart extends Component
             'shipping_types' => $this->shipping_types,
             'shippingCost' => $this->shippingCost,
             'taxPercentage' =>  Setting::first()?->tax_percentage ?? 0,
-            'currentRoute' => $this->currentRoute, // Now comes from public property
+            'currentRoute' => $this->currentRoute,
         ]);
     }
 }

@@ -5,9 +5,9 @@
             {{ $this->form }}
 
             <div class="text-right">
-                <x-filament::button type="submit">
-                    {{ __('Update') }}
-                </x-filament::button>
+                <div>
+                    {{ $this->submitFormAction }} {{-- [tl! ++] --}}
+                </div>
             </div>
         </form>
     </x-filament::card>
