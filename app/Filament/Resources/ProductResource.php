@@ -14,6 +14,7 @@ use App\Services\ProductActionsService;
 use Closure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\FileUpload;
@@ -478,6 +479,23 @@ class ProductResource extends Resource
      ])
               ->columns(2),
                             ]),
+
+                        Tabs\Tab::make(__('product.availability'))
+                            ->icon('heroicon-o-globe-asia-australia')
+                            ->schema([
+                                CheckboxList::make('countries')
+                                    ->label(__('product.available_countries')) // Translatable label
+                                    ->relationship(
+                                        name: 'countries',
+                                        titleAttribute: 'name'
+                                    )
+                                    ->searchable()
+                                    ->columns(5)
+                                    ->bulkToggleable()
+                                    ->selectAllAction(fn ($action) => $action->label(__('product.select_all')))
+                                    ->deselectAllAction(fn ($action) => $action->label(__('product.deselect_all'))),
+                            ]),
+
 
                         // Additional Info Tab
                         Tab::make(__('Additional Info'))

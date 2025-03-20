@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\Status;
+use App\Helpers\GeneralHelper;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -203,5 +205,19 @@ class Product extends Model implements HasMedia
             ->when($governorateId && !$cityId, fn($query) => $query->where('governorate_id', $governorateId))
             ->when($countryId && !$governorateId && !$cityId, fn($query) => $query->where('country_id', $countryId))
             ->value('cost') ?? 0;
+    }
+
+    public function countries()
+    {
+        return $this->belongsToMany(Country::class, 'product_country');
+    }
+
+    public function scopeAvailableInUserCountry(Builder $query): Builder
+    {
+        $countryId = GeneralHelper::getCountryId();
+
+        return $query->whereHas('countries', function ($q) use ($countryId) {
+            $q->where('countries.id', $countryId);
+        });
     }
 }

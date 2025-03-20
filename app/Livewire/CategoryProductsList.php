@@ -59,6 +59,7 @@ class CategoryProductsList extends Component
     public function getProductsQuery()
     {
         $query = $this->category->products()
+            ->availableInUserCountry() // Apply local scope
             ->with(['media', 'productColors'])
             ->where('is_published', 1)
             ->withAvg('ratings', 'rating');
