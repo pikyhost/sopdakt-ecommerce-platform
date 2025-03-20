@@ -102,7 +102,7 @@ class ClientRegister extends BaseRegister
     protected function getPhoneFormComponent(): Component
     {
         return PhoneInput::make('phone')
-            ->defaultCountry(function () {
+            ->initialCountry(function () {
                 return GeneralHelper::getCountryCode();
             })
             ->required()
