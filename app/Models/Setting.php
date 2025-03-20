@@ -8,8 +8,7 @@ use Illuminate\Support\Facades\Cache;
 class Setting extends Model
 {
     protected $fillable = [
-        'site_name_en',
-        'site_name_ar',
+        'site_name',
         'currency_id',
         'tax_percentage',
         'logo_en',

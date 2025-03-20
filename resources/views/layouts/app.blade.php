@@ -11,7 +11,7 @@
     $logoPath = $siteSettings["logo_{$locale}"] ?? $siteSettings["logo_en"] ?? null;
     $logo = $logoPath ?  \Illuminate\Support\Facades\Storage::url($logoPath) : asset('assets/images/clients/client1.png');
     // Get site name based on locale or fallback to default
-    $siteName = $siteSettings["site_name_{$locale}"] ?? $siteSettings["site_name_en"] ?? 'Default Site Name';
+    $siteName = $siteSettings["site_name"] ?? 'Default Site Name';
 @endphp
 <!DOCTYPE html>
 <html lang="en">

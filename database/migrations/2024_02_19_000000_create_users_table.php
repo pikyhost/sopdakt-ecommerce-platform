@@ -22,6 +22,8 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->rememberToken();
             $table->timestamps();
+            $table->string('preferred_language', 5)->default('en');
+
 
 //            $table->foreignId('country_id')->nullable()->constrained('countries')->cascadeOnDelete();
 //            $table->foreignId('governorate_id')->nullable()->constrained('governorates')->cascadeOnDelete();
