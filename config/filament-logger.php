@@ -17,7 +17,7 @@ return [
             //App\Filament\Resources\UserResource::class,
         ],
         'cluster' => null,
-        'navigation_group' => __('Settings Management'),
+        'navigation_group' => 'Settings Management',
     ],
 
     'access' => [
