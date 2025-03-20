@@ -283,7 +283,7 @@ class GeneralHelper
         $ip = request()->ip();
         return geoip($ip)['country_code2'] ?? 'US';
     }
-    
+
     // at production
 //    public static function getCountryId(): ?int
 //    {

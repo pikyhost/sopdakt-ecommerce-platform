@@ -102,9 +102,8 @@ class ClientRegister extends BaseRegister
     protected function getPhoneFormComponent(): Component
     {
         return PhoneInput::make('phone')
-            ->defaultCountry(function () {
-                return GeneralHelper::getCountryCode();
-            })
+            ->enableIpLookup(true) // Enable IP-based country detection
+            ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
             ->required()
             ->rules([
                 'max:20', // Match database column limit
