@@ -2,15 +2,17 @@
 
 namespace App\Livewire;
 
+use Filament\Actions\Action;
+use Filament\Forms\Contracts\HasForms;
+use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Jeffgreco13\FilamentBreezy\Livewire\MyProfileComponent;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 
-class ProfileContactDetails extends MyProfileComponent
+class ProfileContactDetails extends MyProfileComponent implements HasActions, HasForms
 {
     protected string $view = 'livewire.profile-contact-details';
 
@@ -76,5 +78,12 @@ class ProfileContactDetails extends MyProfileComponent
             ->success()
             ->title(__('profile.update_success'))
             ->send();
+    }
+
+    public function submitFormAction(): Action
+    {
+        return Action::make('submit')
+            ->label(__('Update'))
+            ->submit('submit');
     }
 }

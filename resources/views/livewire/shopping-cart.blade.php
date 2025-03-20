@@ -111,19 +111,21 @@
                             <td colspan="2" class="text-left">
                                 <h4>Shipping</h4>
 
-                                @foreach ($shipping_types as $shippingMethod)
-                                    <div class="form-group form-group-custom-control">
-                                        <div class="custom-control custom-radio">
-                                            <input type="radio" class="custom-control-input"
-                                                   wire:model.live="selected_shipping"
-                                                   value="{{ $shippingMethod->id }}">
-                                            <label class="custom-control-label">{{ $shippingMethod->name }}</label>
+                                @if(\App\Models\Setting::isShippingEnabled())
+                                    @foreach ($shipping_types as $shippingMethod)
+                                        <div class="form-group form-group-custom-control">
+                                            <div class="custom-control custom-radio">
+                                                <input type="radio" class="custom-control-input"
+                                                       wire:model.live="selected_shipping"
+                                                       value="{{ $shippingMethod->id }}">
+                                                <label class="custom-control-label">{{ $shippingMethod->name }}</label>
+                                            </div>
                                         </div>
-                                    </div>
-                                @endforeach
-                                @error('selected_shipping')
-                                <span class="text-danger">{{ $message }}</span>
-                                @enderror
+                                    @endforeach
+                                    @error('selected_shipping')
+                                    <span class="text-danger">{{ $message }}</span>
+                                    @enderror
+                                @endif
 
                                 <form action="#">
                                     <div class="form-group form-group-sm">
