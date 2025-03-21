@@ -344,6 +344,10 @@ class ProductResource extends Resource
 
                                    Forms\Components\TextInput::make('shipping_estimate_time')
                                        ->label(__('Shipping estimate time worldwide')),
+
+                                   Forms\Components\Checkbox::make('is_free_shipping')
+                                       ->default(false)
+                                       ->label(__('Is free shipping cost?')),
                                ])->columns(2),
                                 Repeater::make('shipping_costs')
                                     ->defaultItems(0)
