@@ -393,44 +393,31 @@ class OrderResource extends Resource
                     ]),
 
 
-            ])->columnSpanFull()->skippable()
+            ])->columnSpanFull()
         ]);
-    }
-
-    private static function recalculateTotal(callable $set, Get $get): void
-    {
-        $items = collect($get('items') ?? []);
-
-        // Calculate subtotal from individual items
-        $subtotal = $items->sum(fn ($item) => $item['subtotal'] ?? 0);
-
-        // Include bundle discount price if a bundle is selected
-        if ($bundleId = $get('bundle_id')) {
-            $bundleSubtotal = Bundle::find($bundleId)?->discount_price ?? 0;
-            $subtotal += $bundleSubtotal;
-        }
-
-        // Calculate tax amount
-        $taxPercentage = self::getTaxPercentage();
-        $taxAmount = ($subtotal * $taxPercentage) / 100;
-
-        // Get shipping cost
-        $shippingCost = $get('shipping_cost') ?? 0;
-
-        // Calculate total
-        $total = $subtotal + $taxAmount + $shippingCost;
-
-        // Update state
-        $set('subtotal', $subtotal);
-        $set('tax_amount', $taxAmount);
-        $set('total', $total);
     }
 
     private static function updateShippingCost(callable $set, $shippingTypeId, $items, $cityId, $governorateId, $countryId): void
     {
         $totalShippingCost = 0.0;
+        $hasChargeableItems = false;
 
-        // Add shipping type cost first
+        // Check if all items are free shipping
+        foreach ($items as $item) {
+            $product = Product::find($item['product_id'] ?? null);
+            if ($product && !$product->is_free_shipping) {
+                $hasChargeableItems = true;
+                break;
+            }
+        }
+
+        // If all products have free shipping, set cost to 0 and return
+        if (!$hasChargeableItems) {
+            $set('shipping_cost', 0.0);
+            return;
+        }
+
+        // Add shipping type cost normally (only if there are chargeable items)
         if ($shippingTypeId) {
             $shippingType = ShippingType::find($shippingTypeId);
             $totalShippingCost += $shippingType?->shipping_cost ?? 0.0;
@@ -441,7 +428,7 @@ class OrderResource extends Resource
         if (!empty($items) && ($cityId || $governorateId || $countryId)) {
             foreach ($items as $item) {
                 $product = Product::find($item['product_id'] ?? null);
-                if ($product) {
+                if ($product && !$product->is_free_shipping) {
                     $cost = self::calculateProductShippingCost($product, $cityId, $governorateId, $countryId);
                     if ($cost > $highestShippingCost) {
                         $highestShippingCost = $cost;
@@ -456,22 +443,41 @@ class OrderResource extends Resource
 
     private static function calculateProductShippingCost(Product $product, $cityId, $governorateId, $countryId): float
     {
+        if ($product->is_free_shipping) {
+            return 0.0;
+        }
+
         if (!$cityId && !$governorateId && !$countryId) {
             return $product->cost ?? 0.0;
         }
 
-        // Get the correct shipping cost based on priority rules
-        $shippingCost = self::getProductShippingCost($product, $cityId, $governorateId, $countryId);
+        return self::getProductShippingCost($product, $cityId, $governorateId, $countryId)
+            ?? self::getLocationBasedShippingCost($cityId, $governorateId, $countryId)
+            ?? $product->cost
+            ?? 0.0;
+    }
 
-        // If no product-specific cost, fallback to general location-based shipping cost
-        return $shippingCost ?? self::getLocationBasedShippingCost($cityId, $governorateId, $countryId) ?? $product->cost ?? 0.0;
+    private static function recalculateTotal(callable $set, Get $get): void
+    {
+        $items = collect($get('items') ?? []);
+        $subtotal = $items->sum(fn ($item) => $item['subtotal'] ?? 0);
+
+        if ($bundleId = $get('bundle_id')) {
+            $subtotal += Bundle::find($bundleId)?->discount_price ?? 0;
+        }
+
+        $taxPercentage = self::getTaxPercentage();
+        $taxAmount = ($subtotal * $taxPercentage) / 100;
+        $shippingCost = $get('shipping_cost') ?? 0;
+        $total = $subtotal + $taxAmount + $shippingCost;
+
+        $set('subtotal', $subtotal);
+        $set('tax_amount', $taxAmount);
+        $set('total', $total);
     }
 
     private static function getProductShippingCost(Product $product, $cityId, $governorateId, $countryId): ?float
     {
-        // Priority Order: City → Governorate → Country (Without City)
-
-        // If a city is selected, get city-specific cost
         if ($cityId) {
             $cost = $product->shippingCosts()
                 ->where('city_id', $cityId)
@@ -480,7 +486,6 @@ class OrderResource extends Resource
             if ($cost !== null) return $cost;
         }
 
-        // If a governorate is selected (and no city is found), get governorate-specific cost
         if ($governorateId) {
             $cost = $product->shippingCosts()
                 ->where('governorate_id', $governorateId)
@@ -490,14 +495,12 @@ class OrderResource extends Resource
             if ($cost !== null) return $cost;
         }
 
-        // If only country is selected (without city/governorate), get country-wide cost
         if ($countryId) {
-            $cost = $product->shippingCosts()
+            return $product->shippingCosts()
                 ->where('country_id', $countryId)
                 ->whereNull('city_id')
                 ->whereNull('governorate_id')
                 ->value('cost');
-            return $cost;
         }
 
         return null;
@@ -505,37 +508,25 @@ class OrderResource extends Resource
 
     private static function getLocationBasedShippingCost($cityId, $governorateId, $countryId): ?float
     {
-        // Check city first
         if ($cityId) {
             $city = City::find($cityId);
-            if ($city?->cost > 0) {
-                return (float) $city->cost;
-            }
+            if ($city?->cost > 0) return (float) $city->cost;
         }
 
-        // Check governorate
         if ($governorateId) {
             $governorate = Governorate::find($governorateId);
-            if ($governorate?->cost > 0) {
-                return (float) $governorate->cost;
-            }
+            if ($governorate?->cost > 0) return (float) $governorate->cost;
 
-            // Check shipping zone related to the governorate
             $zone = $governorate->shippingZones()->first();
-            if ($zone?->cost > 0) {
-                return (float) $zone->cost;
-            }
+            if ($zone?->cost > 0) return (float) $zone->cost;
         }
 
-        // Check country (without city/governorate)
         if ($countryId) {
             $country = Country::find($countryId);
-            if ($country?->cost > 0) {
-                return (float) $country->cost;
-            }
+            if ($country?->cost > 0) return (float) $country->cost;
         }
 
-        return null; // If nothing found, return null to allow fallback to product cost
+        return null;
     }
 
     private static function getTaxPercentage(): float
