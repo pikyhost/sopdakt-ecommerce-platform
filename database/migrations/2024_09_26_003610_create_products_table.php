@@ -38,6 +38,7 @@ return new class extends Migration
 
             $table->boolean('is_published')->default(true);
             $table->boolean('is_featured')->default(false);
+            $table->boolean('is_free_shipping')->default(false);
             $table->timestamps();
         });
     }

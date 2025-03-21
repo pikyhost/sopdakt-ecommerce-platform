@@ -61,7 +61,7 @@
 
         /* Brand Colors */
         .social-icons .facebook { color: #1877F2; }
-        .social-icons .twitter { color: #1DA1F2; }
+        .social-icons .x { color: #000000; }
         .social-icons .instagram { color: #E4405F; }
         .social-icons .youtube { color: #FF0000; }
         .social-icons .linkedin { color: #0077B5; }
@@ -167,7 +167,7 @@
 
 <div class="container">
     <h1 class="website-name">
-        {{ \App\Models\Setting::getSetting('site_name_' . $locale) }}
+        {{ \App\Models\Setting::getSetting('site_name') }}
     </h1>
 
     <h3>{{ __('thank_you') }}</h3>
@@ -252,7 +252,11 @@
             @foreach (\App\Models\Setting::getSocialMediaLinks() as $platform => $link)
                 @if ($link)
                     <a href="{{ $link }}" target="_blank" class="{{ strtolower($platform) }}">
-                        <i class="fab fa-{{ strtolower($platform) }}"></i>
+                        @if(strtolower($platform) === 'x')
+                            <i class="fa-brands fa-x-twitter"></i>
+                        @else
+                            <i class="fab fa-{{ strtolower($platform) }}"></i>
+                        @endif
                     </a>
                 @endif
             @endforeach
