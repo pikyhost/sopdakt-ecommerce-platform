@@ -283,6 +283,7 @@ class OrderResource extends Resource
                                 $set('subtotal', $subtotal);
                                 $set('tax_amount', $taxAmount);
                                 $set('total', $total);
+                                $set('shipping_type_id', null);
                             }),
                     ]),
 
@@ -393,7 +394,7 @@ class OrderResource extends Resource
                     ]),
 
 
-            ])->columnSpanFull()
+            ])->columnSpanFull()->skippable()
         ]);
     }
 
