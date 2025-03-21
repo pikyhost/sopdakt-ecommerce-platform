@@ -268,8 +268,19 @@ class ShoppingCart extends Component
 
     public function updatedSelectedShipping()
     {
+        // Get the shipping type cost normally.
         $shippingType = ShippingType::find($this->selected_shipping);
         $shippingTypeCost = $shippingType ? $shippingType->cost : 0.0;
+
+        // If the cart has only one item and that product has free shipping,
+        // then override the shipping type cost to 0.
+        if (count($this->cartItems) === 1) {
+            $cartItem = $this->cartItems[0];
+            $product = Product::find($cartItem['product']['id']);
+            if ($product && $product->is_free_shipping) {
+                $shippingTypeCost = 0.0;
+            }
+        }
 
         $locationBasedShippingCosts = [];
 
@@ -280,22 +291,27 @@ class ShoppingCart extends Component
                 continue;
             }
 
-            // Get the shipping cost per product
+            // Get the shipping cost per product.
             $productShippingCost = $this->calculateProductShippingCost($product);
-
             $locationBasedShippingCosts[] = $productShippingCost;
         }
 
-        // Get the highest shipping cost among products and shipping type
-        $locationBasedShippingCost = !empty($locationBasedShippingCosts) ? max($locationBasedShippingCosts) : 0.0;
+        // Get the highest shipping cost among products and shipping type.
+        $locationBasedShippingCost = !empty($locationBasedShippingCosts)
+            ? max($locationBasedShippingCosts)
+            : 0.0;
         $this->shippingCost = max($shippingTypeCost, $locationBasedShippingCost);
 
         $this->calculateTotals();
     }
 
+    /**
+     * Retrieve the product's shipping cost.
+     * If the product has free shipping, it returns 0.
+     */
     private function getProductShippingCost(Product $product): ?float
     {
-        // If the product has free shipping, return 0.0
+        // Return 0 if free shipping is enabled for the product.
         if ($product->is_free_shipping) {
             return 0.0;
         }
@@ -305,7 +321,9 @@ class ShoppingCart extends Component
         // Step 1: Check City Shipping Cost (If Selected)
         if (!empty($this->city_id)) {
             $cityCost = $shippingCosts->where('city_id', $this->city_id)->first();
-            if ($cityCost) return $cityCost->cost;
+            if ($cityCost) {
+                return $cityCost->cost;
+            }
         }
 
         // Step 2: Check Governorate Shipping Cost (If Selected)
@@ -315,7 +333,9 @@ class ShoppingCart extends Component
                 ->whereNull('city_id') // Ensure it's not a city-specific record
                 ->first();
 
-            if ($governorateCost) return $governorateCost->cost;
+            if ($governorateCost) {
+                return $governorateCost->cost;
+            }
         }
 
         // Step 3: Check Country Shipping Cost (If Selected)
@@ -326,14 +346,16 @@ class ShoppingCart extends Component
                 ->whereNull('city_id') // Ensure it's not a city-specific record
                 ->first();
 
-            if ($countryCost) return $countryCost->cost;
+            if ($countryCost) {
+                return $countryCost->cost;
+            }
         }
 
         return null; // No matching shipping cost found
     }
 
     /**
-     * Get product shipping cost but always return a float.
+     * Ensures a float is returned for the product shipping cost.
      */
     private function calculateProductShippingCost(Product $product): float
     {
@@ -345,16 +367,22 @@ class ShoppingCart extends Component
      */
     private function getZoneShippingCostFromProduct($shippingCosts, $governorateId): ?float
     {
-        if (!$governorateId) return null;
+        if (!$governorateId) {
+            return null;
+        }
 
         $governorate = Governorate::find($governorateId);
-        if (!$governorate) return null;
+        if (!$governorate) {
+            return null;
+        }
 
-        // 🔹 Check if this governorate belongs to a shipping zone
+        // Check if this governorate belongs to a shipping zone.
         $zone = $governorate->shippingZones()->first();
-        if (!$zone) return null;
+        if (!$zone) {
+            return null;
+        }
 
-        // 🔹 Check if this shipping zone has a cost inside the product’s shippingCosts()
+        // Return the shipping cost from the zone.
         return $shippingCosts->firstWhere('shipping_zone_id', $zone->id)?->cost;
     }
 
@@ -365,24 +393,32 @@ class ShoppingCart extends Component
     {
         if ($this->city_id) {
             $cityCost = City::where('id', $this->city_id)->value('cost');
-            if (!is_null($cityCost) && $cityCost > 0) return $cityCost;
+            if (!is_null($cityCost) && $cityCost > 0) {
+                return $cityCost;
+            }
         }
 
         if ($this->governorate_id) {
             $governorateCost = Governorate::where('id', $this->governorate_id)->value('cost');
-            if (!is_null($governorateCost) && $governorateCost > 0) return $governorateCost;
+            if (!is_null($governorateCost) && $governorateCost > 0) {
+                return $governorateCost;
+            }
 
-            // 🔹 If no governorate cost, check its related shipping zone
+            // If no governorate cost, check its related shipping zone.
             $zoneCost = Governorate::find($this->governorate_id)?->shippingZones()->pluck('cost')->first();
-            if (!is_null($zoneCost) && $zoneCost > 0) return $zoneCost;
+            if (!is_null($zoneCost) && $zoneCost > 0) {
+                return $zoneCost;
+            }
         }
 
         if ($this->country_id) {
             $countryCost = Country::where('id', $this->country_id)->value('cost');
-            if (!is_null($countryCost) && $countryCost > 0) return $countryCost;
+            if (!is_null($countryCost) && $countryCost > 0) {
+                return $countryCost;
+            }
         }
 
-        return 0.0; // Return 0.0 to ensure float return type
+        return 0.0;
     }
 
     public function calculateTotals()
