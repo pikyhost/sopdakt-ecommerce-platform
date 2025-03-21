@@ -3,17 +3,20 @@
     $siteSettings = App\Models\Setting::getAllSettings();
     $locale = app()->getLocale();
 
-    // Get favicon based on locale or fallback to default
+        // Get favicon based on locale or fallback to default
     $faviconPath = $siteSettings["favicon"] ?? null;
     $favicon = $faviconPath ? \Illuminate\Support\Facades\Storage::url($faviconPath) : asset('assets/images/clients/client1.png');
 
-    // Get logo based on locale or fallback to default
+
+    // Get logo based on locale
     $logoPath = $siteSettings["logo_{$locale}"] ?? $siteSettings["logo_en"] ?? null;
-    $logo = $logoPath ?  \Illuminate\Support\Facades\Storage::url($logoPath) : asset('assets/images/clients/client1.png');
-    // Get site name based on locale or fallback to default
-    $siteName = $siteSettings["site_name"] ?? 'Default Site Name';
+    $logo = $logoPath ? \Illuminate\Support\Facades\Storage::url($logoPath) : null;
+
+    // Get site name
+    $siteName = $siteSettings["site_name"] ?? ($locale === 'ar' ? 'لا يوجد شعار بعد' : 'No Logo Yet');
 @endphp
-<!DOCTYPE html>
+
+    <!DOCTYPE html>
 <html lang="en">
 <head>
     @livewireStyles
@@ -142,30 +145,89 @@
                         <i class="fas fa-bars"></i>
                     </button>
 
-                    <a href="{{ route('homepage') }}" class="logo">
-                        <!-- Logo -->
-                        <!-- Logo -->
-                        <img src="{{ $logo }}"
-                             alt="Site Logo"
-                             style="
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 3px solid #fff;
-        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-     "
-                             onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0px 6px 12px rgba(0, 0, 0, 0.3)';"
-                             onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0px 4px 8px rgba(0, 0, 0, 0.2)';"
-                        />
-                    </a>
-                    <p class="site-name mt-2 font-weight-bold text-dark text-center">
-                        {{ $siteName }}
-                    </p>
+                    @if($logo)
+                        <a href="{{ route('homepage') }}" class="logo">
+                            <div class="logo-wrapper">
+                                <img src="{{ $logo }}" alt="Site Logo" class="site-logo">
+                            </div>
+                        </a>
+                    @else
+                        <div class="site-name-wrapper">
+                            <p class="website-name">{{ $siteName ?: __('No Logo Available') }}</p>
+                        </div>
+                    @endif
                 </div>
 
+                <style>
+                    /* Logo Wrapper */
+                    .logo-wrapper {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        background: #fff;
+                        border-radius: 12px;
+                        padding: 8px;
+                        border: 3px solid rgba(0, 0, 0, 0.1);
+                        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+                        transition: all 0.3s ease-in-out;
+                        max-width: 140px;
+                    }
 
+                    /* Logo Image */
+                    .site-logo {
+                        max-width: 100%;
+                        height: auto;
+                        object-fit: contain;
+                        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+                    }
+
+                    /* Hover Effect */
+                    .logo-wrapper:hover {
+                        transform: translateY(-3px);
+                        box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.2);
+                    }
+
+                    /* Site Name Wrapper */
+                    .site-name-wrapper {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 10px 20px;
+                        margin-top: 10px;
+                        width: 100%;
+                        text-align: center;
+                    }
+
+                    /* Website Name Styling (Now Always Visible) */
+                    .website-name {
+                        font-size: 26px;
+                        font-weight: bold;
+                        font-family: 'Poppins', sans-serif;
+                        text-transform: uppercase;
+                        letter-spacing: 1.2px;
+                        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+                        background: linear-gradient(45deg, #1877F2, #1DA1F2, #E4405F);
+                        -webkit-background-clip: text;
+                        -webkit-text-fill-color: transparent;
+                        display: block;
+                        width: 100%;
+                        white-space: normal; /* Allows text to wrap instead of cutting */
+                        overflow: visible; /* Ensures full visibility */
+                        word-break: break-word; /* Ensures long names break properly */
+                    }
+
+                    /* Mobile Adjustments */
+                    @media (max-width: 768px) {
+                        .logo-wrapper {
+                            max-width: 100px;
+                        }
+                        .website-name {
+                            font-size: 22px;
+                        }
+                    }
+                </style>
+
+                
                 <div class="header-right w-lg-max">
                     <div
                         class="header-icon header-search header-search-inline header-search-category w-lg-max text-right mt-0">

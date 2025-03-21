@@ -39,7 +39,6 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
         return view('front.category-horizontal-filter2');
     });
 
-
     Route::get('landing-page/{slug}', [LandingPageController::class, 'show'])->name('landing-page.show-by-slug');
     Route::get('/products/{slug}', [ProductController::class, 'show'])->name('product.show');
     Route::get('/category/{slug}', [CategoryProductController::class, 'show'])->name('category.products');
@@ -62,12 +61,4 @@ Route::post('/jt-express-webhook', [ShippingController::class, 'handleWebhook'])
 Route::get('/test-email', function () {
     $order = Order::find(8); // Replace with a valid ID
     return new OrderConfirmationMail($order);
-});
-
-Route::get('/locale-user', function () {
-    return auth()->user()->preferred_language;
-});
-
-Route::get('/ip', function () {
-    return \App\Helpers\GeneralHelper::getCountryCode();
 });
