@@ -56,7 +56,7 @@ class SettingResource extends Resource
                     ->collapsed(true)
                     ->description(__('Update website name and contact info'))
                     ->schema([
-                        TextInput::make('site_name_en')
+                        TextInput::make('site_name')
                             ->label(__('Website Name'))
                             ->required(),
 

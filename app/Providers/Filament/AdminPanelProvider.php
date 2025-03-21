@@ -128,7 +128,7 @@ class AdminPanelProvider extends PanelProvider
             __('Inventory Management'),
             __('Orders'),
             __('Orders & Contacts'),
-            __('Payment Methods'),
+            __('Payment Management'),
             __('Shipping Management'),
             __('user_experience'),
             __('Settings Management'),
