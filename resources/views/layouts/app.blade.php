@@ -227,7 +227,7 @@
                     }
                 </style>
 
-                
+
                 <div class="header-right w-lg-max">
                     <div
                         class="header-icon header-search header-search-inline header-search-category w-lg-max text-right mt-0">
