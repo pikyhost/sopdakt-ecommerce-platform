@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Route;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use App\Http\Controllers\{CartController,
     CheckoutController,
+    HomePageController,
     OrderCompleteController,
     ProductController,
     LandingPageController,
@@ -19,25 +20,25 @@ Route::redirect('/admin/settings', '/admin/settings/1/edit');
 
 Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['localeSessionRedirect', 'localizationRedirect', 'localeViewPath']], function () {
 
-    Route::get('/', function () {
-        return view('welcome');
-    })->name('homepage');
+    Route::get('/', [HomePageController::class, 'index'])->name('homepage');
 
     Route::get('/about-us', function () {
         return 'To be the about us page';
     });
 
+    Route::get('/contact-us', function () {
+        return 'To be the contact us page';
+    });
+
+    Route::view('demo', 'front.demo');
+
     Route::get('/blogs', function () {
         return 'To be the blogs page';
     });
 
-    Route::get('/category-page', function () {
-        return view('front.category-horizontal-filter2');
-    });
-
-    Route::get('/category-page', function () {
-        return view('front.category-horizontal-filter2');
-    });
+    Route::get('/products', function () {
+        return 'To be the products page';
+    })->name('products');
 
     Route::get('landing-page/{slug}', [LandingPageController::class, 'show'])->name('landing-page.show-by-slug');
     Route::get('/products/{slug}', [ProductController::class, 'show'])->name('product.show');

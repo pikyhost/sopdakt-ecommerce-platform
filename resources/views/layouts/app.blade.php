@@ -16,10 +16,9 @@
     $siteName = $siteSettings["site_name"] ?? ($locale === 'ar' ? 'لا يوجد شعار بعد' : 'No Logo Yet');
 @endphp
 
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    @livewireStyles
     <meta charset="UTF-8">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -62,6 +61,7 @@
     <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}" defer></script>
     {{-- Page-specific styles --}}
     @stack('styles')
+    @livewireStyles
 </head>
 
 <body>
@@ -227,7 +227,6 @@
                     }
                 </style>
 
-
                 <div class="header-right w-lg-max">
                     <div
                         class="header-icon header-search header-search-inline header-search-category w-lg-max text-right mt-0">
@@ -272,9 +271,9 @@
                         </h6>
                     </div>
 
-                    <a href="login.html" class="header-icon" title="login"><i class="icon-user-2"></i></a>
+                    <a href="{{ url('/client/login') }}" class="header-icon" title="login"><i class="icon-user-2"></i></a>
 
-                    <a href="wishlist.html" class="header-icon" title="wishlist"><i class="icon-wishlist-2"></i></a>
+                    <a href="{{ url('client/my-wishlist') }}" class="header-icon" title="wishlist"><i class="icon-wishlist-2"></i></a>
 
                     <div class="dropdown cart-dropdown">
                         @livewire('cart.cart-icon')
