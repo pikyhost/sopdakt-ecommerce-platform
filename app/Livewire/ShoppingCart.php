@@ -280,6 +280,12 @@ class ShoppingCart extends Component
                 continue;
             }
 
+            // If the product has free shipping, set cost to 0
+            if ($product->is_free_shipping) {
+                $locationBasedShippingCosts[] = 0.0;
+                continue;
+            }
+
             // Get the shipping cost per product
             $productShippingCost = $this->getProductShippingCost($product);
 
@@ -297,9 +303,15 @@ class ShoppingCart extends Component
         $this->calculateTotals();
     }
 
-
+    /**
+     * Get the product shipping cost considering priority and free shipping.
+     */
     private function getProductShippingCost(Product $product): ?float
     {
+        if ($product->is_free_shipping) {
+            return 0.0;
+        }
+
         $shippingCosts = $product->shippingCosts()->get();
 
         // Step 1: Check City Shipping Cost (If Selected)
@@ -332,6 +344,32 @@ class ShoppingCart extends Component
         return null; // No matching shipping cost found
     }
 
+    /**
+     * Get fallback location-based cost (City → Governorate → Zone → Country).
+     */
+    private function getLocationBasedShippingCost(): ?float
+    {
+        if ($this->city_id) {
+            $cityCost = City::where('id', $this->city_id)->value('cost');
+            if (!is_null($cityCost) && $cityCost > 0) return $cityCost;
+        }
+
+        if ($this->governorate_id) {
+            $governorateCost = Governorate::where('id', $this->governorate_id)->value('cost');
+            if (!is_null($governorateCost) && $governorateCost > 0) return $governorateCost;
+
+            // 🔹 If no governorate cost, check its related shipping zone
+            $zoneCost = Governorate::find($this->governorate_id)?->shippingZones()->pluck('cost')->first();
+            if (!is_null($zoneCost) && $zoneCost > 0) return $zoneCost;
+        }
+
+        if ($this->country_id) {
+            $countryCost = Country::where('id', $this->country_id)->value('cost');
+            if (!is_null($countryCost) && $countryCost > 0) return $countryCost;
+        }
+
+        return null;
+    }
 
     /**
      * Check if the governorate belongs to a shipping zone that has a cost in the product's shippingCosts().
