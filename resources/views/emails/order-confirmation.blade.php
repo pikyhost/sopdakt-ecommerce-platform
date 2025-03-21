@@ -171,7 +171,11 @@
     </h1>
 
     <h3>{{ __('thank_you') }}</h3>
-    <p><strong>{{ __('Customer Name') }}:</strong> {{ $order->user->name }}</p>
+    @if($order->user_id)
+        <p><strong>{{ __('Customer Name') }}:</strong> {{ $order->user->name }}</p>
+    @elseif($order->contact_id)
+        <p><strong>{{ __('Contact Name') }}:</strong> {{ $order->contact->name }}</p>
+    @endif
     <p><strong>{{ __('order_id') }}:</strong> {{ $order->id }}</p>
     <p><strong>{{ __('total_amount') }}:</strong> {{ number_format($order->total, 2) }}</p>
     <p><strong>{{ __('payment_method') }}:</strong> {{ $order->paymentMethod->name ?? 'N/A' }}</p>
