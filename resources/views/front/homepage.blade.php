@@ -297,8 +297,8 @@
 
                     <a href="{{ url('/client/login') }}" class="header-icon" title="login"><i class="icon-user-2"></i></a>
 
-                    <a href="{{ url('/client/my-wishlist') }}" class="header-icon" title="Wishlist"><i class="icon-wishlist-2"><span
-                                class="badge-circle">2</span></i></a>
+                    <a href="{{ url('/client/my-wishlist') }}" class="header-icon" title="Wishlist"><i class="icon-wishlist-2">
+                            </i></a>
 
                     <div class="header-icon header-search header-search-popup header-search-category text-right">
                         <a href="#" class="search-toggle" role="button"><i class="icon-magnifier"></i></a>
@@ -479,7 +479,7 @@
         <section class="product-banner-section">
             <div class="banner" style="background-color: #111;">
                 <figure class="w-100 appear-animate" data-animation-name="fadeIn">
-                    <img src="{{ $homeSettings->getCenterImageUrl() ?? asset('assets/images/demoes/demo18/product-section-slider/slide-1.jpg') }}" alt="product banner">
+                    <img src="{{ $homeSettings?->getCenterImageUrl() ?? asset('assets/images/demoes/demo18/product-section-slider/slide-1.jpg') }}" alt="product banner">
                 </figure>
                 <div class="container-fluid">
                     <div class="position-relative h-100">

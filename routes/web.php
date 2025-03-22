@@ -28,7 +28,6 @@ Route::middleware('signed')
 Route::get('/invitation/guest/{invitation}', AcceptGuestInvitation::class)
     ->name('guest.invitation.accept');
 
-
 Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['localeSessionRedirect', 'localizationRedirect', 'localeViewPath']], function () {
 
     Route::get('/', [HomePageController::class, 'index'])->name('homepage');
