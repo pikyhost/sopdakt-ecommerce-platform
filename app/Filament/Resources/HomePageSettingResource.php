@@ -95,8 +95,7 @@ class HomePageSettingResource extends Resource
                             ->collection('slider1_image')
                             ->label(__('Slider 1 Background Image'))
                             ->image(),
-                    ])
-                    ->columns(3),
+                    ])->columnSpanFull(),
 
                 Section::make('Slider 2 Images')
                     ->schema([
@@ -105,7 +104,7 @@ class HomePageSettingResource extends Resource
                             ->label(__('Slider 2 Background Image'))
                             ->image(),
                     ])
-                    ->columns(3),
+                    ->columnSpanFull(),
             ]);
     }
 
