@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\LandingPageSetting;
 use Illuminate\Support\Facades\Log;
 use App\Http\Requests\LandingPage\{OrderLandingRequest, OrderLandingPageBundleRequest};
-use App\Models\{City, Governorate, ShippingType, Region, LandingPage, WebsiteSetting, LandingPageNavbarItems};
+use App\Models\{City, Governorate, ShippingType, LandingPage, WebsiteSetting, LandingPageNavbarItems};
 
 class LandingPageController extends Controller
 {
@@ -17,7 +17,7 @@ class LandingPageController extends Controller
         $landingPage = LandingPage::where('slug', $slug)
             ->with(['media', 'features', 'aboutItems', 'featuresItems', 'dealOfTheWeekItems', 'productsItems', 'whyChooseUsItems',
                 'feedbacksItems', 'comparesItems', 'faqsItems', 'varieties', 'colors', 'sizes', 'orders', 'topBars',
-                'LandingPageShippingZones', 'LandingPageShippingTypes', 'LandingPageGovernorates', 'LandingPageRegions', 'shippingTypes',
+                'LandingPageShippingZones', 'LandingPageShippingTypes', 'LandingPageGovernorates', 'shippingTypes',
                 'shippingGovernorates', 'bundles'])
             ->firstOrFail();
 
@@ -31,7 +31,8 @@ class LandingPageController extends Controller
             'landingPageNavItems'  => LandingPageNavbarItems::all(),
             'media'                => $landingPage->media,
             'totalPrice'           => $totalPrice,
-            'productFeatures'      => $landingPage->features
+            'productFeatures'      => $landingPage->features,
+            'cities' => City::all()
         ]);
     }
 
@@ -112,9 +113,9 @@ class LandingPageController extends Controller
 
                 if (!$bundle) throw new Exception('Bundle not found');
 
-                $region = Region::find($request->city_id);
+                $city = City::find($request->city_id);
                 $shippingType = ShippingType::find($request->shipping_type_id);
-                $shippingCost = $landingPage->shippingCost($region, $shippingType);
+                $shippingCost = $landingPage->shippingCost($city, $shippingType);
                 $subtotal = $bundle->price * $data->quantity;
 
                 $order = $landingPage->orders()->create([
@@ -164,54 +165,84 @@ class LandingPageController extends Controller
     public function saveOrder(OrderLandingRequest $request, $id)
     {
         try {
+            Log::info('Order creation started', ['request_data' => $request->all(), 'landing_page_id' => $id]);
+
             $data = $request->validated();
+            Log::info('Request validated', ['validated_data' => $data]);
 
             $landingPage = LandingPage::find($id);
+            if (!$landingPage) {
+                throw new Exception('Landing Page not found.');
+            }
+            Log::info('Landing Page found', ['landing_page' => $landingPage]);
 
-            $landingPageVariant = $landingPage->varieties()->where('size_id', $data['size_id'])->where('color_id', $data['color_id'])->first();
+            $landingPageVariant = $landingPage->varieties()
+                ->where('size_id', $data['size_id'])
+                ->where('color_id', $data['color_id'])
+                ->first();
 
-            if ($landingPage && $landingPageVariant) {
+            if (!$landingPageVariant) {
+                throw new Exception('Variant not found for selected size and color.');
+            }
+            Log::info('Landing Page Variant found', ['variant' => $landingPageVariant]);
 
-                if ($landingPageVariant->quantity < $data['quantity']) {
-                    throw new Exception('Quantity not available');
-                }
-
-                $city = City::find($data['city_id']); // Changed from Region to City
-                $shippingType = ShippingType::find($data['shipping_type_id']);
-
-                $shippingCost = $landingPage->shippingCost($city, $shippingType);
-
-                $subtotal = $landingPageVariant->price * $data['quantity'];
-                $total = $subtotal + $shippingCost;
-
-                $data['subtotal'] = $subtotal;
-                $data['shipping_cost'] = $shippingCost;
-                $data['total'] = $total;
-                $data['status'] = 'pending';
-
-                $order = $landingPage->orders()->create(
-                    Arr::except($data, ['color_id', 'size_id'])
-                );
-
-                if ($order) {
-                    $order->varieties()->create([
-                        'size_id' => $request['size_id'],
-                        'color_id' => $request['color_id'],
-                    ]);
-
-                    $landingPageVariant->quantity -= $data['quantity'];
-                    $landingPageVariant->save();
-                }
+            if ($landingPageVariant->quantity < $data['quantity']) {
+                throw new Exception('Quantity not available.');
             }
 
+            $city = City::find($data['city_id']);
+            if (!$city) {
+                throw new Exception('City not found.');
+            }
+            Log::info('City found', ['city' => $city]);
+
+            $shippingType = ShippingType::find($data['shipping_type_id']);
+            if (!$shippingType) {
+                throw new Exception('Shipping type not found.');
+            }
+            Log::info('Shipping Type found', ['shipping_type' => $shippingType]);
+
+            $shippingCost = $landingPage->shippingCost($city, $shippingType);
+            Log::info('Shipping cost calculated', ['shipping_cost' => $shippingCost]);
+
+            $subtotal = $landingPageVariant->price * $data['quantity'];
+            $total = $subtotal + $shippingCost;
+
+            $data['subtotal'] = $subtotal;
+            $data['shipping_cost'] = $shippingCost;
+            $data['total'] = $total;
+            $data['status'] = 'pending';
+
+            Log::info('Order data before creation', ['order_data' => $data]);
+
+            $order = $landingPage->orders()->create(
+                Arr::except($data, ['color_id', 'size_id'])
+            );
+
+            if (!$order) {
+                throw new Exception('Order creation failed.');
+            }
+            Log::info('Order created successfully', ['order' => $order]);
+
+            $order->varieties()->create([
+                'size_id' => $request['size_id'],
+                'color_id' => $request['color_id'],
+            ]);
+            Log::info('Order varieties created');
+
+            $landingPageVariant->quantity -= $data['quantity'];
+            $landingPageVariant->save();
+            Log::info('Landing Page Variant quantity updated', ['new_quantity' => $landingPageVariant->quantity]);
+
             $request->session()->forget('landing_pages_orders');
+            Log::info('Session cleared');
+
             return redirect()->route('landing-pages.thanks', $landingPage->slug)->with('success', 'Order has been placed successfully');
         } catch (Exception $e) {
-            Log::error('create order', [$e->getMessage()]);
+            Log::error('Order creation failed', ['error' => $e->getMessage()]);
             return redirect()->back()->with('error', $e->getMessage());
         }
     }
-
 
     public function thanks($slug)
     {
