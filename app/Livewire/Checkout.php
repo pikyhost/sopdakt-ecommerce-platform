@@ -2,21 +2,23 @@
 
 namespace App\Livewire;
 
-use App\Mail\OrderConfirmationMail;
+use App\Enums\UserRole;
+use App\Mail\GuestInvitationMail;
 use App\Models\Contact;
 use App\Models\Country;
+use App\Models\Invitation;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Setting;
-use App\Services\JtExpressService;
+use App\Notifications\InviteGuestToRegister;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Cart;
 use App\Models\CartItem;
+use Spatie\Permission\Models\Role;
 
 class Checkout extends Component
 {
@@ -231,7 +233,7 @@ class Checkout extends Component
                 'payment_method_id' => 1,
                 'coupon_id' => $cart->coupon_id ?? null,
                 'shipping_cost' => $cart->shipping_cost,
-                'country_id' => $cart-> country_id,
+                'country_id' => $cart->country_id,
                 'governorate_id' => $cart->governorate_id,
                 'city_id' => $cart->city_id,
                 'tax_percentage' => $cart->tax_percentage,
@@ -260,6 +262,23 @@ class Checkout extends Component
             $cart->items()->delete();
             $cart->delete();
 
+            // Send an email invite to guest users
+            if (!Auth::check() && $contact) {
+                $contact->notify(new InviteGuestToRegister($contact));
+
+                // Assume $this->contact contains the contact email
+                $email = $contact->email;
+
+                // Create an invitation record
+                $invitation = Invitation::create([
+                    'email' => $email,
+                    'roles' => [Role::where('name', UserRole::Client->value)->first()->id],
+                ]);
+
+                // Send invitation email
+                Mail::to($email)->send(new GuestInvitationMail($invitation));
+            }
+
             DB::commit();
 
             session()->flash('success', __('order_success_message'));
@@ -271,6 +290,7 @@ class Checkout extends Component
         }
     }
 
+
     public function getIsCheckoutReadyProperty()
     {
         $isShippingEnabled = Setting::isShippingLocationsEnabled();
@@ -278,8 +298,6 @@ class Checkout extends Component
         return count($this->cartItems) > 0 // Ensure cart is not empty
             && (!$isShippingEnabled || ($this->cart->country_id && $this->cart->governorate_id)); // Check location only if shipping is enabled
     }
-
-
 
     public function render()
     {

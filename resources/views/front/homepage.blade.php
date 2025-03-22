@@ -27,7 +27,7 @@
     <title>{{ $siteName }}</title>
 
     <meta name="keywords" content="HTML5 Template" />
-    <meta name="description" content="Porto - Bootstrap eCommerce Template">
+    <meta name="description" content="{{ $siteName }} - Bootstrap eCommerce Template">
     <meta name="author" content="SW-THEMES">
 
     <!-- Favicon -->
@@ -244,7 +244,7 @@
                             </li>
                             <li><a href="blog.html">Blog</a></li>
                             <li class="d-none d-xxl-block"><a href="#">Special Offer!</a></li>
-                            <li><a href="https://1.envato.market/DdLk5" target="_blank">Buy Porto!</a></li>
+                            <li><a href="https://1.envato.market/DdLk5" target="_blank">Buy {{ $siteName }}!</a></li>
                         </ul>
                     </nav>
                 </div>
@@ -694,7 +694,7 @@
                                 <h3 class="text-white">Free Shipping</h3>
                                 <h5 class="line-height-1">Made To Help You</h5>
 
-                                <p>Porto has very powerful admin features to help customer to build their own shop in minutes without any special skills in web development.</p>
+                                <p>{{ $siteName }} has very powerful admin features to help customer to build their own shop in minutes without any special skills in web development.</p>
                             </div>
                             <!-- End .feature-box-content -->
                         </div>
@@ -784,7 +784,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <ul class="links">
-                                        <li><a href="demo18-about.html">About Porto</a></li>
+                                        <li><a href="demo18-about.html">About {{ $siteName }}</a></li>
                                         <li><a href="#">Our Guarantees</a></li>
                                         <li><a href="#">Terms And Conditions</a></li>
                                         <li><a href="#">Privacy Policy</a></li>
@@ -820,7 +820,7 @@
                 <!-- End .row -->
             </div>
             <div class="footer-bottom">
-                <p class="footer-copyright text-lg-center mb-0">&copy; Porto eCommerce. 2021. All Rights Reserved
+                <p class="footer-copyright text-lg-center mb-0">&copy; {{ $siteName }} eCommerce. 2021. All Rights Reserved
                 </p>
             </div>
             <!-- End .footer-bottom -->
@@ -956,7 +956,7 @@
                 </li>
                 <li class="border-0">
                     <a href="https://1.envato.market/DdLk5" target="_blank">
-                        Buy Porto!
+                        Buy {{ $siteName }}!
                         <span class="tip tip-hot">Hot</span>
                     </a>
                 </li>
@@ -1027,7 +1027,7 @@
         <h2>Subscribe to newsletter</h2>
 
         <p>
-            Subscribe to the Porto mailing list to receive updates on new arrivals, special offers and our promotions.
+            Subscribe to the {{ $siteName }} mailing list to receive updates on new arrivals, special offers and our promotions.
         </p>
 
         <form action="#">

@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\AcceptGuestInvitation;
 use App\Livewire\AcceptInvitation;
 use App\Mail\OrderConfirmationMail;
 use App\Models\Order;
@@ -22,6 +23,11 @@ Route::redirect('/admin/home-page-settings', '/admin/home-page-settings/1/edit')
 Route::middleware('signed')
     ->get('invitation/{invitation}/accept', AcceptInvitation::class)
     ->name('invitation.accept');
+
+
+Route::get('/invitation/guest/{invitation}', AcceptGuestInvitation::class)
+    ->name('guest.accept-invitation');
+
 
 Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['localeSessionRedirect', 'localizationRedirect', 'localeViewPath']], function () {
 
