@@ -51,7 +51,7 @@ class AcceptGuestInvitation extends SimplePage
                     ->disabled(),
 
                 PhoneInput::make('phone')
-                    ->enableIpLookup(true) // Enable IP-based country detection
+                    ->enableIpLookup(true)
                     ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
                     ->required()
                     ->rules([
@@ -66,15 +66,7 @@ class AcceptGuestInvitation extends SimplePage
                     ->required()
                     ->rule(Password::default()),
 
-                Radio::make('preferred_language')
-                    ->label(__('Preferred Language'))
-                    ->options([
-                        'en' => __('English'),
-                        'ar' => __('Arabic'),
-                    ])
-                    ->default(fn () => request()->getPreferredLanguage(['en', 'ar']) ?: 'en')
-                    ->columns(2)
-                    ->required(),
+                $this->getPreferredLanguageFormComponent(),
 
                 Checkbox::make('accept_terms')
                     ->label(fn () => new \Illuminate\Support\HtmlString(
@@ -125,5 +117,27 @@ class AcceptGuestInvitation extends SimplePage
     public function getSubHeading(): string
     {
         return __('Create your account and join now!');
+    }
+
+    protected function getPreferredLanguageFormComponent()
+    {
+        return Radio::make('preferred_language')
+            ->label(__('Preferred Language'))
+            ->options([
+                'en' => __('English'),
+                'ar' => __('Arabic'),
+            ])
+            ->default(fn () => $this->getBrowserPreferredLanguage())
+            ->columns(2)
+            ->required();
+    }
+
+    /**
+     * Get the browser's preferred language.
+     */
+    protected function getBrowserPreferredLanguage(): string
+    {
+        $preferredLanguages = request()->getPreferredLanguage(['en', 'ar']);
+        return $preferredLanguages ?: 'en'; // Default to English if no match found
     }
 }
