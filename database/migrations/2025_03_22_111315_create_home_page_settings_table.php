@@ -20,9 +20,6 @@ return new class extends Migration
             $table->string('currency_symbol')->default('$');
             $table->string('button_text')->default('Shop Now');
             $table->string('button_url')->default('#');
-            $table->string('background_image')->nullable();
-            $table->string('layer_image')->nullable();
-            $table->string('thumbnail_image')->nullable();
             $table->timestamps();
         });
     }

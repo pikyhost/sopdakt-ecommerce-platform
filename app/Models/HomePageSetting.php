@@ -21,6 +21,20 @@ class HomePageSetting extends Model implements HasMedia
         'currency_symbol',
         'button_text',
         'button_url',
+
+        'center_main_heading',
+        'center_button_text',
+        'center_button_url',
+
+        'last1_heading',
+        'last1_subheading',
+        'last1_button_text',
+        'last1_button_url',
+
+        'last2_heading',
+        'last2_subheading',
+        'last2_button_text',
+        'last2_button_url',
     ];
 
     protected static function boot()
@@ -38,6 +52,22 @@ class HomePageSetting extends Model implements HasMedia
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
 
         $this->addMediaCollection('slider2_image')
+            ->singleFile()
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+
+        $this->addMediaCollection('center_image')
+            ->singleFile()
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+
+        $this->addMediaCollection('last1_image')
+            ->singleFile()
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+
+        $this->addMediaCollection('last2_image')
+            ->singleFile()
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+
+        $this->addMediaCollection('latest_image')
             ->singleFile()
             ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
     }
@@ -85,6 +115,25 @@ class HomePageSetting extends Model implements HasMedia
         return $this->getFirstMediaUrl('slider2_image', 'slider2_thumb');
     }
 
+    public function getCenterImageUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('center_image');
+    }
+
+    public function getLast1ImageUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('last1_image');
+    }
+
+    public function getLast2ImageUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('last2_image');
+    }
+
+    public function getLatestImageUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('latest_image');
+    }
 
     public static function getCached()
     {

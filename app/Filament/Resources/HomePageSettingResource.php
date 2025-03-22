@@ -4,14 +4,11 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\HomePageSettingResource\Pages;
 use App\Models\HomePageSetting;
-use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
 
 class HomePageSettingResource extends Resource
 {
@@ -89,22 +86,98 @@ class HomePageSettingResource extends Resource
                     ])
                     ->columns(2),
 
-                Section::make('Slider 1 Images')
+                Section::make(__('Slider Images'))
                     ->schema([
-                        SpatieMediaLibraryFileUpload::make('slider1_background_image')
+                        SpatieMediaLibraryFileUpload::make('slider1_image')
                             ->collection('slider1_image')
                             ->label(__('Slider 1 Background Image'))
                             ->image(),
-                    ])->columnSpanFull(),
 
-                Section::make('Slider 2 Images')
-                    ->schema([
-                        SpatieMediaLibraryFileUpload::make('slider2_background_image')
+                        SpatieMediaLibraryFileUpload::make('slider2_image')
                             ->collection('slider2_image')
                             ->label(__('Slider 2 Background Image'))
                             ->image(),
-                    ])
-                    ->columnSpanFull(),
+                    ])->columnSpanFull(),
+
+                Section::make(__('Center Section'))
+                    ->schema([
+                        TextInput::make('center_main_heading')
+                            ->label(__('Center Main Heading'))
+                            ->required(),
+
+                        TextInput::make('center_button_text')
+                            ->label(__('Center Button Text'))
+                            ->required(),
+
+                        TextInput::make('center_button_url')
+                            ->label(__('Center Button URL'))
+                            ->required(),
+                        SpatieMediaLibraryFileUpload::make('center_image')
+                            ->collection('center_image')
+                            ->label(__('Center Image'))
+                            ->image(),
+                    ])->columnSpanFull(),
+
+                Section::make(__('Last Section'))
+                    ->schema([
+                        TextInput::make('last1_heading')
+                            ->label(__('Last 1 Heading'))
+                            ->required(),
+
+                        TextInput::make('last1_subheading')
+                            ->label(__('Last 1 Subheading'))
+                            ->required(),
+
+                        TextInput::make('last1_button_text')
+                            ->label(__('Last 1 Button Text'))
+                            ->required(),
+
+                        TextInput::make('last1_button_url')
+                            ->label(__('Last 1 Button URL'))
+                            ->required(),
+
+                        SpatieMediaLibraryFileUpload::make('last1_image')
+                            ->collection('last1_image')
+                            ->label(__('Last First Image'))
+                            ->image(),
+
+
+                        TextInput::make('last2_heading')
+                            ->label(__('Last 2 Heading'))
+                            ->required(),
+
+                        TextInput::make('last2_subheading')
+                            ->label(__('Last 2 Subheading'))
+                            ->required(),
+
+                        TextInput::make('last2_button_text')
+                            ->label(__('Last 2 Button Text'))
+                            ->required(),
+
+                        TextInput::make('last2_button_url')
+                            ->label(__('Last 2 Button URL'))
+                            ->required(),
+
+                        SpatieMediaLibraryFileUpload::make('last2_image')
+                            ->collection('last2_image')
+                            ->label(__('Last Second Image'))
+                            ->image(),
+                    ])->columnSpanFull(),
+
+                Section::make(__('Latest Section'))
+                    ->schema([
+                        TextInput::make('latest_heading')
+                            ->label(__('Latest Heading'))
+                            ->required(),
+
+                        TextInput::make('latest_button_text')
+                            ->label(__('Latest Button Text'))
+                            ->required(),
+
+                        TextInput::make('latest_button_url')
+                            ->label(__('Latest Button URL'))
+                            ->required(),
+                    ])->columnSpanFull(),
             ]);
     }
 
