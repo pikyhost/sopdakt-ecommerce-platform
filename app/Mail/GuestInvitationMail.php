@@ -5,17 +5,20 @@ namespace App\Mail;
 use App\Models\Invitation;
 use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\App;
 
 class GuestInvitationMail extends Mailable
 {
     private $invitation;
+    public $locale;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(Invitation $invitation)
+    public function __construct(Invitation $invitation, string $locale = 'en')
     {
         $this->invitation = $invitation;
+        $this->locale = $locale;
     }
 
     /**
@@ -23,10 +26,13 @@ class GuestInvitationMail extends Mailable
      */
     public function build()
     {
+        // Set the application locale
+        App::setLocale($this->locale);
+
         $acceptUrl = $this->generateAcceptUrl();
 
         return $this->view('emails.guest-invitation')
-            ->subject('Join ' . config('app.name'))
+            ->subject(__('emails.invitation_subject', ['app' => config('app.name')]))
             ->with([
                 'invitation' => $this->invitation,
                 'acceptUrl' => $acceptUrl,

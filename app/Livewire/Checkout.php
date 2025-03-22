@@ -275,8 +275,9 @@ class Checkout extends Component
                     'role_id' => Role::where('name', UserRole::Client->value)->first()->id,
                 ]);
 
+                $locale = request()->getPreferredLanguage(['en', 'ar']) ?? 'en';
                 // Send invitation email
-                Mail::to($email)->send(new GuestInvitationMail($invitation));
+                Mail::to($email)->send(new GuestInvitationMail($invitation, $locale));
             }
 
             DB::commit();
