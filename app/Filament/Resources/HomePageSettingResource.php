@@ -92,18 +92,8 @@ class HomePageSettingResource extends Resource
                 Section::make('Slider 1 Images')
                     ->schema([
                         SpatieMediaLibraryFileUpload::make('slider1_background_image')
-                            ->collection('slider1_background')
+                            ->collection('slider1_image')
                             ->label(__('Slider 1 Background Image'))
-                            ->image(),
-
-                        SpatieMediaLibraryFileUpload::make('slider1_layer_image')
-                            ->collection('slider1_layer')
-                            ->label(__('Slider 1 Layer Image'))
-                            ->image(),
-
-                        SpatieMediaLibraryFileUpload::make('slider1_thumbnail_image')
-                            ->collection('slider1_thumbnail')
-                            ->label(__('Slider 1 Thumbnail Image'))
                             ->image(),
                     ])
                     ->columns(3),
@@ -111,18 +101,8 @@ class HomePageSettingResource extends Resource
                 Section::make('Slider 2 Images')
                     ->schema([
                         SpatieMediaLibraryFileUpload::make('slider2_background_image')
-                            ->collection('slider2_background')
+                            ->collection('slider2_image')
                             ->label(__('Slider 2 Background Image'))
-                            ->image(),
-
-                        SpatieMediaLibraryFileUpload::make('slider2_layer_image')
-                            ->collection('slider2_layer')
-                            ->label(__('Slider 2 Layer Image'))
-                            ->image(),
-
-                        SpatieMediaLibraryFileUpload::make('slider2_thumbnail_image')
-                            ->collection('slider2_thumbnail')
-                            ->label(__('Slider 2 Thumbnail Image'))
                             ->image(),
                     ])
                     ->columns(3),
