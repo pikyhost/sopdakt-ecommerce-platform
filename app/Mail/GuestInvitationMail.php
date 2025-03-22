@@ -3,6 +3,7 @@
 namespace App\Mail;
 
 use App\Models\Invitation;
+use App\Models\Setting;
 use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\App;
@@ -31,8 +32,13 @@ class GuestInvitationMail extends Mailable
 
         $acceptUrl = $this->generateAcceptUrl();
 
+        // Retrieve site settings
+        $siteSettings = Setting::getAllSettings();
+
+        $siteName = $siteSettings["site_name"] ?? config('app.name');
+
         return $this->view('emails.guest-invitation')
-            ->subject(__('emails.invitation_subject', ['app' => config('app.name')]))
+            ->subject(__('emails.invitation_subject', ['app' => $siteName]))
             ->with([
                 'invitation' => $this->invitation,
                 'acceptUrl' => $acceptUrl,
