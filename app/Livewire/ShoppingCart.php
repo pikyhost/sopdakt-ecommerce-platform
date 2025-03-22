@@ -75,15 +75,18 @@ class ShoppingCart extends Component
             $this->cart = Cart::firstOrCreate(['session_id' => $session_id], ['user_id' => null]);
         }
 
-        // Load shipping info into Livewire properties
-        $this->selected_shipping = $this->cart->shipping_type_id;
-        $this->country_id = $this->cart->country_id;
-        $this->governorate_id = $this->cart->governorate_id;
-        $this->city_id = $this->cart->city_id;
+        // Load shipping info into Livewire properties only if shipping locations are enabled
+        if (Setting::isShippingLocationsEnabled()) {
+            $this->country_id = $this->cart->country_id;
+            $this->governorate_id = $this->cart->governorate_id;
+            $this->city_id = $this->cart->city_id;
 
-        // Ensure dependent dropdowns are populated
-        $this->governorates = $this->country_id ? Governorate::where('country_id', $this->country_id)->get() : [];
-        $this->cities = $this->governorate_id ? City::where('governorate_id', $this->governorate_id)->get() : [];
+            // Ensure dependent dropdowns are populated
+            $this->governorates = $this->country_id ? Governorate::where('country_id', $this->country_id)->get() : [];
+            $this->cities = $this->governorate_id ? City::where('governorate_id', $this->governorate_id)->get() : [];
+        }
+
+        $this->selected_shipping = $this->cart->shipping_type_id;
 
         $this->cartItems = CartItem::where('cart_id', $this->cart->id)
             ->with(['product', 'bundle', 'size', 'color']) // Load all related models
@@ -125,12 +128,9 @@ class ShoppingCart extends Component
 
     public function loadCountries()
     {
-        $this->countries = Country::all();
-    }
-
-    public function loadShippingTypes()
-    {
-        $this->shipping_types = ShippingType::where('status', true)->get();
+        if (Setting::isShippingLocationsEnabled()) {
+            $this->countries = Country::all();
+        }
     }
 
     public function updateCartShipping()
@@ -138,18 +138,27 @@ class ShoppingCart extends Component
         if ($this->cart) {
             $this->cart->update([
                 'shipping_type_id' => $this->selected_shipping,
-                'country_id' => $this->country_id,
-                'governorate_id' => $this->governorate_id,
-                'city_id' => $this->city_id,
+                'country_id' => Setting::isShippingLocationsEnabled() ? $this->country_id : null,
+                'governorate_id' => Setting::isShippingLocationsEnabled() ? $this->governorate_id : null,
+                'city_id' => Setting::isShippingLocationsEnabled() ? $this->city_id : null,
             ]);
         }
     }
 
+    public function loadShippingTypes()
+    {
+        $this->shipping_types = ShippingType::where('status', true)->get();
+    }
+
     public function updatedCountryId()
     {
+        if (!Setting::isShippingLocationsEnabled()) {
+            return;
+        }
+
         $this->country_id = $this->country_id ?: null;
 
-        // Reset governorates and cities
+        // Reset governorates and cities only if shipping locations are enabled
         $this->governorates = $this->country_id ? Governorate::where('country_id', $this->country_id)->get() : [];
         $this->governorate_id = null;
         $this->cities = [];
@@ -169,6 +178,10 @@ class ShoppingCart extends Component
 
     public function updatedGovernorateId()
     {
+        if (!Setting::isShippingLocationsEnabled()) {
+            return;
+        }
+
         $this->governorate_id = $this->governorate_id ?: null;
 
         // Reset cities only if governorate_id is null
@@ -188,6 +201,10 @@ class ShoppingCart extends Component
 
     public function updatedCityId()
     {
+        if (!Setting::isShippingLocationsEnabled()) {
+            return;
+        }
+
         $this->city_id = $this->city_id ?: null;
 
         // Save to cart
@@ -196,6 +213,51 @@ class ShoppingCart extends Component
                 'city_id' => $this->city_id,
             ]);
         }
+
+        $this->calculateTotals();
+    }
+
+    public function updatedSelectedShipping()
+    {
+        // Get the base shipping type cost
+        $shippingTypeCost = 0.0;
+
+        if ($shippingType = ShippingType::find($this->selected_shipping)) {
+            $shippingTypeCost = $shippingType->cost;
+        }
+
+        // If the cart has only one item and that product has free shipping, set cost to 0
+        if (count($this->cartItems) === 1) {
+            $cartItem = $this->cartItems[0];
+            $product = Product::find($cartItem['product']['id']);
+            if ($product && $product->is_free_shipping) {
+                $shippingTypeCost = 0.0;
+            }
+        }
+
+        // Location-based shipping costs only if shipping locations are enabled
+        $locationBasedShippingCosts = [];
+
+        if (Setting::isShippingLocationsEnabled()) {
+            foreach ($this->cartItems as $cartItem) {
+                $product = Product::find($cartItem['product']['id']);
+
+                if (!$product) {
+                    continue;
+                }
+
+                // Get the shipping cost per product
+                $productShippingCost = $this->calculateProductShippingCost($product);
+                $locationBasedShippingCosts[] = $productShippingCost;
+            }
+        }
+
+        // Get the highest shipping cost among products and shipping type
+        $locationBasedShippingCost = !empty($locationBasedShippingCosts)
+            ? max($locationBasedShippingCosts)
+            : 0.0;
+
+        $this->shippingCost = max($shippingTypeCost, $locationBasedShippingCost);
 
         $this->calculateTotals();
     }
@@ -266,45 +328,6 @@ class ShoppingCart extends Component
         $this->dispatch('cartUpdated'); // Notify frontend of the update
     }
 
-    public function updatedSelectedShipping()
-    {
-        // Get the shipping type cost normally.
-        $shippingType = ShippingType::find($this->selected_shipping);
-        $shippingTypeCost = $shippingType ? $shippingType->cost : 0.0;
-
-        // If the cart has only one item and that product has free shipping,
-        // then override the shipping type cost to 0.
-        if (count($this->cartItems) === 1) {
-            $cartItem = $this->cartItems[0];
-            $product = Product::find($cartItem['product']['id']);
-            if ($product && $product->is_free_shipping) {
-                $shippingTypeCost = 0.0;
-            }
-        }
-
-        $locationBasedShippingCosts = [];
-
-        foreach ($this->cartItems as $cartItem) {
-            $product = Product::find($cartItem['product']['id']);
-
-            if (!$product) {
-                continue;
-            }
-
-            // Get the shipping cost per product.
-            $productShippingCost = $this->calculateProductShippingCost($product);
-            $locationBasedShippingCosts[] = $productShippingCost;
-        }
-
-        // Get the highest shipping cost among products and shipping type.
-        $locationBasedShippingCost = !empty($locationBasedShippingCosts)
-            ? max($locationBasedShippingCosts)
-            : 0.0;
-        $this->shippingCost = max($shippingTypeCost, $locationBasedShippingCost);
-
-        $this->calculateTotals();
-    }
-
     /**
      * Retrieve the product's shipping cost.
      * If the product has free shipping, it returns 0.
@@ -314,6 +337,11 @@ class ShoppingCart extends Component
         // Return 0 if free shipping is enabled for the product.
         if ($product->is_free_shipping) {
             return 0.0;
+        }
+
+        // If shipping locations are disabled, return null
+        if (!Setting::isShippingLocationsEnabled()) {
+            return null;
         }
 
         $shippingCosts = $product->shippingCosts()->get();
@@ -367,7 +395,7 @@ class ShoppingCart extends Component
      */
     private function getZoneShippingCostFromProduct($shippingCosts, $governorateId): ?float
     {
-        if (!$governorateId) {
+        if (!Setting::isShippingLocationsEnabled() || !$governorateId) {
             return null;
         }
 
@@ -391,6 +419,10 @@ class ShoppingCart extends Component
      */
     private function getFallbackLocationBasedCost(): float
     {
+        if (!Setting::isShippingLocationsEnabled()) {
+            return 0.0;
+        }
+
         if ($this->city_id) {
             $cityCost = City::where('id', $this->city_id)->value('cost');
             if (!is_null($cityCost) && $cityCost > 0) {
@@ -453,8 +485,13 @@ class ShoppingCart extends Component
             }
         }
 
-        // Get the highest shipping cost among the products
-        $locationBasedShippingCost = !empty($locationBasedShippingCosts) ? max($locationBasedShippingCosts) : 0.0;
+        // Determine if location-based shipping is enabled
+        $isShippingLocationEnabled = Setting::getSetting('shipping_location_enabled') ?? false;
+
+        // Get the highest shipping cost among the products if location-based shipping is enabled
+        $locationBasedShippingCost = ($isShippingLocationEnabled && !empty($locationBasedShippingCosts))
+            ? max($locationBasedShippingCosts)
+            : 0.0;
 
         // Calculate shipping type cost
         $shippingTypeCost = $this->selected_shipping
@@ -483,7 +520,6 @@ class ShoppingCart extends Component
             'city_id' => 'nullable|exists:cities,id',
         ]);
 
-
         $taxPercentage = Setting::first()?->tax_percentage ?? 0;
         $taxAmount = ($taxPercentage > 0) ? ($this->subtotal * $taxPercentage / 100) : 0;
 
@@ -508,11 +544,11 @@ class ShoppingCart extends Component
     public function getIsCheckoutReadyProperty()
     {
         $isShippingEnabled = Setting::getSetting('shipping_type_enabled') ?? true;
+        $isShippingLocationEnabled = Setting::getSetting('shipping_location_enabled') ?? false;
 
         return $this->cart &&
             ($isShippingEnabled ? $this->cart->shipping_type_id : true) &&
-            $this->cart->country_id &&
-            $this->cart->governorate_id &&
+            ($isShippingLocationEnabled ? ($this->cart->country_id && $this->cart->governorate_id) : true) &&
             $this->cart->subtotal > 0;
     }
 

@@ -56,7 +56,6 @@ class ClientPanelProvider extends PanelProvider
             ])
             ->spa()
             ->sidebarFullyCollapsibleOnDesktop()
-//            ->brandName('Ｐｉｋｙ Ｈｏｓｔ')
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

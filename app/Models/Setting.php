@@ -25,6 +25,7 @@ class Setting extends Model
         'snapchat',
         'tiktok',
         'shipping_type_enabled',
+        'shipping_locations_enabled'
     ];
 
     protected static string $cacheKey = 'app_settings';
@@ -151,5 +152,13 @@ class Setting extends Model
     public static function isShippingEnabled(): bool
     {
         return self::getSetting('shipping_type_enabled') ?? true; // Default to true if not set
+    }
+
+    /**
+     * Check if Shipping Locations is enabled.
+     */
+    public static function isShippingLocationsEnabled(): bool
+    {
+        return self::getSetting('shipping_locations_enabled') ?? true; // Default to true if not set
     }
 }

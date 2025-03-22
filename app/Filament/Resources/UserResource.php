@@ -44,6 +44,7 @@ use Spatie\Permission\Models\Role;
 use Webbingbrasil\FilamentAdvancedFilter\Filters\DateFilter;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use Ysfkaya\FilamentPhoneInput\Infolists\PhoneEntry;
+use Illuminate\Validation\Rules\Password;
 
 class UserResource extends Resource
 {
@@ -156,6 +157,9 @@ class UserResource extends Resource
                     return request()->is('admin/users/create') ? '' : __('Leave blank if you do not wish to change your current password');
                 })
                 ->password()
+                ->rules([
+                    Password::defaults()
+                ])
                 ->revealable()
                 ->autocomplete(false)
                 ->maxLength(255)
