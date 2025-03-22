@@ -11,8 +11,6 @@ class Region extends Model
 
     protected $guarded = [];
 
-    protected $table = 'cities';
-
     public function shippingTypes()
     {
         return $this->hasMany(ShippingType::class, 'id');

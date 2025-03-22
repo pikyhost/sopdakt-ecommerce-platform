@@ -35,10 +35,15 @@
                         </div>
 
                         <div class="col-md-6 mb-2">
-                            <x-select id="region" name="region_id" label-name="City" onchange="getShippingCost()"></x-select>
+                            <x-select id="region" name="city_id" label-name="{{ __('City') }}" onchange="getShippingCost()">
+                                <option value="">{{ __('Select a City') }}</option>
+                                @foreach ($cities as $city)
+                                    <option value="{{ $city->id }}">{{ $city->getTranslation('name', app()->getLocale()) }}</option>
+                                @endforeach
+                            </x-select>
                         </div>
-
-                        @if($landingPage->shippingTypes()->where('landing_page_shipping_types.status', 1)->count())
+                        
+                    @if($landingPage->shippingTypes()->where('landing_page_shipping_types.status', 1)->count())
                             <div class="col-md-6 mb-2">
                                 <x-select id="shipping_type_id" name="shipping_type_id" label-name="Shipping Type" onchange="getShippingCost()" required>
                                     @foreach($landingPage->shippingTypes as $shippingType)
