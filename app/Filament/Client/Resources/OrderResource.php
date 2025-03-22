@@ -67,7 +67,6 @@ class OrderResource extends Resource
         return __('landing_page_order.orders');
     }
 
-
     public static function table(Table $table): Table
     {
         return $table
@@ -240,6 +239,7 @@ class OrderResource extends Resource
                                     ->visible(fn (Get $get) => Product::find($get('product_id'))?->productColors()->exists()),
 
                                 TextInput::make('quantity')
+                                    ->required()
                                     ->label(__('Quantity'))
                                     ->numeric()
                                     ->minValue(1)
@@ -255,7 +255,6 @@ class OrderResource extends Resource
                                     ->readOnly()
                                     ->label(__('Price per Unit'))
                                     ->numeric(),
-                                // Hide when bundle is selected
 
                                 TextInput::make('subtotal')
                                     ->readOnly()
@@ -290,9 +289,6 @@ class OrderResource extends Resource
                 Step::make(__('Shipping Information'))
                     ->schema([
                         Select::make('shipping_type_id')
-                            ->visible(function () {
-                                return Setting::isShippingEnabled();
-                            })
                             ->relationship('shippingType', 'name')
                             ->required()
                             ->label(__('Shipping Type'))
@@ -302,9 +298,6 @@ class OrderResource extends Resource
                             ),
 
                         Select::make('country_id')
-                            ->visible(function () {
-                                return Setting::isShippingLocationsEnabled();
-                            })
                             ->required()
                             ->label(__('Country'))
                             ->options(Country::pluck('name', 'id'))
@@ -319,9 +312,6 @@ class OrderResource extends Resource
                             }),
 
                         Select::make('governorate_id')
-                            ->visible(function () {
-                                return Setting::isShippingLocationsEnabled();
-                            })
                             ->required()
                             ->label(__('Governorate'))
                             ->options(function (Get $get) {
@@ -334,9 +324,6 @@ class OrderResource extends Resource
                             }),
 
                         Select::make('city_id')
-                            ->visible(function () {
-                                return Setting::isShippingLocationsEnabled();
-                            })
                             ->label(__('City'))
                             ->options(function (Get $get) {
                                 return City::where('governorate_id', $get('governorate_id'))->pluck('name', 'id');
@@ -410,6 +397,27 @@ class OrderResource extends Resource
         ]);
     }
 
+    private static function calculateProductShippingCost(Product $product, $cityId, $governorateId, $countryId): float
+    {
+        if ($product->is_free_shipping) {
+            return 0.0;
+        }
+
+        // If shipping locations are disabled, force cost to 0
+        if (!Setting::isShippingLocationsEnabled()) {
+            return 0.0;
+        }
+
+        if (!$cityId && !$governorateId && !$countryId) {
+            return $product->cost ?? 0.0;
+        }
+
+        return self::getProductShippingCost($product, $cityId, $governorateId, $countryId)
+            ?? self::getLocationBasedShippingCost($cityId, $governorateId, $countryId)
+            ?? $product->cost
+            ?? 0.0;
+    }
+
     private static function updateShippingCost(callable $set, $shippingTypeId, $items, $cityId, $governorateId, $countryId): void
     {
         $totalShippingCost = 0.0;
@@ -426,6 +434,12 @@ class OrderResource extends Resource
 
         // If all products have free shipping, set cost to 0 and return
         if (!$hasChargeableItems) {
+            $set('shipping_cost', 0.0);
+            return;
+        }
+
+        // If shipping locations are disabled, force cost to 0
+        if (!Setting::isShippingLocationsEnabled()) {
             $set('shipping_cost', 0.0);
             return;
         }
@@ -454,22 +468,6 @@ class OrderResource extends Resource
         $set('shipping_cost', $totalShippingCost + $highestShippingCost);
     }
 
-    private static function calculateProductShippingCost(Product $product, $cityId, $governorateId, $countryId): float
-    {
-        if ($product->is_free_shipping) {
-            return 0.0;
-        }
-
-        if (!$cityId && !$governorateId && !$countryId) {
-            return $product->cost ?? 0.0;
-        }
-
-        return self::getProductShippingCost($product, $cityId, $governorateId, $countryId)
-            ?? self::getLocationBasedShippingCost($cityId, $governorateId, $countryId)
-            ?? $product->cost
-            ?? 0.0;
-    }
-
     private static function recalculateTotal(callable $set, Get $get): void
     {
         $items = collect($get('items') ?? []);
@@ -491,6 +489,11 @@ class OrderResource extends Resource
 
     private static function getProductShippingCost(Product $product, $cityId, $governorateId, $countryId): ?float
     {
+        // If shipping locations are disabled, return 0 immediately
+        if (!Setting::isShippingLocationsEnabled()) {
+            return 0.0;
+        }
+
         if ($cityId) {
             $cost = $product->shippingCosts()
                 ->where('city_id', $cityId)
@@ -521,6 +524,11 @@ class OrderResource extends Resource
 
     private static function getLocationBasedShippingCost($cityId, $governorateId, $countryId): ?float
     {
+        // If shipping locations are disabled, return 0 immediately
+        if (!Setting::isShippingLocationsEnabled()) {
+            return 0.0;
+        }
+
         if ($cityId) {
             $city = City::find($cityId);
             if ($city?->cost > 0) return (float) $city->cost;

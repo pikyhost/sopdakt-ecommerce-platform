@@ -3,8 +3,6 @@
 use App\Livewire\AcceptInvitation;
 use App\Mail\OrderConfirmationMail;
 use App\Models\Order;
-use Filament\Facades\Filament;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use App\Http\Controllers\{CartController,
