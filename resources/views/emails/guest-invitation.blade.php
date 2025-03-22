@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ __("دعوة للانضمام إلى") }} {{ config('app.name') }}</title>
+    <title>{{ __("Invitation For Join Us") }} {{ config('app.name') }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -21,11 +21,6 @@
             border-radius: 8px;
             border: 1px solid #fbcfe8; /* Soft Pink Border */
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-        }
-        .header {
-            text-align: center;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #fbcfe8;
         }
         .header h1 {
             margin: 0;
@@ -185,13 +180,6 @@
     </style>
 </head>
 <body>
-@php
-    $siteSettings = App\Models\Setting::getAllSettings();
-    $locale = app()->getLocale();
-    $contact = \App\Models\Setting::getContactDetails();
-    $siteName = $siteSettings["site_name"] ?? ($locale === 'ar' ? 'لا يوجد شعار بعد' : 'No Logo Yet');
-@endphp
-
 <div class="container">
     <h1 class="website-name">{{ $siteName }}</h1>
 
@@ -259,6 +247,5 @@
         @endforeach
     </div>
 </div>
-
 </body>
 </html>

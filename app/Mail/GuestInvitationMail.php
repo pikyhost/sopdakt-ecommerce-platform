@@ -5,8 +5,6 @@ namespace App\Mail;
 use App\Models\Invitation;
 use App\Models\Setting;
 use Illuminate\Mail\Mailable;
-use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Facades\App;
 
 class GuestInvitationMail extends Mailable
 {
@@ -22,17 +20,19 @@ class GuestInvitationMail extends Mailable
         $this->locale = $locale;
     }
 
+    protected function getBrowserPreferredLanguage(): string
+    {
+        $preferredLanguages = request()->getPreferredLanguage(['en', 'ar']);
+        return $preferredLanguages ?: 'en'; // Default to English if no match found
+    }
+
     /**
      * Build the message.
      */
     public function build()
     {
-        // Set the application locale
-        App::setLocale($this->locale);
+        $this->locale = $this->getBrowserPreferredLanguage();
 
-        $acceptUrl = $this->generateAcceptUrl();
-
-        // Retrieve site settings
         $siteSettings = Setting::getAllSettings();
 
         $siteName = $siteSettings["site_name"] ?? config('app.name');
@@ -41,18 +41,7 @@ class GuestInvitationMail extends Mailable
             ->subject(__('emails.invitation_subject', ['app' => $siteName]))
             ->with([
                 'invitation' => $this->invitation,
-                'acceptUrl' => $acceptUrl,
+                'acceptUrl' => url('/client/register?email=' . $this->invitation->email),
             ]);
-    }
-
-    /**
-     * Generate the signed URL for accepting the invitation.
-     */
-    private function generateAcceptUrl(): string
-    {
-        return URL::signedRoute(
-            'guest.invitation.accept',
-            ['invitation' => $this->invitation->id]
-        );
     }
 }
