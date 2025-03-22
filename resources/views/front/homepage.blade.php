@@ -16,7 +16,7 @@
     $siteName = $siteSettings["site_name"] ?? ($locale === 'ar' ? 'لا يوجد شعار بعد' : 'No Logo Yet');
 @endphp
 
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -354,61 +354,53 @@
 
         @if($homeSettings)
             <section class="home-slider-container">
-                <div class="home-slider owl-carousel with-dots-container" data-owl-options='{"nav": true, "dots": true, "loop": true, "autoplay": true, "autoplayTimeout": 5000, "animateOut": "fadeOut"}'>
+                <div class="home-slider owl-carousel with-dots-container"
+                     data-owl-options='{"dots": true, "loop": true, "autoplay": true, "autoplayTimeout": 5000, "animateOut": "fadeOut"}'>
 
                     <!-- Slider 1 -->
                     <div class="home-slide home-slide1 banner" style="background-color: #111">
                         <div class="slide-bg" style="background-image: url('{{ $homeSettings->getSlider1ImageUrl() ?? asset('assets/images/demoes/demo18/slider/home-slide-back.jpg') }}');"></div>
-                        <ul class="slide-bg scene">
-                            <li class="layer" data-depth="0.05">
-                                <img src="{{ $homeSettings->getSlider1ThumbnailUrl() ?? asset('assets/images/demoes/demo18/slider/white-shoes.png') }}" alt="" />
-                            </li>
-                        </ul>
                         <div class="home-slide-content">
-                            <h2 class="text-white text-transform-uppercase">{{ $homeSettings->main_heading ?? 'Spring / Summer Season' }}</h2>
-                            <h3 class="text-white d-inline-block">{{ $homeSettings->discount_text ?? 'Up to' }}</h3>
-                            <h4 class="text-white text-uppercase d-inline-block">{{ $homeSettings->discount_value ? $homeSettings->discount_value . '% off' : '50% off' }}</h4>
-                            <h5 class="float-left text-white">Starting At</h5>
-                            <h6 class="float-left coupon-sale-text font-weight-bold text-secondary">
+                            <h2 class="text-white text-transform-uppercase line-height-1">{{ $homeSettings->main_heading ?? 'Spring / Summer Season' }}</h2>
+                            <h3 class="text-white d-inline-block line-height-1 ls-0 text-center">{{ $homeSettings->discount_text ?? 'Up to' }}</h3>
+                            <h4 class="text-white text-uppercase line-height-1 d-inline-block">{{ $homeSettings->discount_value  }}</h4>
+                            <h5 class="float-left text-white text-uppercase line-height-1 ls-n-20">Starting At</h5>
+                            <h6 class="float-left coupon-sale-text line-height-1 ls-n-20 font-weight-bold text-secondary">
                                 <sup>{{ $homeSettings->currency_symbol ?? '$' }}</sup>{{ $homeSettings->starting_price ?? '19' }}<sup>99</sup>
                             </h6>
-                            <a href="{{ $homeSettings->button_url ?? '#' }}" class="btn btn-light">{{ $homeSettings->button_text ?? 'Shop Now' }}</a>
+                            <a href="{{ $homeSettings->button_url ?? '#' }}" class="btn btn-light d-inline-block">{{ $homeSettings->button_text ?? 'Shop Now' }}</a>
                         </div>
                     </div>
 
-                    <!-- Slider 2 -->
-                    <div class="home-slide home-slide2 banner" style="background-color: #111;">
-                        <div class="slide-bg" style="background-image: url('{{ $homeSettings->getSlider2ImageUrl() ?? asset('assets/images/demoes/demo18/slider/home-slide-back.jpg') }}'); transform: scaleX(-1);"></div>
-                        <ul class="slide-bg scene">
-                            <li class="layer" data-depth="0.05">
-                                <img src="{{ $homeSettings->getSlider2ThumbnailUrl() ?? asset('assets/images/demoes/demo18/slider/ball2.png') }}" alt="" />
-                            </li>
-                        </ul>
+                    <!-- Slider 2 (Remove scaleX and adjust text) -->
+                    <div class="home-slide home-slide1 banner" style="background-color: #111;">
+                        <div class="slide-bg" style="background-image: url('{{ $homeSettings->getSlider2ImageUrl() ?? asset('assets/images/demoes/demo18/slider/home-slide-back.jpg') }}');"></div>
                         <div class="home-slide-content">
-                            <h2 class="text-white text-transform-uppercase">{{ $homeSettings->main_heading ?? 'Spring / Summer Season' }}</h2>
-                            <h3 class="text-white d-inline-block">{{ $homeSettings->discount_text ?? 'Up to' }}</h3>
-                            <h4 class="text-white text-uppercase d-inline-block">{{ $homeSettings->discount_value ? $homeSettings->discount_value . '% off' : '50% off' }}</h4>
-                            <h5 class="float-left text-white">Starting At</h5>
-                            <h6 class="float-left coupon-sale-text font-weight-bold text-secondary">
+                            <h2 class="text-white text-transform-uppercase line-height-1">{{ $homeSettings->main_heading ?? 'Spring / Summer Season' }}</h2>
+                            <h3 class="text-white d-inline-block line-height-1 ls-0 text-center">{{ $homeSettings->discount_text ?? 'Up to' }}</h3>
+                            <h4 class="text-white text-uppercase line-height-1 d-inline-block">{{ $homeSettings->discount_value  }}</h4>
+                            <h5 class="float-left text-white text-uppercase line-height-1 ls-n-20">Starting At</h5>
+                            <h6 class="float-left coupon-sale-text line-height-1 ls-n-20 font-weight-bold text-secondary">
                                 <sup>{{ $homeSettings->currency_symbol ?? '$' }}</sup>{{ $homeSettings->starting_price ?? '19' }}<sup>99</sup>
                             </h6>
-                            <a href="{{ $homeSettings->button_url ?? '#' }}" class="btn btn-light">{{ $homeSettings->button_text ?? 'Shop Now' }}</a>
+                            <a href="{{ $homeSettings->button_url ?? '#' }}" class="btn btn-light d-inline-block">{{ $homeSettings->button_text ?? 'Shop Now' }}</a>
                         </div>
                     </div>
+
                 </div>
 
                 <!-- Slider Thumbnails -->
                 <div class="home-slider-thumbs">
-                    <a href="#" class="owl-dot">
+                    <div class="owl-dot" data-index="0">
                         <img src="{{ $homeSettings->getSlider1ThumbnailUrl() ?? asset('assets/images/demoes/demo18/slider/slide-1-thumb.jpg') }}" alt="Slide Thumb">
-                    </a>
-                    <a href="#" class="owl-dot">
+                    </div>
+                    <div class="owl-dot" data-index="1">
                         <img src="{{ $homeSettings->getSlider2ThumbnailUrl() ?? asset('assets/images/demoes/demo18/slider/slide-2-thumb.jpg') }}" alt="Slide Thumb">
-                    </a>
+                    </div>
                 </div>
+
             </section>
         @endif
-
 
         <style>
             /* --- NAVIGATION ARROWS --- */
@@ -487,19 +479,38 @@
         <section class="product-banner-section">
             <div class="banner" style="background-color: #111;">
                 <figure class="w-100 appear-animate" data-animation-name="fadeIn">
-                    <img src="assets/images/demoes/demo18/product-section-slider/slide-1.jpg" alt="product banner">
+                    <img src="{{ $homeSettings->getCenterImageUrl() ?? asset('assets/images/demoes/demo18/product-section-slider/slide-1.jpg') }}" alt="product banner">
                 </figure>
                 <div class="container-fluid">
                     <div class="position-relative h-100">
                         <div class="banner-layer banner-layer-middle">
-                            <h3 class="text-white text-uppercase ls-n-25 m-b-4 appear-animate" data-animation-name="fadeInUpShorter" data-animation-duration="1000" data-animation-delay="200">Ultra Boost</h3>
-                            <img class="m-b-4 appear-animate" data-animation-name="fadeInUpShorter" data-animation-duration="1000" data-animation-delay="400" src="assets/images/demoes/demo18/product-section-slider/img-1.png" alt="img" width="540" height="100">
-                            <a href="demo18-shop.html" class="btn btn-light appear-animate" data-animation-name="fadeInUpShorter" data-animation-duration="1000" data-animation-delay="600">Shop Now</a>
+                            <h3 class="text-white text-uppercase ls-n-25 m-b-4 appear-animate"
+                                data-animation-name="fadeInUpShorter"
+                                data-animation-duration="1000"
+                                data-animation-delay="200">
+                                {{ $homeSettings->center_main_heading ?? 'Ultra Boost' }}
+                            </h3>
+
+                            <img class="m-b-4 appear-animate"
+                                 data-animation-name="fadeInUpShorter"
+                                 data-animation-duration="1000"
+                                 data-animation-delay="400"
+                                 src="{{ asset('assets/images/demoes/demo18/product-section-slider/img-1.png') }}"
+                                 alt="img" width="540" height="100">
+
+                            <a href="{{ $homeSettings->center_button_url ?? '#' }}"
+                               class="btn btn-light appear-animate"
+                               data-animation-name="fadeInUpShorter"
+                               data-animation-duration="1000"
+                               data-animation-delay="600">
+                                {{ $homeSettings->center_button_text ?? 'Shop Now' }}
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
+
         <!-- End .product-banner-section -->
 
         <section class="product-slider-section bg-gray">
@@ -529,9 +540,9 @@
                                 <a href="{{ route('product.show', $product->slug) }}">
                                     <img src="{{ $product->getFirstMediaUrl('feature_product_image', 'thumb') }}" width="205" height="205" alt="{{ $product->name }}">
                                 </a>
-{{--                                <div class="btn-icon-group">--}}
-{{--                                    @livewire('add-to-cart-home-page', ['product' => $product])--}}
-{{--                                </div>--}}
+                                {{--                                <div class="btn-icon-group">--}}
+                                {{--                                    @livewire('add-to-cart-home-page', ['product' => $product])--}}
+                                {{--                                </div>--}}
                                 <a href="{{ route('product.show', $product->slug) }}"
                                    class="btn-quickview"
                                    title="Quick View"
@@ -573,42 +584,55 @@
                     <div class="col-lg-6">
                         <div class="banner appear-animate" data-animation-name="fadeInLeftShorter" style="background-color: #fff;">
                             <figure>
-                                <img src="assets/images/demoes/demo18/banners/banner1.jpg" alt="banner" width="873" height="151">
+                                <img src="{{ $homeSettings->getLast1ImageUrl() ?? asset('assets/images/demoes/demo18/banners/banner1.jpg') }}" alt="banner" width="873" height="151">
                             </figure>
                             <div class="banner-layer banner-layer-middle d-flex align-items-center justify-content-between">
-                                <div class="">
-                                    <h4 class="mb-0">Summer Sale</h4>
-                                    <h5 class="text-uppercase mb-0">20% off</h5>
+                                <div>
+                                    <h4 class="mb-0">{{ $homeSettings->last1_heading ?? 'Summer Sale' }}</h4>
+                                    <h5 class="text-uppercase mb-0">{{ $homeSettings->last1_subheading ?? '20% off' }}</h5>
                                 </div>
-                                <a href="demo18-shop.html" class="btn btn-dark">Shop now</a>
+                                <a href="{{ $homeSettings->last1_button_url ?? '#' }}" class="btn btn-dark">
+                                    {{ $homeSettings->last1_button_text ?? 'Shop Now' }}
+                                </a>
                             </div>
                         </div>
                     </div>
+
                     <div class="col-lg-6">
                         <div class="banner appear-animate" data-animation-name="fadeInRightShorter" data-animation-delay="400" style="background-color: #111;">
                             <figure>
-                                <img src="assets/images/demoes/demo18/banners/banner2.jpg" alt="banner" width="873" height="151">
+                                <img src="{{ $homeSettings->getLast2ImageUrl() ?? asset('assets/images/demoes/demo18/banners/banner2.jpg') }}" alt="banner" width="873" height="151">
                             </figure>
                             <div class="banner-layer banner-layer-middle d-flex align-items-center justify-content-between">
-                                <div class="">
-                                    <h4 class="text-white mb-0">Flash Sale</h4>
-                                    <h5 class="text-uppercase text-white mb-0">30% off</h5>
+                                <div>
+                                    <h4 class="text-white mb-0">{{ $homeSettings->last2_heading ?? 'Flash Sale' }}</h4>
+                                    <h5 class="text-uppercase text-white mb-0">{{ $homeSettings->last2_subheading ?? '30% off' }}</h5>
                                 </div>
-                                <a href="demo18-shop.html" class="btn btn-light">Shop now</a>
+                                <a href="{{ $homeSettings->last2_button_url ?? '#' }}" class="btn btn-light">
+                                    {{ $homeSettings->last2_button_text ?? 'Shop Now' }}
+                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
+
             </div>
             <!-- End .container-fluid -->
         </section>
 
-        <section class="explore-section d-flex align-items-center" data-parallax="{'speed': 1.8,  'enableOnMobile': true}" data-image-src="assets/images/demoes/demo18/bg-2.jpg" style="background-color: #111;">
+        <section class="explore-section d-flex align-items-center"
+                 data-parallax="{'speed': 1.8,  'enableOnMobile': true}"
+                 data-image-src="{{ $homeSettings->getLatestImageUrl() ?? asset('assets/images/demoes/demo18/bg-2.jpg') }}"
+                 style="background-color: #111;">
+
             <div class="container-fluid text-center position-relative appear-animate" data-animation-name="fadeInUpShorter">
-                <h3 class="line-height-1 ls-n-25 text-white text-uppercase m-b-4">Explore the best of you</h3>
-                <a href="demo18-shop.html" class="btn btn-light">Shop Now</a>
+                <h3 class="line-height-1 ls-n-25 text-white text-uppercase m-b-4">
+                    {{ $homeSettings->latest_heading ?? __('Explore the best of you') }}
+                </h3>
+                <a href="{{ $homeSettings->latest_button_url ?? '#' }}" class="btn btn-light">
+                    {{ $homeSettings->latest_button_text ?? __('Shop Now') }}
+                </a>
             </div>
-            <!-- End .container -->
         </section>
         <!-- End .explore-section -->
 
