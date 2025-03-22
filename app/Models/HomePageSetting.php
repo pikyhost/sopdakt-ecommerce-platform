@@ -5,10 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class HomePageSetting extends Model
+class HomePageSetting extends Model implements HasMedia
 {
-    use HasFactory;
+    use HasFactory, InteractsWithMedia;
 
     protected $fillable = [
         'main_heading',
@@ -18,40 +21,61 @@ class HomePageSetting extends Model
         'currency_symbol',
         'button_text',
         'button_url',
-        'background_image',
-        'layer_image',
-        'thumbnail_image',
     ];
 
     protected static function boot()
     {
         parent::boot();
 
-        // Clear and recache settings whenever updated
-        static::saved(function () {
-            self::clearCache();
-        });
-
-        static::deleted(function () {
-            self::clearCache();
-        });
+        static::saved(fn() => self::clearCache());
+        static::deleted(fn() => self::clearCache());
     }
 
-    /**
-     * Get the cached home page settings.
-     *
-     * @return HomePageSetting|null
-     */
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('slider1_image')
+            ->singleFile()
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+
+        $this->addMediaCollection('slider2_image')
+            ->singleFile()
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+    }
+
+    public function registerMediaConversions(Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')
+            ->width(300)
+            ->height(300)
+            ->sharpen(10);
+    }
+
+    // Get original & thumbnail URLs
+    public function getSlider1ImageUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('slider1_image');
+    }
+
+    public function getSlider1ThumbnailUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('slider1_image', 'thumb');
+    }
+
+    public function getSlider2ImageUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('slider2_image');
+    }
+
+    public function getSlider2ThumbnailUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('slider2_image', 'thumb');
+    }
+
     public static function getCached()
     {
-        return Cache::rememberForever('home_page_settings', function () {
-            return self::first();
-        });
+        return Cache::rememberForever('home_page_settings', fn() => self::first());
     }
 
-    /**
-     * Clear the cached settings.
-     */
     public static function clearCache()
     {
         Cache::forget('home_page_settings');
