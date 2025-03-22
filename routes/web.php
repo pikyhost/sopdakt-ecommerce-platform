@@ -1,5 +1,6 @@
 <?php
 
+use App\Livewire\AcceptInvitation;
 use App\Mail\OrderConfirmationMail;
 use App\Models\Order;
 use Filament\Facades\Filament;
@@ -17,6 +18,10 @@ use App\Http\Controllers\{CartController,
     CategoryProductController};
 
 Route::redirect('/admin/settings', '/admin/settings/1/edit');
+
+Route::middleware('signed')
+    ->get('invitation/{invitation}/accept', AcceptInvitation::class)
+    ->name('invitation.accept');
 
 Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['localeSessionRedirect', 'localizationRedirect', 'localeViewPath']], function () {
 

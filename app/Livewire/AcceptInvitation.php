@@ -22,8 +22,7 @@ use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 
 class AcceptInvitation extends SimplePage
 {
-    use InteractsWithFormActions;
-    use InteractsWithForms;
+    use InteractsWithFormActions, InteractsWithForms;
 
     protected static string $view = 'livewire.accept-invitation';
 
