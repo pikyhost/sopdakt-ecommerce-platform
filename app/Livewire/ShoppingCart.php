@@ -514,11 +514,13 @@ class ShoppingCart extends Component
     public function proceedToCheckout()
     {
         $this->validate([
-            'selected_shipping' => Setting::isShippingEnabled() ? 'required' : 'nullable',
-            'country_id' => 'required|exists:countries,id',
-            'governorate_id' => 'required|exists:governorates,id',
-            'city_id' => 'nullable|exists:cities,id',
-        ]);
+                'selected_shipping' => Setting::isShippingEnabled() ? 'required' : 'nullable',
+            ] + (Setting::isShippingLocationsEnabled() ? [
+                'country_id' => 'required|exists:countries,id',
+                'governorate_id' => 'required|exists:governorates,id',
+                'city_id' => 'nullable|exists:cities,id',
+            ] : []));
+
 
         $taxPercentage = Setting::first()?->tax_percentage ?? 0;
         $taxAmount = ($taxPercentage > 0) ? ($this->subtotal * $taxPercentage / 100) : 0;

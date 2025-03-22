@@ -57,8 +57,7 @@ class SettingResource extends Resource
                     ->description(__('Update website name and contact info'))
                     ->schema([
                         TextInput::make('site_name')
-                            ->label(__('Website Name'))
-                            ->required(),
+                            ->label(__('Website Name')),
 
                         Forms\Components\TextInput::make('phone')
                             ->label(__('phone')),

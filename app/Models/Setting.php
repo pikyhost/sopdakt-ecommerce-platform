@@ -151,7 +151,7 @@ class Setting extends Model
      */
     public static function isShippingEnabled(): bool
     {
-        return self::getSetting('shipping_type_enabled') ?? true; // Default to true if not set
+        return self::getSetting('shipping_type_enabled') ?? false; // Default to true if not set
     }
 
     /**
@@ -159,6 +159,6 @@ class Setting extends Model
      */
     public static function isShippingLocationsEnabled(): bool
     {
-        return self::getSetting('shipping_locations_enabled') ?? true; // Default to true if not set
+        return self::getSetting('shipping_locations_enabled') ?? false; // Default to true if not set
     }
 }
