@@ -101,7 +101,7 @@ class LandingPageResource extends Resource
                     Repeater::make('topBars')
                     ->relationship('topBars')
                     ->schema([
-                        TextInput::make('title')->label(__('landing_page.title')),
+                        TextInput::make('title')->label(__('landing_page.title'))->required(),
                         TextInput::make('link')->label(__('landing_page.link')),
                     ])
                     ->label(__('landing_page.top_bar_items'))
@@ -224,8 +224,8 @@ class LandingPageResource extends Resource
                         ->required(),
 
                     Repeater::make('about_content')
-                        ->visible(fn ($get) => $get('is_about'))
                         ->required()
+                        ->label('Test label')
                         ->relationship('aboutItems')
                         ->schema([
                             FileUpload::make('image')
@@ -235,7 +235,6 @@ class LandingPageResource extends Resource
                                 ->maxSize(self::$fileMaxSize)
                                 ->downloadable()
                                 ->openable()
-                                ->visible(fn ($get) => $get('is_about'))
                                 ->required(),
 
                             TextInput::make('title')
@@ -418,7 +417,7 @@ class LandingPageResource extends Resource
 
                     Repeater::make('products_content')
                         ->relationship('productsItems')
-                        ->requiredIfAccepted('is_products')
+                        ->required()
                         ->schema([
                             TextInput::make('title')
                                 ->label(__('landing_page.title'))
@@ -436,7 +435,6 @@ class LandingPageResource extends Resource
                                 ->maxSize(self::$fileMaxSize)
                                 ->downloadable()
                                 ->openable()
-                                ->visible(fn ($get) => $get('is_products'))
                                 ->required(),
 
                             Toggle::make('status')
@@ -555,6 +553,7 @@ class LandingPageResource extends Resource
                                 ->required(),
 
                             TextInput::make('title')
+                                ->required()
                                 ->label(__('landing_page.title')),
 
                             TextInput::make('subtitle')
