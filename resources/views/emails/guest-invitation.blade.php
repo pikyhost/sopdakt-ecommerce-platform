@@ -214,7 +214,7 @@
 
 <div class="container">
     <h1>{{ __("You're Invited!") }}</h1>
-    <div class="website-name">{{ __("Sheshtawy Library App") }}</div>
+    <div class="website-name">{{ $siteName }}</div>
 
     <p>{{ __("We are excited to invite you to explore our extensive digital library, where knowledge meets convenience. Join us and access a wide range of books anytime, anywhere!") }}</p>
 
@@ -228,7 +228,7 @@
     <p>{{ __("Click the button below to start your journey with us:") }}</p>
 
     <div style="text-align: center; margin: 20px 0;">
-        <a href="{{ $invite_link }}" style="
+        <a href="{{ $acceptUrl }}" style="
             display: inline-block;
             background-color: #d63384;
             color: #ffffff;
@@ -244,8 +244,6 @@
     </div>
 
     <p>{{ __("We look forward to having you with us!") }}</p>
-
-    @include('email.footer')
 </div>
 
 <div class="footer">
