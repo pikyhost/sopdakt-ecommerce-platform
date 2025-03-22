@@ -290,6 +290,9 @@ class OrderResource extends Resource
                 Step::make(__('Shipping Information'))
                     ->schema([
                         Select::make('shipping_type_id')
+                            ->visible(function () {
+                                return Setting::isShippingEnabled();
+                            })
                             ->relationship('shippingType', 'name')
                             ->required()
                             ->label(__('Shipping Type'))
@@ -299,6 +302,9 @@ class OrderResource extends Resource
                             ),
 
                         Select::make('country_id')
+                            ->visible(function () {
+                                return Setting::isShippingLocationsEnabled();
+                            })
                             ->required()
                             ->label(__('Country'))
                             ->options(Country::pluck('name', 'id'))
@@ -313,6 +319,9 @@ class OrderResource extends Resource
                             }),
 
                         Select::make('governorate_id')
+                            ->visible(function () {
+                                return Setting::isShippingLocationsEnabled();
+                            })
                             ->required()
                             ->label(__('Governorate'))
                             ->options(function (Get $get) {
@@ -325,6 +334,9 @@ class OrderResource extends Resource
                             }),
 
                         Select::make('city_id')
+                            ->visible(function () {
+                                return Setting::isShippingLocationsEnabled();
+                            })
                             ->label(__('City'))
                             ->options(function (Get $get) {
                                 return City::where('governorate_id', $get('governorate_id'))->pluck('name', 'id');
