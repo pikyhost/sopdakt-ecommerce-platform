@@ -97,7 +97,6 @@ class HomePageSetting extends Model implements HasMedia
         }
     }
 
-
     // Get original & thumbnail URLs
     public function getSlider1ImageUrl(): ?string
     {

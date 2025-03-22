@@ -14,7 +14,7 @@ class HomePageSettingResource extends Resource
 {
     protected static ?string $model = HomePageSetting::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-adjustments-horizontal';
 
     public static function getNavigationGroup(): ?string
     {
