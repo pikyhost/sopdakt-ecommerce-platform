@@ -225,8 +225,8 @@
         @endforeach
     </div>
 @php
-        $contact = \App\Models\Setting::getContactDetails();
-    @endphp
+    $contact = \App\Models\Setting::getContactDetails();
+@endphp
     <p><strong>{{ __('order_status') }}:</strong> {{ __('shipping_now') }}</p>
 
     <div class="footer">
