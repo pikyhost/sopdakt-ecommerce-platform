@@ -73,9 +73,18 @@
     </style>
 </head>
 <body>
+@php
+    // Retrieve site settings
+    $siteSettings = App\Models\Setting::getAllSettings();
+    $locale = app()->getLocale();
+
+    // Get site name
+    $siteName = $siteSettings["site_name"] ?? ($locale === 'ar' ? 'لا يوجد شعار بعد' : 'No Logo Yet');
+@endphp
+
 <div class="container">
     <div class="header">
-        <h1>انضم إلى {{ config('app.name') }}</h1>
+        <h1>انضم إلى {{ $siteName }}</h1>
     </div>
     <div class="content">
         <p>مرحباً،</p>
