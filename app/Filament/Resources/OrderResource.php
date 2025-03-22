@@ -13,7 +13,6 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductColor;
 use App\Models\Setting;
-use App\Models\ShippingCost;
 use App\Models\ShippingType;
 use App\Services\JtExpressService;
 use Carbon\Carbon;
@@ -593,6 +592,7 @@ class OrderResource extends Resource
                                     ->visible(fn (Get $get) => Product::find($get('product_id'))?->productColors()->exists()),
 
                                 TextInput::make('quantity')
+                                    ->required()
                                     ->label(__('Quantity'))
                                     ->numeric()
                                     ->minValue(1)
@@ -743,6 +743,27 @@ class OrderResource extends Resource
         ]);
     }
 
+    private static function calculateProductShippingCost(Product $product, $cityId, $governorateId, $countryId): float
+    {
+        if ($product->is_free_shipping) {
+            return 0.0;
+        }
+
+        // If shipping locations are disabled, force cost to 0
+        if (!Setting::isShippingLocationsEnabled()) {
+            return 0.0;
+        }
+
+        if (!$cityId && !$governorateId && !$countryId) {
+            return $product->cost ?? 0.0;
+        }
+
+        return self::getProductShippingCost($product, $cityId, $governorateId, $countryId)
+            ?? self::getLocationBasedShippingCost($cityId, $governorateId, $countryId)
+            ?? $product->cost
+            ?? 0.0;
+    }
+
     private static function updateShippingCost(callable $set, $shippingTypeId, $items, $cityId, $governorateId, $countryId): void
     {
         $totalShippingCost = 0.0;
@@ -759,6 +780,12 @@ class OrderResource extends Resource
 
         // If all products have free shipping, set cost to 0 and return
         if (!$hasChargeableItems) {
+            $set('shipping_cost', 0.0);
+            return;
+        }
+
+        // If shipping locations are disabled, force cost to 0
+        if (!Setting::isShippingLocationsEnabled()) {
             $set('shipping_cost', 0.0);
             return;
         }
@@ -787,22 +814,6 @@ class OrderResource extends Resource
         $set('shipping_cost', $totalShippingCost + $highestShippingCost);
     }
 
-    private static function calculateProductShippingCost(Product $product, $cityId, $governorateId, $countryId): float
-    {
-        if ($product->is_free_shipping) {
-            return 0.0;
-        }
-
-        if (!$cityId && !$governorateId && !$countryId) {
-            return $product->cost ?? 0.0;
-        }
-
-        return self::getProductShippingCost($product, $cityId, $governorateId, $countryId)
-            ?? self::getLocationBasedShippingCost($cityId, $governorateId, $countryId)
-            ?? $product->cost
-            ?? 0.0;
-    }
-
     private static function recalculateTotal(callable $set, Get $get): void
     {
         $items = collect($get('items') ?? []);
@@ -824,6 +835,11 @@ class OrderResource extends Resource
 
     private static function getProductShippingCost(Product $product, $cityId, $governorateId, $countryId): ?float
     {
+        // If shipping locations are disabled, return 0 immediately
+        if (!Setting::isShippingLocationsEnabled()) {
+            return 0.0;
+        }
+
         if ($cityId) {
             $cost = $product->shippingCosts()
                 ->where('city_id', $cityId)
@@ -854,6 +870,11 @@ class OrderResource extends Resource
 
     private static function getLocationBasedShippingCost($cityId, $governorateId, $countryId): ?float
     {
+        // If shipping locations are disabled, return 0 immediately
+        if (!Setting::isShippingLocationsEnabled()) {
+            return 0.0;
+        }
+
         if ($cityId) {
             $city = City::find($cityId);
             if ($city?->cost > 0) return (float) $city->cost;
@@ -878,5 +899,10 @@ class OrderResource extends Resource
     private static function getTaxPercentage(): float
     {
         return Setting::getTaxPercentage() ?? 0;
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with('productColors');
     }
 }
