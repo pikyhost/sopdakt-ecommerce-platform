@@ -35,7 +35,7 @@
                         </div>
 
                         <div class="col-md-6 mb-2">
-                            <x-select id="region" name="city_id" label-name="City" onchange="getShippingCost()"></x-select>
+                            <x-select id="region" name="region_id" label-name="City" onchange="getShippingCost()"></x-select>
                         </div>
 
                         @if($landingPage->shippingTypes()->where('landing_page_shipping_types.status', 1)->count())
