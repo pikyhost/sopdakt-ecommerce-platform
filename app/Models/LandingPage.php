@@ -162,6 +162,9 @@ class LandingPage extends Model
 
     function shippingCost(Region $region, ShippingType $shippingType =null): float|null
     {
+        if (!$region) {
+            return 0; // Default to 0 if the region is null
+        }
         $shippingCost = 0;
 
         $shippingRegion = $this->shippingRegions()
