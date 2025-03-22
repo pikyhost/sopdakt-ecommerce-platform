@@ -10,13 +10,14 @@ use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Form;
+use Filament\Pages\Concerns\InteractsWithFormActions;
 use Filament\Pages\SimplePage;
 use Illuminate\Validation\Rules\Password;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 
 class AcceptGuestInvitation extends SimplePage
 {
-    use InteractsWithForms;
+    use InteractsWithFormActions, InteractsWithForms;
 
     protected static string $view = 'livewire.accept-guest-invitation';
 
@@ -50,10 +51,14 @@ class AcceptGuestInvitation extends SimplePage
                     ->disabled(),
 
                 PhoneInput::make('phone')
-                    ->enableIpLookup(true)
+                    ->enableIpLookup(true) // Enable IP-based country detection
+                    ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
                     ->required()
-                    ->rules(['max:20', 'unique:users,phone'])
-                    ->label(__('Phone')),
+                    ->rules([
+                        'max:20', // Match database column limit
+                        'unique:users,phone', // Ensure uniqueness in the `users` table
+                    ])
+                    ->label(__('profile.phone')),
 
                 TextInput::make('password')
                     ->label(__('Password'))
