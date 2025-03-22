@@ -5,6 +5,8 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\HomePageSettingResource\Pages;
 use App\Models\HomePageSetting;
 use Filament\Forms;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -40,101 +42,97 @@ class HomePageSettingResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('main_heading')
-                    ->label(__('Main Heading'))
-                    ->required()
-                    ->maxLength(255)
-                    ->default(__('Spring / Summer Season')),
-                Forms\Components\TextInput::make('discount_text')
-                    ->label(__('Discount Text'))
-                    ->required()
-                    ->maxLength(255)
-                    ->default(__('Up to')),
-                Forms\Components\TextInput::make('discount_value')
-                    ->label(__('Discount Value'))
-                    ->required()
-                    ->maxLength(255)
-                    ->default(__('50% off')),
-                Forms\Components\TextInput::make('starting_price')
-                    ->label(__('Starting Price'))
-                    ->required()
-                    ->numeric()
-                    ->default(19.99),
-                Forms\Components\TextInput::make('currency_symbol')
-                    ->label(__('Currency Symbol'))
-                    ->required()
-                    ->maxLength(255)
-                    ->default('$'),
-                Forms\Components\TextInput::make('button_text')
-                    ->label(__('Button Text'))
-                    ->required()
-                    ->maxLength(255)
-                    ->default(__('Shop Now')),
-                Forms\Components\TextInput::make('button_url')
-                    ->label(__('Button URL'))
-                    ->required()
-                    ->maxLength(255)
-                    ->default('#'),
-                Forms\Components\FileUpload::make('background_image')
-                    ->label(__('Background Image'))
-                    ->image(),
-                Forms\Components\FileUpload::make('layer_image')
-                    ->label(__('Layer Image'))
-                    ->image(),
-                Forms\Components\FileUpload::make('thumbnail_image')
-                    ->label(__('Thumbnail Image'))
-                    ->image(),
+                Section::make('Slider Content')
+                    ->schema([
+                        TextInput::make('main_heading')
+                            ->label(__('Main Heading'))
+                            ->required()
+                            ->maxLength(255)
+                            ->default(__('Spring / Summer Season')),
+
+                        TextInput::make('discount_text')
+                            ->label(__('Discount Text'))
+                            ->required()
+                            ->maxLength(255)
+                            ->default(__('Up to')),
+
+                        TextInput::make('discount_value')
+                            ->label(__('Discount Value'))
+                            ->required()
+                            ->maxLength(255)
+                            ->default(__('50% off')),
+
+                        TextInput::make('starting_price')
+                            ->label(__('Starting Price'))
+                            ->required()
+                            ->numeric()
+                            ->default(19),
+
+                        TextInput::make('currency_symbol')
+                            ->label(__('Currency Symbol'))
+                            ->required()
+                            ->maxLength(10)
+                            ->default('$'),
+
+                        TextInput::make('button_text')
+                            ->label(__('Button Text'))
+                            ->required()
+                            ->maxLength(255)
+                            ->default(__('Shop Now')),
+
+                        TextInput::make('button_url')
+                            ->label(__('Button URL'))
+                            ->required()
+                            ->maxLength(255)
+                            ->default('#'),
+                    ])
+                    ->columns(2),
+
+                Section::make('Slider 1 Images')
+                    ->schema([
+                        SpatieMediaLibraryFileUpload::make('slider1_background_image')
+                            ->collection('slider1_background')
+                            ->label(__('Slider 1 Background Image'))
+                            ->singleFile()
+                            ->image(),
+
+                        SpatieMediaLibraryFileUpload::make('slider1_layer_image')
+                            ->collection('slider1_layer')
+                            ->label(__('Slider 1 Layer Image'))
+                            ->singleFile()
+                            ->image(),
+
+                        SpatieMediaLibraryFileUpload::make('slider1_thumbnail_image')
+                            ->collection('slider1_thumbnail')
+                            ->label(__('Slider 1 Thumbnail Image'))
+                            ->singleFile()
+                            ->image(),
+                    ])
+                    ->columns(3),
+
+                Section::make('Slider 2 Images')
+                    ->schema([
+                        SpatieMediaLibraryFileUpload::make('slider2_background_image')
+                            ->collection('slider2_background')
+                            ->label(__('Slider 2 Background Image'))
+                            ->singleFile()
+                            ->image(),
+
+                        SpatieMediaLibraryFileUpload::make('slider2_layer_image')
+                            ->collection('slider2_layer')
+                            ->label(__('Slider 2 Layer Image'))
+                            ->singleFile()
+                            ->image(),
+
+                        SpatieMediaLibraryFileUpload::make('slider2_thumbnail_image')
+                            ->collection('slider2_thumbnail')
+                            ->label(__('Slider 2 Thumbnail Image'))
+                            ->singleFile()
+                            ->image(),
+                    ])
+                    ->columns(3),
             ]);
     }
-
-    public static function table(Table $table): Table
-    {
-        return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('main_heading')
-                    ->label(__('Main Heading'))
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('discount_text')
-                    ->label(__('Discount Text'))
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('discount_value')
-                    ->label(__('Discount Value'))
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('starting_price')
-                    ->label(__('Starting Price'))
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('currency_symbol')
-                    ->label(__('Currency Symbol'))
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('button_text')
-                    ->label(__('Button Text'))
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('button_url')
-                    ->label(__('Button URL'))
-                    ->searchable(),
-                Tables\Columns\ImageColumn::make('background_image')
-                    ->label(__('Background Image')),
-                Tables\Columns\ImageColumn::make('layer_image')
-                    ->label(__('Layer Image')),
-                Tables\Columns\ImageColumn::make('thumbnail_image')
-                    ->label(__('Thumbnail Image')),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label(__('Created At'))
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label(__('Updated At'))
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-            ]);
-    }
-
 
     public static function getPages(): array
     {

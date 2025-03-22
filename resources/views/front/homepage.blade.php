@@ -355,56 +355,69 @@
         @if($settings)
             <section class="home-slider-container">
                 <div class="home-slider owl-carousel with-dots-container" data-owl-options='{"nav": true, "dots": true, "loop": true, "autoplay": true, "autoplayTimeout": 5000, "animateOut": "fadeOut"}'>
-                    <div class="home-slide home-slide1 banner" style="background-color: #111">
-                        <div class="slide-bg" style="background-image: url('{{ asset($settings->background_image) }}');"></div>
-                        <ul class="slide-bg scene">
-                            <li class="layer" data-depth="0.05">
-                                <img src="{{ asset($settings->layer_image) }}" alt="Layer Image" />
-                            </li>
-                        </ul>
-                        <div class="home-slide-content">
-                            <h2 class="text-white text-transform-uppercase">{{ $settings->main_heading }}</h2>
-                            <h3 class="text-white d-inline-block">{{ $settings->discount_text }}</h3>
-                            <h4 class="text-white text-uppercase d-inline-block">{{ $settings->discount_value }}</h4>
-                            <h5 class="float-left text-white">{{ __('Starting At') }}</h5>
-                            <h6 class="float-left coupon-sale-text font-weight-bold text-secondary">
-                                <sup>{{ $settings->currency_symbol }}</sup>{{ number_format($settings->starting_price, 2) }}
-                            </h6>
-                            <a href="{{ $settings->button_url }}" class="btn btn-light">{{ $settings->button_text }}</a>
-                        </div>
-                    </div>
 
-                    <div class="home-slide home-slide2 banner" style="background-color: #111;">
-                        <div class="slide-bg" style="background-image: url('{{ asset($settings->background_image) }}'); transform: scaleX(-1);"></div>
-                        <ul class="slide-bg scene">
-                            <li class="layer" data-depth="0.05">
-                                <img src="{{ asset($settings->layer_image) }}" alt="Layer Image" />
-                            </li>
-                        </ul>
-                        <div class="home-slide-content">
-                            <h2 class="text-white text-transform-uppercase">{{ $settings->main_heading }}</h2>
-                            <h3 class="text-white d-inline-block">{{ $settings->discount_text }}</h3>
-                            <h4 class="text-white text-uppercase d-inline-block">{{ $settings->discount_value }}</h4>
-                            <h5 class="float-left text-white">{{ __('Starting At') }}</h5>
-                            <h6 class="float-left coupon-sale-text font-weight-bold text-secondary">
-                                <sup>{{ $settings->currency_symbol }}</sup>{{ number_format($settings->starting_price, 2) }}
-                            </h6>
-                            <a href="{{ $settings->button_url }}" class="btn btn-light">{{ $settings->button_text }}</a>
+                    {{-- Slide 1 --}}
+                    @if($settings->getSlider1ImageUrl())
+                        <div class="home-slide home-slide1 banner" style="background-color: #111">
+                            <div class="slide-bg" style="background-image: url('{{ $settings->getSlider1ImageUrl() }}');"></div>
+                            <ul class="slide-bg scene">
+                                <li class="layer" data-depth="0.05">
+                                    <img src="{{ $settings->getSlider1ImageUrl() }}" alt="Slider 1 Image" />
+                                </li>
+                            </ul>
+                            <div class="home-slide-content">
+                                <h2 class="text-white text-transform-uppercase">{{ $settings->main_heading }}</h2>
+                                <h3 class="text-white d-inline-block">{{ $settings->discount_text }}</h3>
+                                <h4 class="text-white text-uppercase d-inline-block">{{ $settings->discount_value }}</h4>
+                                <h5 class="float-left text-white">Starting At</h5>
+                                <h6 class="float-left coupon-sale-text font-weight-bold text-secondary">
+                                    <sup>{{ $settings->currency_symbol }}</sup>{{ number_format($settings->starting_price, 2) }}
+                                </h6>
+                                <a href="{{ $settings->button_url }}" class="btn btn-light">{{ $settings->button_text }}</a>
+                            </div>
                         </div>
-                    </div>
+                    @endif
+
+                    {{-- Slide 2 --}}
+                    @if($settings->getSlider2ImageUrl())
+                        <div class="home-slide home-slide2 banner" style="background-color: #111;">
+                            <div class="slide-bg" style="background-image: url('{{ $settings->getSlider2ImageUrl() }}'); transform: scaleX(-1);"></div>
+                            <ul class="slide-bg scene">
+                                <li class="layer" data-depth="0.05">
+                                    <img src="{{ $settings->getSlider2ImageUrl() }}" alt="Slider 2 Image" />
+                                </li>
+                            </ul>
+                            <div class="home-slide-content">
+                                <h2 class="text-white text-transform-uppercase">{{ $settings->main_heading }}</h2>
+                                <h3 class="text-white d-inline-block">{{ $settings->discount_text }}</h3>
+                                <h4 class="text-white text-uppercase d-inline-block">{{ $settings->discount_value }}</h4>
+                                <h5 class="float-left text-white">Starting At</h5>
+                                <h6 class="float-left coupon-sale-text font-weight-bold text-secondary">
+                                    <sup>{{ $settings->currency_symbol }}</sup>{{ number_format($settings->starting_price, 2) }}
+                                </h6>
+                                <a href="{{ $settings->button_url }}" class="btn btn-light">{{ $settings->button_text }}</a>
+                            </div>
+                        </div>
+                    @endif
+
                 </div>
 
+                {{-- Thumbnails --}}
                 <div class="home-slider-thumbs">
-                    <a href="#" class="owl-dot">
-                        <img src="{{ asset($settings->thumbnail_image) }}" alt="Slide Thumb">
-                    </a>
-                    <a href="#" class="owl-dot">
-                        <img src="{{ asset($settings->thumbnail_image) }}" alt="Slide Thumb">
-                    </a>
+                    @if($settings->getSlider1ThumbnailUrl())
+                        <a href="#" class="owl-dot">
+                            <img src="{{ $settings->getSlider1ThumbnailUrl() }}" alt="Slide 1 Thumb">
+                        </a>
+                    @endif
+
+                    @if($settings->getSlider2ThumbnailUrl())
+                        <a href="#" class="owl-dot">
+                            <img src="{{ $settings->getSlider2ThumbnailUrl() }}" alt="Slide 2 Thumb">
+                        </a>
+                    @endif
                 </div>
             </section>
         @endif
-
 
         <style>
             /* --- NAVIGATION ARROWS --- */
@@ -471,7 +484,6 @@
                 height: 16px;
             }
         </style>
-
 
         <div class="products-filter-container bg-gray">
             <div class="container-fluid">
