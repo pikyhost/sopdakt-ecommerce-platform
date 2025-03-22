@@ -490,7 +490,7 @@
                                 data-animation-delay="200">
                                 {{ $homeSettings->center_main_heading ?? 'Ultra Boost' }}
                             </h3>
-                            
+
                             <a href="{{ $homeSettings->center_button_url ?? '#' }}"
                                class="btn btn-light appear-animate"
                                data-animation-name="fadeInUpShorter"

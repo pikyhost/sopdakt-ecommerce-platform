@@ -35,6 +35,10 @@ class HomePageSetting extends Model implements HasMedia
         'last2_subheading',
         'last2_button_text',
         'last2_button_url',
+
+        'latest_heading',
+        'latest_button_url',
+        'latest_button_text'
     ];
 
     protected static function boot()
