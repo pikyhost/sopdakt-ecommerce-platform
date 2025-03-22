@@ -116,4 +116,14 @@ class AcceptGuestInvitation extends SimplePage
     {
         return __('Accept Guest Invitation');
     }
+
+    public function hasLogo(): bool
+    {
+        return false;
+    }
+
+    public function getSubHeading(): string
+    {
+        return __('Create your account and join now!');
+    }
 }
