@@ -204,11 +204,9 @@
 </head>
 <body>
 @php
-    // Retrieve site settings
     $siteSettings = App\Models\Setting::getAllSettings();
     $locale = app()->getLocale();
-
-    // Get site name
+    $contact = \App\Models\Setting::getContactDetails();
     $siteName = $siteSettings["site_name"] ?? ($locale === 'ar' ? 'لا يوجد شعار بعد' : 'No Logo Yet');
 @endphp
 
