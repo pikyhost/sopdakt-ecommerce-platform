@@ -354,17 +354,11 @@
 
         @if($settings)
             <section class="home-slider-container">
-                <div class="home-slider owl-carousel with-dots-container" data-owl-options='{"nav": true, "dots": true, "loop": true, "autoplay": true, "autoplayTimeout": 5000, "animateOut": "fadeOut"}'>
-
+                <div class="home-slider owl-carousel" id="main-slider">
                     {{-- Slide 1 --}}
                     @if($settings->getSlider1ImageUrl())
-                        <div class="home-slide home-slide1 banner" style="background-color: #111">
+                        <div class="home-slide banner" data-slide="slider1">
                             <div class="slide-bg" style="background-image: url('{{ $settings->getSlider1ImageUrl() }}');"></div>
-                            <ul class="slide-bg scene">
-                                <li class="layer" data-depth="0.05">
-                                    <img src="{{ $settings->getSlider1ImageUrl() }}" alt="Slider 1 Image" />
-                                </li>
-                            </ul>
                             <div class="home-slide-content">
                                 <h2 class="text-white text-transform-uppercase">{{ $settings->main_heading }}</h2>
                                 <h3 class="text-white d-inline-block">{{ $settings->discount_text }}</h3>
@@ -380,13 +374,8 @@
 
                     {{-- Slide 2 --}}
                     @if($settings->getSlider2ImageUrl())
-                        <div class="home-slide home-slide2 banner" style="background-color: #111;">
-                            <div class="slide-bg" style="background-image: url('{{ $settings->getSlider2ImageUrl() }}'); transform: scaleX(-1);"></div>
-                            <ul class="slide-bg scene">
-                                <li class="layer" data-depth="0.05">
-                                    <img src="{{ $settings->getSlider2ImageUrl() }}" alt="Slider 2 Image" />
-                                </li>
-                            </ul>
+                        <div class="home-slide banner" data-slide="slider2">
+                            <div class="slide-bg" style="background-image: url('{{ $settings->getSlider2ImageUrl() }}');"></div>
                             <div class="home-slide-content">
                                 <h2 class="text-white text-transform-uppercase">{{ $settings->main_heading }}</h2>
                                 <h3 class="text-white d-inline-block">{{ $settings->discount_text }}</h3>
@@ -399,25 +388,49 @@
                             </div>
                         </div>
                     @endif
-
                 </div>
 
                 {{-- Thumbnails --}}
                 <div class="home-slider-thumbs">
                     @if($settings->getSlider1ThumbnailUrl())
-                        <a href="#" class="owl-dot">
+                        <a href="#" class="owl-dot thumbnail-btn" data-target="slider1">
                             <img src="{{ $settings->getSlider1ThumbnailUrl() }}" alt="Slide 1 Thumb">
                         </a>
                     @endif
 
                     @if($settings->getSlider2ThumbnailUrl())
-                        <a href="#" class="owl-dot">
+                        <a href="#" class="owl-dot thumbnail-btn" data-target="slider2">
                             <img src="{{ $settings->getSlider2ThumbnailUrl() }}" alt="Slide 2 Thumb">
                         </a>
                     @endif
                 </div>
             </section>
+
+            {{-- JavaScript --}}
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    const thumbnails = document.querySelectorAll(".thumbnail-btn");
+                    const slides = document.querySelectorAll(".home-slide");
+
+                    thumbnails.forEach(thumb => {
+                        thumb.addEventListener("click", function(event) {
+                            event.preventDefault();
+                            let targetSlide = this.getAttribute("data-target");
+
+                            slides.forEach(slide => {
+                                slide.style.display = slide.getAttribute("data-slide") === targetSlide ? "block" : "none";
+                            });
+                        });
+                    });
+
+                    // Show only the first slide by default
+                    slides.forEach((slide, index) => {
+                        slide.style.display = index === 0 ? "block" : "none";
+                    });
+                });
+            </script>
         @endif
+
 
         <style>
             /* --- NAVIGATION ARROWS --- */

@@ -44,11 +44,25 @@ class HomePageSetting extends Model implements HasMedia
 
     public function registerMediaConversions(Media $media = null): void
     {
-        $this->addMediaConversion('thumb')
-            ->width(300)
-            ->height(300)
-            ->sharpen(10);
+        if (!$media) {
+            return;
+        }
+
+        if ($media->collection_name === 'slider1_image') {
+            $this->addMediaConversion('slider1_thumb')
+                ->width(400)
+                ->height(250)
+                ->sharpen(10);
+        }
+
+        if ($media->collection_name === 'slider2_image') {
+            $this->addMediaConversion('slider2_thumb')
+                ->width(400)
+                ->height(250)
+                ->sharpen(10);
+        }
     }
+
 
     // Get original & thumbnail URLs
     public function getSlider1ImageUrl(): ?string
@@ -56,19 +70,9 @@ class HomePageSetting extends Model implements HasMedia
         return $this->getFirstMediaUrl('slider1_image');
     }
 
-    public function getSlider1ThumbnailUrl(): ?string
-    {
-        return $this->getFirstMediaUrl('slider1_image', 'thumb');
-    }
-
     public function getSlider2ImageUrl(): ?string
     {
         return $this->getFirstMediaUrl('slider2_image');
-    }
-
-    public function getSlider2ThumbnailUrl(): ?string
-    {
-        return $this->getFirstMediaUrl('slider2_image', 'thumb');
     }
 
     public static function getCached()
