@@ -160,7 +160,7 @@ class LandingPage extends Model
         return $this->belongsToMany(Region::class, 'landing_page_regions')->withPivot(['shipping_cost', 'status']);
     }
 
-    function shippingCost(Region $region, ShippingType $shippingType =null): float|null
+    function shippingCost($region, ShippingType $shippingType =null): float|null
     {
         if (!$region) {
             return 0; // Default to 0 if the region is null
