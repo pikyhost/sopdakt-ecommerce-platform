@@ -3,17 +3,22 @@
 namespace App\Livewire;
 
 use App\Enums\UserRole;
-use App\Filament\Pages\Dashboard;
 use App\Models\Invitation;
 use App\Models\User;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\Component;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Form;
 use Filament\Pages\Concerns\InteractsWithFormActions;
 use Filament\Pages\SimplePage;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
+use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 
 class AcceptInvitation extends SimplePage
 {
@@ -36,8 +41,8 @@ class AcceptInvitation extends SimplePage
 
         $roles = \Spatie\Permission\Models\Role::whereIn('id', $roleIds)->pluck('name')->toArray();
 
-        if (! in_array(UserRole::PanelUser->value, $roles)) {
-            $roles[] = 'Panel User';
+        if (! in_array(UserRole::Client->value, $roles)) {
+            $roles[] = __('client');
         }
 
         $roleNames = $this->formatRoles($roles);
@@ -73,6 +78,7 @@ class AcceptInvitation extends SimplePage
                 TextInput::make('email')
                     ->label(__('filament-panels::pages/auth/register.form.email.label'))
                     ->disabled(),
+                $this->getPhoneFormComponent(),
                 TextInput::make('password')
                     ->revealable()
                     ->label(__('filament-panels::pages/auth/register.form.password.label'))
@@ -87,8 +93,75 @@ class AcceptInvitation extends SimplePage
                     ->password()
                     ->required()
                     ->dehydrated(false),
+
+                $this->getPreferredLanguageFormComponent(),
+                $this->getTermsAndConditionsComponent(),
             ])
             ->statePath('data');
+    }
+
+    protected function getPreferredLanguageFormComponent()
+    {
+        return Radio::make('preferred_language')
+            ->label(__('Preferred Language'))
+            ->options([
+                'en' => __('English'),
+                'ar' => __('Arabic'),
+            ])
+            ->default(fn () => $this->getBrowserPreferredLanguage())
+            ->columns(2)
+            ->required();
+    }
+
+    /**
+     * Get the browser's preferred language.
+     */
+    protected function getBrowserPreferredLanguage(): string
+    {
+        $preferredLanguages = request()->getPreferredLanguage(['en', 'ar']);
+        return $preferredLanguages ?: 'en'; // Default to English if no match found
+    }
+
+    protected function getTermsAndConditionsComponent()
+    {
+        // Get the current locale (ar or en)
+        $locale = App::getLocale();
+
+        // Define URLs for Terms & Privacy Policy pages
+        $termsUrl = $locale === 'ar' ? '/ar/terms-and-conditions' : '/terms-and-conditions';
+        $privacyUrl = $locale === 'ar' ? '/ar/privacy-and-policy' : '/privacy-and-policy';
+
+        // Get the translated string
+        $translatedString = __('custom.terms_and_conditions');
+
+        // Replace placeholders {terms} and {privacy} with actual links
+        $translatedString = Str::replace(
+            ['{terms}', '{privacy}'],
+            [
+                "<a href=\"$termsUrl\" class=\"text-blue-600 underline hover:text-blue-700 font-medium transition-colors duration-200 ease-in-out\" target=\"_blank\">" . __('custom.terms_link') . "</a>",
+                "<a href=\"$privacyUrl\" class=\"text-blue-600 underline hover:text-blue-700 font-medium transition-colors duration-200 ease-in-out\" target=\"_blank\">" . __('custom.privacy_link') . "</a>"
+            ],
+            $translatedString
+        );
+
+        return Checkbox::make('accept')
+            ->label(fn () => new HtmlString($translatedString))
+            ->required()
+            ->dehydrated(false);
+    }
+
+    protected function getPhoneFormComponent(): Component
+    {
+        return PhoneInput::make('phone')
+            ->enableIpLookup(true) // Enable IP-based country detection
+            ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
+            ->required()
+            ->rules([
+                'max:20', // Match database column limit
+                'unique:users,phone', // Ensure uniqueness in the `users` table
+            ])
+            ->label(__('profile.phone'))
+            ->columnSpanFull();
     }
 
     public function create(): void
@@ -105,8 +178,8 @@ class AcceptInvitation extends SimplePage
 
         $roles = \Spatie\Permission\Models\Role::whereIn('id', $roleIds)->pluck('name')->toArray();
 
-        if (! in_array(UserRole::PanelUser->value, $roles)) {
-            $roles[] = UserRole::PanelUser->value;
+        if (! in_array(UserRole::Client->value, $roles)) {
+            $roles[] = UserRole::Client->value;
         }
 
         foreach ($roles as $role) {
@@ -120,7 +193,7 @@ class AcceptInvitation extends SimplePage
         auth()->login($user);
         $this->invitationModel->delete();
 
-        $this->redirect(Dashboard::getUrl());
+        $this->redirect('/client/dashboard');
     }
 
     /**
@@ -137,7 +210,7 @@ class AcceptInvitation extends SimplePage
 
     public function getHeading(): string
     {
-        return 'Accept Invitation';
+        return __('Accept Invitation');
     }
 
     public function hasLogo(): bool
@@ -147,6 +220,6 @@ class AcceptInvitation extends SimplePage
 
     public function getSubHeading(): string
     {
-        return 'Create your account and join now!';
+        return __('Create your account and join now!');
     }
 }

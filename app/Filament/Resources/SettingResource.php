@@ -156,6 +156,11 @@ class SettingResource extends Resource
                             ->label(__('Enable Shipping Types'))
                             ->default(true)
                             ->helperText(__('Enable or disable shipping type selection on checkout.')),
+
+                        Forms\Components\Checkbox::make('shipping_locations_enabled')
+                            ->label(__('Enable Shipping Locations'))
+                            ->default(true)
+                            ->helperText(__('Enable or disable shipping Locations selection on checkout.')),
                     ])->columns(2),
             ]);
     }
