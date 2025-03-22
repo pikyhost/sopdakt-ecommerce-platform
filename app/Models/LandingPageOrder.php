@@ -10,29 +10,7 @@ class LandingPageOrder extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'id',
-        'landing_page_id',
-        'governorate_id',
-        'country_id',
-        'shipping_type_id',
-        'landing_page_bundle_id',
-        'name',
-        'phone',
-        'address',
-        'quantity',
-        'subtotal',
-        'total',
-        'status',
-        'notes',
-        'shipping_cost',
-        'another_phone',
-        'created_at',
-        'updated_at',
-        'tracking_number',
-        'shipping_status',
-        'shipping_response',
-    ];
+    protected $guarded=[];
 
     function landingPage()
     {
@@ -64,9 +42,9 @@ class LandingPageOrder extends Model
         return $this->belongsTo(Country::class);
     }
 
-    function region()
+    function city()
     {
-        return $this->belongsTo(Region::class);
+        return $this->belongsTo(City::class);
     }
 
     function varieties()

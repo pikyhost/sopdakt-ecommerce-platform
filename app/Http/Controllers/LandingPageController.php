@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\LandingPageSetting;
 use Illuminate\Support\Facades\Log;
 use App\Http\Requests\LandingPage\{OrderLandingRequest, OrderLandingPageBundleRequest};
-use App\Models\{Governorate, ShippingType, Region, LandingPage, WebsiteSetting, LandingPageNavbarItems};
+use App\Models\{City, Governorate, ShippingType, Region, LandingPage, WebsiteSetting, LandingPageNavbarItems};
 
 class LandingPageController extends Controller
 {
@@ -112,7 +112,7 @@ class LandingPageController extends Controller
 
                 if (!$bundle) throw new Exception('Bundle not found');
 
-                $region = Region::find($request->region_id);
+                $region = Region::find($request->city_id);
                 $shippingType = ShippingType::find($request->shipping_type_id);
                 $shippingCost = $landingPage->shippingCost($region, $shippingType);
                 $subtotal = $bundle->price * $data->quantity;
@@ -123,7 +123,7 @@ class LandingPageController extends Controller
                     'another_phone'          => $data->another_phone,
                     'address'                => $data->address,
                     'governorate_id'         => $data->governorate_id,
-                    'region_id'              => $data->region_id,
+                    'city_id'              => $data->city_id,
                     'quantity'               => $data->quantity,
                     'notes'                  => $data->notes,
                     'status'                 => 'pending',
@@ -176,22 +176,17 @@ class LandingPageController extends Controller
                     throw new Exception('Quantity not available');
                 }
 
-                $region = Region::find($data['region_id']);
-
+                $city = City::find($data['city_id']); // Changed from Region to City
                 $shippingType = ShippingType::find($data['shipping_type_id']);
 
-                $shippingCost = $landingPage->shippingCost($region, $shippingType);
+                $shippingCost = $landingPage->shippingCost($city, $shippingType);
 
                 $subtotal = $landingPageVariant->price * $data['quantity'];
-
                 $total = $subtotal + $shippingCost;
 
                 $data['subtotal'] = $subtotal;
-
                 $data['shipping_cost'] = $shippingCost;
-
                 $data['total'] = $total;
-
                 $data['status'] = 'pending';
 
                 $order = $landingPage->orders()->create(
@@ -216,6 +211,7 @@ class LandingPageController extends Controller
             return redirect()->back()->with('error', $e->getMessage());
         }
     }
+
 
     public function thanks($slug)
     {
