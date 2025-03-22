@@ -75,6 +75,17 @@ class HomePageSetting extends Model implements HasMedia
         return $this->getFirstMediaUrl('slider2_image');
     }
 
+    public function getSlider1ThumbnailUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('slider1_image', 'slider1_thumb');
+    }
+
+    public function getSlider2ThumbnailUrl(): ?string
+    {
+        return $this->getFirstMediaUrl('slider2_image', 'slider2_thumb');
+    }
+
+
     public static function getCached()
     {
         return Cache::rememberForever('home_page_settings', fn() => self::first());
