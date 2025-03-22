@@ -11,7 +11,26 @@ class LandingPage extends Model
 {
     use HasFactory;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'id',
+        'sku', 'slug', 'meta_title', 'meta_description', 'meta_keywords', 'status',
+        'is_products', 'product_title', 'product_subtitle', 'products_section_top_image', 'products_section_bottom_image', 'is_products_section_top_image', 'is_products_section_bottom_image',
+        'is_why_choose_us', 'why_choose_us_title', 'why_choose_us_subtitle', 'why_choose_us_video', 'why_choose_us_section_top_image', 'why_choose_us_section_bottom_image', 'is_why_choose_us_section_top_image', 'is_why_choose_us_section_bottom_image',
+        'is_compare', 'compare_title', 'compare_subtitle', 'compares_section_top_image', 'compares_section_bottom_image', 'is_compares_section_top_image', 'is_compares_section_bottom_image',
+        'is_feedbacks', 'feedback_title', 'feedback_subtitle', 'feedbacks_section_top_image', 'feedbacks_section_bottom_image', 'is_feedbacks_section_top_image', 'is_feedbacks_section_bottom_image',
+        'is_faq', 'faq_title', 'faq_subtitle', 'faq_image', 'faq_section_top_image', 'faq_section_bottom_image', 'is_faq_section_top_image', 'is_faq_section_bottom_image',
+        'is_footer', 'footer_title', 'footer_subtitle', 'footer_image', 'footer_section_top_image', 'footer_section_bottom_image', 'is_footer_section_top_image', 'is_footer_section_bottom_image',
+        'is_counter_section', 'counter_section_cta_button_text', 'counter_section_cta_button_link', 'counter_section_end_date',
+        'is_about', 'about_title', 'about_subtitle', 'about_section_top_image', 'about_section_bottom_image', 'is_about_section_top_image', 'is_about_section_bottom_image',
+        'is_features', 'feature_title', 'feature_subtitle', 'feature_image', 'is_feature_cta_button', 'feature_cta_button_text', 'feature_cta_button_link', 'features3_section_top_image', 'features3_section_bottom_image', 'is_features3_section_top_image', 'is_features3_section_bottom_image',
+        'is_features1', 'feature1_title', 'feature1_subtitle', 'feature1_image', 'is_feature1_cta_button', 'feature1_cta_button_text', 'feature1_cta_button_link', 'features1_section_top_image', 'features1_section_bottom_image', 'is_features1_section_top_image', 'is_features1_section_bottom_image',
+        'is_features2', 'feature2_title', 'feature2_subtitle', 'feature2_image', 'features2_section_top_image', 'features2_section_bottom_image', 'is_features2_section_top_image', 'is_features2_section_bottom_image', 'is_feature2_cta_button', 'feature2_cta_button_text', 'feature2_cta_button_link',
+        'is_home', 'home_image', 'home_title', 'home_subtitle', 'home_discount', 'home_cta_button', 'home_cta_button_text', 'home_cta_button_link', 'home_section_top_image', 'home_section_bottom_image', 'is_home_section_top_image', 'is_home_section_bottom_image',
+        'is_deal_of_the_week', 'deal_of_the_week_title', 'deal_of_the_week_subtitle', 'deal_of_the_week_section_top_image', 'deal_of_the_week_section_bottom_image', 'is_deal_of_the_week_section_top_image', 'is_deal_of_the_week_section_bottom_image',
+        'title', 'description', 'price', 'after_discount_price', 'rating', 'quantity',
+        'header_image', 'contact_us_section_top_image', 'contact_us_section_bottom_image', 'is_contact_us_section_top_image', 'is_contact_us_section_bottom_image',
+        'created_at', 'updated_at',
+    ];
 
     public static function boot()
     {
@@ -141,13 +160,13 @@ class LandingPage extends Model
         return $this->belongsToMany(Region::class, 'landing_page_regions')->withPivot(['shipping_cost', 'status']);
     }
 
-    function shippingCost($region, ShippingType $shippingType =null): float|null
+    function shippingCost(Region $region, ShippingType $shippingType =null): float|null
     {
         $shippingCost = 0;
 
         $shippingRegion = $this->shippingRegions()
             ->where('landing_page_regions.status', 1)
-            ->where('city_id', $region->id)
+            ->where('region_id', $region->id)
             ->where('shipping_type_id', $shippingType?->id)
             ->first();
 
