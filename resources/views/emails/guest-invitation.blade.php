@@ -1,8 +1,7 @@
 @php
-    // Retrieve site settings
+    $contact = \App\Models\Setting::getContactDetails();
     $siteSettings = App\Models\Setting::getAllSettings();
     $locale = app()->getLocale();
-    // Get site name
     $siteName = $siteSettings["site_name"] ?? ($locale === 'ar' ? 'لا يوجد شعار بعد' : 'No Logo Yet');
 @endphp
 
@@ -57,20 +56,18 @@
         }
     </style>
 
-    <!-- Include FontAwesome CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
     <style>
         .website-name {
-            font-size: 28px;
+            font-size: 36px; /* Bigger font size */
             font-weight: bold;
             font-family: 'Poppins', sans-serif;
             color: #1877F2; /* Facebook Blue */
             text-transform: uppercase;
             letter-spacing: 1.5px;
             text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
-            margin-bottom: 10px;
-            display: inline-block;
+            margin-bottom: 20px;
+            display: block;
+            text-align: center; /* Centered text */
             background: linear-gradient(45deg, #1877F2, #1DA1F2, #E4405F);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -91,36 +88,29 @@
             margin-right: 8px;
             color: #E4405F;
         }
-        .social-icons {
+        .social-links {
             display: flex;
-            gap: 15px;
+            flex-wrap: wrap;
+            gap: 10px; /* Spacing between links */
             justify-content: center;
             align-items: center;
             margin-top: 15px;
         }
 
-        .social-icons a {
-            font-size: 36px; /* Bigger icons */
-            color: inherit; /* Use default brand colors */
+        .social-links a {
+            font-size: 16px;
+            color: #1877F2; /* Default link color */
             text-decoration: none;
-            transition: transform 0.3s ease, opacity 0.3s ease;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            transition: background 0.3s, color 0.3s;
         }
 
-        .social-icons a:hover {
-            transform: scale(1.2);
-            opacity: 0.8;
+        .social-links a:hover {
+            background-color: #1877F2;
+            color: #ffffff;
         }
-
-        /* Brand Colors */
-        .social-icons .facebook { color: #1877F2; }
-        .social-icons .x { color: #000000; }
-        .social-icons .instagram { color: #E4405F; }
-        .social-icons .youtube { color: #FF0000; }
-        .social-icons .linkedin { color: #0077B5; }
-        .social-icons .whatsapp { color: #25D366; }
-        .social-icons .snapchat { color: #FFFC00; }
-        .social-icons .tiktok { color: #000000; }
-        .social-icons .telegram { color: #0088CC; }
     </style>
 
     <style>
@@ -147,10 +137,10 @@
         }
         .website-name {
             text-align: center;
-            font-size: 18px;
+            font-size: 36px; /* Bigger font size */
             font-weight: bold;
             color: #555;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         p {
             font-size: 16px;
@@ -169,21 +159,6 @@
         }
         strong {
             color: #d63384;
-        }
-        .social-icons {
-            margin-top: 10px;
-        }
-        .social-icons a {
-            margin: 0 8px;
-            display: inline-block;
-        }
-        .social-icons img {
-            width: 28px;
-            height: 28px;
-            transition: transform 0.3s ease;
-        }
-        .social-icons img:hover {
-            transform: scale(1.1);
         }
     </style>
 </head>
@@ -221,39 +196,35 @@
     </div>
 
     <p>{{ __("We look forward to having you with us!") }}</p>
-</div>
-
-<div class="footer">
-    <div class="contact-info">
-        <p>
-            <i class="fas fa-envelope"></i>
-            {{ app()->getLocale() === 'ar' ? 'للتواصل عبر البريد الإلكتروني:' : 'Contact us via Email:' }}
-            <a href="mailto:{{ $contact['email'] }}">
-                {{ $contact['email'] }}
-            </a>
-        </p>
-        <p>
-            <i class="fas fa-phone"></i>
-            {{ app()->getLocale() === 'ar' ? 'للتواصل عبر الهاتف:' : 'Contact us via Phone:' }}
-            <a href="tel:{{ $contact['phone'] }}">
-                {{ $contact['phone'] }}
-            </a>
-        </p>
-    </div>
-
-    <div class="social-icons">
-        @foreach (\App\Models\Setting::getSocialMediaLinks() as $platform => $link)
-            @if ($link)
-                <a href="{{ $link }}" target="_blank" class="{{ strtolower($platform) }}">
-                    @if(strtolower($platform) === 'x')
-                        <i class="fa-brands fa-x-twitter"></i>
-                    @else
-                        <i class="fab fa-{{ strtolower($platform) }}"></i>
-                    @endif
+    <div class="footer">
+        <div class="contact-info">
+            <p>
+                <i class="fas fa-envelope"></i>
+                {{ app()->getLocale() === 'ar' ? 'للتواصل عبر البريد الإلكتروني:' : 'Contact us via Email:' }}
+                <a href="mailto:{{ $contact['email'] }}">
+                    {{ $contact['email'] }}
                 </a>
-            @endif
-        @endforeach
+            </p>
+            <p>
+                <i class="fas fa-phone"></i>
+                {{ app()->getLocale() === 'ar' ? 'للتواصل عبر الهاتف:' : 'Contact us via Phone:' }}
+                <a href="tel:{{ $contact['phone'] }}">
+                    {{ $contact['phone'] }}
+                </a>
+            </p>
+        </div>
+
+        <div class="social-links">
+            @foreach (\App\Models\Setting::getSocialMediaLinks() as $platform => $link)
+                @if ($link)
+                    <a href="{{ $link }}" target="_blank">
+                        {{ ucfirst($platform) }} <!-- Display platform name as text -->
+                    </a>
+                @endif
+            @endforeach
+        </div>
     </div>
+
 </div>
 </body>
 </html>
