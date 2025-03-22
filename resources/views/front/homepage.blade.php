@@ -349,86 +349,64 @@
 
     <main class="main">
         @php
-            $settings = \App\Models\HomePageSetting::getCached();
+            $homeSettings = \App\Models\HomePageSetting::getCached();
         @endphp
 
-        @if($settings)
+        @if($homeSettings)
             <section class="home-slider-container">
-                <div class="home-slider owl-carousel" id="main-slider">
-                    {{-- Slide 1 --}}
-                    @if($settings->getSlider1ImageUrl())
-                        <div class="home-slide banner" data-slide="slider1">
-                            <div class="slide-bg" style="background-image: url('{{ $settings->getSlider1ImageUrl() }}');"></div>
-                            <div class="home-slide-content">
-                                <h2 class="text-white text-transform-uppercase">{{ $settings->main_heading }}</h2>
-                                <h3 class="text-white d-inline-block">{{ $settings->discount_text }}</h3>
-                                <h4 class="text-white text-uppercase d-inline-block">{{ $settings->discount_value }}</h4>
-                                <h5 class="float-left text-white">Starting At</h5>
-                                <h6 class="float-left coupon-sale-text font-weight-bold text-secondary">
-                                    <sup>{{ $settings->currency_symbol }}</sup>{{ number_format($settings->starting_price, 2) }}
-                                </h6>
-                                <a href="{{ $settings->button_url }}" class="btn btn-light">{{ $settings->button_text }}</a>
-                            </div>
-                        </div>
-                    @endif
+                <div class="home-slider owl-carousel with-dots-container" data-owl-options='{"nav": true, "dots": true, "loop": true, "autoplay": true, "autoplayTimeout": 5000, "animateOut": "fadeOut"}'>
 
-                    {{-- Slide 2 --}}
-                    @if($settings->getSlider2ImageUrl())
-                        <div class="home-slide banner" data-slide="slider2">
-                            <div class="slide-bg" style="background-image: url('{{ $settings->getSlider2ImageUrl() }}');"></div>
-                            <div class="home-slide-content">
-                                <h2 class="text-white text-transform-uppercase">{{ $settings->main_heading }}</h2>
-                                <h3 class="text-white d-inline-block">{{ $settings->discount_text }}</h3>
-                                <h4 class="text-white text-uppercase d-inline-block">{{ $settings->discount_value }}</h4>
-                                <h5 class="float-left text-white">Starting At</h5>
-                                <h6 class="float-left coupon-sale-text font-weight-bold text-secondary">
-                                    <sup>{{ $settings->currency_symbol }}</sup>{{ number_format($settings->starting_price, 2) }}
-                                </h6>
-                                <a href="{{ $settings->button_url }}" class="btn btn-light">{{ $settings->button_text }}</a>
-                            </div>
+                    <!-- Slider 1 -->
+                    <div class="home-slide home-slide1 banner" style="background-color: #111">
+                        <div class="slide-bg" style="background-image: url('{{ $homeSettings->getSlider1ImageUrl() ?? asset('assets/images/demoes/demo18/slider/home-slide-back.jpg') }}');"></div>
+                        <ul class="slide-bg scene">
+                            <li class="layer" data-depth="0.05">
+                                <img src="{{ $homeSettings->getSlider1ThumbnailUrl() ?? asset('assets/images/demoes/demo18/slider/white-shoes.png') }}" alt="" />
+                            </li>
+                        </ul>
+                        <div class="home-slide-content">
+                            <h2 class="text-white text-transform-uppercase">{{ $homeSettings->main_heading ?? 'Spring / Summer Season' }}</h2>
+                            <h3 class="text-white d-inline-block">{{ $homeSettings->discount_text ?? 'Up to' }}</h3>
+                            <h4 class="text-white text-uppercase d-inline-block">{{ $homeSettings->discount_value ? $homeSettings->discount_value . '% off' : '50% off' }}</h4>
+                            <h5 class="float-left text-white">Starting At</h5>
+                            <h6 class="float-left coupon-sale-text font-weight-bold text-secondary">
+                                <sup>{{ $homeSettings->currency_symbol ?? '$' }}</sup>{{ $homeSettings->starting_price ?? '19' }}<sup>99</sup>
+                            </h6>
+                            <a href="{{ $homeSettings->button_url ?? '#' }}" class="btn btn-light">{{ $homeSettings->button_text ?? 'Shop Now' }}</a>
                         </div>
-                    @endif
+                    </div>
+
+                    <!-- Slider 2 -->
+                    <div class="home-slide home-slide2 banner" style="background-color: #111;">
+                        <div class="slide-bg" style="background-image: url('{{ $homeSettings->getSlider2ImageUrl() ?? asset('assets/images/demoes/demo18/slider/home-slide-back.jpg') }}'); transform: scaleX(-1);"></div>
+                        <ul class="slide-bg scene">
+                            <li class="layer" data-depth="0.05">
+                                <img src="{{ $homeSettings->getSlider2ThumbnailUrl() ?? asset('assets/images/demoes/demo18/slider/ball2.png') }}" alt="" />
+                            </li>
+                        </ul>
+                        <div class="home-slide-content">
+                            <h2 class="text-white text-transform-uppercase">{{ $homeSettings->main_heading ?? 'Spring / Summer Season' }}</h2>
+                            <h3 class="text-white d-inline-block">{{ $homeSettings->discount_text ?? 'Up to' }}</h3>
+                            <h4 class="text-white text-uppercase d-inline-block">{{ $homeSettings->discount_value ? $homeSettings->discount_value . '% off' : '50% off' }}</h4>
+                            <h5 class="float-left text-white">Starting At</h5>
+                            <h6 class="float-left coupon-sale-text font-weight-bold text-secondary">
+                                <sup>{{ $homeSettings->currency_symbol ?? '$' }}</sup>{{ $homeSettings->starting_price ?? '19' }}<sup>99</sup>
+                            </h6>
+                            <a href="{{ $homeSettings->button_url ?? '#' }}" class="btn btn-light">{{ $homeSettings->button_text ?? 'Shop Now' }}</a>
+                        </div>
+                    </div>
                 </div>
 
-                {{-- Thumbnails --}}
+                <!-- Slider Thumbnails -->
                 <div class="home-slider-thumbs">
-                    @if($settings->getSlider1ThumbnailUrl())
-                        <a href="#" class="owl-dot thumbnail-btn" data-target="slider1">
-                            <img src="{{ $settings->getSlider1ThumbnailUrl() }}" alt="Slide 1 Thumb">
-                        </a>
-                    @endif
-
-                    @if($settings->getSlider2ThumbnailUrl())
-                        <a href="#" class="owl-dot thumbnail-btn" data-target="slider2">
-                            <img src="{{ $settings->getSlider2ThumbnailUrl() }}" alt="Slide 2 Thumb">
-                        </a>
-                    @endif
+                    <a href="#" class="owl-dot">
+                        <img src="{{ $homeSettings->getSlider1ThumbnailUrl() ?? asset('assets/images/demoes/demo18/slider/slide-1-thumb.jpg') }}" alt="Slide Thumb">
+                    </a>
+                    <a href="#" class="owl-dot">
+                        <img src="{{ $homeSettings->getSlider2ThumbnailUrl() ?? asset('assets/images/demoes/demo18/slider/slide-2-thumb.jpg') }}" alt="Slide Thumb">
+                    </a>
                 </div>
             </section>
-
-            {{-- JavaScript --}}
-            <script>
-                document.addEventListener("DOMContentLoaded", function() {
-                    const thumbnails = document.querySelectorAll(".thumbnail-btn");
-                    const slides = document.querySelectorAll(".home-slide");
-
-                    thumbnails.forEach(thumb => {
-                        thumb.addEventListener("click", function(event) {
-                            event.preventDefault();
-                            let targetSlide = this.getAttribute("data-target");
-
-                            slides.forEach(slide => {
-                                slide.style.display = slide.getAttribute("data-slide") === targetSlide ? "block" : "none";
-                            });
-                        });
-                    });
-
-                    // Show only the first slide by default
-                    slides.forEach((slide, index) => {
-                        slide.style.display = index === 0 ? "block" : "none";
-                    });
-                });
-            </script>
         @endif
 
 
