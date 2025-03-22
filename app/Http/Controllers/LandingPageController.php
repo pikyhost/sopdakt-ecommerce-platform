@@ -127,7 +127,7 @@ class LandingPageController extends Controller
                     'quantity'               => $data->quantity,
                     'notes'                  => $data->notes,
                     'status'                 => 'pending',
-                    'shipping_type_id'       => $data->shipping_type_id ?? null,
+                    'shipping_type_id'       => $data->shipping_type_id ?? ShippingType::first()->id,
                     'shipping_cost'          => $shippingCost,
                     'total'                  => $subtotal + $shippingCost,
                     'subtotal'               => $subtotal,
@@ -168,30 +168,29 @@ class LandingPageController extends Controller
 
             $landingPage = LandingPage::find($id);
 
-            $landingPageVariant = $landingPage->varieties()->where('size_id', $data['size_id'])->where('color_id', $data['color_id'])->first();
+            $landingPageVariant = $landingPage->varieties()
+                ->where('size_id', $data['size_id'])
+                ->where('color_id', $data['color_id'])
+                ->first();
 
             if ($landingPage && $landingPageVariant) {
-
                 if ($landingPageVariant->quantity < $data['quantity']) {
                     throw new Exception('Quantity not available');
                 }
 
                 $region = Region::find($data['region_id']);
 
-                $shippingType = ShippingType::find($data['shipping_type_id']);
+                // Ensure shipping_type_id is always set
+                $shippingTypeId = $data['shipping_type_id'] ?? ShippingType::first()->id;
+                $shippingType = ShippingType::find($shippingTypeId);
 
                 $shippingCost = $landingPage->shippingCost($region, $shippingType);
-
                 $subtotal = $landingPageVariant->price * $data['quantity'];
-
                 $total = $subtotal + $shippingCost;
 
                 $data['subtotal'] = $subtotal;
-
                 $data['shipping_cost'] = $shippingCost;
-
                 $data['total'] = $total;
-
                 $data['status'] = 'pending';
 
                 $order = $landingPage->orders()->create(
@@ -200,8 +199,8 @@ class LandingPageController extends Controller
 
                 if ($order) {
                     $order->varieties()->create([
-                        'size_id' => $request['size_id'],
-                        'color_id' => $request['color_id'],
+                        'size_id' => $data['size_id'],
+                        'color_id' => $data['color_id'],
                     ]);
 
                     $landingPageVariant->quantity -= $data['quantity'];
@@ -210,12 +209,14 @@ class LandingPageController extends Controller
             }
 
             $request->session()->forget('landing_pages_orders');
-            return redirect()->route('landing-pages.thanks', $landingPage->slug)->with('success', 'Order has been placed successfully');
+            return redirect()->route('landing-pages.thanks', $landingPage->slug)
+                ->with('success', 'Order has been placed successfully');
         } catch (Exception $e) {
             Log::error('create order', [$e->getMessage()]);
             return redirect()->back()->with('error', $e->getMessage());
         }
     }
+
 
     public function thanks($slug)
     {
