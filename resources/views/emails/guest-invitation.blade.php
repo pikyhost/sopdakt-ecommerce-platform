@@ -1,4 +1,12 @@
-<!DOCTYPE html>
+@php
+    // Retrieve site settings
+    $siteSettings = App\Models\Setting::getAllSettings();
+    $locale = app()->getLocale();
+    // Get site name
+    $siteName = $siteSettings["site_name"] ?? ($locale === 'ar' ? 'لا يوجد شعار بعد' : 'No Logo Yet');
+@endphp
+
+    <!DOCTYPE html>
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
