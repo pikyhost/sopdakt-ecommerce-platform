@@ -41,6 +41,7 @@ class HomePageSettingResource extends Resource
         return $form
             ->schema([
                 Section::make('Slider Content')
+                    ->collapsed()
                     ->schema([
                         TextInput::make('main_heading')
                             ->label(__('Main Heading'))
@@ -87,6 +88,7 @@ class HomePageSettingResource extends Resource
                     ->columns(2),
 
                 Section::make(__('Slider Images'))
+                    ->collapsed()
                     ->schema([
                         SpatieMediaLibraryFileUpload::make('slider1_image')
                             ->collection('slider1_image')
@@ -100,6 +102,7 @@ class HomePageSettingResource extends Resource
                     ])->columnSpanFull(),
 
                 Section::make(__('Center Section'))
+                    ->collapsed()
                     ->schema([
                         TextInput::make('center_main_heading')
                             ->label(__('Center Main Heading'))
@@ -119,6 +122,7 @@ class HomePageSettingResource extends Resource
                     ])->columnSpanFull(),
 
                 Section::make(__('Last Section'))
+                    ->collapsed()
                     ->schema([
                         TextInput::make('last1_heading')
                             ->label(__('Last 1 Heading'))
@@ -165,6 +169,7 @@ class HomePageSettingResource extends Resource
                     ])->columnSpanFull(),
 
                 Section::make(__('Latest Section'))
+                    ->collapsed()
                     ->schema([
                         TextInput::make('latest_heading')
                             ->label(__('Latest Heading'))
