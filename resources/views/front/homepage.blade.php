@@ -490,14 +490,7 @@
                                 data-animation-delay="200">
                                 {{ $homeSettings->center_main_heading ?? 'Ultra Boost' }}
                             </h3>
-
-                            <img class="m-b-4 appear-animate"
-                                 data-animation-name="fadeInUpShorter"
-                                 data-animation-duration="1000"
-                                 data-animation-delay="400"
-                                 src="{{ asset('assets/images/demoes/demo18/product-section-slider/img-1.png') }}"
-                                 alt="img" width="540" height="100">
-
+                            
                             <a href="{{ $homeSettings->center_button_url ?? '#' }}"
                                class="btn btn-light appear-animate"
                                data-animation-name="fadeInUpShorter"
