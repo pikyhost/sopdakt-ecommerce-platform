@@ -272,7 +272,7 @@ class Checkout extends Component
                 // Create an invitation record
                 $invitation = Invitation::create([
                     'email' => $email,
-                    'roles' => [Role::where('name', UserRole::Client->value)->first()->id],
+                    'role_id' => Role::where('name', UserRole::Client->value)->first()->id,
                 ]);
 
                 // Send invitation email
