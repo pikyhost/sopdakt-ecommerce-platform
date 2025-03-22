@@ -24,7 +24,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-    <title>Porto - Bootstrap eCommerce Template</title>
+    <title>{{ $siteName }}</title>
 
     <meta name="keywords" content="HTML5 Template" />
     <meta name="description" content="Porto - Bootstrap eCommerce Template">
@@ -348,56 +348,63 @@
     <!-- End .header -->
 
     <main class="main">
-        <section class="home-slider-container">
-            <div class="home-slider owl-carousel with-dots-container" data-owl-options='{"nav": true, "dots": true, "loop": true, "autoplay": true, "autoplayTimeout": 5000, "animateOut": "fadeOut"}'>
-                <div class="home-slide home-slide1 banner" style="background-color: #111">
-                    <div class="slide-bg" style="background-image: url('assets/images/demoes/demo18/slider/home-slide-back.jpg');"></div>
-                    <ul class="slide-bg scene">
-                        <li class="layer" data-depth="0.05">
-                            <img src="assets/images/demoes/demo18/slider/white-shoes.png" alt="" />
-                        </li>
-                    </ul>
-                    <div class="home-slide-content">
-                        <h2 class="text-white text-transform-uppercase">Spring / Summer Season</h2>
-                        <h3 class="text-white d-inline-block">up to</h3>
-                        <h4 class="text-white text-uppercase d-inline-block">50% off</h4>
-                        <h5 class="float-left text-white">Starting At</h5>
-                        <h6 class="float-left coupon-sale-text font-weight-bold text-secondary">
-                            <sup>$</sup>19<sup>99</sup>
-                        </h6>
-                        <a href="demo18-shop.html" class="btn btn-light">Shop Now</a>
+        @php
+            $settings = \App\Models\HomePageSetting::getCached();
+        @endphp
+
+        @if($settings)
+            <section class="home-slider-container">
+                <div class="home-slider owl-carousel with-dots-container" data-owl-options='{"nav": true, "dots": true, "loop": true, "autoplay": true, "autoplayTimeout": 5000, "animateOut": "fadeOut"}'>
+                    <div class="home-slide home-slide1 banner" style="background-color: #111">
+                        <div class="slide-bg" style="background-image: url('{{ asset($settings->background_image) }}');"></div>
+                        <ul class="slide-bg scene">
+                            <li class="layer" data-depth="0.05">
+                                <img src="{{ asset($settings->layer_image) }}" alt="Layer Image" />
+                            </li>
+                        </ul>
+                        <div class="home-slide-content">
+                            <h2 class="text-white text-transform-uppercase">{{ $settings->main_heading }}</h2>
+                            <h3 class="text-white d-inline-block">{{ $settings->discount_text }}</h3>
+                            <h4 class="text-white text-uppercase d-inline-block">{{ $settings->discount_value }}</h4>
+                            <h5 class="float-left text-white">{{ __('Starting At') }}</h5>
+                            <h6 class="float-left coupon-sale-text font-weight-bold text-secondary">
+                                <sup>{{ $settings->currency_symbol }}</sup>{{ number_format($settings->starting_price, 2) }}
+                            </h6>
+                            <a href="{{ $settings->button_url }}" class="btn btn-light">{{ $settings->button_text }}</a>
+                        </div>
+                    </div>
+
+                    <div class="home-slide home-slide2 banner" style="background-color: #111;">
+                        <div class="slide-bg" style="background-image: url('{{ asset($settings->background_image) }}'); transform: scaleX(-1);"></div>
+                        <ul class="slide-bg scene">
+                            <li class="layer" data-depth="0.05">
+                                <img src="{{ asset($settings->layer_image) }}" alt="Layer Image" />
+                            </li>
+                        </ul>
+                        <div class="home-slide-content">
+                            <h2 class="text-white text-transform-uppercase">{{ $settings->main_heading }}</h2>
+                            <h3 class="text-white d-inline-block">{{ $settings->discount_text }}</h3>
+                            <h4 class="text-white text-uppercase d-inline-block">{{ $settings->discount_value }}</h4>
+                            <h5 class="float-left text-white">{{ __('Starting At') }}</h5>
+                            <h6 class="float-left coupon-sale-text font-weight-bold text-secondary">
+                                <sup>{{ $settings->currency_symbol }}</sup>{{ number_format($settings->starting_price, 2) }}
+                            </h6>
+                            <a href="{{ $settings->button_url }}" class="btn btn-light">{{ $settings->button_text }}</a>
+                        </div>
                     </div>
                 </div>
 
-                <div class="home-slide home-slide2 banner" style="background-color: #111;">
-                    <div class="slide-bg" style="background-image: url('assets/images/demoes/demo18/slider/home-slide-back.jpg'); transform: scaleX(-1);"></div>
-                    <ul class="slide-bg scene">
-                        <li class="layer" data-depth="0.05">
-                            <img src="assets/images/demoes/demo18/slider/ball2.png" alt="" />
-                        </li>
-                    </ul>
-                    <div class="home-slide-content">
-                        <h2 class="text-white text-transform-uppercase">Spring / Summer Season</h2>
-                        <h3 class="text-white d-inline-block">up to</h3>
-                        <h4 class="text-white text-uppercase d-inline-block">50% off</h4>
-                        <h5 class="float-left text-white">Starting At</h5>
-                        <h6 class="float-left coupon-sale-text font-weight-bold text-secondary">
-                            <sup>$</sup>19<sup>99</sup>
-                        </h6>
-                        <a href="demo18-shop.html" class="btn btn-light">Shop Now</a>
-                    </div>
+                <div class="home-slider-thumbs">
+                    <a href="#" class="owl-dot">
+                        <img src="{{ asset($settings->thumbnail_image) }}" alt="Slide Thumb">
+                    </a>
+                    <a href="#" class="owl-dot">
+                        <img src="{{ asset($settings->thumbnail_image) }}" alt="Slide Thumb">
+                    </a>
                 </div>
-            </div>
+            </section>
+        @endif
 
-            <div class="home-slider-thumbs">
-                <a href="#" class="owl-dot">
-                    <img src="assets/images/demoes/demo18/slider/slide-1-thumb.jpg" alt="Slide Thumb">
-                </a>
-                <a href="#" class="owl-dot">
-                    <img src="assets/images/demoes/demo18/slider/slide-2-thumb.jpg" alt="Slide Thumb">
-                </a>
-            </div>
-        </section>
 
         <style>
             /* --- NAVIGATION ARROWS --- */

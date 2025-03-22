@@ -132,6 +132,7 @@ class AdminPanelProvider extends PanelProvider
             __('Shipping Management'),
             __('user_experience'),
             __('Settings Management'),
+            __('Pages Settings Management')
         ];
 
         $navigationGroups = array_map(fn($group) => NavigationGroup::make(__($group)), $groups);
