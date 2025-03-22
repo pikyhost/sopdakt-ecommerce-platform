@@ -738,15 +738,19 @@
             <div class="footer-middle">
                 <div class="row">
                     <div class="col-lg-3">
-                        <a href="demo18.html">
-                            <img src="assets/images/demoes/demo18/logo.png" alt="Logo" class="logo">
-                        </a>
+                            <div class="site-name-wrapper">
+                                <p class="website-name">{{ $siteName ?: __('No Logo Available') }}</p>
+                            </div>
 
                         <p class="footer-desc">Lorem ipsum dolor sit amet, consectetur adipis.</p>
 
                         <div class="ls-0 footer-question">
                             <h6 class="mb-0 text-white">QUESTIONS?</h6>
-                            <h3 class="mb-3 text-white"><a href="tel:1-888-123-456">1-888-123-456</a></h3>
+                            <h3 class="mb-3 text-white">
+                                <a href="tel:{{ \App\Models\Setting::getContactDetails()['phone'] }}">
+                                    {{ \App\Models\Setting::getContactDetails()['phone'] }}
+                                </a>
+                            </h3>
                         </div>
                     </div>
                     <!-- End .col-lg-3 -->
