@@ -264,7 +264,7 @@ class Checkout extends Component
 
             // Send an email invite to guest users
             if (!Auth::check() && $contact) {
-                $contact->notify(new InviteGuestToRegister($contact));
+//                $contact->notify(new InviteGuestToRegister($contact));
 
                 // Assume $this->contact contains the contact email
                 $email = $contact->email;
