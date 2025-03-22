@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دعوة للانضمام إلى {{ config('app.name') }}</title>
+    <title>{{ __("دعوة للانضمام إلى") }} {{ config('app.name') }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -32,28 +32,10 @@
             font-size: 24px;
             color: #ec4899; /* Pink Header */
         }
-        .content {
-            padding: 20px 0;
-            text-align: center;
-        }
         .content p {
             font-size: 16px;
             line-height: 1.6;
             margin: 10px 0;
-        }
-        .btn {
-            display: inline-block;
-            padding: 12px 24px;
-            background-color: #ec4899; /* Button Color */
-            color: #ffffff; /* White Text */
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-        }
-        .btn:hover {
-            background-color: #c02675; /* Darker Pink Hover */
         }
         .footer {
             text-align: center;
@@ -211,16 +193,17 @@
 @endphp
 
 <div class="container">
-    <h1>{{ __("You're Invited!") }}</h1>
-    <div class="website-name">{{ $siteName }}</div>
+    <h1 class="website-name">{{ $siteName }}</h1>
 
-    <p>{{ __("We are excited to invite you to explore our extensive digital library, where knowledge meets convenience. Join us and access a wide range of books anytime, anywhere!") }}</p>
+    <h2>{{ __("You're Invited!") }}</h2>
+
+    <p>{{ __("We are excited to invite you to explore our extensive e-commerce platform, where shopping meets convenience. Join us and access a wide range of products anytime, anywhere!") }}</p>
 
     <p><strong>{{ __("Why Join?") }}</strong></p>
     <ul>
-        <li>{{ __("Access thousands of books in various categories.") }}</li>
-        <li>{{ __("Enjoy a seamless reading experience with our user-friendly interface.") }}</li>
-        <li>{{ __("Stay updated with the latest publications and recommendations.") }}</li>
+        <li>{{ __("Access thousands of products in various categories.") }}</li>
+        <li>{{ __("Enjoy a seamless shopping experience with our user-friendly interface.") }}</li>
+        <li>{{ __("Stay updated with the latest trends and exclusive offers.") }}</li>
     </ul>
 
     <p>{{ __("Click the button below to start your journey with us:") }}</p>
@@ -262,7 +245,6 @@
         </p>
     </div>
 
-
     <div class="social-icons">
         @foreach (\App\Models\Setting::getSocialMediaLinks() as $platform => $link)
             @if ($link)
@@ -276,7 +258,6 @@
             @endif
         @endforeach
     </div>
-
 </div>
 
 </body>
