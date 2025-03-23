@@ -37,8 +37,7 @@ class AcceptGuestInvitation extends SimplePage
             'phone' => request()->query('phone', ''), // Get phone from URL
         ]);
     }
-
-
+    
     public function form(Form $form): Form
     {
         return $form
