@@ -26,7 +26,7 @@
         "created_from": "تم إنشاؤه من",
         "created_until": "تم إنشاؤها ل",
         "indicator_from": "الطلب من :date",
-        "indicator_until": "الطلب حتى :date"
+        "indicator_until": "الطلب حتى :date",
     "Website & Contact Information": "الموقع الإلكتروني ومعلومات الاتصال",
     "Update website name and contact info": "تحديث اسم الموقع ومعلومات الاتصال",
     "Manage general settings for your store.": "إدارة الإعدادات العامة لمتجرك.",
