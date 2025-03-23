@@ -14,7 +14,6 @@ use App\Notifications\InviteGuestToRegister;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\URL;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Cart;
@@ -263,28 +262,29 @@ class Checkout extends Component
             $cart->items()->delete();
             $cart->delete();
 
+            // Send an email invite to guest users
             if (!Auth::check() && $contact) {
+                // Extract contact details
                 $email = $contact->email;
-                $name = $contact->name; // Contact name
-                $phone = $order->phone ?? null; // Order phone
+                $name = $contact->name ?? null;
+                $phone = $contact->phone ?? null;
 
+                // Determine the user's preferred language
+                $locale = request()->getPreferredLanguage(['en', 'ar']) ?? 'en';
+
+                // Create an invitation record with additional details
                 $invitation = Invitation::create([
                     'email' => $email,
+                    'name' => $name,
+                    'phone' => $phone,
+                    'preferred_language' => $locale,
                     'role_id' => Role::where('name', UserRole::Client->value)->first()->id,
                 ]);
 
-                $locale = request()->getPreferredLanguage(['en', 'ar']) ?? 'en';
-
-                // Generate signed invitation URL with extra parameters
-                $acceptUrl = URL::signedRoute('invitation.accept', [
-                    'invitation' => $invitation->id,
-                    'name' => $name,
-                    'phone' => $phone,
-                ]);
-
-                // Send email with the generated URL
-                Mail::to($email)->send(new GuestInvitationMail($invitation, $locale, $acceptUrl));
+                // Send invitation email
+                Mail::to($email)->send(new GuestInvitationMail($invitation, $locale));
             }
+
 
             DB::commit();
 
