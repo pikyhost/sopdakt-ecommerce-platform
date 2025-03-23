@@ -40,26 +40,6 @@ class AcceptGuestInvitation extends SimplePage
     {
         return $form
             ->schema([
-                TextInput::make('name')
-                    ->label(__('Name'))
-                    ->required()
-                    ->maxLength(255)
-                    ->autofocus(),
-
-                TextInput::make('email')
-                    ->label(__('Email'))
-                    ->disabled(),
-
-                PhoneInput::make('phone')
-                    ->enableIpLookup(true)
-                    ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
-                    ->required()
-                    ->rules([
-                        'max:20', // Match database column limit
-                        'unique:users,phone', // Ensure uniqueness in the `users` table
-                    ])
-                    ->label(__('profile.phone')),
-
                 TextInput::make('password')
                     ->label(__('Password'))
                     ->password()
@@ -95,15 +75,6 @@ class AcceptGuestInvitation extends SimplePage
         $this->redirect('/guest/dashboard');
     }
 
-    protected function getFormActions(): array
-    {
-        return [
-            Action::make('register')
-                ->label(__('Register'))
-                ->submit('create'),
-        ];
-    }
-
     public function getHeading(): string
     {
         return __('Accept Guest Invitation');
@@ -111,7 +82,7 @@ class AcceptGuestInvitation extends SimplePage
 
     public function hasLogo(): bool
     {
-        return false;
+        return true;
     }
 
     public function getSubHeading(): string

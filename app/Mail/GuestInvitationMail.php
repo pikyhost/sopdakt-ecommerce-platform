@@ -41,7 +41,7 @@ class GuestInvitationMail extends Mailable
             ->subject(__('emails.invitation_subject', ['app' => $siteName]))
             ->with([
                 'invitation' => $this->invitation,
-                'acceptUrl' => url('/client/register?email=' . $this->invitation->email),
+                'acceptUrl' => route('guest.invitation.accept',  ['invitation' => $this->invitation]),
             ]);
     }
 }
