@@ -1,15 +1,13 @@
 <div>
     <div dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
-        <a href="#"
-           class="btn-icon btn-add-cart product-type-simple"
-           style="cursor: pointer;"
-           onclick="event.stopPropagation();"
-           wire:click.prevent="openModal"
-           wire:target="openModal">
-            <i class="icon-shopping-cart"></i>
-        </a>
-
-        @if($showModal)
+        <button class="btn btn-dark btn-add-cart product-type-simple btn-shop"
+                style="cursor: pointer;"
+                onclick="event.stopPropagation();"
+                wire:click.prevent="openModal"
+                wire:target="openModal">
+          ADD TO CART
+        </button>
+    @if($showModal)
             <div class="modal">
                 <div class="modal-content">
                     <div class="modal-header">

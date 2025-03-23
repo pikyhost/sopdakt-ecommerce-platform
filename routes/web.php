@@ -14,7 +14,8 @@ use App\Http\Controllers\{CartController,
     LandingPageController,
     RegionsController,
     ShippingController,
-    CategoryProductController};
+    CategoryProductController,
+    WishlistController};
 
 Route::redirect('/admin/settings', '/admin/settings/1/edit');
 Route::redirect('/admin/home-page-settings', '/admin/home-page-settings/1/edit');
@@ -62,6 +63,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
     Route::post('landing-pages/{id}/order', [LandingPageController::class, 'saveOrder'])->name('landing-page.purchase-form.order');
     Route::get('landing-pages/{slug}/thanks', [LandingPageController::class, 'thanks'])->name('landing-pages.thanks');
 
+    Route::get('wishlist', [WishlistController::class, 'index']);
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::get('/order-success', [OrderCompleteController::class, 'index'])->name('order.complete');
