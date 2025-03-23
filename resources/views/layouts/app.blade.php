@@ -436,9 +436,6 @@
                             </ul>
                         </li>
                         <li><a href="contact.html">Contact Us</a></li>
-                        <li class="float-right"><a href="https://1.envato.market/DdLk5" class="pl-5"
-                                                   target="_blank">Buy X!</a></li>
-                        <li class="float-right"><a href="#" class="pl-5">Special Offer!</a></li>
                     </ul>
                 </nav>
             </div><!-- End .container -->
