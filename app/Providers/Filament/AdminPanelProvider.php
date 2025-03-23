@@ -82,6 +82,7 @@ class AdminPanelProvider extends PanelProvider
                     ->icon('heroicon-m-user-circle'),
                 'logout' => MenuItem::make(),
             ])
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
