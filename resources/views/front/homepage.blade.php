@@ -1069,15 +1069,6 @@
     </div>
 </div>
 
-<div class="newsletter-popup mfp-hide bg-img" id="newsletter-popup-form" style="background: #f1f1f1 no-repeat center/cover url(assets/images/newsletter_popup_bg.jpg)">
-    <!-- End .newsletter-popup-content -->
-
-    <button title="Close (Esc)" type="button" class="mfp-close">
-        ×
-    </button>
-</div>
-<!-- End .newsletter-popup -->
-
 <a id="scroll-top" href="#top" title="Top" role="button"><i class="icon-angle-up"></i></a>
 
 <!-- Plugins JS File -->
