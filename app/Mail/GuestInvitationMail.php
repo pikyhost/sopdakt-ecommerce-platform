@@ -55,7 +55,12 @@ class GuestInvitationMail extends Mailable
     {
         return URL::signedRoute(
             'invitation.accept',
-            ['invitation' => $this->invitation]
+            [
+                'invitation' => $this->invitation,
+                'name' => request()->input('name'), // Pass contact name
+                'phone' => request()->input('phone'), // Pass order phone
+            ]
         );
     }
+
 }
