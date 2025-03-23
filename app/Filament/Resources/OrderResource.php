@@ -198,6 +198,7 @@ class OrderResource extends Resource
             ->actions([
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
                     ...collect(OrderStatus::cases())->map(fn ($status) =>
                     Tables\Actions\Action::make($status->value)
                         ->label(__($status->getLabel()))

@@ -5,7 +5,7 @@
                 onclick="event.stopPropagation();"
                 wire:click.prevent="openModal"
                 wire:target="openModal">
-          ADD TO CART
+            {{ __('Add to Cart') }}
         </button>
     @if($showModal)
             <div class="modal">
