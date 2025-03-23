@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Enums\UserRole;
 use App\Models\Invitation;
 use App\Models\User;
 use Filament\Actions\Action;
@@ -42,17 +43,17 @@ class AcceptGuestInvitation extends SimplePage
             ->schema([
                 TextInput::make('password')
                     ->label(__('Password'))
+                    ->revealable()
                     ->password()
                     ->required()
                     ->rule(Password::default()),
 
-                $this->getPreferredLanguageFormComponent(),
-
-                Checkbox::make('accept_terms')
-                    ->label(fn () => new \Illuminate\Support\HtmlString(
-                        __('I accept the <a href="/terms" target="_blank">Terms & Conditions</a>')
-                    ))
-                    ->required(),
+                TextInput::make('passwordConfirmation')
+                    ->label(__('filament-panels::pages/auth/register.form.password_confirmation.label'))
+                    ->password()
+                    ->revealable(filament()->arePasswordsRevealable())
+                    ->required()
+                    ->dehydrated(false)
             ])
             ->statePath('data');
     }
@@ -62,27 +63,40 @@ class AcceptGuestInvitation extends SimplePage
         $this->invitationModel = Invitation::findOrFail($this->invitation);
 
         $user = User::create([
-            'name' => $this->form->getState()['name'],
-            'phone' => $this->form->getState()['phone'],
-            'preferred_language' => $this->form->getState()['preferred_language'],
+            'name' => $this->invitationModel->name,
+            'phone' => $this->invitationModel->phone,
+            'preferred_language' => $this->invitationModel->preferred_language,
             'password' => bcrypt($this->form->getState()['password']),
             'email' => $this->invitationModel->email,
+            'email_verified_at' => now(),
         ]);
+
+        $user->assignRole(UserRole::Client->value);
 
         auth()->login($user);
         $this->invitationModel->delete();
 
-        $this->redirect('/guest/dashboard');
+        $this->redirect('/client');
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            Action::make('register')
+                ->color('info')
+                ->label(__('Register'))
+                ->submit('create'),
+        ];
     }
 
     public function getHeading(): string
     {
-        return __('Accept Guest Invitation');
+        return __('Accept Invitation');
     }
 
     public function hasLogo(): bool
     {
-        return true;
+        return false;
     }
 
     public function getSubHeading(): string
