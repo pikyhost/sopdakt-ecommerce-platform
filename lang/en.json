@@ -17,7 +17,7 @@
         "filters.created_from": "Created From",
         "filters.created_until": "Created Until",
         "filters.indicator_from": "Order from :date",
-        "filters.indicator_until": "Order until :date"
+        "filters.indicator_until": "Order until :date",
     "Enter the applicable tax percentage for purchases.": "Enter the applicable tax percentage for purchases.",
     "Select the default currency for transactions.": "Select the default currency for transactions.",
     "Enable Shipping Types": "Enable Shipping Types",
