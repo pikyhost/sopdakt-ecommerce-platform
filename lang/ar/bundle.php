@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'select_options' => 'اختر الخيارات للحزمة',
+    'select_options' => 'اختر للطلب',
     'item' => 'عنصر',
     'select_color' => 'اختر اللون',
     'color' => 'اللون',

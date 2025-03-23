@@ -81,20 +81,28 @@ class ProductActionsService
                 ->label(__('Add to Cart'))
                 ->form([
                     Select::make('colorId')
+                        ->live()
                         ->label(__('Color'))
-                        ->options(fn (Product $record) => $record->productColors()->pluck('name', 'color_id'))
-                        ->required(fn (Product $record) => $record->productColors()->exists()),
+                        ->options(fn (Product $record) => $record->productColors()
+                            ->with('color') // Ensure we get the related color
+                            ->get()
+                            ->pluck('color.name', 'color_id'))
+                        ->visible(fn (Product $record) => $record->productColors()->exists()),
 
                     Select::make('sizeId')
+                        ->live()
                         ->label(__('Size'))
                         ->options(fn ($get) =>
                         $get('colorId')
-                            ? ProductColorSize::where('color_id', $get('colorId'))->pluck('size_id', 'size_id')
+                            ? ProductColorSize::whereHas('productColor', fn ($query) =>
+                        $query->where('color_id', $get('colorId'))
+                        )->with('size')->get()->pluck('size.name', 'size_id')
                             : []
                         )
-                        ->required(fn ($get) => !empty($get('colorId'))),
+                        ->visible(fn (Product $record) => $record->productColors()->exists()),
 
                     TextInput::make('quantity')
+                        ->label(__('landing_page_order.quantity'))
                         ->numeric()
                         ->minValue(1)
                         ->default(1)
