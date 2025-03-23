@@ -31,7 +31,7 @@
     <meta name="author" content="SW-THEMES">
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="assets/images/icons/favicon.png">
+    <link rel="icon" type="image/x-icon" href="{{ $favicon }}">
 
     <!-- Ensure correct asset loading for dynamic routes -->
     <base href="{{ url('/') }}/">
@@ -719,18 +719,40 @@
                         </h5>
                         <p class="widget-newsletter-content mb-0">Get all the latest information on Events, Sales and Offers.</p>
                     </div>
-                    <form action="#">
+                    <form id="subscriptionForm">
                         <div class="footer-submit-wrapper d-flex">
-                            <input type="email" class="form-control" placeholder="Email address..." size="40" required>
+                            <input type="email" id="emailInput" class="form-control" placeholder="Email address..." size="40" required>
                             <button type="submit" class="btn btn-dark btn-sm">Subscribe</button>
                         </div>
                     </form>
+
+                    <script>
+                        document.getElementById('subscriptionForm').addEventListener('submit', function(event) {
+                            event.preventDefault(); // Prevent default form submission
+                            let email = document.getElementById('emailInput').value.trim();
+                            if (email) {
+                                window.location.href = `/client/register?email=` + encodeURIComponent(email);
+                            }
+                        });
+                    </script>
                 </div>
                 <div class="footer-right">
                     <div class="social-icons">
-                        <a href="#" class="social-icon social-facebook icon-facebook" target="_blank"></a>
-                        <a href="#" class="social-icon social-twitter icon-twitter" target="_blank"></a>
-                        <a href="#" class="social-icon social-instagram icon-instagram" target="_blank"></a>
+                        @php
+                            $socialLinks = \App\Models\Setting::getSocialMediaLinks();
+                        @endphp
+
+                        @if($socialLinks['facebook'])
+                            <a href="{{ $socialLinks['facebook'] }}" class="social-icon social-facebook icon-facebook" target="_blank"></a>
+                        @endif
+
+                        @if($socialLinks['x'])
+                            <a href="{{ $socialLinks['x'] }}" class="social-icon social-twitter icon-twitter" target="_blank"></a>
+                        @endif
+
+                        @if($socialLinks['instagram'])
+                            <a href="{{ $socialLinks['instagram'] }}" class="social-icon social-instagram icon-instagram" target="_blank"></a>
+                        @endif
                     </div>
                     <!-- End .social-icons -->
                 </div>
@@ -983,13 +1005,35 @@
         </form>
 
         <div class="social-icons">
-            <a href="#" class="social-icon social-facebook icon-facebook" target="_blank">
-            </a>
-            <a href="#" class="social-icon social-twitter icon-twitter" target="_blank">
-            </a>
-            <a href="#" class="social-icon social-instagram icon-instagram" target="_blank">
-            </a>
+            @php
+                $socialLinks = \App\Models\Setting::getSocialMediaLinks();
+            @endphp
+
+            @if($socialLinks['facebook'])
+                <a href="{{ $socialLinks['facebook'] }}" class="social-icon social-facebook icon-facebook" target="_blank"></a>
+            @endif
+
+            @if($socialLinks['youtube'])
+                <a href="{{ $socialLinks['youtube'] }}" class="social-icon social-youtube icon-youtube" target="_blank"></a>
+            @endif
+
+            @if($socialLinks['instagram'])
+                <a href="{{ $socialLinks['instagram'] }}" class="social-icon social-instagram icon-instagram" target="_blank"></a>
+            @endif
+
+            @if($socialLinks['x'])
+                <a href="{{ $socialLinks['x'] }}" class="social-icon social-x icon-x" target="_blank"></a>
+            @endif
+
+            @if($socialLinks['snapchat'])
+                <a href="{{ $socialLinks['snapchat'] }}" class="social-icon social-snapchat icon-snapchat" target="_blank"></a>
+            @endif
+
+            @if($socialLinks['tiktok'])
+                <a href="{{ $socialLinks['tiktok'] }}" class="social-icon social-tiktok icon-tiktok" target="_blank"></a>
+            @endif
         </div>
+
     </div>
     <!-- End .mobile-menu-wrapper -->
 </div>
