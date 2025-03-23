@@ -33,8 +33,11 @@ class AcceptGuestInvitation extends SimplePage
 
         $this->form->fill([
             'email' => $this->invitationModel->email,
+            'name' => request()->query('name', ''),  // Get name from URL
+            'phone' => request()->query('phone', ''), // Get phone from URL
         ]);
     }
+
 
     public function form(Form $form): Form
     {
@@ -47,8 +50,7 @@ class AcceptGuestInvitation extends SimplePage
                     ->autofocus(),
 
                 TextInput::make('email')
-                    ->label(__('Email'))
-                    ->disabled(),
+                    ->label(__('Email')),
 
                 PhoneInput::make('phone')
                     ->enableIpLookup(true)
