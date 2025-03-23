@@ -15,10 +15,7 @@ class Invitation extends Model
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'email',
-        'role_id',
-    ];
+    protected $guarded = [];
 
     public function role()
     {
