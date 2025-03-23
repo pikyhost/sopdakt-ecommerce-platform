@@ -5,6 +5,7 @@ namespace App\Mail;
 use App\Models\Invitation;
 use App\Models\Setting;
 use Illuminate\Mail\Mailable;
+use Illuminate\Support\Facades\URL;
 
 class GuestInvitationMail extends Mailable
 {
@@ -31,6 +32,8 @@ class GuestInvitationMail extends Mailable
      */
     public function build()
     {
+        $acceptUrl = $this->generateAcceptUrl();
+
         $this->locale = $this->getBrowserPreferredLanguage();
 
         $siteSettings = Setting::getAllSettings();
@@ -41,7 +44,18 @@ class GuestInvitationMail extends Mailable
             ->subject(__('emails.invitation_subject', ['app' => $siteName]))
             ->with([
                 'invitation' => $this->invitation,
-                'acceptUrl' => url('/client/register?email=' . $this->invitation->email),
+                'acceptUrl' => $acceptUrl,
             ]);
+    }
+
+    /**
+     * Generate the signed URL for accepting the invitation.
+     */
+    private function generateAcceptUrl(): string
+    {
+        return URL::signedRoute(
+            'invitation.accept',
+            ['invitation' => $this->invitation]
+        );
     }
 }
