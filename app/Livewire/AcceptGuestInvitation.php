@@ -23,8 +23,7 @@ class AcceptGuestInvitation extends SimplePage
 
     public int $invitation;
 
-    public Invitation $invitationModel;
-
+    private Invitation $invitationModel;
 
     public ?array $data = [];
 
@@ -32,12 +31,9 @@ class AcceptGuestInvitation extends SimplePage
     {
         $this->invitationModel = Invitation::findOrFail($this->invitation);
 
-        $this->data = [
+        $this->form->fill([
             'email' => $this->invitationModel->email,
-            'name' => $this->invitationModel->name ?? '',
-            'phone' => $this->invitationModel->phone ?? '',
-            'preferred_language' => $this->invitationModel->preferred_language ?? 'en',
-        ];
+        ]);
     }
 
     public function form(Form $form): Form
@@ -46,25 +42,37 @@ class AcceptGuestInvitation extends SimplePage
             ->schema([
                 TextInput::make('name')
                     ->label(__('Name'))
-                    ->disabled()
-                    ->default(fn () => $this->data['name']),
+                    ->required()
+                    ->maxLength(255)
+                    ->autofocus(),
 
                 TextInput::make('email')
                     ->label(__('Email'))
-                    ->disabled()
-                    ->default(fn () => $this->data['email']),
+                    ->disabled(),
 
                 PhoneInput::make('phone')
-                    ->label(__('Phone'))
-                    ->default(fn () => $this->data['phone']),
-
-                $this->getPreferredLanguageFormComponent(),
+                    ->enableIpLookup(true)
+                    ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
+                    ->required()
+                    ->rules([
+                        'max:20', // Match database column limit
+                        'unique:users,phone', // Ensure uniqueness in the `users` table
+                    ])
+                    ->label(__('profile.phone')),
 
                 TextInput::make('password')
                     ->label(__('Password'))
                     ->password()
                     ->required()
                     ->rule(Password::default()),
+
+                $this->getPreferredLanguageFormComponent(),
+
+                Checkbox::make('accept_terms')
+                    ->label(fn () => new \Illuminate\Support\HtmlString(
+                        __('I accept the <a href="/terms" target="_blank">Terms & Conditions</a>')
+                    ))
+                    ->required(),
             ])
             ->statePath('data');
     }
