@@ -2,16 +2,15 @@
 
 namespace App\Services;
 
-use App\Models\CustomFilamentComment;
+use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\Product;
-use App\Models\ProductRating;
-use Filament\Forms\Components\Textarea;
+use App\Models\ProductColorSize;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Tables\Actions\Action;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
-use Mokhosh\FilamentRating\Components\Rating;
-use Parallax\FilamentComments\Tables\Actions\CommentsAction;
 
 class ProductActionsService
 {
@@ -74,6 +73,87 @@ class ProductActionsService
                 ->icon('heroicon-m-eye')
                 ->openUrlInNewTab(true)
                 ->action(fn (Product $record) => redirect(route('product.show', ['slug' => $record->slug]))),
+
+
+            Action::make('add_to_cart')
+                ->icon('heroicon-o-shopping-cart')
+                ->color('primary')
+                ->label(__('Add to Cart'))
+                ->form([
+                    Select::make('colorId')
+                        ->label(__('Color'))
+                        ->options(fn (Product $record) => $record->productColors()->pluck('name', 'color_id'))
+                        ->required(fn (Product $record) => $record->productColors()->exists()),
+
+                    Select::make('sizeId')
+                        ->label(__('Size'))
+                        ->options(fn ($get) =>
+                        $get('colorId')
+                            ? ProductColorSize::where('color_id', $get('colorId'))->pluck('size_id', 'size_id')
+                            : []
+                        )
+                        ->required(fn ($get) => !empty($get('colorId'))),
+
+                    TextInput::make('quantity')
+                        ->numeric()
+                        ->minValue(1)
+                        ->default(1)
+                        ->required(),
+                ])
+                ->action(function (Product $record, array $data) {
+                    $user = Auth::user();
+                    if (!$user) {
+                        Notification::make()->danger()->title(__('You must be logged in to add items to the cart.'))->send();
+                        return;
+                    }
+
+                    $quantity = (int) $data['quantity'];
+                    $colorId = $data['colorId'] ?? null;
+                    $sizeId = $data['sizeId'] ?? null;
+
+                    if ($quantity < 1) {
+                        Notification::make()->danger()->title(__('Invalid quantity.'))->send();
+                        return;
+                    }
+
+                    $availableStock = $record->quantity;
+                    if ($availableStock <= 0 || $quantity > $availableStock) {
+                        Notification::make()->danger()->title(__('Not enough stock available!'))->send();
+                        return;
+                    }
+
+                    $pricePerUnit = (float) $record->discount_price_for_current_country;
+
+                    $cart = Cart::firstOrCreate(['user_id' => $user->id]);
+
+                    $cartItem = CartItem::where('cart_id', $cart->id)
+                        ->where('product_id', $record->id)
+                        ->where('size_id', $sizeId)
+                        ->where('color_id', $colorId)
+                        ->first();
+
+                    if ($cartItem) {
+                        $newQuantity = $cartItem->quantity + $quantity;
+                        if ($newQuantity > $availableStock) {
+                            Notification::make()->danger()->title(__('Not enough stock available!'))->send();
+                            return;
+                        }
+                        $cartItem->update(['quantity' => $newQuantity, 'subtotal' => $newQuantity * $pricePerUnit]);
+                    } else {
+                        CartItem::create([
+                            'cart_id' => $cart->id,
+                            'product_id' => $record->id,
+                            'size_id' => $sizeId,
+                            'color_id' => $colorId,
+                            'quantity' => $quantity,
+                            'price_per_unit' => $pricePerUnit,
+                            'subtotal' => $quantity * $pricePerUnit,
+                        ]);
+                    }
+
+                    $record->decrement('quantity', $quantity);
+                    Notification::make()->success()->title(__('Product added to cart successfully!'))->send();
+                }),
 
 //            Action::make('rate_and_comment')
 //                ->color('primary')

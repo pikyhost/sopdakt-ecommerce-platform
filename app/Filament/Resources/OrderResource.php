@@ -902,6 +902,6 @@ class OrderResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with('productColors');
+        return parent::getEloquentQuery();
     }
 }
