@@ -1,17 +1,17 @@
-<div>
+<div dir="{{ app()->getLocale() === 'ar' ? 'rtl' : 'ltr' }}">
     <div class="container">
         <div class="wishlist-title">
-            <h2 class="p-2">My Wishlist</h2>
+            <h2 class="p-2">{{ __('My Wishlist') }}</h2>
         </div>
         <div class="wishlist-table-container">
             <table class="table table-wishlist mb-0">
                 <thead>
                 <tr>
                     <th class="thumbnail-col"></th>
-                    <th class="product-col">Product</th>
-                    <th class="price-col">Price</th>
-                    <th class="status-col">Stock Status</th>
-                    <th class="action-col">Actions</th>
+                    <th class="product-col">{{ __('Product') }}</th>
+                    <th class="price-col">{{ __('Price') }}</th>
+                    <th class="status-col">{{ __('Stock Status') }}</th>
+                    <th class="action-col">{{ __('Actions') }}</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -24,7 +24,7 @@
                                          alt="{{ $product->name }}">
                                 </a>
                                 <a href="#" wire:click.prevent="removeFromWishlist({{ $product->id }})"
-                                   class="btn-remove icon-cancel" title="Remove Product"></a>
+                                   class="btn-remove icon-cancel" title="{{ __('Remove Product') }}"></a>
                             </figure>
                         </td>
                         <td>
@@ -35,7 +35,7 @@
                         <td class="price-box">{{ $product->discount_price_for_current_country }}</td>
                         <td>
                             <span class="stock-status {{ $product->quantity > 1 ? 'text-success' : 'text-danger' }}">
-                                {{ $product->quantity > 1 ? 'In stock' : 'Out of stock' }}
+                                {{ $product->quantity > 1 ? __('In stock') : __('Out of stock') }}
                             </span>
                         </td>
                         <td class="action">
@@ -43,10 +43,10 @@
                                 <!-- Quick View Button -->
                                 <a
                                     href="{{ route('product.show', $product->slug) }}"
-                                    title="Quick View"
+                                    title="{{ __('Quick View') }}"
                                     onclick="event.stopPropagation();"
                                     wire:click="quickView({{ $product->id }})" class="btn btn-quickview">
-                                    Quick View
+                                    {{ __('Quick View') }}
                                 </a>
 
                                 <!-- Add to Cart Button -->
@@ -60,7 +60,7 @@
                 @empty
                     <tr>
                         <td colspan="5" class="text-center">
-                            <p>Your wishlist is empty.</p>
+                            <p>{{ __('Your wishlist is empty.') }}</p>
                         </td>
                     </tr>
                 @endforelse

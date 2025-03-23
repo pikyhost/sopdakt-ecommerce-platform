@@ -64,7 +64,7 @@
                         <span wire:loading wire:target="addToCart">
                             <i class="fa fa-spinner fa-spin"></i>
                         </span>
-                            Add to Cart
+                            {{ __('Add to Cart') }}
                         </button>
                     </div>
                 </div>
