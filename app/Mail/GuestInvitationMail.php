@@ -6,25 +6,20 @@ use App\Models\Invitation;
 use App\Models\Setting;
 use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Http\Request;
 
 class GuestInvitationMail extends Mailable
 {
-    private $invitation;
+    private Invitation $invitation;
     public $locale;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(Invitation $invitation, string $locale = 'en')
+    public function __construct(Invitation $invitation, ?string $locale = null)
     {
         $this->invitation = $invitation;
-        $this->locale = $locale;
-    }
-
-    protected function getBrowserPreferredLanguage(): string
-    {
-        $preferredLanguages = request()->getPreferredLanguage(['en', 'ar']);
-        return $preferredLanguages ?: 'en'; // Default to English if no match found
+        $this->locale = $locale ?? app()->getLocale(); // Use app locale if none is provided
     }
 
     /**
@@ -34,14 +29,11 @@ class GuestInvitationMail extends Mailable
     {
         $acceptUrl = $this->generateAcceptUrl();
 
-        $this->locale = $this->getBrowserPreferredLanguage();
-
-        $siteSettings = Setting::getAllSettings();
-
+        $siteSettings = Setting::getAllSettings() ?? [];
         $siteName = $siteSettings["site_name"] ?? config('app.name');
 
         return $this->view('emails.guest-invitation')
-            ->subject(__('emails.invitation_subject', ['app' => $siteName]))
+            ->subject(__('emails.invitation_subject', ['app' => $siteName], $this->locale))
             ->with([
                 'invitation' => $this->invitation,
                 'acceptUrl' => $acceptUrl,

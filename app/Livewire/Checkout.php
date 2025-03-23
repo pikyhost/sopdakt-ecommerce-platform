@@ -285,7 +285,6 @@ class Checkout extends Component
                 Mail::to($email)->send(new GuestInvitationMail($invitation, $locale));
             }
 
-
             DB::commit();
 
             session()->flash('success', __('order_success_message'));
