@@ -153,10 +153,10 @@ class OrderResource extends Resource
                 Tables\Filters\Filter::make('created_at')
                     ->form([
                         Forms\Components\DatePicker::make('created_from')
-                            ->label(__('تم إنشاؤه من'))
+                            ->label(__('filters.created_from'))
                             ->placeholder(fn ($state): string => 'Dec 18, ' . now()->subYear()->format('Y')),
                         Forms\Components\DatePicker::make('created_until')
-                            ->label(__('تم إنشاؤها ل'))
+                            ->label(__('filters.created_until'))
                             ->placeholder(fn ($state): string => now()->format('M d, Y')),
                     ])
                     ->query(function (Builder $query, array $data): Builder {
@@ -173,10 +173,10 @@ class OrderResource extends Resource
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
                         if ($data['created_from'] ?? null) {
-                            $indicators['created_from'] = 'Order from ' . Carbon::parse($data['created_from'])->toFormattedDateString();
+                            $indicators['created_from'] = __('filters.indicator_from', ['date' => Carbon::parse($data['created_from'])->toFormattedDateString()]);
                         }
                         if ($data['created_until'] ?? null) {
-                            $indicators['created_until'] = 'Order until ' . Carbon::parse($data['created_until'])->toFormattedDateString();
+                            $indicators['created_until'] = __('filters.indicator_until', ['date' => Carbon::parse($data['created_until'])->toFormattedDateString()]);
                         }
 
                         return $indicators;
