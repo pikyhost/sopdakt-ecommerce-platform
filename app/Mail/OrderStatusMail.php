@@ -35,7 +35,6 @@ class OrderStatusMail extends Mailable
             ->with([
                 'order' => $this->order,
                 'statusMessage' => $statusMessage,
-                'locale' => $locale,
             ]);
     }
 }
