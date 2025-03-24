@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Rules;
+
 use Illuminate\Contracts\Validation\Rule;
 
 class CustomPassword implements Rule
