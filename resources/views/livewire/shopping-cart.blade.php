@@ -128,7 +128,6 @@
                                 @endif
 
                                 <form action="#">
-                                    @if(\App\Models\Setting::isShippingLocationsEnabled())
                                     <div class="form-group form-group-sm">
                                         <label>Shipping to <strong>{{ $country_id ? optional(\App\Models\Country::find($country_id))->name : 'Select Country' }}</strong></label>
                                         <div class="select-custom">
@@ -171,7 +170,6 @@
                                         <span class="text-danger">{{ $message }}</span>
                                         @enderror
                                     </div>
-                                    @endif
                                 </form>
                             </td>
                         </tr>

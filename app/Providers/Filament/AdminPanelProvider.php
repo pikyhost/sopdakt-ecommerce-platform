@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Livewire\ProfileContactDetails;
 use App\Models\Setting;
+use App\Rules\CustomPassword;
 use CharrafiMed\GlobalSearchModal\GlobalSearchModalPlugin;
 use DragonCode\Support\Facades\Helpers\Str;
 use Filament\Facades\Filament;
@@ -112,13 +113,17 @@ class AdminPanelProvider extends PanelProvider
                 SpatieLaravelTranslatablePlugin::make()->defaultLocales(['en', 'ar']),
                 GlobalSearchModalPlugin::make(),
                 BreezyCore::make()
+                    ->passwordUpdateRules(
+                        rules: ['min:8', new CustomPassword()] // Minimum 8 characters & custom rule
+                    )
                     ->myProfileComponents([
                         ProfileContactDetails::class,
                     ])
                     ->myProfile(
                         hasAvatars: true,
+                        shouldRegisterNavigation: true
                     )
-                    ->avatarUploadComponent(fn($fileUpload) => $fileUpload->columnSpan('full')),
+                    ->avatarUploadComponent(fn ($fileUpload) => $fileUpload->columnSpan('full')),
             ]);
     }
 
