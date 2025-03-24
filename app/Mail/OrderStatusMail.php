@@ -8,6 +8,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Mail\Mailables\Content;
 
 class OrderStatusMail extends Mailable
 {
@@ -25,16 +26,17 @@ class OrderStatusMail extends Mailable
         $this->status = $status;
     }
 
-    public function build()
+    /**
+     * Get the message content definition.
+     */
+    public function content(): Content
     {
-        // Get a more user-friendly order status message
-        $statusMessage = __('messages.order_status_' . $this->status->value);
-
-        return $this->subject(__('Order') . ' #' . $this->order->id . ' - ' . __($this->status->getLabel()))
-            ->view('emails.order-status')
-            ->with([
+        return new Content(
+            markdown: 'emails.order-status',
+            with: [
                 'order' => $this->order,
-                'statusMessage' => $statusMessage,
-            ]);
+                'statusMessage' => __('messages.order_status_' . $this->status->value),
+            ],
+        );
     }
 }
