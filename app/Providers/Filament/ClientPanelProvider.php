@@ -6,8 +6,8 @@ use App\Filament\Client\Pages\Auth\ClientLogin;
 use App\Filament\Client\Pages\Auth\ClientRegister;
 use App\Livewire\ProfileContactDetails;
 use App\Models\Setting;
+use App\Rules\CustomPassword;
 use CharrafiMed\GlobalSearchModal\GlobalSearchModalPlugin;
-use CustomPassword;
 use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -78,7 +78,7 @@ class ClientPanelProvider extends PanelProvider
             ->navigationItems([
                 NavigationItem::make('Profile')
                     ->sort(-1)
-                    ->label(fn (): string => __('filament-panels::pages/auth/edit-profile.label'))
+                    ->label(fn (): string => __('Profile Settings'))
                     ->url(fn () => url('/client/my-profile'))
                     ->icon('heroicon-o-user-circle')
                     ->isActiveWhen(fn (): bool => request()->routeIs('filament.client.pages.my-profile')),
