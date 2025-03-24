@@ -2,12 +2,17 @@
 
 namespace App\Livewire;
 
+use App\Models\City;
+use App\Models\Country;
+use App\Models\Governorate;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Jeffgreco13\FilamentBreezy\Livewire\MyProfileComponent;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
@@ -42,6 +47,37 @@ class ProfileContactDetails extends MyProfileComponent implements HasActions, Ha
                     ->unique(ignoreRecord: true)
                     ->label(__('phone'))
                     ->nullable(),
+
+                Select::make('country_id')
+                    ->required()
+                    ->label(__('Country'))
+                    ->options(Country::pluck('name', 'id'))
+                    ->live()
+                    ->afterStateUpdated(function (callable $set, Get $get) {
+                        $set('governorate_id', null);
+                        $set('city_id', null);
+                    }),
+
+                Select::make('governorate_id')
+                    ->required()
+                    ->label(__('Governorate'))
+                    ->options(function (Get $get) {
+                        return Governorate::where('country_id', $get('country_id'))->pluck('name', 'id');
+                    })
+                    ->live()
+                    ->afterStateUpdated(function ($state, callable $set, Get $get) {
+                        $set('city_id', null);
+                    }),
+
+                Select::make('city_id')
+                    ->label(__('City'))
+                    ->options(function (Get $get) {
+                        return City::where('governorate_id', $get('governorate_id'))->pluck('name', 'id');
+                    })
+                    ->live()
+                    ->placeholder(function (Get $get) {
+                        return empty($get('governorate_id')) ? __('Select a governorate first') : 'Select a city';
+                    }),
 
                 TextArea::make('address')
                     ->label(__('profile.address'))
