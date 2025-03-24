@@ -300,10 +300,9 @@ class Checkout extends Component
 
     public function getIsCheckoutReadyProperty()
     {
-        $isShippingEnabled = Setting::isShippingLocationsEnabled();
-
         return count($this->cartItems) > 0 // Ensure cart is not empty
-            && (!$isShippingEnabled || ($this->cart->country_id && $this->cart->governorate_id)); // Check location only if shipping is enabled
+            && $this->cart->country_id // Ensure country is selected
+            && $this->cart->governorate_id;
     }
 
     public function render()

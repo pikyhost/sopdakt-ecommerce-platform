@@ -128,9 +128,7 @@ class ShoppingCart extends Component
 
     public function loadCountries()
     {
-        if (Setting::isShippingLocationsEnabled()) {
-            $this->countries = Country::all();
-        }
+        $this->countries = Country::all();
     }
 
     public function updateCartShipping()
@@ -152,10 +150,6 @@ class ShoppingCart extends Component
 
     public function updatedCountryId()
     {
-        if (!Setting::isShippingLocationsEnabled()) {
-            return;
-        }
-
         $this->country_id = $this->country_id ?: null;
 
         // Reset governorates and cities only if shipping locations are enabled
@@ -178,10 +172,6 @@ class ShoppingCart extends Component
 
     public function updatedGovernorateId()
     {
-        if (!Setting::isShippingLocationsEnabled()) {
-            return;
-        }
-
         $this->governorate_id = $this->governorate_id ?: null;
 
         // Reset cities only if governorate_id is null
@@ -201,10 +191,6 @@ class ShoppingCart extends Component
 
     public function updatedCityId()
     {
-        if (!Setting::isShippingLocationsEnabled()) {
-            return;
-        }
-
         $this->city_id = $this->city_id ?: null;
 
         // Save to cart

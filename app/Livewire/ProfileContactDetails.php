@@ -14,6 +14,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
+use Illuminate\Validation\Rule;
 use Jeffgreco13\FilamentBreezy\Livewire\MyProfileComponent;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 
@@ -23,7 +24,8 @@ class ProfileContactDetails extends MyProfileComponent implements HasActions, Ha
 
     public static $sort = 2;
 
-    public array $only = ['phone', 'address'];
+    public array $only = ['phone', 'address', 'country_id', 'governorate_id',
+        'city_id', 'preferred_language'];
 
     public array $data;
 
@@ -43,19 +45,26 @@ class ProfileContactDetails extends MyProfileComponent implements HasActions, Ha
     {
         return $form
             ->schema([
+//                PhoneInput::make('phone')
+//                    ->enableIpLookup(true) // Enable IP-based country detection
+//                    ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
+//                    ->nullable()
+//                    ->unique(ignoreRecord: true)
+//                    ->label(__('profile.phone'))
+//                    ->columnSpanFull(),
+
                 PhoneInput::make('phone')
                     ->enableIpLookup(true) // Enable IP-based country detection
                     ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
                     ->nullable()
                     ->rules([
                         'max:20', // Match database column limit
-                        'unique:users,phone', // Ensure uniqueness in the `users` table
+                        Rule::unique('users', 'phone')->ignore(auth()->id()), // Ignore the current user in uniqueness check
                     ])
                     ->label(__('profile.phone'))
                     ->columnSpanFull(),
-                
+
                 Select::make('country_id')
-                    ->required()
                     ->label(__('Country'))
                     ->options(Country::pluck('name', 'id'))
                     ->live()
@@ -65,7 +74,6 @@ class ProfileContactDetails extends MyProfileComponent implements HasActions, Ha
                     }),
 
                 Select::make('governorate_id')
-                    ->required()
                     ->label(__('Governorate'))
                     ->options(function (Get $get) {
                         return Governorate::where('country_id', $get('country_id'))->pluck('name', 'id');
