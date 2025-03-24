@@ -25,9 +25,9 @@ return new class extends Migration
             $table->string('preferred_language', 5)->default('en');
 
 
-//            $table->foreignId('country_id')->nullable()->constrained('countries')->cascadeOnDelete();
-//            $table->foreignId('governorate_id')->nullable()->constrained('governorates')->cascadeOnDelete();
-//            $table->foreignId('city_id')->nullable()->constrained('cities')->cascadeOnDelete();
+            $table->foreignId('country_id')->nullable()->constrained('countries')->cascadeOnDelete();
+            $table->foreignId('governorate_id')->nullable()->constrained('governorates')->cascadeOnDelete();
+            $table->foreignId('city_id')->nullable()->constrained('cities')->cascadeOnDelete();
 
             $table->boolean('is_active')->default(true);
         });

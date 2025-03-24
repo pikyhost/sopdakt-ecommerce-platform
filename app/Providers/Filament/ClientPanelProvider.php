@@ -75,14 +75,6 @@ class ClientPanelProvider extends PanelProvider
                     ->icon('heroicon-m-user-circle'),
                 'logout' => MenuItem::make(),
             ])
-            ->navigationItems([
-                NavigationItem::make('Profile')
-                    ->sort(-1)
-                    ->label(fn (): string => __('Profile Settings'))
-                    ->url(fn () => url('/client/my-profile'))
-                    ->icon('heroicon-o-user-circle')
-                    ->isActiveWhen(fn (): bool => request()->routeIs('filament.client.pages.my-profile')),
-            ])
             ->sidebarFullyCollapsibleOnDesktop()
             ->middleware([
                 EncryptCookies::class,
