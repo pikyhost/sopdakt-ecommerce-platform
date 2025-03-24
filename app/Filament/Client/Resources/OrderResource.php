@@ -259,8 +259,7 @@ class OrderResource extends Resource
                                 TextInput::make('subtotal')
                                     ->readOnly()
                                     ->label(__('Subtotal'))
-                                    ->numeric()
-                                ,
+                                    ->numeric(),
                             ])
                             ->columns(3)
                             ->collapsible()
