@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Enums\OrderStatus;
 use App\Filament\Resources\OrderResource\Pages;
 use App\Mail\OrderConfirmationMail;
+use App\Mail\OrderStatusMail;
 use App\Models\Bundle;
 use App\Models\City;
 use App\Models\Country;
@@ -393,11 +394,10 @@ class OrderResource extends Resource
 
     public static function updateOrderStatus($order, OrderStatus $status)
     {
-        $previousStatus = $order->status; // No need to use tryFrom()
+        $previousStatus = $order->status;
 
-        // Ensure previous status is valid before performing stock restoration
         if (
-            $previousStatus !== null && // Check if previousStatus is valid
+            $previousStatus !== null &&
             in_array($previousStatus, [OrderStatus::Pending, OrderStatus::Preparing, OrderStatus::Shipping], true) &&
             in_array($status, [OrderStatus::Cancelled, OrderStatus::Refund], true)
         ) {
@@ -413,21 +413,22 @@ class OrderResource extends Resource
         }
 
         // Update order status
-        $order->update(['status' => $status]); // Directly assign the enum value
+        $order->update(['status' => $status]);
+
+        // Send order status update email
+        $email = $order->user->email ?? $order->contact->email;
+        if ($email) {
+            Mail::to($email)->send(new OrderStatusMail($order, $status));
+        }
 
         // Handle JT Express when the status is set to "Shipping"
         if ($status === OrderStatus::Shipping) {
             $JtExpressOrderData = self::prepareJtExpressOrderData($order);
             $jtExpressResponse = app(JtExpressService::class)->createOrder($JtExpressOrderData);
             self::updateJtExpressOrder($order, 'pending', $JtExpressOrderData, $jtExpressResponse);
-
-            // Send order confirmation email
-            $email = $order->user->email ?? $order->contact->email;
-            if ($email) {
-                Mail::to($email)->queue(new OrderConfirmationMail($order));
-            }
         }
     }
+
 
     private static function prepareJtExpressOrderData($order): array
     {

@@ -1,6 +1,12 @@
 <?php
 
 return [
+    'order_status_pending' => 'We’ve received your order! It’s being processed and will be confirmed soon.',
+    'order_status_preparing' => 'Great news! Your order is now being prepared with care.',
+    'order_status_shipping' => 'Your order is on the way! Keep an eye out for the delivery.',
+    'order_status_delivered' => 'Your order has arrived! We hope you love it. Let us know if you need anything.',
+    'order_status_cancelled' => 'Your order has been cancelled. If you have any questions, feel free to contact us.',
+    'order_status_refund' => 'A refund has been issued for your order. The amount will be credited soon.',
     'reviews_for' => 'Reviews for',
     'review_saved' => 'Your review has been saved successfully!',
     'review_pending' => 'Your review has been submitted and is pending manager approval.',

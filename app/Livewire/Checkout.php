@@ -4,13 +4,13 @@ namespace App\Livewire;
 
 use App\Enums\UserRole;
 use App\Mail\GuestInvitationMail;
+use App\Mail\OrderStatusMail;
 use App\Models\Contact;
 use App\Models\Country;
 use App\Models\Invitation;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Setting;
-use App\Notifications\InviteGuestToRegister;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
@@ -219,11 +219,14 @@ class Checkout extends Component
             })->with('items')->first();
 
             if (!$cart || $cart->items->isEmpty()) {
-                return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
+                return redirect()->route('cart.index')->with('error', __('Your cart is empty. Please add items before proceeding.'));
             }
 
             // Save contact details
             $contact = $this->save();
+
+            // Define order status dynamically
+            $orderStatus = OrderStatus::Pending; // Using enum
 
             // Create order
             $order = Order::create([
@@ -240,7 +243,7 @@ class Checkout extends Component
                 'tax_amount' => $cart->tax_amount,
                 'subtotal' => $cart->subtotal,
                 'total' => $cart->total,
-                'status' => 'pending',
+                'status' => $orderStatus->value, // Enum value
                 'notes' => $this->notes,
             ]);
 
@@ -262,40 +265,37 @@ class Checkout extends Component
             $cart->items()->delete();
             $cart->delete();
 
-            // Send an email invite to guest users
-            if (!Auth::check() && $contact) {
-                // Extract contact details
-                $email = $contact->email;
-                $name = $contact->name ?? null;
-                $phone = $contact->phone ?? null;
+            // Send Order Confirmation Email with Dynamic Status
+            $recipientEmail = Auth::check() ? Auth::user()->email : ($contact->email ?? null);
+            if ($recipientEmail) {
+                Mail::to($recipientEmail)->send(new OrderStatusMail($order, $orderStatus->value));
+            }
 
-                // Determine the user's preferred language
+            // Send Guest Invitation Email (if user is a guest)
+            if (!Auth::check() && $contact) {
                 $locale = request()->getPreferredLanguage(['en', 'ar']) ?? 'en';
 
-                // Create an invitation record with additional details
                 $invitation = Invitation::create([
-                    'email' => $email,
-                    'name' => $name,
-                    'phone' => $phone,
+                    'email' => $contact->email,
+                    'name' => $contact->name ?? null,
+                    'phone' => $contact->phone ?? null,
                     'preferred_language' => $locale,
                     'role_id' => Role::where('name', UserRole::Client->value)->first()->id,
                 ]);
 
-                // Send invitation email
-                Mail::to($email)->send(new GuestInvitationMail($invitation, $locale));
+                Mail::to($contact->email)->send(new GuestInvitationMail($invitation, $locale));
             }
 
             DB::commit();
 
-            session()->flash('success', __('order_success_message'));
+            session()->flash('success', __('Your order has been placed successfully! You will receive a confirmation email shortly.'));
 
             return redirect()->route('order.complete')->with('order_success', true);
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->addError('order', __('order_error_message', ['error' => $e->getMessage()]));
+            $this->addError('order', __('We encountered an issue while placing your order. Please try again later. Error: :error', ['error' => $e->getMessage()]));
         }
     }
-
 
     public function getIsCheckoutReadyProperty()
     {
