@@ -26,32 +26,35 @@
     <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 10px 0;"><strong style="color: #d63384;">{{ __('payment_method') }}:</strong> {{ $order->paymentMethod->name ?? 'N/A' }}</p>
 
     <h2 style="color: #d63384;">{{ __('order_details') }}:</h2>
-    <div>
-
+    <table width="100%" border="0" cellspacing="0" cellpadding="10" style="border-collapse: collapse;">
         @foreach ($order->items as $item)
-            <div style="display: flex; align-items: center; width: 100%; flex-direction: {{ app()->getLocale() == 'ar' ? 'row-reverse' : 'row' }}; gap: 15px;">
-                <div style="flex: 1; text-align: {{ app()->getLocale() == 'ar' ? 'right' : 'left' }}; order: {{ app()->getLocale() == 'ar' ? '2' : '1' }};">
-                    <h3 style="margin: 0;"><strong style="color: black !important;">#{{ $loop->iteration }}</strong></h3>
-                    <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 10px 0;"><strong style="color: #d63384;">{{ __('product') }}:</strong> {{ $item->product->getTranslation('name', app()->getLocale()) }}</p>
-                    <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 10px 0;"><strong style="color: #d63384;">{{ __('quantity') }}:</strong> {{ $item->quantity }}</p>
-                    <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 10px 0;"><strong style="color: #d63384;">{{ __('price') }}:</strong> {{ number_format($item->subtotal, 2) }}</p>
+            <tr style="border-bottom: 1px solid #ddd;">
+                <td width="100" style="padding: 10px; text-align: center;">
+                    @if($item->product->getFeatureProductImageUrl())
+                        <img src="{{ $item->product->getFeatureProductImageUrl() }}" alt="{{ $item->product->getTranslation('name', app()->getLocale()) }}" width="80" height="auto" style="border-radius: 5px; display: block;">
+                    @endif
+                </td>
+                <td style="padding: 10px; font-size: 14px; color: #333;">
+                    <p style="margin: 0;"><strong style="color: #d63384;">{{ __('product') }}:</strong> {{ $item->product->getTranslation('name', app()->getLocale()) }}</p>
+                    <p style="margin: 0;"><strong style="color: #d63384;">{{ __('quantity') }}:</strong> {{ $item->quantity }}</p>
+                    <p style="margin: 0;"><strong style="color: #d63384;">{{ __('price') }}:</strong> {{ number_format($item->subtotal, 2) }}</p>
 
                     @if($item->product->productColors->isNotEmpty())
                         @if($item->size_id)
-                            <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 10px 0;"><strong style="color: #d63384;">{{ __('size') }}:</strong> {{ $item->size->name }}</p>
+                            <p style="margin: 0;"><strong style="color: #d63384;">{{ __('size') }}:</strong> {{ $item->size->name }}</p>
                         @endif
 
-                        <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 10px 0;"><strong style="color: #d63384;">{{ __('color') }}:</strong>
+                        <p style="margin: 0;"><strong style="color: #d63384;">{{ __('color') }}:</strong>
                             @foreach($item->product->productColors as $productColor)
-                                <span style="display: inline-block; width: 16px; height: 16px; border-radius: 50%; border: 1px solid #ddd; margin: 0 5px; background-color:{{ $productColor->color->code }};"></span> {{ $productColor->color->name }}
+                                <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 1px solid #ddd; margin-right: 5px; background-color:{{ $productColor->color->code }};"></span>
+                                {{ $productColor->color->name }}
                             @endforeach
                         </p>
                     @endif
-                </div>
-            </div>
+                </td>
+            </tr>
         @endforeach
-    </div>
-
+    </table>
     <div style="padding: 15px; background: #f0f8ff; border-left: 5px solid #007bff; border-radius: 5px; margin-top: 20px;">
         <p style="font-size: 18px; font-weight: bold; color: #333; margin: 0 0 10px 0;">{{ __('order_status') }}</p>
         <p style="font-size: 16px; color: #555; margin: 0;">{{ $statusMessage }}</p>
