@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\Contact;
 use App\Models\Country;
 use App\Models\Governorate;
 use App\Models\City;
@@ -42,11 +43,26 @@ class ShoppingCart extends Component
             $this->loadShippingTypes();
         }
 
-        // Load dependent dropdowns if values exist
+        // Check if user is guest
+        if (auth()->guest()) {
+            $contact = Contact::where('session_id', session()->getId())->first();
+            if ($contact) {
+                $this->country_id = $contact->country_id;
+                $this->governorate_id = $contact->governorate_id;
+                $this->city_id = $contact->city_id;
+            }
+        } else {
+            // If user is authenticated, use their saved country/governorate/city
+            $this->country_id = auth()->user()->country_id;
+            $this->governorate_id = auth()->user()->governorate_id;
+            $this->city_id = auth()->user()->city_id;
+        }
+
+        // Load dependent dropdowns
         $this->governorates = $this->country_id ? Governorate::where('country_id', $this->country_id)->get() : [];
         $this->cities = $this->governorate_id ? City::where('governorate_id', $this->governorate_id)->get() : [];
     }
-
+    
     private function extractPrice($priceString)
     {
         return (float) preg_replace('/[^0-9.]/', '', $priceString); // Extract numeric value
