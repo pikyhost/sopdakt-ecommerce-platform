@@ -3,35 +3,37 @@
 namespace App\Mail;
 
 use App\Models\Order;
+use App\Enums\OrderStatus;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class OrderConfirmationMail extends Mailable implements ShouldQueue
+class OrderStatusMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $order;
+    public Order $order;
+    public OrderStatus $status;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(Order $order)
+    public function __construct(Order $order, OrderStatus $status)
     {
-        // Ensure relationships are loaded before serialization
         $this->order = $order->load(['items.product', 'paymentMethod']);
+        $this->status = $status;
     }
 
-    /**
-     * Build the message.
-     */
     public function build()
     {
-        return $this->subject('Order Confirmation - ' . $this->order->id)
-            ->view('emails.order-confirmation')
+        // Get a more user-friendly order status message
+        $statusMessage = __('messages.order_status_' . $this->status->value);
+
+        return $this->subject(__('Order') . ' #' . $this->order->id . ' - ' . __($this->status->getLabel()))
+            ->view('emails.order-status')
             ->with([
-                'order' => $this->order
+                'order' => $this->order,
+                'statusMessage' => $statusMessage,
             ]);
     }
 }
