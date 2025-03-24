@@ -269,7 +269,8 @@ class Checkout extends Component
             // Send Order Confirmation Email with Dynamic Status
             $recipientEmail = Auth::check() ? Auth::user()->email : ($contact->email ?? null);
             if ($recipientEmail) {
-                Mail::to($recipientEmail)->send(new OrderStatusMail($order, $orderStatus));
+                Mail::to($recipientEmail)->locale(request()->getPreferredLanguage(['en', 'ar']))
+                    ->send(new OrderStatusMail($order, $orderStatus));
             }
 
             // Send Guest Invitation Email (if user is a guest)
@@ -284,7 +285,9 @@ class Checkout extends Component
                     'role_id' => Role::where('name', UserRole::Client->value)->first()->id,
                 ]);
 
-                Mail::to($contact->email)->send(new GuestInvitationMail($invitation, $locale));
+                Mail::to($contact->email)
+                    ->locale($locale)
+                    ->send(new GuestInvitationMail($invitation));
             }
 
             DB::commit();

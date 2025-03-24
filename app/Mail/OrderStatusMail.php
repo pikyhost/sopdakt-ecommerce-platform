@@ -5,6 +5,7 @@ namespace App\Mail;
 use App\Models\Order;
 use App\Enums\OrderStatus;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
@@ -26,13 +27,15 @@ class OrderStatusMail extends Mailable
 
     public function build()
     {
+        // Get a more user-friendly order status message
+        $statusMessage = __('messages.order_status_' . $this->status->value);
+
         return $this->subject(__('Order') . ' #' . $this->order->id . ' - ' . __($this->status->getLabel()))
             ->view('emails.order-status')
             ->with([
                 'order' => $this->order,
-                'orderItems' => $this->order->items,
-                'statusMessage' => __('messages.order_status_' . $this->status->value),
+                'statusMessage' => $statusMessage,
+                'locale' => $locale,
             ]);
     }
-
 }

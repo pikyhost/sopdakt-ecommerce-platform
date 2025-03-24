@@ -9,21 +9,13 @@ use Illuminate\Mail\Mailable;
 class GuestInvitationMail extends Mailable
 {
     private $invitation;
-    public $locale;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(Invitation $invitation, string $locale = 'en')
+    public function __construct(Invitation $invitation)
     {
         $this->invitation = $invitation;
-        $this->locale = $locale;
-    }
-
-    protected function getBrowserPreferredLanguage(): string
-    {
-        $preferredLanguages = request()->getPreferredLanguage(['en', 'ar']);
-        return $preferredLanguages ?: 'en'; // Default to English if no match found
     }
 
     /**
@@ -31,8 +23,6 @@ class GuestInvitationMail extends Mailable
      */
     public function build()
     {
-        $this->locale = $this->getBrowserPreferredLanguage();
-
         $siteSettings = Setting::getAllSettings();
 
         $siteName = $siteSettings["site_name"] ?? config('app.name');
