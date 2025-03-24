@@ -12,10 +12,8 @@ use App\Models\Invitation;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Setting;
-use App\Notifications\OrderStatusNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
@@ -268,23 +266,15 @@ class Checkout extends Component
             $cart->items()->delete();
             $cart->delete();
 
-            // Determine recipient (authenticated user or guest)
-            $recipient = Auth::check() ? Auth::user() : ($contact ?? null);
             $recipientEmail = Auth::check() ? Auth::user()->email : ($contact->email ?? null);
-
-// Determine preferred language
             $language = Auth::check()
                 ? auth()->user()->preferred_language
-                : (request()->getPreferredLanguage(['en', 'ar']) ?? 'en');
-
-// Send notification to authenticated user
-            if ($recipient) {
-                $recipient->notify((new OrderStatusNotification($order, $orderStatus))->locale($language));
-            }
+                : (request()->getPreferredLanguage(['en', 'ar']) ?? 'en'); // Default to English if none found
 
             if ($recipientEmail) {
-                Notification::route('mail', $recipientEmail)
-                    ->notify((new OrderStatusNotification($order, $orderStatus))->locale($language));
+                Mail::to($recipientEmail)
+                    ->locale($language) // Set email locale
+                    ->send(new OrderStatusMail($order, $orderStatus));
             }
 
             // Send Guest Invitation Email (if user is a guest)
