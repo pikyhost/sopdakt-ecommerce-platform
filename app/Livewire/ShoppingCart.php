@@ -62,7 +62,7 @@ class ShoppingCart extends Component
         $this->governorates = $this->country_id ? Governorate::where('country_id', $this->country_id)->get() : [];
         $this->cities = $this->governorate_id ? City::where('governorate_id', $this->governorate_id)->get() : [];
     }
-    
+
     private function extractPrice($priceString)
     {
         return (float) preg_replace('/[^0-9.]/', '', $priceString); // Extract numeric value
@@ -517,11 +517,11 @@ class ShoppingCart extends Component
     {
         $this->validate([
                 'selected_shipping' => Setting::isShippingEnabled() ? 'required' : 'nullable',
-            ] + (Setting::isShippingLocationsEnabled() ? [
+            ] +  [
                 'country_id' => 'required|exists:countries,id',
                 'governorate_id' => 'required|exists:governorates,id',
                 'city_id' => 'nullable|exists:cities,id',
-            ] : []));
+            ]);
 
 
         $taxPercentage = Setting::first()?->tax_percentage ?? 0;
