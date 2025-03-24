@@ -224,9 +224,9 @@
             </div>
         @endforeach
     </div>
-@php
-    $contact = \App\Models\Setting::getContactDetails();
-@endphp
+    @php
+        $contact = \App\Models\Setting::getContactDetails();
+    @endphp
     <div style="padding: 15px; background: #f0f8ff; border-left: 5px solid #007bff; border-radius: 5px;">
         <p style="font-size: 18px; font-weight: bold; color: #333;">{{ __('order_status') }}</p>
         <p style="font-size: 16px; color: #555;">{{ $statusMessage }}</p>
