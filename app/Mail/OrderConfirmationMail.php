@@ -19,7 +19,8 @@ class OrderConfirmationMail extends Mailable implements ShouldQueue
      */
     public function __construct(Order $order)
     {
-        $this->order = $order;
+        // Ensure relationships are loaded before serialization
+        $this->order = $order->load(['items.product', 'paymentMethod']);
     }
 
     /**

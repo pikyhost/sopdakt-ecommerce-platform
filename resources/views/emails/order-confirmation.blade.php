@@ -11,7 +11,11 @@
 <h2>Order Details:</h2>
 <ul>
     @foreach ($order->items as $item)
-        <li>{{ $item->product->name }} - Quantity: {{ $item->quantity }} - ${{ number_format($item->subtotal, 2) }}</li>
+        <li>
+            {{ $item->product->name ?? 'Product Not Found' }}
+            - Quantity: {{ $item->quantity }}
+            - ${{ number_format($item->subtotal, 2) }}
+        </li>
     @endforeach
 </ul>
 <p>The order status is shipping now.</p>
