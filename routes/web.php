@@ -71,6 +71,6 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
 Route::post('/jt-express-webhook', [ShippingController::class, 'handleWebhook']);
 
 Route::get('/test-email', function () {
-    $order = Order::first(); // Replace with a valid ID
-    return new OrderConfirmationMail($order);
+    $order = Order::last(); // Replace with a valid ID
+    return new \App\Mail\OrderStatusMail($order, \App\Enums\OrderStatus::Pending);
 });
