@@ -8,6 +8,7 @@ use Filament\Facades\Filament;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -17,7 +18,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasPermissions;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerifyEmail
+class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerifyEmail, HasLocalePreference
 {
     use HasFactory, Notifiable, HasRoles, HasPermissions,HasApiTokens;
 
@@ -81,5 +82,13 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     {
         return $this->belongsToMany(Product::class, 'saved_products')
             ->withTimestamps();
+    }
+
+    /**
+     * Get the user's preferred locale.
+     */
+    public function preferredLocale(): string
+    {
+        return $this->locale;
     }
 }
