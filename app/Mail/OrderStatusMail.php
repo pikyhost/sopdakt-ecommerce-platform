@@ -8,6 +8,9 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Mail\Mailables\Address;
+use Illuminate\Mail\Mailables\Envelope;
+
 
 class OrderStatusMail extends Mailable
 {
@@ -25,11 +28,19 @@ class OrderStatusMail extends Mailable
         $this->status = $status;
     }
 
+    /**
+     * Get the message envelope.
+     */
+    public function envelope(): Envelope
+    {
+        return new Envelope(
+            from: new Address('xeno@example.com', 'Xeno'),
+            subject: 'Test',
+        );
+    }
+
     public function build()
     {
-        $locale = $this->order->user->preferred_language ?? config('app.locale');
-        app()->setLocale($locale);
-
         // Get a more user-friendly order status message
         $statusMessage = __('messages.order_status_' . $this->status->value);
 
@@ -38,7 +49,6 @@ class OrderStatusMail extends Mailable
             ->with([
                 'order' => $this->order,
                 'statusMessage' => $statusMessage,
-                'locale' => $locale,
             ]);
     }
 }
