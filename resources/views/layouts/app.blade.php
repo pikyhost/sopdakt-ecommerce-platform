@@ -526,7 +526,7 @@
                             <p>Get all the latest information on events, sales and offers. Sign up for newsletter:
                             </p>
                             <form action="#" class="mb-0">
-                                <input type="email" class="form-control m-b-3" placeholder="Email address" required>
+                                <input type="email" class="form-control m-b-3" placeholder="Email address">
 
                                 <input type="submit" class="btn btn-primary shadow-none" value="Subscribe">
                             </form>

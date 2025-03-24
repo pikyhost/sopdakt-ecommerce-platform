@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Enums\OrderStatus;
 use App\Enums\UserRole;
 use App\Mail\GuestInvitationMail;
 use App\Mail\OrderStatusMail;
@@ -268,7 +269,7 @@ class Checkout extends Component
             // Send Order Confirmation Email with Dynamic Status
             $recipientEmail = Auth::check() ? Auth::user()->email : ($contact->email ?? null);
             if ($recipientEmail) {
-                Mail::to($recipientEmail)->send(new OrderStatusMail($order, $orderStatus->value));
+                Mail::to($recipientEmail)->send(new OrderStatusMail($order, $orderStatus));
             }
 
             // Send Guest Invitation Email (if user is a guest)
