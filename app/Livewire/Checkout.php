@@ -158,6 +158,9 @@ class Checkout extends Component
                 'email' => $this->email,
                 'phone' => $this->phone,
                 'address' => $this->address,
+                'country_id' => $this->cart->country_id,
+                'governorate_id' => $this->cart->governorate_id,
+                'city_id' => $this->cart->city_id,
             ]);
             return $user;
         } else {
@@ -174,6 +177,9 @@ class Checkout extends Component
                     'phone' => $this->phone,
                     'address' => $this->address,
                     'password' => bcrypt($this->password),
+                    'country_id' => $this->cart->country_id,
+                    'governorate_id' => $this->cart->governorate_id,
+                    'city_id' => $this->cart->city_id,
                 ]);
 
                 Auth::login($user);
@@ -190,6 +196,9 @@ class Checkout extends Component
                         'email' => $this->email,
                         'phone' => $this->phone,
                         'address' => $this->address,
+                        'country_id' => $this->cart->country_id,
+                        'governorate_id' => $this->cart->governorate_id,
+                        'city_id' => $this->cart->city_id,
                     ]);
                 } else {
                     $guestContact->update([
@@ -197,6 +206,9 @@ class Checkout extends Component
                         'email' => $this->email,
                         'phone' => $this->phone,
                         'address' => $this->address,
+                        'country_id' => $this->cart->country_id,
+                        'governorate_id' => $this->cart->governorate_id,
+                        'city_id' => $this->cart->city_id,
                     ]);
                 }
                 return $guestContact;
