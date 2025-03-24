@@ -35,7 +35,7 @@
         </tr>
         </thead>
         <tbody>
-        @foreach ($orderItems as $item)
+        @foreach ($order->items as $item)
             <tr style="border-bottom: 1px solid #ddd;">
                 <td style="padding: 10px;">
                     @if($item->product->getFeatureProductImageUrl())
