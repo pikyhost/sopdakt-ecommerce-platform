@@ -71,8 +71,8 @@ class ProfileContactDetails extends MyProfileComponent implements HasActions, Ha
                     ->columnSpanFull(),
 
                 Repeater::make('addresses')
+                    ->relationship('addresses', fn () => $this->user->addresses())
                     ->columnSpanFull()
-                    ->relationship('addresses')
                     ->schema([
                         TextInput::make('address_name')
                             ->label('Address Name (e.g. Home, Work)')
