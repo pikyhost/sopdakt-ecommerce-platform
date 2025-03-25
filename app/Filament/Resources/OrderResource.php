@@ -117,10 +117,10 @@ class OrderResource extends Resource
                 TextColumn::make('contact.phone')
                     ->iconColor('primary')
                     ->icon('heroicon-o-phone')
-                    ->label(__('Phone Number'))
+                    ->label(__('Contact Phone Number'))
                     ->placeholder(__('No phone number saved'))
                     ->searchable(),
-                
+
                 Tables\Columns\TextColumn::make('status')
                     ->label(__('Status'))
                     ->badge()
