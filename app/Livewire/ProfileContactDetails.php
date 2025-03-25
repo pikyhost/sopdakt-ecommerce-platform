@@ -27,8 +27,7 @@ class ProfileContactDetails extends MyProfileComponent implements HasActions, Ha
 
     public static $sort = 2;
 
-    public array $only = ['phone', 'address', 'country_id', 'governorate_id',
-        'city_id', 'preferred_language'];
+    public array $only = ['phone', 'preferred_language', 'second_phone'];
 
     public array $data;
 
@@ -39,14 +38,24 @@ class ProfileContactDetails extends MyProfileComponent implements HasActions, Ha
     public function mount()
     {
         $this->user = auth()->user();
+
+        if (!$this->user) {
+            abort(403, 'User not authenticated');
+        }
+
         $this->userClass = get_class($this->user);
+
+        // Ensure 'addresses' relationship is eager-loaded to prevent issues
+        $this->user->load('addresses');
 
         $this->form->fill($this->user->only($this->only));
     }
 
+
     public function form(Form $form): Form
     {
         return $form
+            ->model($this->user) // Bind the form to the user model
             ->schema([
                 PhoneInput::make('phone')
                     ->enableIpLookup(true) // Enable IP-based country detection
@@ -73,12 +82,15 @@ class ProfileContactDetails extends MyProfileComponent implements HasActions, Ha
                 Repeater::make('addresses')
                     ->relationship('addresses', fn () => $this->user->addresses())
                     ->columnSpanFull()
+                    ->label(__('Addresses'))
                     ->schema([
                         TextInput::make('address_name')
+                            ->columnSpanFull()
                             ->label('Address Name (e.g. Home, Work)')
                             ->required(),
 
                         Select::make('country_id')
+                            ->columnSpanFull()
                             ->label(__('Country'))
                             ->options(Country::pluck('name', 'id'))
                             ->live()
@@ -88,6 +100,7 @@ class ProfileContactDetails extends MyProfileComponent implements HasActions, Ha
                             }),
 
                         Select::make('governorate_id')
+                            ->columnSpanFull()
                             ->label(__('Governorate'))
                             ->options(function (Get $get) {
                                 return Governorate::where('country_id', $get('country_id'))->pluck('name', 'id');
@@ -98,6 +111,7 @@ class ProfileContactDetails extends MyProfileComponent implements HasActions, Ha
                             }),
 
                         Select::make('city_id')
+                            ->columnSpanFull()
                             ->label(__('City'))
                             ->options(function (Get $get) {
                                 return City::where('governorate_id', $get('governorate_id'))->pluck('name', 'id');
@@ -109,10 +123,12 @@ class ProfileContactDetails extends MyProfileComponent implements HasActions, Ha
 
 
                         TextArea::make('address')
+                            ->columnSpanFull()
                             ->label(__('profile.address'))
                             ->nullable(),
 
                         Checkbox::make('is_primary')
+                            ->columnSpanFull()
                             ->label(__('Primary Address'))
                             ->default(false),
                     ])
