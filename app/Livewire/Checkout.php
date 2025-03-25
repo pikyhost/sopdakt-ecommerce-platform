@@ -155,14 +155,17 @@ class Checkout extends Component
         if (Auth::check()) {
             // Authenticated user - Update their contact info
             $user = Auth::user();
+            $primaryAddress = $user->addresses()->where('is_primary', true)->first();
             $user->update([
                 'name' => $this->name,
                 'email' => $this->email,
                 'phone' => $this->phone,
-                'address' => $this->address,
                 'country_id' => $this->cart->country_id,
                 'governorate_id' => $this->cart->governorate_id,
                 'city_id' => $this->cart->city_id,
+            ]);
+            $primaryAddress->update([
+                'address' => $this->address,
             ]);
             return $user;
         } else {
