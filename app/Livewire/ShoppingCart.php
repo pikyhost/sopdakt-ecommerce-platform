@@ -52,10 +52,15 @@ class ShoppingCart extends Component
                 $this->city_id = $contact->city_id;
             }
         } else {
-            // If user is authenticated, use their saved country/governorate/city
-            $this->country_id = auth()->user()->country_id;
-            $this->governorate_id = auth()->user()->governorate_id;
-            $this->city_id = auth()->user()->city_id;
+            // Retrieve the user's primary address
+            $primaryAddress = auth()->user()->addresses()->where('is_primary', true)->first();
+
+            if ($primaryAddress) {
+                // Assign values from the primary address
+                $this->country_id = $primaryAddress->country_id;
+                $this->governorate_id = $primaryAddress->governorate_id;
+                $this->city_id = $primaryAddress->city_id;
+            }
         }
 
         // Load dependent dropdowns
