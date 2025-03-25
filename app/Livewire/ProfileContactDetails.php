@@ -121,13 +121,13 @@ class ProfileContactDetails extends MyProfileComponent implements HasActions, Ha
                                 return empty($get('governorate_id')) ? __('Select a governorate first') : 'Select a city';
                             }),
 
-
                         TextArea::make('address')
                             ->columnSpanFull()
                             ->label(__('profile.address'))
                             ->nullable(),
 
                         Checkbox::make('is_primary')
+                            ->distinct()
                             ->columnSpanFull()
                             ->label(__('Primary Address'))
                             ->default(false),
