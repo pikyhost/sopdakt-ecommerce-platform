@@ -95,7 +95,7 @@ class OrderResource extends Resource
                 TextColumn::make('user.phone')
                     ->iconColor('primary')
                     ->icon('heroicon-o-phone')
-                    ->label(__('Phone Number'))
+                    ->label(__('User Phone Number'))
                     ->placeholder(__('No phone number saved'))
                     ->searchable(),
 
