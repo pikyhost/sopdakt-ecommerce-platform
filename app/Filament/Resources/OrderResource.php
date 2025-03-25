@@ -29,6 +29,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\ActionSize;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Mail;
@@ -91,19 +92,17 @@ class OrderResource extends Resource
                     ->numeric()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('user.phone')
+                TextColumn::make('user.phone')
+                    ->iconColor('primary')
+                    ->icon('heroicon-o-phone')
                     ->label(__('Phone Number'))
-                    ->searchable()
-                    ->placeholder('-')
-                    ->numeric()
-                    ->sortable(),
+                    ->placeholder(__('No phone number saved'))
+                    ->searchable(),
 
                 Tables\Columns\TextColumn::make('user.second_phone')
                     ->label(__('Second Phone Number'))
                     ->searchable()
-                    ->placeholder('-')
-                    ->numeric()
-                    ->sortable(),
+                    ->placeholder('-'),
 
                 Tables\Columns\TextColumn::make('contact.name')
                     ->formatStateUsing(function ($record) {
@@ -115,13 +114,13 @@ class OrderResource extends Resource
                     ->numeric()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('contact.phone')
+                TextColumn::make('contact.phone')
+                    ->iconColor('primary')
+                    ->icon('heroicon-o-phone')
                     ->label(__('Phone Number'))
-                    ->searchable()
-                    ->placeholder('-')
-                    ->numeric()
-                    ->sortable(),
-
+                    ->placeholder(__('No phone number saved'))
+                    ->searchable(),
+                
                 Tables\Columns\TextColumn::make('status')
                     ->label(__('Status'))
                     ->badge()
