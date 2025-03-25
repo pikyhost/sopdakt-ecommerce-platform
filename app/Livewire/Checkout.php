@@ -160,12 +160,12 @@ class Checkout extends Component
                 'name' => $this->name,
                 'email' => $this->email,
                 'phone' => $this->phone,
-                'country_id' => $this->cart->country_id,
-                'governorate_id' => $this->cart->governorate_id,
-                'city_id' => $this->cart->city_id,
             ]);
             $primaryAddress->update([
                 'address' => $this->address,
+                'country_id' => $this->cart->country_id,
+                'governorate_id' => $this->cart->governorate_id,
+                'city_id' => $this->cart->city_id,
             ]);
             return $user;
         } else {
