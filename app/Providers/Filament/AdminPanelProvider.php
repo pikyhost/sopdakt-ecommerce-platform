@@ -113,9 +113,6 @@ class AdminPanelProvider extends PanelProvider
                 SpatieLaravelTranslatablePlugin::make()->defaultLocales(['en', 'ar']),
                 GlobalSearchModalPlugin::make(),
                 BreezyCore::make()
-                    ->passwordUpdateRules(
-                        rules: ['min:8', new CustomPassword()] // Minimum 8 characters & custom rule
-                    )
                     ->myProfileComponents([
                         ProfileContactDetails::class,
                     ])
