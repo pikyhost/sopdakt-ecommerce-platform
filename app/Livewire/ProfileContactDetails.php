@@ -6,7 +6,10 @@ use App\Models\City;
 use App\Models\Country;
 use App\Models\Governorate;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\Radio;
@@ -45,14 +48,6 @@ class ProfileContactDetails extends MyProfileComponent implements HasActions, Ha
     {
         return $form
             ->schema([
-//                PhoneInput::make('phone')
-//                    ->enableIpLookup(true) // Enable IP-based country detection
-//                    ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
-//                    ->nullable()
-//                    ->unique(ignoreRecord: true)
-//                    ->label(__('profile.phone'))
-//                    ->columnSpanFull(),
-
                 PhoneInput::make('phone')
                     ->enableIpLookup(true) // Enable IP-based country detection
                     ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
@@ -64,34 +59,67 @@ class ProfileContactDetails extends MyProfileComponent implements HasActions, Ha
                     ->label(__('profile.phone'))
                     ->columnSpanFull(),
 
-                Select::make('country_id')
-                    ->label(__('Country'))
-                    ->options(Country::pluck('name', 'id'))
-                    ->live()
-                    ->afterStateUpdated(function (callable $set, Get $get) {
-                        $set('governorate_id', null);
-                        $set('city_id', null);
-                    }),
+                PhoneInput::make('second_phone')
+                    ->enableIpLookup(true) // Enable IP-based country detection
+                    ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
+                    ->nullable()
+                    ->rules([
+                        'max:20', // Match database column limit
+                        Rule::unique('users', 'phone')->ignore(auth()->id()), // Ignore the current user in uniqueness check
+                    ])
+                    ->label(__('Secondary Phone'))
+                    ->columnSpanFull(),
 
-                Select::make('governorate_id')
-                    ->label(__('Governorate'))
-                    ->options(function (Get $get) {
-                        return Governorate::where('country_id', $get('country_id'))->pluck('name', 'id');
-                    })
-                    ->live()
-                    ->afterStateUpdated(function ($state, callable $set, Get $get) {
-                        $set('city_id', null);
-                    }),
+                Repeater::make('addresses')
+                    ->columnSpanFull()
+                    ->relationship('addresses')
+                    ->schema([
+                        TextInput::make('address_name')
+                            ->label('Address Name (e.g. Home, Work)')
+                            ->required(),
 
-                Select::make('city_id')
-                    ->label(__('City'))
-                    ->options(function (Get $get) {
-                        return City::where('governorate_id', $get('governorate_id'))->pluck('name', 'id');
-                    })
-                    ->live()
-                    ->placeholder(function (Get $get) {
-                        return empty($get('governorate_id')) ? __('Select a governorate first') : 'Select a city';
-                    }),
+                        Select::make('country_id')
+                            ->label(__('Country'))
+                            ->options(Country::pluck('name', 'id'))
+                            ->live()
+                            ->afterStateUpdated(function (callable $set, Get $get) {
+                                $set('governorate_id', null);
+                                $set('city_id', null);
+                            }),
+
+                        Select::make('governorate_id')
+                            ->label(__('Governorate'))
+                            ->options(function (Get $get) {
+                                return Governorate::where('country_id', $get('country_id'))->pluck('name', 'id');
+                            })
+                            ->live()
+                            ->afterStateUpdated(function ($state, callable $set, Get $get) {
+                                $set('city_id', null);
+                            }),
+
+                        Select::make('city_id')
+                            ->label(__('City'))
+                            ->options(function (Get $get) {
+                                return City::where('governorate_id', $get('governorate_id'))->pluck('name', 'id');
+                            })
+                            ->live()
+                            ->placeholder(function (Get $get) {
+                                return empty($get('governorate_id')) ? __('Select a governorate first') : 'Select a city';
+                            }),
+
+
+                        TextArea::make('address')
+                            ->label(__('profile.address'))
+                            ->nullable(),
+
+                        Checkbox::make('is_primary')
+                            ->label(__('Primary Address'))
+                            ->default(false),
+                    ])
+                    ->columns(2)
+                    ->addable()
+                    ->deletable()
+                    ->reorderable(),
 
                 TextArea::make('address')
                     ->label(__('profile.address'))

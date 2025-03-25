@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('avatar_url')->nullable();
             $table->string('name')->index();
-            $table->tinyText('address')->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
@@ -23,11 +22,6 @@ return new class extends Migration
             $table->rememberToken();
             $table->timestamps();
             $table->string('preferred_language', 5)->default('en');
-
-
-            $table->foreignId('country_id')->nullable()->constrained('countries')->cascadeOnDelete();
-            $table->foreignId('governorate_id')->nullable()->constrained('governorates')->cascadeOnDelete();
-            $table->foreignId('city_id')->nullable()->constrained('cities')->cascadeOnDelete();
 
             $table->boolean('is_active')->default(true);
         });
