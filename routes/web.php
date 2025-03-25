@@ -2,7 +2,6 @@
 
 use App\Livewire\AcceptGuestInvitation;
 use App\Livewire\AcceptInvitation;
-use App\Mail\OrderConfirmationMail;
 use App\Models\Order;
 use Illuminate\Support\Facades\Route;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;

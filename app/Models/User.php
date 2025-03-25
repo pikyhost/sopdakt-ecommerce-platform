@@ -94,7 +94,6 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
 
     public function addresses()
     {
-        return $this->hasMany(UserAddress::class);
+        return $this->hasMany(UserAddress::class, 'user_id');
     }
-
 }
