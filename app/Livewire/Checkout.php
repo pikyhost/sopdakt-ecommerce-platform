@@ -60,10 +60,12 @@ class Checkout extends Component
         if (Auth::check()) {
             // Load data for authenticated users
             $user = Auth::user();
+            $primaryAddress = $user->addresses()->where('is_primary', true)->first();
+
             $this->name = $user->name;
             $this->email = $user->email;
             $this->phone = $user->phone;
-            $this->address = $user->address;
+            $this->address = $primaryAddress->address;
         } else {
             // Load data for guest users using session_id
             $session_id = session()->getId();

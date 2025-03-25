@@ -82,14 +82,41 @@ class OrderResource extends Resource
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('user.name')
+                    ->formatStateUsing(function ($record) {
+                        return $record->user->name.' (#'.$record->user_id.')';
+                    })
                     ->label(__('User Name'))
                     ->searchable()
                     ->placeholder('-')
                     ->numeric()
                     ->sortable(),
 
+                Tables\Columns\TextColumn::make('user.phone')
+                    ->label(__('Phone Number'))
+                    ->searchable()
+                    ->placeholder('-')
+                    ->numeric()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('user.second_phone')
+                    ->label(__('Second Phone Number'))
+                    ->searchable()
+                    ->placeholder('-')
+                    ->numeric()
+                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('contact.name')
+                    ->formatStateUsing(function ($record) {
+                        return $record->contact->name.' (#'.$record->contact_id.')';
+                    })
                     ->label(__('Contact Name'))
+                    ->searchable()
+                    ->placeholder('-')
+                    ->numeric()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('contact.phone')
+                    ->label(__('Phone Number'))
                     ->searchable()
                     ->placeholder('-')
                     ->numeric()
