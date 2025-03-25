@@ -41,7 +41,7 @@ class Checkout extends Component
             'name' => 'required|string|max:255',
             'address' => 'required|string|max:500',
             'email' => 'required|email|max:255|unique:users,email,' . auth()->id(),
-            'phone' => 'required|string|max:11',
+            'phone' => 'required|string|min:11',
             'notes' => 'nullable|string',
             'password' => 'nullable|min:6|required_if:create_account,true',
         ];
