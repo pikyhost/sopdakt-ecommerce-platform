@@ -6,15 +6,15 @@ use App\Models\Policy;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\App;
 
-class PrivacyPolicy extends Page
+class RefundPolicy extends Page
 {
     protected static ?int $navigationSort = 102;
 
-    protected static string $view = 'filament.pages.privacy-policy';
+    protected static string $view = 'filament.pages.refund-policy';
 
-    protected static ?string $slug = 'privacy-and-policy';
+    protected static ?string $slug = 'refund-policy';
 
-    protected static ?string $navigationIcon = 'heroicon-o-shield-check'; // Shield with a checkmark for privacy
+    protected static ?string $navigationIcon = 'heroicon-o-receipt-refund'; // Shield with a checkmark for privacy
 
     public static function shouldRegisterNavigation(): bool
     {
@@ -23,7 +23,7 @@ class PrivacyPolicy extends Page
 
     public static function getNavigationLabel(): string
     {
-        return __('policy.privacy_policy');
+        return __('policy.refund_policy');
     }
 
     public static function getNavigationGroup(): ?string
@@ -36,12 +36,12 @@ class PrivacyPolicy extends Page
      */
     public function getHeading(): string|\Illuminate\Contracts\Support\Htmlable
     {
-        return __('policy.privacy_policy');
+        return __('policy.refund_policy');
     }
 
-    public function getPolicy(): string
+    public function getRefundPolicy(): string
     {
         $locale = App::getLocale();
-        return Policy::first()?->{"privacy_policy_{$locale}"} ?? __('policy.no_policy_found');
+        return Policy::first()?->{"refund_policy_{$locale}"} ?? __('policy.no_policy_found');
     }
 }
