@@ -56,15 +56,19 @@ class ShoppingCart extends Component
                 $this->country_id = GeneralHelper::getCountryId();
             }
         } else {
-            // Retrieve the user's primary address
-            $primaryAddress = auth()->user()->addresses()->where('is_primary', true)->first();
+            // Retrieve the user's primary address or fallback to the first available address
+            $user = auth()->user();
+            $primaryAddress = $user->addresses()->where('is_primary', true)->first();
+            $firstAddress = $user->addresses()->first(); // Get the first available address if no primary exists
 
-            if ($primaryAddress) {
-                $this->country_id = $primaryAddress->country_id ?? GeneralHelper::getCountryId();
-                $this->governorate_id = $primaryAddress->governorate_id;
-                $this->city_id = $primaryAddress->city_id;
+            $address = $primaryAddress ?? $firstAddress; // Use primary if available, otherwise fallback to first
+
+            if ($address) {
+                $this->country_id = $address->country_id;
+                $this->governorate_id = $address->governorate_id;
+                $this->city_id = $address->city_id;
             } else {
-                // If no primary address, set country based on IP
+                // If no address exists, set country based on IP
                 $this->country_id = GeneralHelper::getCountryId();
             }
         }
@@ -73,6 +77,7 @@ class ShoppingCart extends Component
         $this->governorates = $this->country_id ? Governorate::where('country_id', $this->country_id)->get() : [];
         $this->cities = $this->governorate_id ? City::where('governorate_id', $this->governorate_id)->get() : [];
     }
+
 
 
     private function extractPrice($priceString)

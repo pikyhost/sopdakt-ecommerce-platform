@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Filament\Client\Resources\OrderResource\Pages\CreateOrder;
 use App\Filament\Client\Resources\OrderResource\Pages\EditOrder;
 use App\Filament\Client\Resources\OrderResource\Pages\ListOrders;
+use App\Filament\Client\Resources\OrderResource\Pages\ViewOrder;
 use App\Models\Bundle;
 use App\Models\City;
 use App\Models\Country;
@@ -560,6 +561,7 @@ class OrderResource extends Resource
             'index' => ListOrders::route('/'),
             'create' => CreateOrder::route('/create'),
             'edit' => EditOrder::route('/{record}/edit'),
+            'view' => ViewOrder::route('/{record}'),
         ];
     }
 
