@@ -241,7 +241,7 @@
                                 <ul>
                                     <li><a href="{{ route('wishlist') }}">Wishlist</a></li>
                                     <li><a href="{{ url('/cart') }}">Shopping Cart</a></li>
-                                    <li><a href="{{ route('/checkout') }}">Checkout</a></li>
+                                    <li><a href="{{ url('/checkout') }}">Checkout</a></li>
                                     <li><a href="{{ url('/client') }}">Dashboard</a></li>
                                     <li><a href="{{ url('/about-us') }}">About Us</a></li>
                                     <li><a href="#">Blog</a>
@@ -938,7 +938,7 @@
                             <a href="cart.html">Shopping Cart</a>
                         </li>
                         <li>
-                            <a href="checkout.html">Checkout</a>
+                            <a href="{{ url('checkout') }}">Checkout</a>
                         </li>
                         <li>
                             <a href="dashboard.html">Dashboard</a>
