@@ -12,9 +12,11 @@ use App\Models\Invitation;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Setting;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Cart;
@@ -40,7 +42,12 @@ class Checkout extends Component
         return [
             'name' => 'required|string|max:255',
             'address' => 'required|string|max:500',
-            'email' => 'required|email|max:255|unique:users,email,' . auth()->id(),
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore(Auth::id()), // Correct validation
+            ],
             'phone' => 'required|string|min:11',
             'second_phone' => 'required|string|min:11',
             'notes' => 'nullable|string',
@@ -162,6 +169,13 @@ class Checkout extends Component
         if (Auth::check()) {
             // Authenticated user - Update their contact info
             $user = Auth::user();
+
+            // Ensure new email is not used by another user
+            if ($user->email !== $this->email && User::where('email', $this->email)->exists()) {
+                $this->addError('error', __('This email is already in use by another user.'));
+                return;
+            }
+
             $primaryAddress = $user->addresses()->where('is_primary', true)->first();
             $user->update([
                 'name' => $this->name,
