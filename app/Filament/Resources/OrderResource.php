@@ -486,7 +486,7 @@ class OrderResource extends Resource
             Log::info("Order status email sent to: $email");
         }
     }
-    
+
     private static function prepareJtExpressOrderData($order): array
     {
         $data = [

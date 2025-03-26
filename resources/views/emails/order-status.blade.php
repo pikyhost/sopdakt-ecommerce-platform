@@ -10,12 +10,13 @@
 </head>
 <body style="font-family: Arial, sans-serif; background-color: #f8f9fa; margin: 0; padding: 0; direction: {{ app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }}; text-align: {{ app()->getLocale() == 'ar' ? 'right' : 'left' }};">
 
-<style>
-    .website-name {
-        font-size: 36px; /* Bigger font size */
+<div style="max-width: 600px; margin: 20px auto; background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);">
+    <h1 style="
+
+      font-size: 36px; /* Bigger font size */
         font-weight: bold;
         font-family: 'Poppins', sans-serif;
-        color: #1877F2; /* Facebook Blue */
+        color: black; /* Facebook Blue */
         text-transform: uppercase;
         letter-spacing: 1.5px;
         text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
@@ -25,11 +26,8 @@
         background: linear-gradient(45deg, #1877F2, #1DA1F2, #E4405F);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-    }
-    </style>
 
-<div style="max-width: 600px; margin: 20px auto; background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);">
-    <h1 class="website-name">
+    ">
         {{ \App\Models\Setting::getSetting('site_name') }}
     </h1>
 
