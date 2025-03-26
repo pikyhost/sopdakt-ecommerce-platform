@@ -973,21 +973,7 @@
                     </ul>
                 </li>
             </ul>
-
-            <ul class="mobile-menu mt-2 mb-2">
-                <li class="border-0">
-                    <a href="#">
-                        Special Offer!
-                    </a>
-                </li>
-                <li class="border-0">
-                    <a href="https://1.envato.market/DdLk5" target="_blank">
-                        Buy {{ $siteName }}!
-                        <span class="tip tip-hot">Hot</span>
-                    </a>
-                </li>
-            </ul>
-
+            
             <ul class="mobile-menu">
                 <li><a href="login.html">My Account</a></li>
                 <li><a href="demo18-contact.html">Contact Us</a></li>

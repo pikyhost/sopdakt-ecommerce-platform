@@ -95,6 +95,12 @@
                         </div>
 
                         <div class="form-group">
+                            <label>Secondary Phone (optional)</label>
+                            <input type="tel" class="form-control" wire:model.defer="second_phone"/>
+                            @error('second_phone') <span class="text-danger">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div class="form-group">
                             <label>Email address <abbr class="required" title="required">*</abbr></label>
                             <input type="email" class="form-control" wire:model.defer="email" required />
                             @error('email') <span class="text-danger">{{ $message }}</span> @enderror
