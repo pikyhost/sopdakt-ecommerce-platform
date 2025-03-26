@@ -78,8 +78,8 @@ class OrderTracking extends Page implements HasForms, HasTable
                     $query->whereRaw('1 = 0'); // Ensures empty state until a search is made
                 }
             })
-            ->emptyStateHeading('Please enter a tracking number.')
-            ->emptyStateDescription('No orders were found matching the given tracking number.')
+            ->emptyStateHeading(__('Please enter a tracking number.'))
+            ->emptyStateDescription(__('No orders were found matching the given tracking number.'))
             ->actions([
                 ActionGroup::make([
                     Action::make('viewOrder')
