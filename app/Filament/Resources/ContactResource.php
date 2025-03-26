@@ -6,6 +6,7 @@ use App\Filament\Resources\ContactResource\Pages;
 use App\Models\Contact;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Webbingbrasil\FilamentAdvancedFilter\Filters\DateFilter;
 
@@ -63,8 +64,18 @@ class ContactResource extends Resource
                     ->label(__('Email'))
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('phone')
+                TextColumn::make('phone')
+                    ->iconColor('primary')
+                    ->icon('heroicon-o-phone')
                     ->label(__('Phone'))
+                    ->placeholder(__('No phone number saved'))
+                    ->searchable(),
+
+                TextColumn::make('second_phone')
+                    ->iconColor('primary')
+                    ->icon('heroicon-o-phone')
+                    ->label(__('Second Phone'))
+                    ->placeholder(__('No phone number saved'))
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('created_at')

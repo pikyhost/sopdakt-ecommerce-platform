@@ -92,6 +92,16 @@ class OrderResource extends Resource
                     ->numeric()
                     ->sortable(),
 
+                Tables\Columns\TextColumn::make('contact.name')
+                    ->formatStateUsing(function ($record) {
+                        return $record->contact->name.' (#'.$record->contact_id.')';
+                    })
+                    ->label(__('Contact Name'))
+                    ->searchable()
+                    ->placeholder('-')
+                    ->numeric()
+                    ->sortable(),
+
                 TextColumn::make('user.phone')
                     ->iconColor('primary')
                     ->icon('heroicon-o-phone')
@@ -103,16 +113,6 @@ class OrderResource extends Resource
                     ->label(__('Second Phone Number'))
                     ->searchable()
                     ->placeholder('-'),
-
-                Tables\Columns\TextColumn::make('contact.name')
-                    ->formatStateUsing(function ($record) {
-                        return $record->contact->name.' (#'.$record->contact_id.')';
-                    })
-                    ->label(__('Contact Name'))
-                    ->searchable()
-                    ->placeholder('-')
-                    ->numeric()
-                    ->sortable(),
 
                 TextColumn::make('contact.phone')
                     ->iconColor('primary')

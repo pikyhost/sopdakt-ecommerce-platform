@@ -26,7 +26,7 @@ class Checkout extends Component
     public $currentRoute;
     public $name;
     public $address;
-    public $email, $phone, $notes, $create_account = false, $password;
+    public $email, $phone, $second_phone, $notes, $create_account = false, $password;
     public $total = 0;
     public $subTotal = 0;
     public $cartItems = [];
@@ -42,6 +42,7 @@ class Checkout extends Component
             'address' => 'required|string|max:500',
             'email' => 'required|email|max:255|unique:users,email,' . auth()->id(),
             'phone' => 'required|string|min:11',
+            'second_phone' => 'required|string|min:11',
             'notes' => 'nullable|string',
             'password' => 'nullable|min:6|required_if:create_account,true',
         ];
@@ -62,10 +63,15 @@ class Checkout extends Component
             $user = Auth::user();
             $primaryAddress = $user->addresses()->where('is_primary', true)->first();
 
+            if(!$primaryAddress && $user->addresses()->exists()) {
+                $address = auth()->user()->addresses()->first();
+            }
+
             $this->name = $user->name;
             $this->email = $user->email;
             $this->phone = $user->phone;
-            $this->address = $primaryAddress->address;
+            $this->second_phone = $user->second_phone;
+            $this->address = $primaryAddress->address ?? $address->address?? '';
         } else {
             // Load data for guest users using session_id
             $session_id = session()->getId();
@@ -75,6 +81,7 @@ class Checkout extends Component
                 $this->name = $guestContact->name;
                 $this->email = $guestContact->email;
                 $this->phone = $guestContact->phone;
+                $this->second_phone = $guestContact->second_phone;
                 $this->address = $guestContact->address;
             }
         }
@@ -160,13 +167,17 @@ class Checkout extends Component
                 'name' => $this->name,
                 'email' => $this->email,
                 'phone' => $this->phone,
+                'second_phone' => $this->second_phone,
             ]);
-            $primaryAddress->update([
-                'address' => $this->address,
-                'country_id' => $this->cart->country_id,
-                'governorate_id' => $this->cart->governorate_id,
-                'city_id' => $this->cart->city_id,
-            ]);
+
+            if ($primaryAddress) {
+                $primaryAddress->update([
+                    'address' => $this->address,
+                    'country_id' => $this->cart->country_id,
+                    'governorate_id' => $this->cart->governorate_id,
+                    'city_id' => $this->cart->city_id,
+                ]);
+            }
             return $user;
         } else {
             $session_id = session()->getId();
@@ -180,6 +191,7 @@ class Checkout extends Component
                     'name' => $this->name,
                     'email' => $this->email,
                     'phone' => $this->phone,
+                    'second_phone' => $this->second_phone,
                     'address' => $this->address,
                     'password' => bcrypt($this->password),
                     'country_id' => $this->cart->country_id,
@@ -200,6 +212,7 @@ class Checkout extends Component
                         'name' => $this->name,
                         'email' => $this->email,
                         'phone' => $this->phone,
+                        'second_phone' => $this->second_phone,
                         'address' => $this->address,
                         'country_id' => $this->cart->country_id,
                         'governorate_id' => $this->cart->governorate_id,
@@ -210,6 +223,7 @@ class Checkout extends Component
                         'name' => $this->name,
                         'email' => $this->email,
                         'phone' => $this->phone,
+                        'second_phone' => $this->second_phone,
                         'address' => $this->address,
                         'country_id' => $this->cart->country_id,
                         'governorate_id' => $this->cart->governorate_id,
