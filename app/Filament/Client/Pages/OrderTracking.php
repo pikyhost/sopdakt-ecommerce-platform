@@ -95,7 +95,13 @@ class OrderTracking extends Page implements HasForms, HasTable
             ->filtersFormColumns(4)
             ->columns(static::getTableColumns())
             ->paginationPageOptions([9, 18, 27])
+            ->query(static::getQuery())
             ->recordUrl(fn ($record) => url('/client/orders/'. $record->id));
+    }
+
+    protected static function getQuery(): Builder
+    {
+        return Order::where('user_id', auth()->id());
     }
 
     public static function canAccess(): bool
