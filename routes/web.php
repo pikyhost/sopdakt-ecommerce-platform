@@ -62,7 +62,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
     Route::post('landing-pages/{id}/order', [LandingPageController::class, 'saveOrder'])->name('landing-page.purchase-form.order');
     Route::get('landing-pages/{slug}/thanks', [LandingPageController::class, 'thanks'])->name('landing-pages.thanks');
 
-    Route::get('wishlist', [WishlistController::class, 'index']);
+    Route::get('wishlist', [WishlistController::class, 'index'])->name('wishlist');
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::get('/order-success', [OrderCompleteController::class, 'index'])->name('order.complete');

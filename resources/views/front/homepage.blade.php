@@ -226,7 +226,7 @@
                             <li class="d-none d-xl-block">
                                 <a href="#">Pages</a>
                                 <ul>
-                                    <li><a href="wishlist.html">Wishlist</a></li>
+                                    <li><a href="{{ route('wishlist') }}">Wishlist</a></li>
                                     <li><a href="cart.html">Shopping Cart</a></li>
                                     <li><a href="checkout.html">Checkout</a></li>
                                     <li><a href="dashboard.html">Dashboard</a></li>
@@ -297,7 +297,7 @@
 
                     <a href="{{ url('/client/login') }}" class="header-icon" title="login"><i class="icon-user-2"></i></a>
 
-                    <a href="{{ url('/client/my-wishlist') }}" class="header-icon" title="Wishlist"><i class="icon-wishlist-2">
+                    <a href="{{route('wishlist') }}" class="header-icon" title="Wishlist"><i class="icon-wishlist-2">
                             </i></a>
 
                     <div class="header-icon header-search header-search-popup header-search-category text-right">
@@ -931,7 +931,7 @@
                     <a href="#">Pages<span class="tip tip-hot">Hot!</span></a>
                     <ul>
                         <li>
-                            <a href="wishlist.html">Wishlist</a>
+                            <a href="{{ route('wishlist') }}">Wishlist</a>
                         </li>
                         <li>
                             <a href="cart.html">Shopping Cart</a>
@@ -978,7 +978,7 @@
                 <li><a href="login.html">My Account</a></li>
                 <li><a href="demo18-contact.html">Contact Us</a></li>
                 <li><a href="blog.html">Blog</a></li>
-                <li><a href="wishlist.html">My Wishlist</a></li>
+                <li><a href="{{ route('wishlist') }}">My Wishlist</a></li>
                 <li><a href="cart.html">Cart</a></li>
                 <li><a href="login.html" class="login-link">Log In</a></li>
             </ul>
@@ -1037,7 +1037,7 @@
         </a>
     </div>
     <div class="sticky-info">
-        <a href="wishlist.html" class="">
+        <a href="{{ route('wishlist') }}" class="">
             <i class="icon-wishlist-2"></i>Wishlist
         </a>
     </div>
