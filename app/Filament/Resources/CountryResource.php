@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CountryResource\Pages\ManageCountries;
 use App\Models\Country;
+use App\Traits\HasMakeCostZeroAction;
 use Closure;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -26,7 +27,7 @@ use Illuminate\Support\Facades\DB;
 
 class CountryResource extends Resource
 {
-    use Translatable;
+    use Translatable, HasMakeCostZeroAction;
 
     protected static ?string $model = Country::class;
 
@@ -178,6 +179,7 @@ class CountryResource extends Resource
         return [
             BulkActionGroup::make([
                 DeleteBulkAction::make(),
+                self::makeCostZeroBulkAction(),
             ]),
         ];
     }

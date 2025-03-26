@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CountryGroupResource\Pages;
 use App\Models\CountryGroup;
+use App\Traits\HasMakeCostZeroAction;
 use Closure;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 class CountryGroupResource extends Resource
 {
     use Translatable;
+    use HasMakeCostZeroAction;
 
     protected static ?string $model = CountryGroup::class;
 
@@ -132,9 +134,6 @@ class CountryGroupResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([
-                //
-            ])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
@@ -142,6 +141,7 @@ class CountryGroupResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    self::makeCostZeroBulkAction(),
                 ]),
             ]);
     }

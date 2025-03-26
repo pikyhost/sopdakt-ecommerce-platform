@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\ShippingZoneResource\Pages;
 use App\Models\ShippingZone;
+use App\Traits\HasMakeCostZeroAction;
 use Closure;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
@@ -19,6 +20,7 @@ use Illuminate\Support\Facades\DB;
 class ShippingZoneResource extends Resource
 {
     use Translatable;
+    use HasMakeCostZeroAction;
 
     protected static ?string $model = ShippingZone::class;
 
@@ -136,6 +138,12 @@ class ShippingZoneResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
+            ])->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label(__('delete_bulk')),
+                    self::makeCostZeroBulkAction(),
+                ]),
             ]);
     }
 

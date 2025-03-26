@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CityResource\Pages;
 use App\Models\City;
+use App\Traits\HasMakeCostZeroAction;
 use Closure;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -19,6 +20,7 @@ use Illuminate\Validation\Rules\Unique;
 class CityResource extends Resource
 {
     use Translatable;
+    use HasMakeCostZeroAction;
 
     protected static ?string $model = City::class;
 
@@ -149,6 +151,7 @@ class CityResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
                         ->label(__('delete_bulk')),
+                    self::makeCostZeroBulkAction(),
                 ]),
             ]);
     }
