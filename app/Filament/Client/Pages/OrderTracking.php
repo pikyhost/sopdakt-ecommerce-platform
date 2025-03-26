@@ -30,6 +30,11 @@ class OrderTracking extends Page implements HasForms, HasTable
     protected static ?string $slug = 'orders-tracking';
     protected static ?int $navigationSort = 99;
 
+    public static function getNavigationGroup(): ?string
+    {
+        return __('My orders');
+    }
+
     public static function getNavigationLabel(): string
     {
         return __('Order Tracking');

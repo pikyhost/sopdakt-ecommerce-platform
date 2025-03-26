@@ -4,7 +4,6 @@ namespace App\Filament\Resources;
 
 use App\Enums\OrderStatus;
 use App\Filament\Resources\OrderResource\Pages;
-use App\Mail\OrderConfirmationMail;
 use App\Mail\OrderStatusMail;
 use App\Models\Bundle;
 use App\Models\City;
