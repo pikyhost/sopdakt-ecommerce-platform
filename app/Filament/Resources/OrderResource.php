@@ -28,6 +28,7 @@ use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\ActionSize;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -81,6 +82,11 @@ class OrderResource extends Resource
                     ->formatStateUsing(fn($state) => '#' . $state)
                     ->label(__('Number'))
                     ->searchable(),
+
+                TextColumn::make('tracking_number')
+                    ->label(__('Tracking Number'))
+                    ->searchable()
+                    ->weight(FontWeight::Bold),
 
                 Tables\Columns\TextColumn::make('user.name')
                     ->formatStateUsing(function ($record) {
