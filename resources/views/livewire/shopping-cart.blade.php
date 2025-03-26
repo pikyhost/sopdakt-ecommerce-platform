@@ -209,4 +209,10 @@
             </div>
         @endif
     </div>
+
+   <div>
+       <h1>
+           Other Products
+       </h1>
+   </div>
 </div>

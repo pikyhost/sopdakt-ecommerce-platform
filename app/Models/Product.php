@@ -220,4 +220,14 @@ class Product extends Model implements HasMedia
             $q->where('countries.id', $countryId);
         });
     }
+
+    public function complementaryProducts(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Product::class,
+            'complementary_products',
+            'product_id',
+            'complementary_product_id'
+        );
+    }
 }

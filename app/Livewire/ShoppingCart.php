@@ -78,8 +78,6 @@ class ShoppingCart extends Component
         $this->cities = $this->governorate_id ? City::where('governorate_id', $this->governorate_id)->get() : [];
     }
 
-
-
     private function extractPrice($priceString)
     {
         return (float) preg_replace('/[^0-9.]/', '', $priceString); // Extract numeric value
