@@ -18,7 +18,8 @@ use App\Http\Controllers\{CartController,
 
 Route::redirect('/admin/settings', '/admin/settings/1/edit');
 Route::redirect('/admin/home-page-settings', '/admin/home-page-settings/1/edit');
-Route::redirect('/admin/top-notices', 'admin/top-notices/1/edit');
+Route::redirect('/admin/top-notices', '/admin/top-notices/1/edit');
+Route::redirect('/admin/policies', '/admin/policies/1/edit');
 
 Route::middleware('signed')
     ->get('invitation/{invitation}/accept', AcceptInvitation::class)

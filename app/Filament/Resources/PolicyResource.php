@@ -14,7 +14,7 @@ class PolicyResource extends Resource
 {
     protected static ?string $model = Policy::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-scale';
 
     public static function getNavigationLabel(): string
     {
@@ -41,6 +41,7 @@ class PolicyResource extends Resource
         return $form->schema([
             Tabs::make('Policies')->tabs([
                 Tab::make(__('policy.privacy_policy'))
+                    ->columnSpanFull()
                     ->schema([
                         MarkdownEditor::make('privacy_policy_en')
                             ->label(__('policy.privacy_policy_en'))
@@ -52,6 +53,7 @@ class PolicyResource extends Resource
                             ->columnSpanFull(),
                     ]),
                 Tab::make(__('policy.refund_policy'))
+                    ->columnSpanFull()
                     ->schema([
                         MarkdownEditor::make('refund_policy_en')
                             ->label(__('policy.refund_policy_en'))
@@ -63,6 +65,7 @@ class PolicyResource extends Resource
                             ->columnSpanFull(),
                     ]),
                 Tab::make(__('policy.terms_of_service'))
+                    ->columnSpanFull()
                     ->schema([
                         MarkdownEditor::make('terms_of_service_en')
                             ->label(__('policy.terms_of_service_en'))
