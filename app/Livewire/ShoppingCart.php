@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Helpers\GeneralHelper;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Contact;
@@ -43,23 +44,28 @@ class ShoppingCart extends Component
             $this->loadShippingTypes();
         }
 
-        // Check if user is guest
         if (auth()->guest()) {
+            // Check for guest contact details
             $contact = Contact::where('session_id', session()->getId())->first();
             if ($contact) {
-                $this->country_id = $contact->country_id;
+                $this->country_id = $contact->country_id ?? GeneralHelper::getCountryId();
                 $this->governorate_id = $contact->governorate_id;
                 $this->city_id = $contact->city_id;
+            } else {
+                // If no contact record, set country based on IP
+                $this->country_id = GeneralHelper::getCountryId();
             }
         } else {
             // Retrieve the user's primary address
             $primaryAddress = auth()->user()->addresses()->where('is_primary', true)->first();
 
             if ($primaryAddress) {
-                // Assign values from the primary address
-                $this->country_id = $primaryAddress->country_id;
+                $this->country_id = $primaryAddress->country_id ?? GeneralHelper::getCountryId();
                 $this->governorate_id = $primaryAddress->governorate_id;
                 $this->city_id = $primaryAddress->city_id;
+            } else {
+                // If no primary address, set country based on IP
+                $this->country_id = GeneralHelper::getCountryId();
             }
         }
 
@@ -67,6 +73,7 @@ class ShoppingCart extends Component
         $this->governorates = $this->country_id ? Governorate::where('country_id', $this->country_id)->get() : [];
         $this->cities = $this->governorate_id ? City::where('governorate_id', $this->governorate_id)->get() : [];
     }
+
 
     private function extractPrice($priceString)
     {

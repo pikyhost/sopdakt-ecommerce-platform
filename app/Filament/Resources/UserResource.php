@@ -221,6 +221,13 @@ class UserResource extends Resource
                     ->iconColor('primary')
                     ->icon('heroicon-o-envelope'),
 
+                TextColumn::make('second_phone')
+                    ->iconColor('primary')
+                    ->icon('heroicon-o-phone')
+                    ->label(__('Second Phone'))
+                    ->placeholder(__('No phone number saved'))
+                    ->searchable(),
+
                 TextColumn::make('phone')
                     ->iconColor('primary')
                     ->icon('heroicon-o-phone')
