@@ -425,12 +425,6 @@ class OrderResource extends Resource
             ]);
     }
 
-    use Illuminate\Support\Facades\Mail;
-    use App\Mail\OrderStatusMail;
-    use App\Services\JtExpressService;
-    use App\Models\Product;
-    use Illuminate\Support\Facades\Log;
-
     public static function updateOrderStatus($order, OrderStatus $status, $trackingNumber = null)
     {
         $previousStatus = $order->status;
