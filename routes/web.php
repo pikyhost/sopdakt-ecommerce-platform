@@ -67,6 +67,10 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
     Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::get('/order-success', [OrderCompleteController::class, 'index'])->name('order.complete');
+
+    Route::view('/privacy-policy', 'pages.privacy-policy')->name('privacy.policy');
+    Route::view('/refund-policy', 'pages.refund-policy')->name('refund.policy');
+    Route::view('/terms-of-service', 'pages.terms-of-service')->name('terms.of.service');
 });
 
 Route::post('/jt-express-webhook', [ShippingController::class, 'handleWebhook']);
