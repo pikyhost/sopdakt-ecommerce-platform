@@ -8,10 +8,13 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 
 class HomePageSettingResource extends Resource
 {
+    use Translatable;
+
     protected static ?string $model = HomePageSetting::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-adjustments-horizontal';
@@ -40,7 +43,7 @@ class HomePageSettingResource extends Resource
     {
         return $form
             ->schema([
-                Section::make('Slider Content')
+                Section::make(__('Slider Content'))
                     ->collapsed()
                     ->schema([
                         TextInput::make('main_heading')

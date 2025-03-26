@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\TopNoticeResource\Pages;
 
 use App\Filament\Resources\TopNoticeResource;
-use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
 
 class EditTopNotice extends EditRecord
@@ -13,7 +12,6 @@ class EditTopNotice extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
         ];
     }
 }
