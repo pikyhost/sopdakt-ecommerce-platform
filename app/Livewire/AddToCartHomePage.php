@@ -138,6 +138,8 @@ class AddToCartHomePage extends Component
         session()->flash('cart_success', 'Product added to cart successfully!');
         $this->closeModal();
         $this->dispatch('cartUpdated');
+        // Emit an event to update the cart list
+        $this->dispatch('productAdded', $this->product->id);
 
     }
 
