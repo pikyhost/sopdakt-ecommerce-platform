@@ -17,4 +17,7 @@ return [
     'terms_of_service' => 'Terms of Service',
     'terms_of_service_en' => 'Terms of Service (English)',
     'terms_of_service_ar' => 'Terms of Service (Arabic)',
+    "no_policy_found" => 'Documentation pending..',
+    'pages_group' => 'Policy Pages',
+
 ];

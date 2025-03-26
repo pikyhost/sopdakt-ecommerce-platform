@@ -1,4 +1,3 @@
 <x-filament-panels::page>
-    {!! $this->getTermsAndConditions() !!}
+    {!! $this->getRefundPolicy() !!}
 </x-filament-panels::page>
-
