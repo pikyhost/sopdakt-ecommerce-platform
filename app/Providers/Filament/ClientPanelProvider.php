@@ -14,6 +14,7 @@ use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\MenuItem;
+use Filament\Navigation\NavigationGroup;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -86,6 +87,7 @@ class ClientPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
+            ->navigationGroups($this->getNavigationGroups())
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->authMiddleware([
                 Authenticate::class,
@@ -105,5 +107,27 @@ class ClientPanelProvider extends PanelProvider
                     )
                     ->avatarUploadComponent(fn ($fileUpload) => $fileUpload->columnSpan('full')),
             ]);
+    }
+
+    private function getNavigationGroups(): array
+    {
+        $groups = [
+            __('My orders'),
+            __('policy.pages_group')
+        ];
+
+        $navigationGroups = array_map(fn($group) => NavigationGroup::make(__($group)), $groups);
+
+        $activeGroup = null;
+        foreach ($navigationGroups as $navigationGroup) {
+            if ($navigationGroup->isActive()) {
+                $activeGroup = $navigationGroup->getLabel();
+                break;
+            }
+        }
+
+        return array_map(fn($navigationGroup) => $navigationGroup->collapsed($navigationGroup->getLabel() !== $activeGroup),
+            $navigationGroups
+        );
     }
 }
