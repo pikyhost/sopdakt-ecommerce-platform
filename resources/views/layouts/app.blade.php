@@ -104,10 +104,13 @@
     <header class="header">
         <div class="header-top">
             <div class="container">
-                <div class="header-left d-none d-sm-block">
-                    <p class="top-message text-uppercase">FREE Returns. Standard Shipping Orders $99+</p>
-                </div><!-- End .header-left -->
-
+                @if (!empty($topNotice->header_message_en) || !empty($topNotice->header_message_ar))
+                    <div class="header-left d-none d-sm-block">
+                        <p class="top-message text-uppercase">
+                            {{ $locale === 'ar' ? $topNotice->header_message_ar : $topNotice->header_message_en }}
+                        </p>
+                    </div><!-- End .header-left -->
+                @endif
                 <div class="header-right header-dropdowns ml-0 ml-sm-auto w-sm-100">
                     <div class="header-dropdown dropdown-expanded d-none d-lg-block">
                         <a href="#">Links</a>
