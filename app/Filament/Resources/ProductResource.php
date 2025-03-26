@@ -410,7 +410,6 @@ class ProductResource extends Resource
                                             $set('country_id', $state ?: $get('../../country_id')) // ✅ Ensure correct value is selected
                                             )
                                             ->dehydrated(fn (Get $get) => !$get('governorate_id') && !$get('city_id')),
-        // ✅ Do not save if governorate or city exists
 
                                         Select::make('governorate_id')
                                             ->label(__('shipping_cost.governorate'))
@@ -445,7 +444,7 @@ class ProductResource extends Resource
                                                 Rule::unique(ShippingCost::class, 'city_id')
                                                     ->where(fn ($query) => $query
                                                         ->where('product_id', $get('../../id'))
-                                                        ->whereNull('governorate_id') // ✅ Ensure governorate is not set
+                                                        ->whereNull('governorate_id')
                                                         ->whereNull('country_id')
                                                     )
                                                     ->when($record, fn ($rule) => $rule->ignore($record->id))
@@ -453,17 +452,17 @@ class ProductResource extends Resource
                                             ->options(fn (Get $get, $record) =>
                                             $get('governorate_id')
                                                 ? City::where('governorate_id', $get('governorate_id'))
-                                                ->orWhere('id', $record?->city_id) // ✅ Ensure existing city is included
+                                                ->orWhere('id', $record?->city_id)
                                                 ->pluck('name', 'id')
                                                 : ($record?->city_id ? City::where('id', $record->city_id)->pluck('name', 'id') : [])
                                             )
                                             ->nullable()
                                             ->live()
                                             ->afterStateHydrated(fn (Set $set, Get $get, $state) =>
-                                            $set('city_id', $state ?: $get('../../city_id')) // ✅ Ensure correct value is selected
+                                            $set('city_id', $state ?: $get('../../city_id'))
                                             )
-                                            ->dehydrated(true) // ✅ Always save city
-                                            ->hidden(false), // Always visible
+                                            ->dehydrated(true)
+                                            ->hidden(false),
 
         TextInput::make('cost')
             ->label(__('shipping_cost.cost'))
@@ -515,6 +514,13 @@ class ProductResource extends Resource
                                     ->label(__('Sales'))
                                     ->numeric()
                                     ->default(0),
+
+                                Select::make('complementaryProducts')
+                                    ->columnSpanFull()
+                                    ->label(__('Complementary Products'))
+                                    ->relationship('complementaryProducts', 'name')
+                                    ->multiple()
+                                    ->preload(),
 
                                 Textarea::make('summary')
                                     ->rules([

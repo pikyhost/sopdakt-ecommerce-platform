@@ -137,10 +137,6 @@ class ProfileContactDetails extends MyProfileComponent implements HasActions, Ha
                     ->deletable()
                     ->reorderable(),
 
-                TextArea::make('address')
-                    ->label(__('profile.address'))
-                    ->nullable(),
-
                 Radio::make('preferred_language')
                     ->label(__('Preferred Language'))
                     ->options([
