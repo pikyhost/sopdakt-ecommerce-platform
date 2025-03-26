@@ -573,6 +573,19 @@ class ShoppingCart extends Component
 
     public function render()
     {
+        $cartItems = $this->cartItems;
+
+        // Extract product IDs from cart items
+        $productIds = $cartItems->pluck('product_id');
+
+        // Get complementary products from the cart items
+        $complementaryProducts = Product::whereHas('complementaryProducts', function ($query) use ($productIds) {
+            $query->whereIn('product_id', $productIds);
+        })->whereNotIn('id', $productIds) // Exclude products already in cart
+        ->distinct()
+            ->limit(6) // Limit to avoid too many recommendations
+            ->get();
+
         return view('livewire.shopping-cart', [
             'cartItems' => $this->cartItems,
             'subtotal' => $this->subtotal,
@@ -584,6 +597,7 @@ class ShoppingCart extends Component
             'shippingCost' => $this->shippingCost,
             'taxPercentage' =>  Setting::first()?->tax_percentage ?? 0,
             'currentRoute' => $this->currentRoute,
+            'complementaryProducts' => $complementaryProducts,
         ]);
     }
 }
