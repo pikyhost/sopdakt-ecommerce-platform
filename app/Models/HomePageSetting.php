@@ -8,10 +8,11 @@ use Illuminate\Support\Facades\Cache;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Spatie\Translatable\HasTranslations;
 
 class HomePageSetting extends Model implements HasMedia
 {
-    use HasFactory, InteractsWithMedia;
+    use HasFactory, InteractsWithMedia, HasTranslations;
 
     protected $fillable = [
         'main_heading',
@@ -38,6 +39,27 @@ class HomePageSetting extends Model implements HasMedia
 
         'latest_heading',
         'latest_button_url',
+        'latest_button_text'
+    ];
+
+    public $translatable = [
+        'main_heading',
+        'discount_text',
+        'discount_value',
+        'button_text',
+
+        'center_main_heading',
+        'center_button_text',
+
+        'last1_heading',
+        'last1_subheading',
+        'last1_button_text',
+
+        'last2_heading',
+        'last2_subheading',
+        'last2_button_text',
+
+        'latest_heading',
         'latest_button_text'
     ];
 
