@@ -425,16 +425,17 @@ class OrderResource extends Resource
             ]);
     }
 
-    public static function updateOrderStatus($order, OrderStatus $status, $trackingNumber = null)
+    public static function updateOrderStatus($order, OrderStatus $status)
     {
         $previousStatus = $order->status;
+        $newStatus = $status->value; // Convert Enum to string
         $order->refresh(); // Ensure latest data before updating
 
         // Restore inventory when canceling or refunding an order
         if (
             $previousStatus !== null &&
-            in_array($previousStatus, [OrderStatus::Pending, OrderStatus::Preparing, OrderStatus::Shipping], true) &&
-            in_array($status, [OrderStatus::Cancelled, OrderStatus::Refund], true)
+            in_array($previousStatus, [OrderStatus::Pending->value, OrderStatus::Preparing->value, OrderStatus::Shipping->value], true) &&
+            in_array($newStatus, [OrderStatus::Cancelled->value, OrderStatus::Refund->value], true)
         ) {
             foreach ($order->items as $item) {
                 if ($item->product_id) {
@@ -447,34 +448,45 @@ class OrderResource extends Resource
             }
         }
 
-        // Update order status & tracking number if shipping
-        $order->status = $status;
-        if ($status === OrderStatus::Shipping && $trackingNumber) {
-            $order->tracking_number = $trackingNumber;
-        }
-        $order->save();
+        // Update order status
+        $order->status = $newStatus;
 
-        // Log for debugging
-        Log::info("Order #{$order->id} updated to status: $status");
+        // ✅ If Shipping, first get the tracking number from J&T Express
+        if ($newStatus === OrderStatus::Shipping->value) {
+            $JtExpressOrderData = self::prepareJtExpressOrderData($order);
+            $jtExpressResponse = app(JtExpressService::class)->createOrder($JtExpressOrderData);
+
+            // Extract tracking number
+            $trackingNumber = $jtExpressResponse['data']['txlogisticId'] ?? null;
+            if ($trackingNumber) {
+                $order->tracking_number = $trackingNumber;
+            }
+
+            // Save order with updated tracking number
+            $order->save();
+
+            // Update tracking details in J&T system
+            self::updateJtExpressOrder($order, 'pending', $JtExpressOrderData, $jtExpressResponse);
+        } else {
+            // Save order if it's not Shipping
+            $order->save();
+        }
+
+        // ✅ Refresh the order to make sure tracking number is loaded
+        $order->refresh();
+
+        // ✅ Log updated values
+        Log::info("Order #{$order->id} updated to status: $newStatus");
         Log::info("Tracking Number: " . ($order->tracking_number ?? 'N/A'));
 
-        // Send order status update email with tracking number
+        // ✅ Send email AFTER tracking number is updated
         $email = $order->user->email ?? $order->contact->email;
         if ($email) {
             Mail::to($email)->send(new OrderStatusMail($order, $status));
             Log::info("Order status email sent to: $email");
         }
-
-        // Handle JT Express for shipping
-        if ($status === OrderStatus::Shipping) {
-            $JtExpressOrderData = self::prepareJtExpressOrderData($order);
-            $jtExpressResponse = app(JtExpressService::class)->createOrder($JtExpressOrderData);
-            self::updateJtExpressOrder($order, 'pending', $JtExpressOrderData, $jtExpressResponse);
-        }
     }
-
-
-
+    
     private static function prepareJtExpressOrderData($order): array
     {
         $data = [
