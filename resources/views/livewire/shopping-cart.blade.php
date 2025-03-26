@@ -212,7 +212,7 @@
 
    <div>
        <h2>
-           Other Products
+           Complementary Products
        </h2>
        <!-- Products Section -->
        <div class="col-lg-10">
