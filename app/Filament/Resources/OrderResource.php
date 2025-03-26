@@ -84,6 +84,7 @@ class OrderResource extends Resource
                     ->searchable(),
 
                 TextColumn::make('tracking_number')
+                    ->placeholder('-')
                     ->label(__('Tracking Number'))
                     ->searchable()
                     ->weight(FontWeight::Bold),

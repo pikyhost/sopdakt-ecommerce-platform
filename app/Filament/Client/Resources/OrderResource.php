@@ -80,6 +80,7 @@ class OrderResource extends Resource
                     ->searchable(),
 
                 TextColumn::make('tracking_number')
+                    ->placeholder('-')
                     ->label(__('Tracking Number'))
                     ->searchable()
                     ->weight(FontWeight::Bold),
@@ -193,7 +194,8 @@ class OrderResource extends Resource
             ->actions([
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
-                    Tables\Actions\EditAction::make(),
+                    Tables\Actions\EditAction::make()
+                        ->visible(fn ($record) => in_array($record->status, [OrderStatus::Pending, OrderStatus::Preparing])),
                     Tables\Actions\DeleteAction::make(),
                 ])->label(__('Actions'))
                     ->icon('heroicon-m-ellipsis-vertical')

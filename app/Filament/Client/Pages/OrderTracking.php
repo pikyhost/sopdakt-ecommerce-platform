@@ -8,6 +8,7 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
 use Filament\Support\Enums\ActionSize;
 use Filament\Support\Enums\FontWeight;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\EditAction;
@@ -42,7 +43,6 @@ class OrderTracking extends Page implements HasForms, HasTable
     protected static function getTableColumns(): array
     {
         return [
-
             TextColumn::make('tracking_number')
                 ->label(__('Tracking Number'))
                 ->searchable()
@@ -82,9 +82,11 @@ class OrderTracking extends Page implements HasForms, HasTable
             ->emptyStateDescription('No orders were found matching the given tracking number.')
             ->actions([
                 ActionGroup::make([
-                    ViewAction::make(),
-                    EditAction::make(),
-                    DeleteAction::make(),
+                    Action::make('viewOrder')
+                        ->label(__('View Order'))
+                        ->icon('heroicon-o-eye')
+                        ->url(fn ($record) => url('/client/my-orders/' . $record->id))
+                        ->openUrlInNewTab(),                    DeleteAction::make(), //
                 ])->label(__('Actions'))
                     ->icon('heroicon-m-ellipsis-vertical')
                     ->size(ActionSize::Small)
@@ -96,7 +98,7 @@ class OrderTracking extends Page implements HasForms, HasTable
             ->columns(static::getTableColumns())
             ->paginationPageOptions([9, 18, 27])
             ->query(static::getQuery())
-            ->recordUrl(fn ($record) => url('/client/orders/'. $record->id));
+            ->recordUrl(fn ($record) => url('/client/my-orders/'. $record->id));
     }
 
     protected static function getQuery(): Builder
