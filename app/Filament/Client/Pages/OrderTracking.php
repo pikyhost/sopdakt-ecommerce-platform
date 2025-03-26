@@ -32,7 +32,7 @@ class OrderTracking extends Page implements HasForms, HasTable
 
     public static function getNavigationLabel(): string
     {
-        return __('Orders Tracking');
+        return __('Order Tracking');
     }
 
     public function getHeading(): string|Htmlable
