@@ -66,15 +66,40 @@
 
 <body>
 <div class="page-wrapper">
-    <div class="top-notice bg-primary text-white">
-        <div class="container text-center">
-            <h5 class="d-inline-block">Get Up to <b>40% OFF</b> New-Season Styles</h5>
-            <a href="category.html" class="category">MEN</a>
-            <a href="category.html" class="category ml-2 mr-3">WOMEN</a>
-            <small>* Limited time only.</small>
-            <button title="Close (Esc)" type="button" class="mfp-close">×</button>
-        </div><!-- End .container -->
-    </div><!-- End .top-notice -->
+    @php
+        $topNotice = App\Models\TopNotice::where('is_active', true)->first();
+        $locale = app()->getLocale(); // Get current locale
+    @endphp
+
+    @if($topNotice)
+        <div class="top-notice bg-primary text-white">
+            <div class="container text-center">
+                <h5 class="d-inline-block">
+                    {!! $locale === 'ar' ? $topNotice->content_ar : $topNotice->content_en !!}
+                </h5>
+
+                @if($topNotice->cta_text_en && $topNotice->cta_url)
+                    <a href="{{ $topNotice->cta_url }}" class="category">
+                        {{ $locale === 'ar' ? $topNotice->cta_text_ar : $topNotice->cta_text_en }}
+                    </a>
+                @endif
+
+                @if($topNotice->cta_text_2_en && $topNotice->cta_url_2)
+                    <a href="{{ $topNotice->cta_url_2 }}" class="category ml-2 mr-3">
+                        {{ $locale === 'ar' ? $topNotice->cta_text_2_ar : $topNotice->cta_text_2_en }}
+                    </a>
+                @endif
+
+                @if($topNotice->limited_time_text_en)
+                    <small>
+                        {{ $locale === 'ar' ? $topNotice->limited_time_text_ar : $topNotice->limited_time_text_en }}
+                    </small>
+                @endif
+
+                <button title="Close (Esc)" type="button" class="mfp-close">×</button>
+            </div><!-- End .container -->
+        </div><!-- End .top-notice -->
+    @endif
 
     <header class="header">
         <div class="header-top">
