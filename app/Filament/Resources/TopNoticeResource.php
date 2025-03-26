@@ -12,7 +12,7 @@ class TopNoticeResource extends Resource
 {
     protected static ?string $model = TopNotice::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-bars-arrow-up';
 
     public static function getNavigationLabel(): string
     {
@@ -70,6 +70,12 @@ class TopNoticeResource extends Resource
                 Forms\Components\TextInput::make('limited_time_text_ar')
                     ->label(__('Limited Time Text (Arabic)'))
                     ->maxLength(255),
+                Forms\Components\TextInput::make('header_message_en')
+                    ->label(__('Header Message (English)'))
+                    ->nullable(),
+                Forms\Components\TextInput::make('header_message_ar')
+                    ->label(__('Header Message (Arabic)'))
+                    ->nullable(),
                 Forms\Components\Toggle::make('is_active')
                     ->label(__('Is Active'))
                     ->required(),
