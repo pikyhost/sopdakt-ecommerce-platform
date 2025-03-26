@@ -573,20 +573,27 @@ class ShoppingCart extends Component
 
     public function render()
     {
-        $cartItems = collect($this->cartItems); // Convert array to collection
+        $cartItems = collect($this->cartItems);
 
 // Extract product IDs safely
         $productIds = $cartItems->pluck('product.id')->filter()->unique();
 
-// Get complementary products for items in the cart (Randomized)
-        $complementaryProducts = Product::whereHas('complementaryProducts', function ($query) use ($productIds) {
-            $query->whereIn('product_id', $productIds);
-        })
-            ->whereNotIn('id', $productIds) // Exclude products already in the cart
-            ->inRandomOrder() // Get random products
+// Get complementary product IDs directly from the relationship
+        $complementaryProductIds = Product::whereIn('id', $productIds)
+            ->with('complementaryProducts:id') // Only fetch IDs
+            ->get()
+            ->pluck('complementaryProducts.*.id') // Get nested IDs
+            ->flatten()
+            ->unique();
+
+// Fetch the actual complementary products (excluding cart items)
+        $complementaryProducts = Product::whereIn('id', $complementaryProductIds)
+            ->whereNotIn('id', $productIds) // Exclude cart items
+            ->inRandomOrder()
             ->limit(6)
             ->get();
 
+        $this->loadCart();
 
         return view('livewire.shopping-cart', [
             'cartItems' => $this->cartItems,
