@@ -32,6 +32,7 @@ use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class OrderResource extends Resource
@@ -424,10 +425,18 @@ class OrderResource extends Resource
             ]);
     }
 
-    public static function updateOrderStatus($order, OrderStatus $status)
+    use Illuminate\Support\Facades\Mail;
+    use App\Mail\OrderStatusMail;
+    use App\Services\JtExpressService;
+    use App\Models\Product;
+    use Illuminate\Support\Facades\Log;
+
+    public static function updateOrderStatus($order, OrderStatus $status, $trackingNumber = null)
     {
         $previousStatus = $order->status;
+        $order->refresh(); // Ensure latest data before updating
 
+        // Restore inventory when canceling or refunding an order
         if (
             $previousStatus !== null &&
             in_array($previousStatus, [OrderStatus::Pending, OrderStatus::Preparing, OrderStatus::Shipping], true) &&
@@ -444,22 +453,32 @@ class OrderResource extends Resource
             }
         }
 
-        // Update order status
-        $order->update(['status' => $status]);
+        // Update order status & tracking number if shipping
+        $order->status = $status;
+        if ($status === OrderStatus::Shipping && $trackingNumber) {
+            $order->tracking_number = $trackingNumber;
+        }
+        $order->save();
 
-        // Send order status update email
+        // Log for debugging
+        Log::info("Order #{$order->id} updated to status: $status");
+        Log::info("Tracking Number: " . ($order->tracking_number ?? 'N/A'));
+
+        // Send order status update email with tracking number
         $email = $order->user->email ?? $order->contact->email;
         if ($email) {
             Mail::to($email)->send(new OrderStatusMail($order, $status));
+            Log::info("Order status email sent to: $email");
         }
 
-        // Handle JT Express when the status is set to "Shipping"
+        // Handle JT Express for shipping
         if ($status === OrderStatus::Shipping) {
             $JtExpressOrderData = self::prepareJtExpressOrderData($order);
             $jtExpressResponse = app(JtExpressService::class)->createOrder($JtExpressOrderData);
             self::updateJtExpressOrder($order, 'pending', $JtExpressOrderData, $jtExpressResponse);
         }
     }
+
 
 
     private static function prepareJtExpressOrderData($order): array
