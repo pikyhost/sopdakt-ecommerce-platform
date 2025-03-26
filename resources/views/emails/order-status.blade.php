@@ -21,8 +21,39 @@
     @elseif($order->contact_id)
         <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 10px 0;"><strong style="color: #d63384;">{{ __('Contact Name') }}:</strong> {{ $order->contact->name }}</p>
     @endif
-    <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 10px 0;"><strong style="color: #d63384;">{{ __('order_id') }}:</strong> {{ $order->id }}</p>
-    <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 10px 0;"><strong style="color: #d63384;">{{ __('total_amount') }}:</strong> {{ number_format($order->total, 2) }}</p>
+    <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 10px 0;">
+        <strong style="color: #d63384;">{{ __('order_id') }}:</strong> {{ $order->id }}
+    </p>
+    @if($order->tracking_number)
+        <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 10px 0;">
+            <strong style="color: #d63384;">{{ __('Tracking Number') }}:</strong> {{ $order->tracking_number }}
+        </p>
+    @else
+        <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 10px 0;">
+            <strong style="color: #d63384;">{{ __('Tracking Number') }}:</strong>
+            <span style="color: #888;">
+                {{ $locale === 'ar' ? 'رقم التتبع متاح عند شحن الطلب.' : 'The tracking number will be available once the order is shipped.' }}
+            </span>
+        </p>
+    @endif
+
+    <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 10px 0;">
+        <strong style="color: #d63384;">{{ __('Subtotal') }}:</strong> {{ number_format($order->subtotal, 2) }}
+    </p>
+    <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 10px 0;">
+        <strong style="color: #d63384;">{{ __('Shipping Cost') }}:</strong>
+        {{ $order->shipping_cost ? number_format($order->shipping_cost, 2) : __('Free') }}
+    </p>
+    <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 10px 0;">
+        <strong style="color: #d63384;">{{ __('Tax Percentage') }}:</strong> {{ $order->tax_percentage }}%
+    </p>
+    <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 10px 0;">
+        <strong style="color: #d63384;">{{ __('Tax Amount') }}:</strong> {{ number_format($order->tax_amount, 2) }}
+    </p>
+    <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 10px 0;">
+        <strong style="color: #d63384;">{{ __('Total Amount') }}:</strong> {{ number_format($order->total, 2) }}
+    </p>
+
     <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 10px 0;"><strong style="color: #d63384;">{{ __('payment_method') }}:</strong> {{ $order->paymentMethod->name ?? 'N/A' }}</p>
 
     <h2 style="color: #d63384;">{{ __('order_details') }}:</h2>

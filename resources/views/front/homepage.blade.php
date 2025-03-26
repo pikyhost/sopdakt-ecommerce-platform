@@ -14,6 +14,17 @@
 
     // Get site name
     $siteName = $siteSettings["site_name"] ?? ($locale === 'ar' ? 'لا يوجد شعار بعد' : 'No Logo Yet');
+    $socialLinks = \App\Models\Setting::getSocialMediaLinks();
+
+    // Ensure correct icon class mappings
+    $iconClasses = [
+        'facebook'  => 'fa-brands fa-facebook',  // FontAwesome
+        'youtube'   => 'fa-brands fa-youtube',
+        'instagram' => 'fa-brands fa-instagram',
+        'x'         => 'fa-brands fa-x-twitter',
+        'snapchat'  => 'fa-brands fa-snapchat',
+        'tiktok'    => 'fa-brands fa-tiktok',
+    ];
 @endphp
 
     <!DOCTYPE html>
@@ -32,6 +43,8 @@
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ $favicon }}">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <!-- Ensure correct asset loading for dynamic routes -->
     <base href="{{ url('/') }}/">
@@ -738,23 +751,14 @@
                 </div>
                 <div class="footer-right">
                     <div class="social-icons">
-                        @php
-                            $socialLinks = \App\Models\Setting::getSocialMediaLinks();
-                        @endphp
-
-                        @if($socialLinks['facebook'])
-                            <a href="{{ $socialLinks['facebook'] }}" class="social-icon social-facebook icon-facebook" target="_blank"></a>
-                        @endif
-
-                        @if($socialLinks['x'])
-                            <a href="{{ $socialLinks['x'] }}" class="social-icon social-twitter icon-twitter" target="_blank"></a>
-                        @endif
-
-                        @if($socialLinks['instagram'])
-                            <a href="{{ $socialLinks['instagram'] }}" class="social-icon social-instagram icon-instagram" target="_blank"></a>
-                        @endif
+                        @foreach($socialLinks as $platform => $url)
+                            @if(!empty($url) && isset($iconClasses[$platform]))
+                                <a href="{{ $url }}" class="social-icon" target="_blank">
+                                    <i class="{{ $iconClasses[$platform] }}"></i>
+                                </a>
+                            @endif
+                        @endforeach
                     </div>
-                    <!-- End .social-icons -->
                 </div>
             </div>
             <div class="footer-middle">
@@ -991,35 +995,14 @@
         </form>
 
         <div class="social-icons">
-            @php
-                $socialLinks = \App\Models\Setting::getSocialMediaLinks();
-            @endphp
-
-            @if($socialLinks['facebook'])
-                <a href="{{ $socialLinks['facebook'] }}" class="social-icon social-facebook icon-facebook" target="_blank"></a>
-            @endif
-
-            @if($socialLinks['youtube'])
-                <a href="{{ $socialLinks['youtube'] }}" class="social-icon social-youtube icon-youtube" target="_blank"></a>
-            @endif
-
-            @if($socialLinks['instagram'])
-                <a href="{{ $socialLinks['instagram'] }}" class="social-icon social-instagram icon-instagram" target="_blank"></a>
-            @endif
-
-            @if($socialLinks['x'])
-                <a href="{{ $socialLinks['x'] }}" class="social-icon social-x icon-x" target="_blank"></a>
-            @endif
-
-            @if($socialLinks['snapchat'])
-                <a href="{{ $socialLinks['snapchat'] }}" class="social-icon social-snapchat icon-snapchat" target="_blank"></a>
-            @endif
-
-            @if($socialLinks['tiktok'])
-                <a href="{{ $socialLinks['tiktok'] }}" class="social-icon social-tiktok icon-tiktok" target="_blank"></a>
-            @endif
+            @foreach($socialLinks as $platform => $url)
+                @if(!empty($url) && isset($iconClasses[$platform]))
+                    <a href="{{ $url }}" class="social-icon" target="_blank">
+                        <i class="{{ $iconClasses[$platform] }}"></i>
+                    </a>
+                @endif
+            @endforeach
         </div>
-
     </div>
     <!-- End .mobile-menu-wrapper -->
 </div>

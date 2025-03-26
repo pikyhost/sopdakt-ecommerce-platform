@@ -14,8 +14,19 @@
 
     // Get site name
     $siteName = $siteSettings["site_name"] ?? ($locale === 'ar' ? 'لا يوجد شعار بعد' : 'No Logo Yet');
-@endphp
 
+    $socialLinks = \App\Models\Setting::getSocialMediaLinks();
+
+    // Ensure correct icon class mappings
+    $iconClasses = [
+        'facebook'  => 'fa-brands fa-facebook',  // FontAwesome
+        'youtube'   => 'fa-brands fa-youtube',
+        'instagram' => 'fa-brands fa-instagram',
+        'x'         => 'fa-brands fa-x-twitter',
+        'snapchat'  => 'fa-brands fa-snapchat',
+        'tiktok'    => 'fa-brands fa-tiktok',
+    ];
+@endphp
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,6 +41,8 @@
     <meta name="keywords" content="HTML5 Template">
     <meta name="description" content="X - Bootstrap eCommerce Template">
     <meta name="author" content="SW-THEMES">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ $favicon }}">
@@ -159,15 +172,27 @@
 
                     @php
                         $socialLinks = \App\Models\Setting::getSocialMediaLinks();
+
+                        // Define the correct social media icon class names
+                        $iconClasses = [
+                            'facebook'  => 'fab fa-facebook-f',
+                            'youtube'   => 'fab fa-youtube',
+                            'instagram' => 'fab fa-instagram',
+                            'x'         => 'fab fa-x-twitter', // Correct X (Twitter) logo
+                            'snapchat'  => 'fab fa-snapchat ghost',
+                            'tiktok'    => 'fab fa-tiktok',
+                        ];
                     @endphp
 
                     <div class="social-icons">
                         @foreach($socialLinks as $platform => $url)
-                            @if(!empty($url))
-                                <a href="{{ $url }}" class="social-icon social-{{ $platform }} icon-{{ $platform }}" target="_blank"></a>
+                            @if(!empty($url) && isset($iconClasses[$platform]))
+                                <a href="{{ $url }}" class="social-icon" target="_blank">
+                                    <i class="{{ $iconClasses[$platform] }}"></i>
+                                </a>
                             @endif
                         @endforeach
-                    </div><!-- End .social-icons -->
+                    </div>
 
                 </div><!-- End .header-right -->
             </div><!-- End .container -->
@@ -506,13 +531,14 @@
                                 </li>
                             </ul>
                             <div class="social-icons">
-                                <a href="#" class="social-icon social-facebook icon-facebook" target="_blank"
-                                   title="Facebook"></a>
-                                <a href="#" class="social-icon social-twitter icon-twitter" target="_blank"
-                                   title="Twitter"></a>
-                                <a href="#" class="social-icon social-instagram icon-instagram" target="_blank"
-                                   title="Instagram"></a>
-                            </div><!-- End .social-icons -->
+                                @foreach($socialLinks as $platform => $url)
+                                    @if(!empty($url) && isset($iconClasses[$platform]))
+                                        <a href="{{ $url }}" class="social-icon" target="_blank">
+                                            <i class="{{ $iconClasses[$platform] }}"></i>
+                                        </a>
+                                    @endif
+                                @endforeach
+                            </div>
                         </div><!-- End .widget -->
                     </div><!-- End .col-lg-3 -->
 
@@ -741,12 +767,13 @@
         </form>
 
         <div class="social-icons">
-            <a href="#" class="social-icon social-facebook icon-facebook" target="_blank">
-            </a>
-            <a href="#" class="social-icon social-twitter icon-twitter" target="_blank">
-            </a>
-            <a href="#" class="social-icon social-instagram icon-instagram" target="_blank">
-            </a>
+            @foreach($socialLinks as $platform => $url)
+                @if(!empty($url) && isset($iconClasses[$platform]))
+                    <a href="{{ $url }}" class="social-icon" target="_blank">
+                        <i class="{{ $iconClasses[$platform] }}"></i>
+                    </a>
+                @endif
+            @endforeach
         </div>
     </div><!-- End .mobile-menu-wrapper -->
 </div><!-- End .mobile-menu-container -->
