@@ -32,7 +32,7 @@
         <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 10px 0;">
             <strong style="color: #d63384;">{{ __('Tracking Number') }}:</strong>
             <span style="color: #888;">
-                {{ $locale === 'ar' ? 'رقم التتبع متاح عند شحن الطلب.' : 'The tracking number will be available once the order is shipped.' }}
+                {{ __('The tracking number will be available once the order is shipped.') }}
             </span>
         </p>
     @endif
