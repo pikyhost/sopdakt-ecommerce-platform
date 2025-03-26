@@ -846,7 +846,7 @@
                 <!-- End .row -->
             </div>
             <div class="footer-bottom">
-                <p class="footer-copyright text-lg-center mb-0">&copy; {{ $siteName }} eCommerce. 2021. All Rights Reserved
+                <p class="footer-copyright text-lg-center mb-0">&copy; {{ $siteName }} . 2025. All Rights Reserved
                 </p>
             </div>
             <!-- End .footer-bottom -->
