@@ -37,7 +37,7 @@ class OrderTracking extends Page implements HasForms, HasTable
 
     public function getHeading(): string|Htmlable
     {
-        return __('Orders Tracking');
+        return __('Order Tracking');
     }
 
     protected static function getTableColumns(): array
