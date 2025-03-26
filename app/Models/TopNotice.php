@@ -12,6 +12,6 @@ class TopNotice extends Model
     protected $fillable = [
         'content_en', 'content_ar', 'cta_text_en', 'cta_text_ar', 'cta_url',
         'cta_text_2_en', 'cta_text_2_ar', 'cta_url_2', 'limited_time_text_en',
-        'limited_time_text_ar', 'is_active'
+        'limited_time_text_ar', 'is_active', 'header_message_en','header_message_ar'
     ];
 }
