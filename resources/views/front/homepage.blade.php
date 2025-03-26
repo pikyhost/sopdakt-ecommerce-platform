@@ -240,24 +240,19 @@
                                 <a href="#">Pages</a>
                                 <ul>
                                     <li><a href="{{ route('wishlist') }}">Wishlist</a></li>
-                                    <li><a href="cart.html">Shopping Cart</a></li>
-                                    <li><a href="checkout.html">Checkout</a></li>
-                                    <li><a href="dashboard.html">Dashboard</a></li>
-                                    <li><a href="demo18-about.html">About Us</a></li>
+                                    <li><a href="{{ url('/cart') }}">Shopping Cart</a></li>
+                                    <li><a href="{{ route('/checkout') }}">Checkout</a></li>
+                                    <li><a href="{{ url('/client') }}">Dashboard</a></li>
+                                    <li><a href="{{ url('/about-us') }}">About Us</a></li>
                                     <li><a href="#">Blog</a>
                                         <ul>
-                                            <li><a href="blog.html">Blog</a></li>
-                                            <li><a href="single.html">Blog Post</a></li>
+                                            <li><a href="{{ url('/blogs') }}">Blog</a></li>
                                         </ul>
                                     </li>
-                                    <li><a href="demo18-contact.html">Contact Us</a></li>
-                                    <li><a href="login.html">Login</a></li>
-                                    <li><a href="forgot-password.html">Forgot Password</a></li>
+                                    <li><a href="{{ url('/client/login') }}">Login</a></li>
                                 </ul>
                             </li>
-                            <li><a href="blog.html">Blog</a></li>
-                            <li class="d-none d-xxl-block"><a href="#">Special Offer!</a></li>
-                            <li><a href="https://1.envato.market/DdLk5" target="_blank">Buy {{ $siteName }}!</a></li>
+                            <li><a href="{{ url('/blogs') }}">Blog</a></li>
                         </ul>
                     </nav>
                 </div>
