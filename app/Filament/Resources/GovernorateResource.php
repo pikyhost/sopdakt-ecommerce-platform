@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\GovernorateResource\Pages;
 use App\Models\Governorate;
+use App\Traits\HasMakeCostZeroAction;
 use Closure;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 class GovernorateResource extends Resource
 {
     use Translatable;
+    use HasMakeCostZeroAction;
 
     protected static ?string $model = Governorate::class;
 
@@ -150,6 +152,7 @@ class GovernorateResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
                         ->label(__('delete_bulk')),
+                    self::makeCostZeroBulkAction(),
                 ]),
             ]);
     }
