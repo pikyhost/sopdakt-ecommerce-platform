@@ -4,7 +4,7 @@
     $direction = app()->getLocale() === 'ar' ? 'rtl' : 'ltr';
 @endphp
 
-@section('title', __('My shopping cart'))
+@section('title', __('policy.privacy_policy'))
 
 @section('content')
     <br>
