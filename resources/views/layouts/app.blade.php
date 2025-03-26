@@ -157,11 +157,18 @@
 
                     <span class="separator"></span>
 
+                    @php
+                        $socialLinks = \App\Models\Setting::getSocialMediaLinks();
+                    @endphp
+
                     <div class="social-icons">
-                        <a href="#" class="social-icon social-facebook icon-facebook" target="_blank"></a>
-                        <a href="#" class="social-icon social-twitter icon-twitter" target="_blank"></a>
-                        <a href="#" class="social-icon social-instagram icon-instagram" target="_blank"></a>
+                        @foreach($socialLinks as $platform => $url)
+                            @if(!empty($url))
+                                <a href="{{ $url }}" class="social-icon social-{{ $platform }} icon-{{ $platform }}" target="_blank"></a>
+                            @endif
+                        @endforeach
                     </div><!-- End .social-icons -->
+
                 </div><!-- End .header-right -->
             </div><!-- End .container -->
         </div><!-- End .header-top -->
