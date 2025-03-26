@@ -973,7 +973,7 @@
                     </ul>
                 </li>
             </ul>
-            
+
             <ul class="mobile-menu">
                 <li><a href="login.html">My Account</a></li>
                 <li><a href="demo18-contact.html">Contact Us</a></li>
