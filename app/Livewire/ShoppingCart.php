@@ -32,7 +32,12 @@ class ShoppingCart extends Component
     public $shipping_types = [];
     public $selected_shipping = null;
 
-    protected $listeners = ['refreshCart' => 'loadCart'];
+    protected $listeners = ['refreshCart' => 'loadCart', 'productAdded' => 'refreshCart'];
+
+    public function refreshCart()
+    {
+        $this->loadCart(); // Reload the cart when a product is added
+    }
 
     public function mount()
     {
@@ -592,8 +597,6 @@ class ShoppingCart extends Component
             ->inRandomOrder()
             ->limit(6)
             ->get();
-
-        $this->loadCart();
 
         return view('livewire.shopping-cart', [
             'cartItems' => $this->cartItems,
