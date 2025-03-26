@@ -559,7 +559,7 @@
                             <div class="product-details">
                                 <div class="category-wrap">
                                     <div class="category-list">
-                                        <a href="{{ route('category.products', $product->category->slug ?? '#') }}" class="product-category">
+                                        <a href="{{ route('category.products', $product->category->slug) }}" class="product-category">
                                             {{ $product->category->name ?? 'Uncategorized' }}
                                         </a>
                                     </div>

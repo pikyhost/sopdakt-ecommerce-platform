@@ -40,7 +40,7 @@
                         <div class="product-details">
                             <div class="category-wrap">
                                 <div class="category-list">
-                                    <a href="#" class="product-category">{{ $product->category->name ?? 'Uncategorized' }}</a>
+                                    <a href="{{ route('category.products', $product->category->slug) }}" class="product-category">{{ $product->category->name ?? 'Uncategorized' }}</a>
                                 </div>
                                 @livewire('love-button-home-page', ['product' => $product], key('love-' . $product->id))                            </div>
                             <h3 class="product-title">
