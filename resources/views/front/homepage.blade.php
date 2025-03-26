@@ -377,7 +377,9 @@
                             <h2 class="text-white text-transform-uppercase line-height-1">{{ $homeSettings->main_heading ?? 'Spring / Summer Season' }}</h2>
                             <h3 class="text-white d-inline-block line-height-1 ls-0 text-center">{{ $homeSettings->discount_text ?? 'Up to' }}</h3>
                             <h4 class="text-white text-uppercase line-height-1 d-inline-block">{{ $homeSettings->discount_value  }}</h4>
-                            <h5 class="float-left text-white text-uppercase line-height-1 ls-n-20">Starting At</h5>
+                            <h5 class="float-left text-white text-uppercase line-height-1 ls-n-20">
+                                {{ __('Starting At') }}
+                            </h5>
                             <h6 class="float-left coupon-sale-text line-height-1 ls-n-20 font-weight-bold text-secondary">
                                 <sup>{{ $homeSettings->currency_symbol ?? '$' }}</sup>{{ $homeSettings->starting_price ?? '19' }}<sup>99</sup>
                             </h6>
