@@ -77,7 +77,7 @@ class PolicyResource extends Resource
                             ->columnSpanFull(),
                     ]),
             ]),
-        ]);
+        ])->columns(1);
     }
 
     public static function getPages(): array
