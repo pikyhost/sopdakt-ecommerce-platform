@@ -34,6 +34,7 @@ class OrderStatusMail extends Mailable
             ->with([
                 'order' => $this->order,
                 'statusMessage' => $statusMessage,
+                'tracking_number' => $this->order->tracking_number,
             ]);
     }
 }

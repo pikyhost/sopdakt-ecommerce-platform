@@ -42,9 +42,9 @@
     <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 10px 0;">
         <strong style="color: #d63384;">{{ __('order_id') }}:</strong> {{ $order->id }}
     </p>
-    @if($order->tracking_number)
+    @if($tracking_number)
         <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 10px 0;">
-            <strong style="color: #d63384;">{{ __('Tracking Number') }}:</strong> {{ $order->tracking_number }}
+            <strong style="color: #d63384;">{{ __('Tracking Number') }}:</strong> {{ $tracking_number }}
         </p>
     @else
         <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 10px 0;">
