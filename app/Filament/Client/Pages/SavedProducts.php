@@ -26,7 +26,7 @@ class SavedProducts extends Page implements HasForms, HasTable
     protected static string $view = 'filament.pages.saved-products';
     protected static ?string $title = 'Wishlists';
     protected static ?string $slug = 'my-wishlist';
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 2000;
 
     public static function getNavigationLabel(): string
     {

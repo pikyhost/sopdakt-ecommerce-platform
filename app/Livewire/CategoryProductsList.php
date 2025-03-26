@@ -60,19 +60,19 @@ class CategoryProductsList extends Component
     {
         $query = $this->category->products()
             ->availableInUserCountry() // Apply local scope
-            ->with(['media', 'productColors'])
+            ->with(['media', 'productColors.color', 'productColors.productColorSizes.size'])
             ->where('is_published', 1)
             ->withAvg('ratings', 'rating');
 
         if (!empty($this->selectedColors)) {
-            $query->whereHas('colorsWithImages', function ($q) {
+            $query->whereHas('productColors', function ($q) {
                 $q->whereIn('color_id', $this->selectedColors);
             });
         }
 
         if (!empty($this->selectedSizes)) {
-            $query->whereHas('sizes', function ($q) {
-                $q->whereIn('sizes.id', $this->selectedSizes);
+            $query->whereHas('productColors.productColorSizes', function ($q) {
+                $q->whereIn('size_id', $this->selectedSizes);
             });
         }
 
