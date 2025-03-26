@@ -221,6 +221,7 @@ class BundlesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->defaultSort('bundles.id', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label(__('bundles.name'))
