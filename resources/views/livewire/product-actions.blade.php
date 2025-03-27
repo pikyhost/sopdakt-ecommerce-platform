@@ -41,4 +41,8 @@
        onmouseout="this.style.backgroundColor='#fff'; this.style.boxShadow='0 1px 3px rgba(0, 0, 0, 0.1)';">
         <i class="fas fa-external-link-alt" style="color: #333; font-size: 14px;"></i>
     </a>
+
+
+    <!-- Add to Compare -->
+    @livewire('add-to-compare', ['product' => $product])
 </div>
