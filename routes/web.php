@@ -74,22 +74,4 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
     Route::view('/terms-of-service', 'pages.terms-of-service')->name('terms.of.service');
     Route::get('/compare-products/{ids}', [ProductComparisonController::class, 'index'])->name('compare.products');
 });
-
 Route::post('/jt-express-webhook', [ShippingController::class, 'handleWebhook']);
-
-Route::get('/test-email', function () {
-    $order = Order::query()->orderByDesc('id')->first(); // Replace with a valid ID
-    return new \App\Mail\OrderStatusMail($order, \App\Enums\OrderStatus::Pending);
-});
-
-
-/*
- *
-use Filament\Notifications\Livewire\DatabaseNotifications;
-
-public function boot()
-{
-    DatabaseNotifications::pollingInterval('30s'); // Poll for new notifications every 30 seconds
-}
-
-*/
