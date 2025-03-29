@@ -35,6 +35,8 @@
                             <div class="btn-icon-group">
                                 @livewire('add-to-cart-home-page', ['product' => $product])
                             </div>
+                            <!-- Add to Compare -->
+                            @livewire('add-to-compare', ['product' => $product])
 
                         </figure>
                         <div class="product-details">
@@ -52,7 +54,7 @@
                                 </div>
                             </div>
                             <div class="price-box">
-                                <span class="product-price">${{ $product->discount_price_for_current_country }}</span>
+                                <span class="product-price">{{ $product->discount_price_for_current_country }}</span>
                             </div>
                         </div>
                     </div>

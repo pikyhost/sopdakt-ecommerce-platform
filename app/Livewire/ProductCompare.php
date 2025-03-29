@@ -4,10 +4,11 @@ namespace App\Livewire;
 
 use App\Models\Product;
 use Livewire\Component;
+use Illuminate\Support\Collection;
 
 class ProductCompare extends Component
 {
-    public $compareProducts = [];
+    public Collection $compareProducts;
 
     protected $listeners = ['updateCompareList' => 'updateCompareProducts'];
 
@@ -18,18 +19,20 @@ class ProductCompare extends Component
 
     public function updateCompareProducts($products)
     {
-        $this->compareProducts = Product::whereIn('id', $products)->get();
+        $this->compareProducts = collect(Product::whereIn('id', $products)->get());
     }
 
     public function clearCompare()
     {
         session()->forget('compare_products');
-        $this->compareProducts = [];
+        $this->compareProducts = collect(); // Ensure it is always a collection
         $this->dispatch('updateCompareList', []);
     }
 
     public function render()
     {
-        return view('livewire.product-compare');
+        return view('livewire.product-compare', [
+            'compareProducts' => $this->compareProducts
+        ]);
     }
 }

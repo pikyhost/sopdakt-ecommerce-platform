@@ -42,7 +42,8 @@
         <i class="fas fa-external-link-alt" style="color: #333; font-size: 14px;"></i>
     </a>
 
-
-    <!-- Add to Compare -->
-    @livewire('add-to-compare', ['product' => $product])
+    @if(Route::currentRouteName() !== 'compare.products')
+        <!-- Add to Compare -->
+        @livewire('add-to-compare', ['product' => $product])
+    @endif
 </div>

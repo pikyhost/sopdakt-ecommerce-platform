@@ -482,6 +482,8 @@
             <div class="container-fluid">
                 @livewire('filtered-products')
             </div>
+            @livewire('product-compare')
+
         </div>
 
         <!-- End .produts-filter-container-->
