@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Dashboard;
 use App\Livewire\ProfileContactDetails;
 use App\Models\Setting;
 use App\Rules\CustomPassword;
@@ -58,7 +59,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+               Dashboard::class,
             ])
             ->resources([
                 config('filament-logger.activity_resource')
