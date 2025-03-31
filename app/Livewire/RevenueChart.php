@@ -10,7 +10,7 @@ use Illuminate\Contracts\Support\Htmlable;
 use Livewire\Attributes\On;
 use Illuminate\Support\Carbon;
 
-class OrdersChart extends ChartWidget
+class RevenueChart extends ChartWidget
 {
     public Carbon $fromDate;
     public Carbon $toDate;
@@ -20,7 +20,7 @@ class OrdersChart extends ChartWidget
 
     public function getHeading(): string|Htmlable|null
     {
-        return __('Orders Chart');
+        return __('Revenue Chart 1');
     }
 
     protected function getData(): array
@@ -34,13 +34,16 @@ class OrdersChart extends ChartWidget
                 end: $toDate,
             )
             ->perDay()
-            ->count();
+            ->sum('total');
 
         return [
             'datasets' => [
                 [
-                    'label' => 'Orders',
+                    'label' => __('Revenue Chart 1'),
                     'data' => $data->map(fn (TrendValue $value) => $value->aggregate),
+                    'backgroundColor' => 'rgba(75, 192, 192, 0.5)',
+                    'borderColor' => 'rgba(75, 192, 192, 1)',
+                    'fill' => true,
                 ],
             ],
             'labels' => $data->map(fn (TrendValue $value) => $value->date),
@@ -51,7 +54,7 @@ class OrdersChart extends ChartWidget
     public function updateFromDate(string $from): void
     {
         $this->fromDate = Carbon::parse($from);
-        $this->dispatch('$refresh'); // This tells Livewire to refresh the component
+        $this->dispatch('$refresh');
     }
 
     #[On('updateToDate')]
@@ -63,6 +66,6 @@ class OrdersChart extends ChartWidget
 
     protected function getType(): string
     {
-        return 'bar';
+        return 'line';
     }
 }

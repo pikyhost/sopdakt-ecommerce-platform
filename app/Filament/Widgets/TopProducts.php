@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\Product;
 use App\Models\Setting;
 use Filament\Support\Enums\FontFamily;
 use Filament\Support\Enums\FontWeight;
@@ -112,6 +113,12 @@ class TopProducts extends BaseWidget
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+            ])->actions([
+                Tables\Actions\Action::make('view')
+                    ->color('gray')
+                    ->icon('heroicon-o-eye')
+                    ->label(__('View'))
+                    ->url(fn (Product $record): string => url('/products/'.$record->slug)),
             ]);
     }
 }

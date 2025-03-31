@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Order;
+use App\Models\User;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Carbon;
@@ -48,6 +49,8 @@ class AnalysisPageStats extends BaseWidget
         // Query for total revenue and total orders in the selected period
         $totalRevenueQuery = Order::whereBetween('created_at', [$startDate, $endDate]);
         $ordersForSelectedPeriodQuery = Order::whereBetween('created_at', [$startDate, $endDate]);
+        $newUsers = User::whereBetween('created_at', [$startDate, $endDate])->count();
+
 
         // Fetch counts
         $totalRevenue = $totalRevenueQuery->sum('total');
@@ -76,29 +79,29 @@ class AnalysisPageStats extends BaseWidget
         $customerExpense = $uniqueCustomers > 0 ? round($totalRevenue / $uniqueCustomers, 2) : 0;
 
         return [
-            Stat::make($locale === 'ar' ? 'إيرادات الفترة المحددة' : 'Revenue for Selected Period', number_format($totalRevenue))
+            Stat::make($locale === 'ar' ? 'إجمالي الإيرادات' : 'Total Revenue', number_format($totalRevenue))
                 ->color('primary')
-                ->description($locale === 'ar' ? 'الإيرادات ضمن النطاق الزمني المحدد.' : 'Revenue within the selected time range.')
+                ->description($locale === 'ar' ? 'إجمالي الإيرادات خلال الفترة المحددة.' : 'Total revenue within the selected time range.')
                 ->descriptionIcon('heroicon-m-banknotes'),
 
-            Stat::make($locale === 'ar' ? 'عدد الطلبات لفترة زمنية مختارة' : 'Orders for Selected Period', $ordersForSelectedPeriod)
+            Stat::make($locale === 'ar' ? 'إجمالي الطلبات' : 'Total Orders', $ordersForSelectedPeriod)
                 ->color('info')
-                ->description($locale === 'ar' ? 'عدد الطلبات ضمن النطاق الزمني المحدد.' : 'Number of orders within the selected time range.')
+                ->description($locale === 'ar' ? 'إجمالي عدد الطلبات خلال الفترة المحددة.' : 'Total number of orders within the selected time range.')
                 ->descriptionIcon('heroicon-o-shopping-bag'),
 
-            Stat::make($locale === 'ar' ? 'الطلبات قيد الانتظار' : 'Pending Orders', $pendingOrders)
+            Stat::make($locale === 'ar' ? 'الطلبات المعلقة' : 'Pending Orders', $pendingOrders)
                 ->color('warning')
-                ->description($locale === 'ar' ? 'الطلبات التي لا تزال في حالة انتظار.' : 'Orders that are still pending.')
+                ->description($locale === 'ar' ? 'عدد الطلبات التي لا تزال قيد المعالجة.' : 'Number of orders still in processing.')
                 ->descriptionIcon('heroicon-m-clock'),
 
             Stat::make($locale === 'ar' ? 'الطلبات المكتملة' : 'Completed Orders', $completedOrders)
                 ->color('success')
-                ->description($locale === 'ar' ? 'عدد الطلبات المكتملة فقط.' : 'Number of successfully completed orders.')
+                ->description($locale === 'ar' ? 'عدد الطلبات التي تم إكمالها بنجاح.' : 'Number of successfully completed orders.')
                 ->descriptionIcon('heroicon-m-check-badge'),
 
             Stat::make($locale === 'ar' ? 'الطلبات الملغاة' : 'Cancelled Orders', $cancelledOrders)
                 ->color('danger')
-                ->description($locale === 'ar' ? 'عدد الطلبات الملغاة فقط.' : 'Number of cancelled orders.')
+                ->description($locale === 'ar' ? 'عدد الطلبات التي تم إلغاؤها أو استردادها.' : 'Number of orders that were cancelled or refunded.')
                 ->descriptionIcon('heroicon-o-x-circle'),
 
             Stat::make($locale === 'ar' ? 'نسبة الطلبات الناجحة مقابل الخاسرة' : 'Win/Loss Ratio', $winLossRatio)
@@ -115,6 +118,10 @@ class AnalysisPageStats extends BaseWidget
                 ->color('info')
                 ->description($locale === 'ar' ? 'متوسط الإنفاق لكل عميل في الفترة المختارة.' : 'Average spending per customer in the selected period.')
                 ->descriptionIcon('heroicon-m-user-group'),
+            Stat::make($locale === 'ar' ? 'المستخدمون الجدد' : 'New Users Joined', $newUsers)
+                ->color('primary')
+                ->description($locale === 'ar' ? 'عدد المستخدمين الجدد الذين انضموا خلال الفترة المحددة.' : 'Number of new users who joined within the selected time range.')
+                ->descriptionIcon('heroicon-m-user-plus'),
         ];
     }
 }

@@ -2,7 +2,9 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\Order;
 use App\Models\Setting;
+use App\Models\User;
 use Filament\Support\Enums\FontFamily;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
@@ -133,6 +135,13 @@ class TopCustomers extends BaseWidget
                     ->label(__('Second Phone'))
                     ->placeholder('-')
                     ->searchable(),
+            ])
+            ->actions([
+                Tables\Actions\Action::make('view')
+                    ->color('gray')
+                    ->icon('heroicon-o-eye')
+                    ->label(__('View'))
+                    ->url(fn (User $record): string => url('/admin/users/'.$record->id)),
             ]);
     }
 
