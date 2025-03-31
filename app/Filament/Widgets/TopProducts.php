@@ -96,7 +96,7 @@ class TopProducts extends BaseWidget
                         $locale = app()->getLocale();
                         return $locale === 'ar' ? "{$state} {$symbol}" : "{$symbol} {$state}";
                     })
-                    ->sortable(),
+                ,
 
                 Tables\Columns\TextColumn::make('after_discount_price')
                     ->formatStateUsing(function ($state) {
@@ -111,7 +111,6 @@ class TopProducts extends BaseWidget
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('products.Created At'))
                     ->dateTime()
-                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])->actions([
                 Tables\Actions\Action::make('view')

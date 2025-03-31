@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Order;
+use App\Models\Setting;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -106,6 +107,13 @@ class LastOrders extends BaseWidget
 
                 Tables\Columns\TextColumn::make('total')
                     ->label(__('Total'))
+                    ->formatStateUsing(function ($state) {
+                        $currency = Setting::getCurrency();
+                        $symbol = $currency?->symbol ?? '';
+
+                        $locale = app()->getLocale();
+                        return $locale === 'ar' ? "{$state} {$symbol}" : "{$symbol} {$state}";
+                    })
                     ->numeric()
                     ->placeholder('-')
                     ->sortable(),
