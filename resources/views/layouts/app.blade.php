@@ -735,60 +735,9 @@
                             </li>
                             <li class="nav-item">
                                 <a href="category.html" class="nav-link">Categories</a>
-                                <div class="megamenu">
-                                    <div class="megamenu-column">
-                                        <h3 class="megamenu-title">Shop by Category</h3>
-                                        <a href="category.html" class="dropdown-link">Electronics</a>
-                                        <a href="category.html" class="dropdown-link">Fashion</a>
-                                        <a href="category.html" class="dropdown-link">Home & Garden</a>
-                                        <a href="category.html" class="dropdown-link">Sports</a>
-                                    </div>
-                                    <div class="megamenu-column">
-                                        <h3 class="megamenu-title">Featured Products</h3>
-                                        <a href="category.html" class="dropdown-link">New Arrivals</a>
-                                        <a href="category.html" class="dropdown-link">Best Sellers</a>
-                                        <a href="category.html" class="dropdown-link">Special Offers</a>
-                                    </div>
-                                    <div class="megamenu-column">
-                                        <div class="megamenu-banner" style="background-image: url('assets/images/menu-banner.jpg')">
-                                            <div class="banner-content">
-                                                <h4>SUMMER SALE</h4>
-                                                <p>Up to 50% off</p>
-                                                <a href="category.html" class="btn btn-light btn-sm">SHOP NOW</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
                             </li>
                             <li class="nav-item">
                                 <a href="product.html" class="nav-link">Products</a>
-                                <div class="megamenu">
-                                    <div class="megamenu-column">
-                                        <h3 class="megamenu-title">Product Types</h3>
-                                    </div>
-                                    <div class="megamenu-column">
-                                        <h3 class="megamenu-title">Product Layouts</h3>
-                                    </div>
-                                    <div class="megamenu-column">
-                                        <div class="megamenu-banner" style="background-image: url('assets/images/menu-banner-1.jpg')">
-                                            <div class="banner-tag">HOT</div>
-                                            <div class="banner-content">
-                                                <h4>NEW COLLECTION</h4>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-                            <li class="nav-item">
-                                <a href="#" class="nav-link">Pages</a>
-                                <div class="dropdown-menu">
-                                    <a href="{{ route('wishlist') }}" class="dropdown-link"><i class="fas fa-heart mr-2"></i>Wishlist</a>
-                                    <a href="cart.html" class="dropdown-link"><i class="fas fa-shopping-cart mr-2"></i>Cart</a>
-                                    <a href="checkout.html" class="dropdown-link"><i class="fas fa-credit-card mr-2"></i>Checkout</a>
-                                    <a href="dashboard.html" class="dropdown-link"><i class="fas fa-tachometer-alt mr-2"></i>Dashboard</a>
-                                    <a href="about.html" class="dropdown-link"><i class="fas fa-info-circle mr-2"></i>About Us</a>
-                                    <a href="contact.html" class="dropdown-link"><i class="fas fa-envelope mr-2"></i>Contact Us</a>
-                                </div>
                             </li>
                             <li class="nav-item">
                                 <a href="blog.html" class="nav-link">Blog</a>
