@@ -90,6 +90,8 @@ class AppServiceProvider extends ServiceProvider
     {
         Table::configureUsing(function (Table $table): void {
             $table->filtersLayout(FiltersLayout::AboveContent)
+                ->emptyStateHeading(__('No Records Found'))
+                ->emptyStateDescription(__('There are no items to display.'))
                 ->defaultSort('id', 'desc')
                 ->poll(null)
                 ->paginationPageOptions([10, 25, 50]);

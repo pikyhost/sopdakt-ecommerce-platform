@@ -36,6 +36,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\Rule;
+use Mokhosh\FilamentRating\Columns\RatingColumn;
 use Mokhosh\FilamentRating\Components\Rating;
 
 class ProductResource extends Resource
@@ -681,11 +682,8 @@ class ProductResource extends Resource
                     ->numeric()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('fake_average_rating')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->label(__('products.Rating'))
-                    ->numeric()
-                    ->sortable(),
+                RatingColumn::make('fake_average_rating')
+                    ->label(__('products.Rating')),
 
                 Tables\Columns\IconColumn::make('is_published')
                     ->toggleable(isToggledHiddenByDefault: true)

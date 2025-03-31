@@ -298,8 +298,6 @@ class UserResource extends Resource
                     ->size(ActionSize::Small)
                     ->color('primary')
                     ->button(),
-
-
             ])
             ->bulkActions([
                 BulkActionGroup::make([
