@@ -40,47 +40,49 @@ class TopNoticeResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Textarea::make('content_en')
-                    ->label(__('Content (English)'))
-                    ->required()
-                    ->columnSpanFull(),
-                Forms\Components\Textarea::make('content_ar')
-                    ->label(__('Content (Arabic)'))
-                    ->required()
-                    ->columnSpanFull(),
-                Forms\Components\TextInput::make('cta_text_en')
-                    ->label(__('CTA Text (English)'))
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('cta_text_ar')
-                    ->label(__('CTA Text (Arabic)'))
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('cta_url')
-                    ->label(__('CTA URL'))
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('cta_text_2_en')
-                    ->label(__('CTA Text 2 (English)'))
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('cta_text_2_ar')
-                    ->label(__('CTA Text 2 (Arabic)'))
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('cta_url_2')
-                    ->label(__('CTA URL 2'))
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('limited_time_text_en')
-                    ->label(__('Limited Time Text (English)'))
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('limited_time_text_ar')
-                    ->label(__('Limited Time Text (Arabic)'))
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('header_message_en')
-                    ->label(__('Header Message (English)'))
-                    ->nullable(),
-                Forms\Components\TextInput::make('header_message_ar')
-                    ->label(__('Header Message (Arabic)'))
-                    ->nullable(),
-                Forms\Components\Toggle::make('is_active')
-                    ->label(__('Is Active'))
-                    ->required(),
+                Forms\Components\Section::make([
+                    Forms\Components\Textarea::make('content_en')
+                        ->label(__('Content (English)'))
+                        ->required()
+                        ->columnSpanFull(),
+                    Forms\Components\Textarea::make('content_ar')
+                        ->label(__('Content (Arabic)'))
+                        ->required()
+                        ->columnSpanFull(),
+                    Forms\Components\TextInput::make('cta_text_en')
+                        ->label(__('CTA Text (English)'))
+                        ->maxLength(255),
+                    Forms\Components\TextInput::make('cta_text_ar')
+                        ->label(__('CTA Text (Arabic)'))
+                        ->maxLength(255),
+                    Forms\Components\TextInput::make('cta_url')
+                        ->label(__('CTA URL'))
+                        ->maxLength(255),
+                    Forms\Components\TextInput::make('cta_text_2_en')
+                        ->label(__('CTA Text 2 (English)'))
+                        ->maxLength(255),
+                    Forms\Components\TextInput::make('cta_text_2_ar')
+                        ->label(__('CTA Text 2 (Arabic)'))
+                        ->maxLength(255),
+                    Forms\Components\TextInput::make('cta_url_2')
+                        ->label(__('CTA URL 2'))
+                        ->maxLength(255),
+                    Forms\Components\TextInput::make('limited_time_text_en')
+                        ->label(__('Limited Time Text (English)'))
+                        ->maxLength(255),
+                    Forms\Components\TextInput::make('limited_time_text_ar')
+                        ->label(__('Limited Time Text (Arabic)'))
+                        ->maxLength(255),
+                    Forms\Components\TextInput::make('header_message_en')
+                        ->label(__('Header Message (English)'))
+                        ->nullable(),
+                    Forms\Components\TextInput::make('header_message_ar')
+                        ->label(__('Header Message (Arabic)'))
+                        ->nullable(),
+                    Forms\Components\Toggle::make('is_active')
+                        ->label(__('Is Active'))
+                        ->required(),
+                ])
             ]);
     }
 
@@ -131,11 +133,11 @@ class TopNoticeResource extends Resource
             ]);
     }
 
-
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListTopNotices::route('/'),
+            'create' => Pages\CreateTopNotice::route('/create'),
             'edit' => Pages\EditTopNotice::route('/{record}/edit'),
         ];
     }
