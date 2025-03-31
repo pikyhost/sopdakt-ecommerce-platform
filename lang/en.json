@@ -8,6 +8,8 @@
     "Environment file already exists.": "Environment file already exists.",
     "Environment file not found.": "Environment file not found.",
     "product.actions.rate_and_review" : "Give rating and review",
+    "No Records Found": "No Records Found",
+    "There are no items to display.": "There are no items to display.",
     "product.available_countries": "Available Countries",
     "product.select_all": "Select All",
     "product.deselect_all": "Deselect All",
