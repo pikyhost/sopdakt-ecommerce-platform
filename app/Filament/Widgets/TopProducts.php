@@ -118,7 +118,9 @@ class TopProducts extends BaseWidget
                     ->color('gray')
                     ->icon('heroicon-o-eye')
                     ->label(__('View'))
-                    ->url(fn (Product $record): string => url('/products/'.$record->slug)),
+                    ->action(function (Product $record) {
+                        return redirect('/products/'.$record->slug);
+                    })
             ]);
     }
 }
