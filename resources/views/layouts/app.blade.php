@@ -115,392 +115,500 @@
     @endif
 
     <header class="header">
-        <div class="header-top">
+        <style>
+            .header-top .top-message {
+                font-weight: 500;
+                letter-spacing: 0.5px;
+            }
+
+            .header-top .separator {
+                width: 1px;
+                height: 20px;
+                opacity: 0.2;
+            }
+
+            .header-dropdown > a {
+                display: flex;
+                align-items: center;
+                transition: all 0.3s ease;
+                padding: 0.25rem 0;
+            }
+
+            .header-dropdown > a:hover {
+                opacity: 0.8;
+            }
+
+            .header-dropdown:hover .header-menu {
+                display: block;
+            }
+
+            .header-menu ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
+
+            .header-menu .dropdown-item {
+                display: flex;
+                align-items: center;
+                padding: 0.5rem 1rem;
+                color: #333;
+                transition: all 0.2s ease;
+                white-space: nowrap;
+            }
+
+            .header-menu .dropdown-item:hover {
+                background-color: #f8f9fa;
+                color: #007bff;
+                text-decoration: none;
+            }
+
+            /* Social Icons */
+            .social-icons .social-icon {
+                width: 30px;
+                height: 30px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                transition: all 0.3s ease;
+            }
+
+            .social-icons .social-icon:hover {
+                transform: translateY(-2px);
+                opacity: 0.9;
+            }
+
+            .menu > li {
+                position: relative;
+            }
+
+            .menu > li > a {
+                font-weight: 600;
+                letter-spacing: 0.5px;
+                transition: all 0.3s ease;
+                position: relative;
+            }
+
+            .menu > li > a:after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 0;
+                height: 3px;
+                background-color: #fff;
+                transition: all 0.3s ease;
+            }
+
+            .menu > li:hover > a:after,
+            .menu > li.active > a:after {
+                width: 100%;
+            }
+
+            .menu > li:hover .megamenu {
+                display: block;
+            }
+
+            .megamenu h5 {
+                font-size: 1rem;
+                font-weight: 700;
+                color: #333;
+                border-bottom: 2px solid #f5f5f5;
+                padding-bottom: 0.75rem;
+                margin-bottom: 1rem;
+            }
+
+            .menu-banner .banner-content {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                padding: 1.5rem;
+                background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+            }
+
+            .menu-banner h4 {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: #fff;
+                line-height: 1.2;
+            }
+
+            .menu-banner h4 b {
+                font-size: 2.5rem;
+            }
+
+            .menu-banner .btn {
+                margin-top: 1rem;
+            }
+
+            .mobile-menu > li {
+                margin-bottom: 0.5rem;
+            }
+
+            .mobile-menu > li > a {
+                display: block;
+                padding: 0.75rem 0;
+                color: #333;
+                font-weight: 600;
+                border-bottom: 1px solid #eee;
+            }
+
+            .mobile-menu ul {
+                list-style: none;
+                padding: 0 0 0 1rem;
+                display: none;
+            }
+
+            .mobile-menu ul li a {
+                display: block;
+                padding: 0.5rem 0;
+                color: #666;
+            }
+
+            /* Animations */
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+
+            @keyframes slideDown {
+                from { transform: translateY(-100%); }
+                to { transform: translateY(0); }
+            }
+
+            /* Responsive Adjustments */
+            @media (max-width: 991px) {
+                .header-middle .header-center {
+                    order: 3;
+                    width: 100%;
+                    margin-top: 1rem;
+                }
+            }
+
+            @media (max-width: 767px) {
+                .header-top .header-right {
+                    justify-content: center;
+                    width: 100%;
+                }
+
+                .header-top .separator {
+                    display: none;
+                }
+            }
+
+            /* RTL Support */
+            [dir="rtl"] .header-menu {
+                left: auto;
+                right: 0;
+            }
+
+            [dir="rtl"] .megamenu-fixed-width {
+                transform: translateX(50%);
+            }
+
+            [dir="rtl"] .mobile-menu-container {
+                left: auto;
+                right: -320px;
+            }
+
+            [dir="rtl"] .mobile-menu-container.open {
+                right: 0;
+                left: auto;
+            }
+        </style>
+        <!-- Header Top Section -->
+        <div class="header-top bg-dark text-white py-2">
             <div class="container">
-                @if (!empty($topNotice->header_message_en) || !empty($topNotice->header_message_ar))
-                    <div class="header-left d-none d-sm-block">
-                        <p class="top-message text-uppercase">
-                            {{ $locale === 'ar' ? $topNotice->header_message_ar : $topNotice->header_message_en }}
-                        </p>
-                    </div><!-- End .header-left -->
-                @endif
-                <div class="header-right header-dropdowns ml-0 ml-sm-auto w-sm-100">
-                    <div class="header-dropdown dropdown-expanded d-none d-lg-block">
-                        <a href="#">Links</a>
-                        <div class="header-menu">
-                            <ul>
-                                <li><a href="{{ url('/client/my-profile') }}">My Account</a></li>
-                                <li><a href="{{ url('/about-us') }}">About Us</a></li>
-                                <li><a href="{{ url('/blogs') }}">Blogs</a></li>
-                                <li><a href="{{ route('wishlist') }}">My Wishlist</a></li>
-                                <li><a href="{{ url('/cart') }}">Cart</a></li>
-                                <li><a href="{{ url('/client/login') }}" class="login-link">Log In</a></li>
-                            </ul>
-                        </div><!-- End .header-menu -->
-                    </div><!-- End .header-dropown -->
-
-                    <span class="separator"></span>
-
-                    <div class="header-dropdown">
-                        <a href="#">
-                            <i class="flag-{{ app()->getLocale() === 'ar' ? 'eg' : 'us' }} flag"></i>
-                            {{ app()->getLocale() === 'ar' ? 'العربية' : 'English' }}
-                        </a>
-                        <div class="header-menu">
-                            <ul>
-                                <li>
-                                    <a href="{{ LaravelLocalization::getLocalizedURL('en', null, [], true) }}">
-                                        <i class="flag-us flag mr-2"></i> English
-                                        @if (app()->getLocale() === 'en')
-                                            <i class="fas fa-check text-sm ml-1"></i>
-                                        @endif
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ LaravelLocalization::getLocalizedURL('ar', null, [], true) }}">
-                                        <i class="flag-eg flag mr-2"></i> العربية
-                                        @if (app()->getLocale() === 'ar')
-                                            <i class="fas fa-check text-sm ml-1"></i>
-                                        @endif
-                                    </a>
-                                </li>
-                            </ul>
-                        </div><!-- End .header-menu -->
-                    </div><!-- End .header-dropdown -->
-
-                    <span class="separator"></span>
-
-                    @php
-                        $socialLinks = \App\Models\Setting::getSocialMediaLinks();
-
-                        // Define the correct social media icon class names
-                        $iconClasses = [
-                            'facebook'  => 'fab fa-facebook-f',
-                            'youtube'   => 'fab fa-youtube',
-                            'instagram' => 'fab fa-instagram',
-                            'x'         => 'fab fa-x-twitter', // Correct X (Twitter) logo
-                            'snapchat'  => 'fab fa-snapchat ghost',
-                            'tiktok'    => 'fab fa-tiktok',
-                        ];
-                    @endphp
-
-                    <div class="social-icons">
-                        @foreach($socialLinks as $platform => $url)
-                            @if(!empty($url) && isset($iconClasses[$platform]))
-                                <a href="{{ $url }}" class="social-icon" target="_blank">
-                                    <i class="{{ $iconClasses[$platform] }}"></i>
-                                </a>
-                            @endif
-                        @endforeach
-                    </div>
-
-                </div><!-- End .header-right -->
-            </div><!-- End .container -->
-        </div><!-- End .header-top -->
-
-        <div class="header-middle sticky-header" data-sticky-options="{'mobile': true}">
-            <div class="container">
-                <div class="header-left col-lg-2 w-auto pl-0 d-flex flex-column align-items-center">
-                    <button class="mobile-menu-toggler text-primary mr-2" type="button">
-                        <i class="fas fa-bars"></i>
-                    </button>
-
-                    @if($logo)
-                        <a href="{{ route('homepage') }}" class="logo">
-                            <div class="logo-wrapper">
-                                <img src="{{ $logo }}" alt="Site Logo" class="site-logo">
-                            </div>
-                        </a>
-                    @else
-                        <div class="site-name-wrapper">
-                            <p class="website-name">{{ $siteName ?: __('No Logo Available') }}</p>
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-center">
+                    @if (!empty($topNotice->header_message_en) || !empty($topNotice->header_message_ar))
+                        <div class="header-left d-none d-sm-block mb-2 mb-lg-0">
+                            <p class="top-message text-uppercase mb-0 font-size-sm">
+                                <i class="fas fa-bullhorn mr-2"></i>
+                                {{ $locale === 'ar' ? $topNotice->header_message_ar : $topNotice->header_message_en }}
+                            </p>
                         </div>
                     @endif
-                </div>
 
-                <style>
-                    /* Logo Wrapper */
-                    .logo-wrapper {
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        background: #fff;
-                        border-radius: 12px;
-                        padding: 8px;
-                        border: 3px solid rgba(0, 0, 0, 0.1);
-                        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
-                        transition: all 0.3s ease-in-out;
-                        max-width: 140px;
-                    }
-
-                    /* Logo Image */
-                    .site-logo {
-                        max-width: 100%;
-                        height: auto;
-                        object-fit: contain;
-                        transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-                    }
-
-                    /* Hover Effect */
-                    .logo-wrapper:hover {
-                        transform: translateY(-3px);
-                        box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.2);
-                    }
-
-                    /* Site Name Wrapper */
-                    .site-name-wrapper {
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        padding: 10px 20px;
-                        margin-top: 10px;
-                        width: 100%;
-                        text-align: center;
-                    }
-
-                    /* Website Name Styling (Now Always Visible) */
-                    .website-name {
-                        font-size: 26px;
-                        font-weight: bold;
-                        font-family: 'Poppins', sans-serif;
-                        text-transform: uppercase;
-                        letter-spacing: 1.2px;
-                        text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
-                        background: linear-gradient(45deg, #1877F2, #1DA1F2, #E4405F);
-                        -webkit-background-clip: text;
-                        -webkit-text-fill-color: transparent;
-                        display: block;
-                        width: 100%;
-                        white-space: normal; /* Allows text to wrap instead of cutting */
-                        overflow: visible; /* Ensures full visibility */
-                        word-break: break-word; /* Ensures long names break properly */
-                    }
-
-                    /* Mobile Adjustments */
-                    @media (max-width: 768px) {
-                        .logo-wrapper {
-                            max-width: 100px;
-                        }
-                        .website-name {
-                            font-size: 22px;
-                        }
-                    }
-                </style>
-
-                <div class="header-right w-lg-max">
-                    <div
-                        class="header-icon header-search header-search-inline header-search-category w-lg-max text-right mt-0">
-                        <a href="#" class="search-toggle" role="button"><i class="icon-search-3"></i></a>
-                        <form action="#" method="get">
-                            <div class="header-search-wrapper">
-                                <input type="search" class="form-control" name="q" id="q" placeholder="Search..."
-                                       required>
-                                <div class="select-custom">
-                                    <select id="cat" name="cat">
-                                        <option value="">All Categories</option>
-                                        <option value="4">Fashion</option>
-                                        <option value="12">- Women</option>
-                                        <option value="13">- Men</option>
-                                        <option value="66">- Jewellery</option>
-                                        <option value="67">- Kids Fashion</option>
-                                        <option value="5">Electronics</option>
-                                        <option value="21">- Smart TVs</option>
-                                        <option value="22">- Cameras</option>
-                                        <option value="63">- Games</option>
-                                        <option value="7">Home &amp; Garden</option>
-                                        <option value="11">Motors</option>
-                                        <option value="31">- Cars and Trucks</option>
-                                        <option value="32">- Motorcycles &amp; Powersports</option>
-                                        <option value="33">- Parts &amp; Accessories</option>
-                                        <option value="34">- Boats</option>
-                                        <option value="57">- Auto Tools &amp; Supplies</option>
-                                    </select>
-                                </div><!-- End .select-custom -->
-                                <button class="btn icon-magnifier p-0" type="submit"></button>
-                            </div><!-- End .header-search-wrapper -->
-                        </form>
-                    </div><!-- End .header-search -->
-
-                    <div class="header-contact d-none d-lg-flex pl-4 pr-4">
-                        <img alt="phone" src="assets/images/phone.png" width="30" height="30" class="pb-1">
-                        <h6>
-                            <span>{{ __('Call us now') }}</span>
-                            <a href="tel:{{ \App\Models\Setting::getContactDetails()['phone'] }}" class="text-dark font1">
-                                {{ \App\Models\Setting::getContactDetails()['phone'] }}
+                    <div class="header-right d-flex align-items-center">
+                        <!-- Quick Links Dropdown -->
+                        <div class="header-dropdown dropdown-expanded d-none d-lg-block mr-3">
+                            <a href="#" class="text-white d-flex align-items-center">
+                                <i class="fas fa-link mr-1"></i>
+                                <span>Quick Links</span>
                             </a>
-                        </h6>
+                            <div class="header-menu bg-white shadow-lg">
+                                <ul class="py-2">
+                                    <li><a href="{{ url('/client/my-profile') }}" class="dropdown-item"><i class="fas fa-user-circle mr-2"></i>My Account</a></li>
+                                    <li><a href="{{ url('/about-us') }}" class="dropdown-item"><i class="fas fa-info-circle mr-2"></i>About Us</a></li>
+                                    <li><a href="{{ url('/blogs') }}" class="dropdown-item"><i class="fas fa-blog mr-2"></i>Blogs</a></li>
+                                    <li><a href="{{ route('wishlist') }}" class="dropdown-item"><i class="fas fa-heart mr-2"></i>My Wishlist</a></li>
+                                    <li><a href="{{ url('/cart') }}" class="dropdown-item"><i class="fas fa-shopping-cart mr-2"></i>Cart</a></li>
+                                    <li><a href="{{ url('/client/login') }}" class="dropdown-item"><i class="fas fa-sign-in-alt mr-2"></i>Log In</a></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <span class="separator bg-light mx-3 d-none d-lg-block"></span>
+
+                        <!-- Language Selector -->
+                        <div class="header-dropdown mr-3">
+                            <a href="#" class="text-white d-flex align-items-center">
+                                <i class="flag-{{ app()->getLocale() === 'ar' ? 'eg' : 'us' }} flag mr-1"></i>
+                                <span>{{ app()->getLocale() === 'ar' ? 'العربية' : 'English' }}</span>
+                            </a>
+                            <div class="header-menu bg-white shadow-lg">
+                                <ul class="py-2">
+                                    <li>
+                                        <a href="{{ LaravelLocalization::getLocalizedURL('en', null, [], true) }}" class="dropdown-item">
+                                            <i class="flag-us flag mr-2"></i> English
+                                            @if (app()->getLocale() === 'en')
+                                                <i class="fas fa-check text-success ml-1"></i>
+                                            @endif
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ LaravelLocalization::getLocalizedURL('ar', null, [], true) }}" class="dropdown-item">
+                                            <i class="flag-eg flag mr-2"></i> العربية
+                                            @if (app()->getLocale() === 'ar')
+                                                <i class="fas fa-check text-success ml-1"></i>
+                                            @endif
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <span class="separator bg-light mx-3 d-none d-lg-block"></span>
+
+                        <!-- Social Media Icons -->
+                        @php
+                            $socialLinks = \App\Models\Setting::getSocialMediaLinks();
+                            $iconClasses = [
+                                'facebook'  => 'fab fa-facebook-f',
+                                'youtube'   => 'fab fa-youtube',
+                                'instagram' => 'fab fa-instagram',
+                                'x'         => 'fab fa-x-twitter',
+                                'snapchat'  => 'fab fa-snapchat-ghost',
+                                'tiktok'    => 'fab fa-tiktok',
+                            ];
+                        @endphp
+
+                        <div class="social-icons d-flex">
+                            @foreach($socialLinks as $platform => $url)
+                                @if(!empty($url) && isset($iconClasses[$platform]))
+                                    <a href="{{ $url }}" class="social-icon text-white mx-2" target="_blank" rel="noopener noreferrer">
+                                        <i class="{{ $iconClasses[$platform] }}"></i>
+                                    </a>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header Middle Section -->
+        <div class="header-middle sticky-header bg-white shadow-sm py-3" data-sticky-options="{'mobile': true}">
+            <div class="container">
+                <div class="d-flex align-items-center justify-content-between">
+                    <!-- Logo and Mobile Toggle -->
+                    <div class="header-left d-flex align-items-center">
+                        <button class="mobile-menu-toggler text-dark mr-3 d-lg-none" type="button">
+                            <i class="fas fa-bars fa-lg"></i>
+                        </button>
+
+                        @if($logo)
+                            <a href="{{ route('homepage') }}" class="logo mr-4">
+                                <div class="logo-wrapper">
+                                    <img src="{{ $logo }}" alt="Site Logo" class="site-logo" style="max-height: 50px;">
+                                </div>
+                            </a>
+                        @else
+                            <div class="site-name-wrapper">
+                                <h1 class="website-name font-weight-bold mb-0">{{ $siteName ?: config('app.name') }}</h1>
+                            </div>
+                        @endif
                     </div>
 
-                    <a href="{{ url('/client/login') }}" class="header-icon" title="login"><i class="icon-user-2"></i></a>
+                    <!-- Search Bar -->
+                    <div class="header-center flex-grow-1 mx-4 d-none d-lg-block">
+                        @livewire('light-global-search')
+                    </div>
 
-                    <a href="{{ route('wishlist') }}" class="header-icon" title="wishlist"><i class="icon-wishlist-2"></i></a>
+                    <!-- Right Icons -->
+                    <div class="header-right d-flex align-items-center">
+                        <div class="header-contact d-none d-lg-flex align-items-center mr-4">
+                            <div class="icon-wrapper bg-primary rounded-circle p-2 mr-2">
+                                <i class="fas fa-phone-alt text-white"></i>
+                            </div>
+                            <div>
+                                <span class="d-block text-muted font-size-xs">{{ __('Call us now') }}</span>
+                                <a href="tel:{{ \App\Models\Setting::getContactDetails()['phone'] }}" class="text-dark font-weight-bold">
+                                    {{ \App\Models\Setting::getContactDetails()['phone'] }}
+                                </a>
+                            </div>
+                        </div>
 
-                    <div class="dropdown cart-dropdown">
-                        @livewire('cart.cart-icon')
-                    </div><!-- End .dropdown -->
-                </div><!-- End .header-right -->
-            </div><!-- End .container -->
-        </div><!-- End .header-middle -->
+                        <div class="d-flex">
+                            <a href="{{ url('/client/login') }}" class="header-icon mx-3 position-relative" title="login">
+                                <i class="icon-user-2 text-dark"></i>
+                            </a>
 
-        <div class="header-bottom sticky-header d-none d-lg-block" data-sticky-options="{'mobile': false}">
+                            <a href="{{ route('wishlist') }}" class="header-icon mx-3 position-relative" title="wishlist">
+                                <i class="icon-wishlist-2 text-dark"></i>
+                                <span class="wishlist-count badge badge-pill badge-primary">0</span>
+                            </a>
+
+                            <div class="dropdown cart-dropdown ml-3">
+                                @livewire('cart.cart-icon')
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header Bottom Navigation -->
+        <div class="header-bottom sticky-header d-none d-lg-block bg-primary" data-sticky-options="{'mobile': false}">
             <div class="container">
                 <nav class="main-nav w-100">
-                    <ul class="menu">
-                        <li>
-                            <a href="/">Home</a>
+                    <ul class="menu d-flex justify-content-between">
+                        <li class="active">
+                            <a href="/" class="text-white py-3 px-3 d-block">Home</a>
                         </li>
                         <li>
-                            <a href="category.html">Categories</a>
-                            <div class="megamenu megamenu-fixed-width megamenu-3cols">
-                                <div class="row">
-                                    <div class="col-lg-4">
-                                        <a href="#" class="nolink">VARIATION 1</a>
-                                        <ul class="submenu">
-                                            <li><a href="category.html">Fullwidth Banner</a></li>
-                                            <li><a href="category-banner-boxed-slider.html">Boxed Slider Banner</a>
-                                            </li>
-                                            <li><a href="category-banner-boxed-image.html">Boxed Image Banner</a>
-                                            </li>
-                                            <li><a href="category.html">Left Sidebar</a></li>
-                                            <li><a href="category-sidebar-right.html">Right Sidebar</a></li>
-                                            <li><a href="category-off-canvas.html">Off Canvas Filter</a></li>
-                                            <li><a href="category-horizontal-filter1.html">Horizontal Filter1</a>
-                                            </li>
-                                            <li><a href="category-horizontal-filter2.blade.php">Horizontal Filter2</a>
-                                            </li>
-                                        </ul>
+                            <a href="category.html" class="text-white py-3 px-3 d-block">Categories</a>
+                            <div class="megamenu megamenu-fixed-width megamenu-3cols border-0 shadow-lg">
+                                <div class="row mx-0">
+                                    <div class="col-lg-4 px-4 py-4">
+                                        <h5 class="text-uppercase font-weight-bold mb-3">Shop by Category</h5>
                                     </div>
-                                    <div class="col-lg-4">
-                                        <a href="#" class="nolink">VARIATION 2</a>
-                                        <ul class="submenu">
-                                            <li><a href="category-list.html">List Types</a></li>
-                                            <li><a href="category-infinite-scroll.html">Ajax Infinite Scroll</a>
-                                            </li>
-                                            <li><a href="category.html">3 Columns Products</a></li>
-                                            <li><a href="category-4col.html">4 Columns Products</a></li>
-                                            <li><a href="category-5col.html">5 Columns Products</a></li>
-                                            <li><a href="category-6col.html">6 Columns Products</a></li>
-                                            <li><a href="category-7col.html">7 Columns Products</a></li>
-                                            <li><a href="category-8col.html">8 Columns Products</a></li>
-                                        </ul>
+                                    <div class="col-lg-4 px-4 py-4">
+                                        <h5 class="text-uppercase font-weight-bold mb-3">Featured Products</h5>
                                     </div>
                                     <div class="col-lg-4 p-0">
-                                        <div class="menu-banner">
-                                            <figure>
-                                                <img src="assets/images/menu-banner.jpg" width="192" height="313"
-                                                     alt="Menu banner">
-                                            </figure>
-                                            <div class="banner-content">
-                                                <h4>
-                                                    <span class="">UP TO</span><br />
-                                                    <b class="">50%</b>
-                                                    <i>OFF</i>
-                                                </h4>
-                                                <a href="category.html" class="btn btn-sm btn-dark">SHOP NOW</a>
+                                        <div class="menu-banner h-100">
+                                            <div class="h-100 w-100 bg-cover" style="background-image: url('assets/images/menu-banner.jpg'); min-height: 300px;">
+                                                <div class="banner-content p-4 text-white d-flex flex-column justify-content-between h-100">
+                                                    <div>
+                                                        <h4 class="font-weight-bold mb-0">SUMMER SALE</h4>
+                                                        <p class="mb-3">Up to 50% off</p>
+                                                    </div>
+                                                    <a href="category.html" class="btn btn-light btn-sm align-self-start">SHOP NOW</a>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div><!-- End .megamenu -->
-                        </li>
-                        <li class="active">
-                            <a href="product.html">Products</a>
-                            <div class="megamenu megamenu-fixed-width">
-                                <div class="row">
-                                    <div class="col-lg-4">
-                                        <a href="#" class="nolink">PRODUCT PAGES</a>
-                                        <ul class="submenu">
-                                            <li><a href="product.html">SIMPLE PRODUCT</a></li>
-                                            <li><a href="product-variable.html">VARIABLE PRODUCT</a></li>
-                                            <li><a href="product.html">SALE PRODUCT</a></li>
-                                            <li><a href="product.html">FEATURED & ON SALE</a></li>
-                                            <li><a href="product-custom-tab.html">WITH CUSTOM TAB</a></li>
-                                            <li><a href="product-sidebar-left.html">WITH LEFT SIDEBAR</a></li>
-                                            <li><a href="product-sidebar-right.html">WITH RIGHT SIDEBAR</a></li>
-                                            <li><a href="product-addcart-sticky.html">ADD CART STICKY</a></li>
-                                        </ul>
-                                    </div><!-- End .col-lg-4 -->
-
-                                    <div class="col-lg-4">
-                                        <a href="#" class="nolink">PRODUCT LAYOUTS</a>
-                                        <ul class="submenu">
-                                            <li><a href="product-extended-layout.html">EXTENDED LAYOUT</a></li>
-                                            <li><a href="product-grid-layout.html">GRID IMAGE</a></li>
-                                            <li><a href="product-full-width.html">FULL WIDTH LAYOUT</a></li>
-                                            <li><a href="product-sticky-info.html">STICKY INFO</a></li>
-                                            <li><a href="product-sticky-both.html">LEFT & RIGHT STICKY</a></li>
-                                            <li><a href="product-transparent-image.html">TRANSPARENT IMAGE</a></li>
-                                            <li><a href="product-center-vertical.html">CENTER VERTICAL</a></li>
-                                            <li><a href="#">BUILD YOUR OWN</a></li>
-                                        </ul>
-                                    </div><!-- End .col-lg-4 -->
-
-                                    <div class="col-lg-4 p-0">
-                                        <div class="menu-banner menu-banner-2">
-                                            <figure>
-                                                <img src="assets/images/menu-banner-1.jpg" width="182" height="317"
-                                                     alt="Menu banner" class="product-promo">
-                                            </figure>
-                                            <i>OFF</i>
-                                            <div class="banner-content">
-                                                <h4>
-                                                    <span class="">UP TO</span><br />
-                                                    <b class="">50%</b>
-                                                </h4>
-                                            </div>
-                                            <a href="category.html" class="btn btn-sm btn-dark">SHOP NOW</a>
-                                        </div>
-                                    </div><!-- End .col-lg-4 -->
-                                </div><!-- End .row -->
-                            </div><!-- End .megamenu -->
+                            </div>
                         </li>
                         <li>
-                            <a href="#">Pages</a>
-                            <ul>
-                                <li><a href="{{ route('wishlist') }}">Wishlist</a></li>
-                                <li><a href="cart.html">Shopping Cart</a></li>
-                                <li><a href="checkout.html">Checkout</a></li>
-                                <li><a href="dashboard.html">Dashboard</a></li>
-                                <li><a href="about.html">About Us</a></li>
-                                <li><a href="#">Blog</a>
-                                    <ul>
-                                        <li><a href="blog.html">Blog</a></li>
-                                        <li><a href="single.html">Blog Post</a></li>
+                            <a href="product.html" class="text-white py-3 px-3 d-block">Products</a>
+                            <div class="megamenu megamenu-fixed-width border-0 shadow-lg">
+                                <div class="row mx-0">
+                                    <div class="col-lg-4 px-4 py-4">
+                                        <h5 class="text-uppercase font-weight-bold mb-3">Product Types</h5>
+                                    </div>
+                                    <div class="col-lg-4 px-4 py-4">
+                                        <h5 class="text-uppercase font-weight-bold mb-3">Product Layouts</h5>
+                                    </div>
+                                    <div class="col-lg-4 p-0">
+                                        <div class="menu-banner menu-banner-2 h-100">
+                                            <div class="h-100 w-100 bg-cover" style="background-image: url('assets/images/menu-banner-1.jpg'); min-height: 300px;">
+                                                <div class="banner-tag bg-danger text-white px-3 py-1 d-inline-block mb-2">HOT</div>
+                                                <div class="banner-content p-4 text-white">
+                                                    <h4 class="font-weight-bold mb-1">NEW COLLECTION</h4>
+                                                    <p class="mb-3">Limited Time Offer</p>
+                                                    <a href="category.html" class="btn btn-light btn-sm">SHOP NOW</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <a href="#" class="text-white py-3 px-3 d-block">Pages</a>
+                            <ul class="bg-white shadow-lg py-2">
+                                <li><a href="{{ route('wishlist') }}" class="dropdown-item py-2 px-4"><i class="fas fa-heart mr-2 text-primary"></i>Wishlist</a></li>
+                                <li><a href="cart.html" class="dropdown-item py-2 px-4"><i class="fas fa-shopping-cart mr-2 text-primary"></i>Shopping Cart</a></li>
+                                <li><a href="checkout.html" class="dropdown-item py-2 px-4"><i class="fas fa-credit-card mr-2 text-primary"></i>Checkout</a></li>
+                                <li><a href="dashboard.html" class="dropdown-item py-2 px-4"><i class="fas fa-tachometer-alt mr-2 text-primary"></i>Dashboard</a></li>
+                                <li><a href="about.html" class="dropdown-item py-2 px-4"><i class="fas fa-info-circle mr-2 text-primary"></i>About Us</a></li>
+                                <li><a href="#" class="dropdown-item py-2 px-4 d-flex justify-content-between align-items-center" data-toggle="submenu">
+                                        <span><i class="fas fa-blog mr-2 text-primary"></i>Blog</span>
+                                        <i class="fas fa-chevron-right text-muted font-size-xs"></i>
+                                    </a>
+                                    <ul class="bg-white shadow-lg py-2">
+                                        <li><a href="blog.html" class="dropdown-item py-2 px-4">Blog List</a></li>
+                                        <li><a href="single.html" class="dropdown-item py-2 px-4">Blog Post</a></li>
                                     </ul>
                                 </li>
-                                <li><a href="contact.html">Contact Us</a></li>
-                                <li><a href="login.html">Login</a></li>
-                                <li><a href="forgot-password.html">Forgot Password</a></li>
+                                <li><a href="contact.html" class="dropdown-item py-2 px-4"><i class="fas fa-envelope mr-2 text-primary"></i>Contact Us</a></li>
                             </ul>
                         </li>
-                        <li><a href="blog.html">Blog</a></li>
-                        <li>
-                            <a href="#">Elements</a>
-                            <ul class="custom-scrollbar">
-                                <li><a href="element-accordions.html">Accordion</a></li>
-                                <li><a href="element-alerts.html">Alerts</a></li>
-                                <li><a href="element-animations.html">Animations</a></li>
-                                <li><a href="element-banners.html">Banners</a></li>
-                                <li><a href="element-buttons.html">Buttons</a></li>
-                                <li><a href="element-call-to-action.html">Call to Action</a></li>
-                                <li><a href="element-countdown.html">Count Down</a></li>
-                                <li><a href="element-counters.html">Counters</a></li>
-                                <li><a href="element-headings.html">Headings</a></li>
-                                <li><a href="element-icons.html">Icons</a></li>
-                                <li><a href="element-info-box.html">Info box</a></li>
-                                <li><a href="element-posts.html">Posts</a></li>
-                                <li><a href="element-products.html">Products</a></li>
-                                <li><a href="element-product-categories.html">Product Categories</a></li>
-                                <li><a href="element-tabs.html">Tabs</a></li>
-                                <li><a href="element-testimonial.html">Testimonials</a></li>
-                            </ul>
-                        </li>
-                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="blog.html" class="text-white py-3 px-3 d-block">Blog</a></li>
+                        <li><a href="contact.html" class="text-white py-3 px-3 d-block">Contact Us</a></li>
                     </ul>
                 </nav>
-            </div><!-- End .container -->
-        </div><!-- End .header-bottom -->
-    </header><!-- End .header -->
+            </div>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu-container">
+        <div class="mobile-menu-wrapper">
+            <span class="mobile-menu-close"><i class="fas fa-times"></i></span>
+            <nav class="mobile-nav">
+                <ul class="mobile-menu">
+                    <li class="active"><a href="/">Home</a></li>
+                    <li>
+                        <a href="category.html">Categories</a>
+                    </li>
+                    <li>
+                        <a href="product.html">Products</a>
+                        <ul>
+                            <li><a href="product.html">Simple Product</a></li>
+                            <li><a href="product-extended-layout.html">Extended Layout</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#">Pages</a>
+                        <ul>
+                            <li><a href="{{ route('wishlist') }}">Wishlist</a></li>
+                            <li><a href="cart.html">Shopping Cart</a></li>
+                            <li><a href="checkout.html">Checkout</a></li>
+                            <li><a href="dashboard.html">Dashboard</a></li>
+                            <li><a href="about.html">About Us</a></li>
+                            <li>
+                                <a href="#">Blog</a>
+                                <ul>
+                                    <li><a href="blog.html">Blog List</a></li>
+                                    <li><a href="single.html">Blog Post</a></li>
+                                </ul>
+                            </li>
+                            <li><a href="contact.html">Contact Us</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="blog.html">Blog</a></li>
+                    <li><a href="contact.html">Contact Us</a></li>
+                </ul>
+            </nav>
+
+            <div class="social-icons p-4 text-center">
+                @foreach($socialLinks as $platform => $url)
+                    @if(!empty($url) && isset($iconClasses[$platform]))
+                        <a href="{{ $url }}" class="social-icon mx-2" target="_blank" rel="noopener noreferrer">
+                            <i class="{{ $iconClasses[$platform] }} fa-lg"></i>
+                        </a>
+                    @endif
+                @endforeach
+            </div>
+        </div>
+    </div>
+
 
     <main class="{{ $mainClass ?? 'main' }}">
         @yield('content')
