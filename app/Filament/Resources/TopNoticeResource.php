@@ -7,6 +7,8 @@ use App\Models\TopNotice;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Tables\Table;
+use Filament\Tables;
 
 class TopNoticeResource extends Resource
 {
@@ -81,6 +83,55 @@ class TopNoticeResource extends Resource
                     ->required(),
             ]);
     }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                Tables\Columns\TextColumn::make('content_en')
+                    ->html()
+                    ->label(__('Content (English)'))
+                    ->limit(50),
+                Tables\Columns\TextColumn::make('content_ar')
+                    ->html()
+                    ->label(__('Content (Arabic)'))
+                    ->limit(50),
+                Tables\Columns\TextColumn::make('cta_text_en')
+                    ->label(__('CTA Text (English)')),
+                Tables\Columns\TextColumn::make('cta_text_ar')
+                    ->label(__('CTA Text (Arabic)')),
+                Tables\Columns\TextColumn::make('cta_url')
+                    ->label(__('CTA URL')),
+                Tables\Columns\TextColumn::make('cta_text_2_en')
+                    ->label(__('CTA Text 2 (English)')),
+                Tables\Columns\TextColumn::make('cta_text_2_ar')
+                    ->label(__('CTA Text 2 (Arabic)')),
+                Tables\Columns\TextColumn::make('cta_url_2')
+                    ->label(__('CTA URL 2')),
+                Tables\Columns\TextColumn::make('limited_time_text_en')
+                    ->label(__('Limited Time Text (English)')),
+                Tables\Columns\TextColumn::make('limited_time_text_ar')
+                    ->label(__('Limited Time Text (Arabic)')),
+                Tables\Columns\TextColumn::make('header_message_en')
+                    ->label(__('Header Message (English)')),
+                Tables\Columns\TextColumn::make('header_message_ar')
+                    ->label(__('Header Message (Arabic)')),
+                Tables\Columns\IconColumn::make('is_active')
+                    ->label(__('Is Active'))
+                    ->boolean(),
+            ])
+            ->actions([
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ]);
+    }
+
+
     public static function getPages(): array
     {
         return [
