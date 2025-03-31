@@ -41,11 +41,11 @@ class TopNoticeResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make([
-                    Forms\Components\Textarea::make('content_en')
+                    Forms\Components\MarkdownEditor::make('content_en')
                         ->label(__('Content (English)'))
                         ->required()
                         ->columnSpanFull(),
-                    Forms\Components\Textarea::make('content_ar')
+                    Forms\Components\MarkdownEditor::make('content_ar')
                         ->label(__('Content (Arabic)'))
                         ->required()
                         ->columnSpanFull(),
@@ -82,7 +82,7 @@ class TopNoticeResource extends Resource
                     Forms\Components\Toggle::make('is_active')
                         ->label(__('Is Active'))
                         ->required(),
-                ])
+                ])->columns(2)
             ]);
     }
 
