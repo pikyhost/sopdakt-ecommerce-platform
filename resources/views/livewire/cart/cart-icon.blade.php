@@ -7,7 +7,7 @@
     <div class="cart-overlay"></div>
 
     <div class="dropdown-menu mobile-cart">
-        <a href="#" title="Close (Esc)" class="btn-close">×</a>
+        <span title="Close (Esc)" class="btn-close">×</span>
 
         <div class="dropdownmenu-wrapper custom-scrollbar">
             <div class="dropdown-cart-header">Shopping Cart</div>
