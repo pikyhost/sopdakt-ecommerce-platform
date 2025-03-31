@@ -2,8 +2,8 @@
 
 namespace App\Livewire;
 
+use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
-use Filament\Forms\Components\Grid;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -28,7 +28,8 @@ class Filters extends Widget implements HasForms
         return $form
             ->statePath('data')
             ->schema([
-                Grid::make()
+                Section::make()
+                    ->description(__('filter1_desc'))
                     ->schema([
                         DatePicker::make('from')
                             ->label(__('Start date'))
@@ -37,7 +38,19 @@ class Filters extends Widget implements HasForms
                         DatePicker::make('to')
                             ->label(__('End date')) ->live()
                             ->afterStateUpdated(fn (?string $state) => $this->dispatch('updateToDate', to: $state)),
-                    ]),
-            ]);
+                    ])->columns(2),
+
+                Section::make()
+                    ->description(__('filter2_desc'))
+                    ->schema([
+                        DatePicker::make('from2')
+                            ->label(__('Start date for Revenue Chart 2'))
+                            ->live()
+                            ->afterStateUpdated(fn (?string $state) => $this->dispatch('updateFromDate2', from: $state)),
+                        DatePicker::make('to2')
+                            ->label(__('End date for Revenue Chart 2')) ->live()
+                            ->afterStateUpdated(fn (?string $state) => $this->dispatch('updateToDate2', to: $state)),
+                    ])->columns(2),
+            ])->columns(2);
     }
 }

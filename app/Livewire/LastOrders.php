@@ -21,8 +21,6 @@ class LastOrders extends BaseWidget
     protected static bool $isLazy = false;
     protected int | string | array $columnSpan = 'full';
 
-    protected static ?int $sort = 1000;
-
     public function getHeading(): string|Htmlable|null
     {
         return __('Recent Transactions');
@@ -61,15 +59,11 @@ class LastOrders extends BaseWidget
             )
             ->columns([
                 Tables\Columns\TextColumn::make('id')
+                    ->color('primary')
+                    ->weight(FontWeight::Bold)
                     ->formatStateUsing(fn($state) => '#' . $state)
                     ->label(__('Number'))
                     ->searchable(),
-
-                TextColumn::make('tracking_number')
-                    ->placeholder('-')
-                    ->label(__('Tracking Number'))
-                    ->searchable()
-                    ->weight(FontWeight::Bold),
 
                 Tables\Columns\TextColumn::make('user.name')
                     ->formatStateUsing(function ($record) {
@@ -95,38 +89,20 @@ class LastOrders extends BaseWidget
                     ->iconColor('primary')
                     ->icon('heroicon-o-phone')
                     ->label(__('User Phone Number'))
-                    ->placeholder(__('No phone number saved'))
+                    ->placeholder('-')
                     ->searchable(),
-
-                Tables\Columns\TextColumn::make('user.second_phone')
-                    ->label(__('Second Phone Number'))
-                    ->searchable()
-                    ->placeholder('-'),
 
                 TextColumn::make('contact.phone')
                     ->iconColor('primary')
                     ->icon('heroicon-o-phone')
                     ->label(__('Contact Phone Number'))
-                    ->placeholder(__('No phone number saved'))
+                    ->placeholder('-')
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('status')
                     ->label(__('Status'))
                     ->badge()
                     ->searchable(),
-
-                Tables\Columns\TextColumn::make('paymentMethod.name')
-                    ->label(__('Payment Method'))
-                    ->searchable()
-                    ->numeric()
-                    ->placeholder('-')
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('subtotal')
-                    ->label(__('Subtotal'))
-                    ->numeric()
-                    ->placeholder('-')
-                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('total')
                     ->label(__('Total'))
@@ -139,7 +115,8 @@ class LastOrders extends BaseWidget
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            ]) ->actions([
+            ])
+            ->actions([
                 Tables\Actions\Action::make('open')
                     ->color('gray')
                     ->icon('heroicon-o-shopping-bag')
