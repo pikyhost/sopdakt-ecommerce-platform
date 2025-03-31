@@ -27,7 +27,7 @@
         'tiktok'    => 'fa-brands fa-tiktok',
     ];
 @endphp
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -116,155 +116,296 @@
 
     <header class="header">
         <style>
-            .header-top .top-message {
-                font-weight: 500;
-                letter-spacing: 0.5px;
+            /* Base Styles */
+            .header {
+                font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+                position: relative;
+                z-index: 999;
             }
 
-            .header-top .separator {
+            /* Header Top Section - Top Right Elements */
+            .header-top {
+                font-size: 0.85rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                background-color: #222;
+                color: white;
+            }
+            .header-top-container {
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+                padding: 8px 0;
+            }
+            .header-top-right {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+            }
+            .header-top-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .header-top-separator {
                 width: 1px;
                 height: 20px;
-                opacity: 0.2;
+                background-color: rgba(255,255,255,0.3);
             }
 
-            .header-dropdown > a {
+            /* Language Selector */
+            .language-selector {
+                position: relative;
+            }
+            .language-selector-toggle {
                 display: flex;
                 align-items: center;
-                transition: all 0.3s ease;
-                padding: 0.25rem 0;
+                gap: 6px;
+                cursor: pointer;
             }
-
-            .header-dropdown > a:hover {
-                opacity: 0.8;
+            .language-dropdown {
+                position: absolute;
+                top: 100%;
+                right: 0;
+                min-width: 160px;
+                background: white;
+                border-radius: 4px;
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+                display: none;
+                z-index: 1000;
             }
-
-            .header-dropdown:hover .header-menu {
+            .language-selector:hover .language-dropdown {
                 display: block;
+                animation: fadeIn 0.2s ease;
             }
-
-            .header-menu ul {
-                list-style: none;
-                padding: 0;
-                margin: 0;
-            }
-
-            .header-menu .dropdown-item {
+            .language-option {
+                padding: 8px 16px;
                 display: flex;
                 align-items: center;
-                padding: 0.5rem 1rem;
+                gap: 8px;
                 color: #333;
-                transition: all 0.2s ease;
-                white-space: nowrap;
-            }
-
-            .header-menu .dropdown-item:hover {
-                background-color: #f8f9fa;
-                color: #007bff;
                 text-decoration: none;
+            }
+            .language-option:hover {
+                background-color: #f8f9fa;
+            }
+            .language-option.active {
+                color: #007bff;
             }
 
             /* Social Icons */
-            .social-icons .social-icon {
-                width: 30px;
-                height: 30px;
-                display: inline-flex;
+            .social-icons {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+            .social-icon {
+                color: white;
+                font-size: 16px;
+                transition: all 0.2s ease;
+            }
+            .social-icon:hover {
+                transform: translateY(-2px);
+                opacity: 0.8;
+            }
+
+            /* Header Middle Section - Search and Icons */
+            .header-middle {
+                background: white;
+                padding: 15px 0;
+                border-bottom: 1px solid #eee;
+            }
+            .header-middle-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .logo img {
+                max-height: 50px;
+            }
+            .header-middle-right {
+                display: flex;
+                align-items: center;
+                gap: 25px;
+            }
+            .header-search {
+                width: 400px;
+            }
+            .header-icons {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+            }
+            .header-icon {
+                font-size: 22px;
+                color: #333;
+                position: relative;
+                transition: all 0.2s ease;
+            }
+            .header-icon:hover {
+                color: #007bff;
+            }
+            .icon-badge {
+                position: absolute;
+                top: -5px;
+                right: -8px;
+                background: #007bff;
+                color: white;
+                border-radius: 50%;
+                width: 18px;
+                height: 18px;
+                font-size: 10px;
+                display: flex;
                 align-items: center;
                 justify-content: center;
+            }
+            .header-contact {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .contact-icon {
+                background: #007bff;
+                color: white;
+                width: 36px;
+                height: 36px;
                 border-radius: 50%;
-                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
-
-            .social-icons .social-icon:hover {
-                transform: translateY(-2px);
-                opacity: 0.9;
+            .contact-text {
+                display: flex;
+                flex-direction: column;
             }
-
-            .menu > li {
-                position: relative;
+            .contact-label {
+                font-size: 12px;
+                color: #777;
             }
-
-            .menu > li > a {
+            .contact-number {
                 font-weight: 600;
-                letter-spacing: 0.5px;
-                transition: all 0.3s ease;
-                position: relative;
+                color: #333;
             }
 
-            .menu > li > a:after {
+            /* Header Navigation */
+            .header-nav {
+                background: #007bff;
+                padding: 0;
+            }
+            .nav-menu {
+                display: flex;
+                justify-content: flex-end;
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
+            .nav-item {
+                position: relative;
+            }
+            .nav-link {
+                color: white;
+                padding: 15px 20px;
+                display: block;
+                font-weight: 600;
+                text-decoration: none;
+                position: relative;
+            }
+            .nav-link:after {
                 content: '';
                 position: absolute;
                 bottom: 0;
                 left: 0;
                 width: 0;
                 height: 3px;
-                background-color: #fff;
+                background-color: white;
                 transition: all 0.3s ease;
             }
-
-            .menu > li:hover > a:after,
-            .menu > li.active > a:after {
+            .nav-item:hover .nav-link:after {
                 width: 100%;
             }
 
-            .menu > li:hover .megamenu {
+            /* Dropdown Menus */
+            .dropdown-menu {
+                position: absolute;
+                top: 100%;
+                right: 0;
+                background: white;
+                min-width: 220px;
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+                display: none;
+                z-index: 1000;
+            }
+            .nav-item:hover .dropdown-menu {
                 display: block;
+                animation: fadeIn 0.2s ease;
             }
-
-            .megamenu h5 {
-                font-size: 1rem;
-                font-weight: 700;
+            .dropdown-link {
+                padding: 10px 20px;
+                display: block;
                 color: #333;
-                border-bottom: 2px solid #f5f5f5;
-                padding-bottom: 0.75rem;
-                margin-bottom: 1rem;
+                text-decoration: none;
+                transition: all 0.2s ease;
+            }
+            .dropdown-link:hover {
+                background: #f8f9fa;
+                color: #007bff;
             }
 
-            .menu-banner .banner-content {
+            /* Megamenu */
+            .megamenu {
+                position: absolute;
+                top: 100%;
+                right: 0;
+                width: 900px;
+                background: white;
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+                display: none;
+                z-index: 1000;
+                padding: 20px;
+            }
+            .nav-item:hover .megamenu {
+                display: flex;
+                animation: fadeIn 0.2s ease;
+            }
+            .megamenu-column {
+                flex: 1;
+                padding: 0 15px;
+            }
+            .megamenu-title {
+                font-size: 16px;
+                font-weight: 700;
+                margin-bottom: 15px;
+                padding-bottom: 10px;
+                border-bottom: 1px solid #eee;
+            }
+            .megamenu-banner {
+                position: relative;
+                height: 100%;
+                min-height: 250px;
+                background-size: cover;
+                background-position: center;
+                border-radius: 4px;
+                overflow: hidden;
+            }
+            .banner-content {
                 position: absolute;
                 bottom: 0;
                 left: 0;
                 right: 0;
-                padding: 1.5rem;
-                background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+                padding: 20px;
+                background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+                color: white;
             }
-
-            .menu-banner h4 {
-                font-size: 1.5rem;
-                font-weight: 700;
-                color: #fff;
-                line-height: 1.2;
-            }
-
-            .menu-banner h4 b {
-                font-size: 2.5rem;
-            }
-
-            .menu-banner .btn {
-                margin-top: 1rem;
-            }
-
-            .mobile-menu > li {
-                margin-bottom: 0.5rem;
-            }
-
-            .mobile-menu > li > a {
-                display: block;
-                padding: 0.75rem 0;
-                color: #333;
+            .banner-tag {
+                position: absolute;
+                top: 15px;
+                left: 15px;
+                background: #dc3545;
+                color: white;
+                padding: 3px 10px;
+                border-radius: 4px;
+                font-size: 12px;
                 font-weight: 600;
-                border-bottom: 1px solid #eee;
-            }
-
-            .mobile-menu ul {
-                list-style: none;
-                padding: 0 0 0 1rem;
-                display: none;
-            }
-
-            .mobile-menu ul li a {
-                display: block;
-                padding: 0.5rem 0;
-                color: #666;
             }
 
             /* Animations */
@@ -273,288 +414,392 @@
                 to { opacity: 1; }
             }
 
-            @keyframes slideDown {
-                from { transform: translateY(-100%); }
-                to { transform: translateY(0); }
-            }
-
             /* Responsive Adjustments */
-            @media (max-width: 991px) {
-                .header-middle .header-center {
+            @media (max-width: 1200px) {
+                .header-search {
+                    width: 300px;
+                }
+                .megamenu {
+                    width: 800px;
+                }
+            }
+            @media (max-width: 992px) {
+                .header-middle-container {
+                    flex-wrap: wrap;
+                }
+                .header-search {
                     order: 3;
                     width: 100%;
-                    margin-top: 1rem;
+                    margin-top: 15px;
+                }
+                .megamenu {
+                    width: 600px;
                 }
             }
-
-            @media (max-width: 767px) {
-                .header-top .header-right {
-                    justify-content: center;
-                    width: 100%;
-                }
-
-                .header-top .separator {
+            @media (max-width: 768px) {
+                .header-top-item {
                     display: none;
                 }
+                .header-top-item.social-icons {
+                    display: flex;
+                }
+                .header-contact {
+                    display: none;
+                }
+                .megamenu {
+                    width: 100%;
+                    right: 0;
+                    left: 0;
+                }
             }
 
-            /* RTL Support */
-            [dir="rtl"] .header-menu {
-                left: auto;
-                right: 0;
+            .header-top-container {
+                background: #111; /* Deep black background */
+                border-bottom: 1px solid #222; /* Soft separator */
             }
 
-            [dir="rtl"] .megamenu-fixed-width {
-                transform: translateX(50%);
+            .top-message {
+                color: #f1f1f1;
+                font-size: 14px;
             }
 
-            [dir="rtl"] .mobile-menu-container {
-                left: auto;
-                right: -320px;
+            .header-dropdown {
+                position: relative;
+                cursor: pointer;
             }
 
-            [dir="rtl"] .mobile-menu-container.open {
-                right: 0;
-                left: auto;
+            .header-dropdown .header-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                min-width: 160px;
+                background: rgba(30, 30, 30, 0.95); /* Dark semi-transparent dropdown */
+                border-radius: 6px;
+                padding: 8px 0;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+                z-index: 999;
             }
+
+            .header-dropdown:hover .header-menu {
+                display: block;
+            }
+
+            .header-menu ul {
+                margin: 0;
+                padding: 0;
+            }
+
+            .header-menu li {
+                list-style: none;
+                padding: 10px 15px;
+            }
+
+            .header-menu a {
+                text-decoration: none;
+                color: #ddd;
+                font-size: 14px;
+                display: flex;
+                align-items: center;
+            }
+
+            .header-menu a:hover {
+                background: #222;
+                color: dodgerblue;
+            }
+
+            .social-icons {
+                display: flex;
+            }
+
+            .social-icon {
+                width: 36px;
+                height: 36px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                background: #222; /* Dark background for icons */
+                color: #bbb;
+                transition: all 0.3s ease;
+                font-size: 16px;
+            }
+
+            .social-icon:hover {
+                background: #007bff;
+                color: #fff;
+            }
+
+            .header-top-container {
+                background: #111; /* Deep black background */
+                border-bottom: 1px solid #222; /* Soft separator */
+            }
+
+            .top-message {
+                color: #fff; /* White text for contrast */
+                font-size: 14px;
+            }
+
+            .header-dropdown {
+                position: relative;
+                cursor: pointer;
+            }
+
+            .header-dropdown .header-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                min-width: 160px;
+                background: #222; /* Dark semi-transparent dropdown */
+                border-radius: 6px;
+                padding: 8px 0;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+                z-index: 999;
+            }
+
+            .header-dropdown:hover .header-menu {
+                display: block;
+            }
+
+            .header-menu ul {
+                margin: 0;
+                padding: 0;
+            }
+
+            .header-menu li {
+                list-style: none;
+                padding: 10px 15px;
+            }
+
+            .header-menu a {
+                text-decoration: none;
+                color: #ddd; /* Light gray for readability */
+                font-size: 14px;
+                display: flex;
+                align-items: center;
+            }
+
+            .social-icons {
+                display: flex;
+            }
+
+            .social-icon {
+                width: 36px;
+                height: 36px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                background: #222; /* Dark background for icons */
+                color: #bbb; /* Light gray color */
+                transition: all 0.3s ease;
+                font-size: 16px;
+            }
+
+            .social-icon:hover {
+                background: #007bff; /* Blue hover effect */
+                color: #fff;
+            }
+
         </style>
-        <!-- Header Top Section -->
-        <div class="header-top bg-dark text-white py-2">
+        <!-- Header Top Section - Social/Language at Top Right -->
+        <div class="header-top">
             <div class="container">
-                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-center">
-                    @if (!empty($topNotice->header_message_en) || !empty($topNotice->header_message_ar))
-                        <div class="header-left d-none d-sm-block mb-2 mb-lg-0">
-                            <p class="top-message text-uppercase mb-0 font-size-sm">
-                                <i class="fas fa-bullhorn mr-2"></i>
-                                {{ $locale === 'ar' ? $topNotice->header_message_ar : $topNotice->header_message_en }}
-                            </p>
-                        </div>
-                    @endif
-
-                    <div class="header-right d-flex align-items-center">
-                        <!-- Quick Links Dropdown -->
-                        <div class="header-dropdown dropdown-expanded d-none d-lg-block mr-3">
-                            <a href="#" class="text-white d-flex align-items-center">
-                                <i class="fas fa-link mr-1"></i>
-                                <span>Quick Links</span>
-                            </a>
-                            <div class="header-menu bg-white shadow-lg">
-                                <ul class="py-2">
-                                    <li><a href="{{ url('/client/my-profile') }}" class="dropdown-item"><i class="fas fa-user-circle mr-2"></i>My Account</a></li>
-                                    <li><a href="{{ url('/about-us') }}" class="dropdown-item"><i class="fas fa-info-circle mr-2"></i>About Us</a></li>
-                                    <li><a href="{{ url('/blogs') }}" class="dropdown-item"><i class="fas fa-blog mr-2"></i>Blogs</a></li>
-                                    <li><a href="{{ route('wishlist') }}" class="dropdown-item"><i class="fas fa-heart mr-2"></i>My Wishlist</a></li>
-                                    <li><a href="{{ url('/cart') }}" class="dropdown-item"><i class="fas fa-shopping-cart mr-2"></i>Cart</a></li>
-                                    <li><a href="{{ url('/client/login') }}" class="dropdown-item"><i class="fas fa-sign-in-alt mr-2"></i>Log In</a></li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <span class="separator bg-light mx-3 d-none d-lg-block"></span>
-
-                        <!-- Language Selector -->
-                        <div class="header-dropdown mr-3">
-                            <a href="#" class="text-white d-flex align-items-center">
-                                <i class="flag-{{ app()->getLocale() === 'ar' ? 'eg' : 'us' }} flag mr-1"></i>
-                                <span>{{ app()->getLocale() === 'ar' ? 'العربية' : 'English' }}</span>
-                            </a>
-                            <div class="header-menu bg-white shadow-lg">
-                                <ul class="py-2">
-                                    <li>
-                                        <a href="{{ LaravelLocalization::getLocalizedURL('en', null, [], true) }}" class="dropdown-item">
-                                            <i class="flag-us flag mr-2"></i> English
-                                            @if (app()->getLocale() === 'en')
-                                                <i class="fas fa-check text-success ml-1"></i>
-                                            @endif
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="{{ LaravelLocalization::getLocalizedURL('ar', null, [], true) }}" class="dropdown-item">
-                                            <i class="flag-eg flag mr-2"></i> العربية
-                                            @if (app()->getLocale() === 'ar')
-                                                <i class="fas fa-check text-success ml-1"></i>
-                                            @endif
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <span class="separator bg-light mx-3 d-none d-lg-block"></span>
-
-                        <!-- Social Media Icons -->
-                        @php
-                            $socialLinks = \App\Models\Setting::getSocialMediaLinks();
-                            $iconClasses = [
-                                'facebook'  => 'fab fa-facebook-f',
-                                'youtube'   => 'fab fa-youtube',
-                                'instagram' => 'fab fa-instagram',
-                                'x'         => 'fab fa-x-twitter',
-                                'snapchat'  => 'fab fa-snapchat-ghost',
-                                'tiktok'    => 'fab fa-tiktok',
-                            ];
-                        @endphp
-
-                        <div class="social-icons d-flex">
-                            @foreach($socialLinks as $platform => $url)
-                                @if(!empty($url) && isset($iconClasses[$platform]))
-                                    <a href="{{ $url }}" class="social-icon text-white mx-2" target="_blank" rel="noopener noreferrer">
-                                        <i class="{{ $iconClasses[$platform] }}"></i>
-                                    </a>
-                                @endif
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Header Middle Section -->
-        <div class="header-middle sticky-header bg-white shadow-sm py-3" data-sticky-options="{'mobile': true}">
-            <div class="container">
-                <div class="d-flex align-items-center justify-content-between">
-                    <!-- Logo and Mobile Toggle -->
-                    <div class="header-left d-flex align-items-center">
-                        <button class="mobile-menu-toggler text-dark mr-3 d-lg-none" type="button">
-                            <i class="fas fa-bars fa-lg"></i>
-                        </button>
-
-                        @if($logo)
-                            <a href="{{ route('homepage') }}" class="logo mr-4">
-                                <div class="logo-wrapper">
-                                    <img src="{{ $logo }}" alt="Site Logo" class="site-logo" style="max-height: 50px;">
-                                </div>
-                            </a>
-                        @else
-                            <div class="site-name-wrapper">
-                                <h1 class="website-name font-weight-bold mb-0">{{ $siteName ?: config('app.name') }}</h1>
+                <div class="header-top-container py-2">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center">
+                        <!-- Announcement Message -->
+                        @if (!empty($topNotice->header_message_en) || !empty($topNotice->header_message_ar))
+                            <div class="top-message d-none d-md-flex align-items-center">
+                                <i class="fas fa-bullhorn mr-2 text-warning"></i>
+                                <span class="text-uppercase font-weight-bold">
+                        {{ $locale === 'ar' ? $topNotice->header_message_ar : $topNotice->header_message_en }}
+                    </span>
                             </div>
                         @endif
-                    </div>
 
-                    <!-- Search Bar -->
-                    <div class="header-center flex-grow-1 mx-4 d-none d-lg-block">
-                        @livewire('light-global-search')
-                    </div>
-
-                    <!-- Right Icons -->
-                    <div class="header-right d-flex align-items-center">
-                        <div class="header-contact d-none d-lg-flex align-items-center mr-4">
-                            <div class="icon-wrapper bg-primary rounded-circle p-2 mr-2">
-                                <i class="fas fa-phone-alt text-white"></i>
-                            </div>
-                            <div>
-                                <span class="d-block text-muted font-size-xs">{{ __('Call us now') }}</span>
-                                <a href="tel:{{ \App\Models\Setting::getContactDetails()['phone'] }}" class="text-dark font-weight-bold">
-                                    {{ \App\Models\Setting::getContactDetails()['phone'] }}
+                        <div class="d-flex align-items-center gap-3">
+                            <!-- Language Selector -->
+                            <div class="header-dropdown position-relative">
+                                <a href="#" class="language-toggle d-flex align-items-center">
+                                    <i class="flag-{{ app()->getLocale() === 'ar' ? 'eg' : 'us' }} flag mr-2"></i>
+                                    <span class="font-weight-bold">{{ app()->getLocale() === 'ar' ? 'العربية' : 'English' }}</span>
                                 </a>
+                                <div class="header-menu position-absolute">
+                                    <ul class="list-unstyled">
+                                        <li>
+                                            <a href="{{ LaravelLocalization::getLocalizedURL('en', null, [], true) }}" class="d-flex align-items-center">
+                                                <i class="flag-us flag mr-2"></i> English
+                                                @if (app()->getLocale() === 'en')
+                                                    <i class="fas fa-check ml-auto text-success"></i>
+                                                @endif
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ LaravelLocalization::getLocalizedURL('ar', null, [], true) }}" class="d-flex align-items-center">
+                                                <i class="flag-eg flag mr-2"></i> العربية
+                                                @if (app()->getLocale() === 'ar')
+                                                    <i class="fas fa-check ml-auto text-success"></i>
+                                                @endif
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="d-flex">
-                            <a href="{{ url('/client/login') }}" class="header-icon mx-3 position-relative" title="login">
-                                <i class="icon-user-2 text-dark"></i>
-                            </a>
-
-                            <a href="{{ route('wishlist') }}" class="header-icon mx-3 position-relative" title="wishlist">
-                                <i class="icon-wishlist-2 text-dark"></i>
-                                <span class="wishlist-count badge badge-pill badge-primary">0</span>
-                            </a>
-
-                            <div class="dropdown cart-dropdown ml-3">
-                                @livewire('cart.cart-icon')
+                            <!-- Social Media Icons -->
+                            <div class="social-icons d-flex gap-2">
+                                @php
+                                    $socialLinks = \App\Models\Setting::getSocialMediaLinks();
+                                    $iconClasses = [
+                                        'facebook'  => 'fab fa-facebook-f',
+                                        'youtube'   => 'fab fa-youtube',
+                                        'instagram' => 'fab fa-instagram',
+                                        'x'         => 'fab fa-x-twitter',
+                                        'snapchat'  => 'fab fa-snapchat-ghost',
+                                        'tiktok'    => 'fab fa-tiktok',
+                                    ];
+                                @endphp
+                                @foreach($socialLinks as $platform => $url)
+                                    @if(!empty($url) && isset($iconClasses[$platform]))
+                                        <a href="{{ $url }}" class="social-icon d-flex align-items-center justify-content-center" target="_blank" rel="noopener noreferrer">
+                                            <i class="{{ $iconClasses[$platform] }}"></i>
+                                        </a>
+                                    @endif
+                                @endforeach
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+            <!-- Header Middle Section - Logo, Search, Icons -->
+            <div class="header-middle">
+                <div class="container">
+                    <div class="header-middle-container">
+                        <!-- Logo (Left) -->
+                        <div class="logo">
+                            @if($logo)
+                                <a href="{{ route('homepage') }}">
+                                    <img src="{{ $logo }}" alt="{{ $siteName ?: config('app.name') }}" class="site-logo">
+                                </a>
+                            @else
+                                <h1 class="website-name">{{ $siteName ?: config('app.name') }}</h1>
+                            @endif
+                        </div>
 
-        <!-- Header Bottom Navigation -->
-        <div class="header-bottom sticky-header d-none d-lg-block bg-primary" data-sticky-options="{'mobile': false}">
-            <div class="container">
-                <nav class="main-nav w-100">
-                    <ul class="menu d-flex justify-content-between">
-                        <li class="active">
-                            <a href="/" class="text-white py-3 px-3 d-block">Home</a>
-                        </li>
-                        <li>
-                            <a href="category.html" class="text-white py-3 px-3 d-block">Categories</a>
-                            <div class="megamenu megamenu-fixed-width megamenu-3cols border-0 shadow-lg">
-                                <div class="row mx-0">
-                                    <div class="col-lg-4 px-4 py-4">
-                                        <h5 class="text-uppercase font-weight-bold mb-3">Shop by Category</h5>
-                                    </div>
-                                    <div class="col-lg-4 px-4 py-4">
-                                        <h5 class="text-uppercase font-weight-bold mb-3">Featured Products</h5>
-                                    </div>
-                                    <div class="col-lg-4 p-0">
-                                        <div class="menu-banner h-100">
-                                            <div class="h-100 w-100 bg-cover" style="background-image: url('assets/images/menu-banner.jpg'); min-height: 300px;">
-                                                <div class="banner-content p-4 text-white d-flex flex-column justify-content-between h-100">
-                                                    <div>
-                                                        <h4 class="font-weight-bold mb-0">SUMMER SALE</h4>
-                                                        <p class="mb-3">Up to 50% off</p>
-                                                    </div>
-                                                    <a href="category.html" class="btn btn-light btn-sm align-self-start">SHOP NOW</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                        <!-- Right Section (Search, Contact, Icons) -->
+                        <div class="header-middle-right">
+                            <!-- Search Bar -->
+                            <div class="header-search">
+                                @livewire('light-global-search')
                             </div>
-                        </li>
-                        <li>
-                            <a href="product.html" class="text-white py-3 px-3 d-block">Products</a>
-                            <div class="megamenu megamenu-fixed-width border-0 shadow-lg">
-                                <div class="row mx-0">
-                                    <div class="col-lg-4 px-4 py-4">
-                                        <h5 class="text-uppercase font-weight-bold mb-3">Product Types</h5>
-                                    </div>
-                                    <div class="col-lg-4 px-4 py-4">
-                                        <h5 class="text-uppercase font-weight-bold mb-3">Product Layouts</h5>
-                                    </div>
-                                    <div class="col-lg-4 p-0">
-                                        <div class="menu-banner menu-banner-2 h-100">
-                                            <div class="h-100 w-100 bg-cover" style="background-image: url('assets/images/menu-banner-1.jpg'); min-height: 300px;">
-                                                <div class="banner-tag bg-danger text-white px-3 py-1 d-inline-block mb-2">HOT</div>
-                                                <div class="banner-content p-4 text-white">
-                                                    <h4 class="font-weight-bold mb-1">NEW COLLECTION</h4>
-                                                    <p class="mb-3">Limited Time Offer</p>
-                                                    <a href="category.html" class="btn btn-light btn-sm">SHOP NOW</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+
+                            <!-- Contact Info -->
+                            <div class="header-contact d-none d-lg-flex">
+                                <div class="contact-icon">
+                                    <i class="fas fa-phone-alt"></i>
                                 </div>
-                            </div>
-                        </li>
-                        <li>
-                            <a href="#" class="text-white py-3 px-3 d-block">Pages</a>
-                            <ul class="bg-white shadow-lg py-2">
-                                <li><a href="{{ route('wishlist') }}" class="dropdown-item py-2 px-4"><i class="fas fa-heart mr-2 text-primary"></i>Wishlist</a></li>
-                                <li><a href="cart.html" class="dropdown-item py-2 px-4"><i class="fas fa-shopping-cart mr-2 text-primary"></i>Shopping Cart</a></li>
-                                <li><a href="checkout.html" class="dropdown-item py-2 px-4"><i class="fas fa-credit-card mr-2 text-primary"></i>Checkout</a></li>
-                                <li><a href="dashboard.html" class="dropdown-item py-2 px-4"><i class="fas fa-tachometer-alt mr-2 text-primary"></i>Dashboard</a></li>
-                                <li><a href="about.html" class="dropdown-item py-2 px-4"><i class="fas fa-info-circle mr-2 text-primary"></i>About Us</a></li>
-                                <li><a href="#" class="dropdown-item py-2 px-4 d-flex justify-content-between align-items-center" data-toggle="submenu">
-                                        <span><i class="fas fa-blog mr-2 text-primary"></i>Blog</span>
-                                        <i class="fas fa-chevron-right text-muted font-size-xs"></i>
+                                <div class="contact-text">
+                                    <span class="contact-label">{{ __('Call us now') }}</span>
+                                    <a href="tel:{{ \App\Models\Setting::getContactDetails()['phone'] }}" class="contact-number">
+                                        {{ \App\Models\Setting::getContactDetails()['phone'] }}
                                     </a>
-                                    <ul class="bg-white shadow-lg py-2">
-                                        <li><a href="blog.html" class="dropdown-item py-2 px-4">Blog List</a></li>
-                                        <li><a href="single.html" class="dropdown-item py-2 px-4">Blog Post</a></li>
-                                    </ul>
-                                </li>
-                                <li><a href="contact.html" class="dropdown-item py-2 px-4"><i class="fas fa-envelope mr-2 text-primary"></i>Contact Us</a></li>
-                            </ul>
-                        </li>
-                        <li><a href="blog.html" class="text-white py-3 px-3 d-block">Blog</a></li>
-                        <li><a href="contact.html" class="text-white py-3 px-3 d-block">Contact Us</a></li>
-                    </ul>
-                </nav>
+                                </div>
+                            </div>
+
+                            <!-- Icons -->
+                            <div class="header-icons">
+                                <a href="{{ url('/client/login') }}" class="header-icon" title="Login">
+                                    <i class="icon-user-2"></i>
+                                </a>
+                                <a href="{{ route('wishlist') }}" class="header-icon" title="Wishlist">
+                                    <i class="icon-wishlist-2"></i>
+                                    <span class="icon-badge">0</span>
+                                </a>
+                                <div class="dropdown cart-dropdown">
+                                    @livewire('cart.cart-icon')
+                                </div><!-- End .dropdown -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
+
+            <!-- Header Navigation -->
+            <div class="header-nav">
+                <div class="container">
+                    <nav class="main-nav">
+                        <ul class="nav-menu">
+                            <li class="nav-item active">
+                                <a href="/" class="nav-link">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="category.html" class="nav-link">Categories</a>
+                                <div class="megamenu">
+                                    <div class="megamenu-column">
+                                        <h3 class="megamenu-title">Shop by Category</h3>
+                                        <a href="category.html" class="dropdown-link">Electronics</a>
+                                        <a href="category.html" class="dropdown-link">Fashion</a>
+                                        <a href="category.html" class="dropdown-link">Home & Garden</a>
+                                        <a href="category.html" class="dropdown-link">Sports</a>
+                                    </div>
+                                    <div class="megamenu-column">
+                                        <h3 class="megamenu-title">Featured Products</h3>
+                                        <a href="category.html" class="dropdown-link">New Arrivals</a>
+                                        <a href="category.html" class="dropdown-link">Best Sellers</a>
+                                        <a href="category.html" class="dropdown-link">Special Offers</a>
+                                    </div>
+                                    <div class="megamenu-column">
+                                        <div class="megamenu-banner" style="background-image: url('assets/images/menu-banner.jpg')">
+                                            <div class="banner-content">
+                                                <h4>SUMMER SALE</h4>
+                                                <p>Up to 50% off</p>
+                                                <a href="category.html" class="btn btn-light btn-sm">SHOP NOW</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="nav-item">
+                                <a href="product.html" class="nav-link">Products</a>
+                                <div class="megamenu">
+                                    <div class="megamenu-column">
+                                        <h3 class="megamenu-title">Product Types</h3>
+                                    </div>
+                                    <div class="megamenu-column">
+                                        <h3 class="megamenu-title">Product Layouts</h3>
+                                    </div>
+                                    <div class="megamenu-column">
+                                        <div class="megamenu-banner" style="background-image: url('assets/images/menu-banner-1.jpg')">
+                                            <div class="banner-tag">HOT</div>
+                                            <div class="banner-content">
+                                                <h4>NEW COLLECTION</h4>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">Pages</a>
+                                <div class="dropdown-menu">
+                                    <a href="{{ route('wishlist') }}" class="dropdown-link"><i class="fas fa-heart mr-2"></i>Wishlist</a>
+                                    <a href="cart.html" class="dropdown-link"><i class="fas fa-shopping-cart mr-2"></i>Cart</a>
+                                    <a href="checkout.html" class="dropdown-link"><i class="fas fa-credit-card mr-2"></i>Checkout</a>
+                                    <a href="dashboard.html" class="dropdown-link"><i class="fas fa-tachometer-alt mr-2"></i>Dashboard</a>
+                                    <a href="about.html" class="dropdown-link"><i class="fas fa-info-circle mr-2"></i>About Us</a>
+                                    <a href="contact.html" class="dropdown-link"><i class="fas fa-envelope mr-2"></i>Contact Us</a>
+                                </div>
+                            </li>
+                            <li class="nav-item">
+                                <a href="blog.html" class="nav-link">Blog</a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="contact.html" class="nav-link">Contact</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
     </header>
 
     <!-- Mobile Menu -->
@@ -569,10 +814,6 @@
                     </li>
                     <li>
                         <a href="product.html">Products</a>
-                        <ul>
-                            <li><a href="product.html">Simple Product</a></li>
-                            <li><a href="product-extended-layout.html">Extended Layout</a></li>
-                        </ul>
                     </li>
                     <li>
                         <a href="#">Pages</a>
@@ -652,39 +893,10 @@
 
                     <div class="col-lg-3 col-sm-6">
                         <div class="widget">
-                            <h4 class="widget-title">Customer Service</h4>
-
-                            <ul class="links">
-                                <li><a href="#">Help & FAQs</a></li>
-                                <li><a href="#">Order Tracking</a></li>
-                                <li><a href="#">Shipping & Delivery</a></li>
-                                <li><a href="#">Orders History</a></li>
-                                <li><a href="#">Advanced Search</a></li>
-                                <li><a href="dashboard.html">My Account</a></li>
-                                <li><a href="#">Careers</a></li>
-                                <li><a href="about.html">About Us</a></li>
-                                <li><a href="#">Corporate Sales</a></li>
-                                <li><a href="#">Privacy</a></li>
-                            </ul>
-                        </div><!-- End .widget -->
-                    </div><!-- End .col-lg-3 -->
-
-                    <div class="col-lg-3 col-sm-6">
-                        <div class="widget">
                             <h4 class="widget-title">Popular Tags</h4>
 
                             <div class="tagcloud">
                                 <a href="#">Bag</a>
-                                <a href="#">Black</a>
-                                <a href="#">Blue</a>
-                                <a href="#">Clothes</a>
-                                <a href="#">Fashion</a>
-                                <a href="#">Hub</a>
-                                <a href="#">Shirt</a>
-                                <a href="#">Shoes</a>
-                                <a href="#">Skirt</a>
-                                <a href="#">Sports</a>
-                                <a href="#">Sweater</a>
                             </div>
                         </div><!-- End .widget -->
                     </div><!-- End .col-lg-3 -->
@@ -730,14 +942,6 @@
     </footer><!-- End .footer -->
 </div><!-- End .page-wrapper -->
 
-<div class="loading-overlay">
-    <div class="bounce-loader">
-        <div class="bounce1"></div>
-        <div class="bounce2"></div>
-        <div class="bounce3"></div>
-    </div>
-</div>
-
 <div class="mobile-menu-overlay"></div><!-- End .mobil-menu-overlay -->
 
 <div class="mobile-menu-container">
@@ -748,56 +952,9 @@
                 <li><a href="/">Home</a></li>
                 <li>
                     <a href="">Categories</a>
-                    <ul>
-                        <li><a href="category.html">Full Width Banner</a></li>
-                        <li><a href="category-banner-boxed-slider.html">Boxed Slider Banner</a></li>
-                        <li><a href="category-banner-boxed-image.html">Boxed Image Banner</a></li>
-                        <li><a href="category-sidebar-left.html">Left Sidebar</a></li>
-                        <li><a href="category-sidebar-right.html">Right Sidebar</a></li>
-                        <li><a href="category-off-canvas.html">Off Canvas Filter</a></li>
-                        <li><a href="category-horizontal-filter1.html">Horizontal Filter 1</a></li>
-                        <li><a href="category-horizontal-filter2.blade.php">Horizontal Filter 2</a></li>
-                        <li><a href="#">List Types</a></li>
-                        <li><a href="category-infinite-scroll.html">Ajax Infinite Scroll<span
-                                    class="tip tip-new">New</span></a></li>
-                        <li><a href="category.html">3 Columns Products</a></li>
-                        <li><a href="category-4col.html">4 Columns Products</a></li>
-                        <li><a href="category-5col.html">5 Columns Products</a></li>
-                        <li><a href="category-6col.html">6 Columns Products</a></li>
-                        <li><a href="category-7col.html">7 Columns Products</a></li>
-                        <li><a href="category-8col.html">8 Columns Products</a></li>
-                    </ul>
                 </li>
                 <li>
                     <a href="product.html">Products</a>
-                    <ul>
-                        <li>
-                            <a href="#" class="nolink">PRODUCT PAGES</a>
-                            <ul>
-                                <li><a href="product.html">SIMPLE PRODUCT</a></li>
-                                <li><a href="product-variable.html">VARIABLE PRODUCT</a></li>
-                                <li><a href="product.html">SALE PRODUCT</a></li>
-                                <li><a href="product.html">FEATURED & ON SALE</a></li>
-                                <li><a href="product-sticky-info.html">WIDTH CUSTOM TAB</a></li>
-                                <li><a href="product-sidebar-left.html">WITH LEFT SIDEBAR</a></li>
-                                <li><a href="product-sidebar-right.html">WITH RIGHT SIDEBAR</a></li>
-                                <li><a href="product-addcart-sticky.html">ADD CART STICKY</a></li>
-                            </ul>
-                        </li>
-                        <li>
-                            <a href="#" class="nolink">PRODUCT LAYOUTS</a>
-                            <ul>
-                                <li><a href="product-extended-layout.html">EXTENDED LAYOUT</a></li>
-                                <li><a href="product-grid-layout.html">GRID IMAGE</a></li>
-                                <li><a href="product-full-width.html">FULL WIDTH LAYOUT</a></li>
-                                <li><a href="product-sticky-info.html">STICKY INFO</a></li>
-                                <li><a href="product-sticky-both.html">LEFT & RIGHT STICKY</a></li>
-                                <li><a href="product-transparent-image.html">TRANSPARENT IMAGE</a></li>
-                                <li><a href="product-center-vertical.html">CENTER VERTICAL</a></li>
-                                <li><a href="#">BUILD YOUR OWN</a></li>
-                            </ul>
-                        </li>
-                    </ul>
                 </li>
                 <li>
                     <a href="#">Pages<span class="tip tip-hot">Hot!</span></a>
@@ -826,38 +983,10 @@
                 <li><a href="#">Elements</a>
                     <ul class="custom-scrollbar">
                         <li><a href="element-accordions.html">Accordion</a></li>
-                        <li><a href="element-alerts.html">Alerts</a></li>
-                        <li><a href="element-animations.html">Animations</a></li>
-                        <li><a href="element-banners.html">Banners</a></li>
-                        <li><a href="element-buttons.html">Buttons</a></li>
-                        <li><a href="element-call-to-action.html">Call to Action</a></li>
-                        <li><a href="element-countdown.html">Count Down</a></li>
-                        <li><a href="element-counters.html">Counters</a></li>
-                        <li><a href="element-headings.html">Headings</a></li>
-                        <li><a href="element-icons.html">Icons</a></li>
-                        <li><a href="element-info-box.html">Info box</a></li>
-                        <li><a href="element-posts.html">Posts</a></li>
-                        <li><a href="element-products.html">Products</a></li>
-                        <li><a href="element-product-categories.html">Product Categories</a></li>
-                        <li><a href="element-tabs.html">Tabs</a></li>
-                        <li><a href="element-testimonial.html">Testimonials</a></li>
                     </ul>
                 </li>
             </ul>
 
-            <ul class="mobile-menu mt-2 mb-2">
-                <li class="border-0">
-                    <a href="#">
-                        Special Offer!
-                    </a>
-                </li>
-                <li class="border-0">
-                    <a href="#" target="_blank">
-                        Buy X!
-                        <span class="tip tip-hot">Hot</span>
-                    </a>
-                </li>
-            </ul>
 
             <ul class="mobile-menu">
                 <li><a href="login.html">My Account</a></li>

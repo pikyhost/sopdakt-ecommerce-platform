@@ -1,0 +1,532 @@
+    <header class="header">
+        <style>
+            /* Base Styles */
+            .header {
+                font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+                position: relative;
+                z-index: 999;
+            }
+
+            /* Header Top Section - Top Right Elements */
+            .header-top {
+                font-size: 0.85rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                background-color: #222;
+                color: white;
+            }
+            .header-top-container {
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+                padding: 8px 0;
+            }
+            .header-top-right {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+            }
+            .header-top-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .header-top-separator {
+                width: 1px;
+                height: 20px;
+                background-color: rgba(255,255,255,0.3);
+            }
+
+            /* Language Selector */
+            .language-selector {
+                position: relative;
+            }
+            .language-selector-toggle {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                cursor: pointer;
+            }
+            .language-dropdown {
+                position: absolute;
+                top: 100%;
+                right: 0;
+                min-width: 160px;
+                background: white;
+                border-radius: 4px;
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+                display: none;
+                z-index: 1000;
+            }
+            .language-selector:hover .language-dropdown {
+                display: block;
+                animation: fadeIn 0.2s ease;
+            }
+            .language-option {
+                padding: 8px 16px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                color: #333;
+                text-decoration: none;
+            }
+            .language-option:hover {
+                background-color: #f8f9fa;
+            }
+            .language-option.active {
+                color: #007bff;
+            }
+
+            /* Social Icons */
+            .social-icons {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+            .social-icon {
+                color: white;
+                font-size: 16px;
+                transition: all 0.2s ease;
+            }
+            .social-icon:hover {
+                transform: translateY(-2px);
+                opacity: 0.8;
+            }
+
+            /* Header Middle Section - Search and Icons */
+            .header-middle {
+                background: white;
+                padding: 15px 0;
+                border-bottom: 1px solid #eee;
+            }
+            .header-middle-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .logo img {
+                max-height: 50px;
+            }
+            .header-middle-right {
+                display: flex;
+                align-items: center;
+                gap: 25px;
+            }
+            .header-search {
+                width: 400px;
+            }
+            .header-icons {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+            }
+            .header-icon {
+                font-size: 22px;
+                color: #333;
+                position: relative;
+                transition: all 0.2s ease;
+            }
+            .header-icon:hover {
+                color: #007bff;
+            }
+            .icon-badge {
+                position: absolute;
+                top: -5px;
+                right: -8px;
+                background: #007bff;
+                color: white;
+                border-radius: 50%;
+                width: 18px;
+                height: 18px;
+                font-size: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .header-contact {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .contact-icon {
+                background: #007bff;
+                color: white;
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .contact-text {
+                display: flex;
+                flex-direction: column;
+            }
+            .contact-label {
+                font-size: 12px;
+                color: #777;
+            }
+            .contact-number {
+                font-weight: 600;
+                color: #333;
+            }
+
+            /* Header Navigation */
+            .header-nav {
+                background: #007bff;
+                padding: 0;
+            }
+            .nav-menu {
+                display: flex;
+                justify-content: flex-end;
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
+            .nav-item {
+                position: relative;
+            }
+            .nav-link {
+                color: white;
+                padding: 15px 20px;
+                display: block;
+                font-weight: 600;
+                text-decoration: none;
+                position: relative;
+            }
+            .nav-link:after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 0;
+                height: 3px;
+                background-color: white;
+                transition: all 0.3s ease;
+            }
+            .nav-item:hover .nav-link:after {
+                width: 100%;
+            }
+
+            /* Dropdown Menus */
+            .dropdown-menu {
+                position: absolute;
+                top: 100%;
+                right: 0;
+                background: white;
+                min-width: 220px;
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+                display: none;
+                z-index: 1000;
+            }
+            .nav-item:hover .dropdown-menu {
+                display: block;
+                animation: fadeIn 0.2s ease;
+            }
+            .dropdown-link {
+                padding: 10px 20px;
+                display: block;
+                color: #333;
+                text-decoration: none;
+                transition: all 0.2s ease;
+            }
+            .dropdown-link:hover {
+                background: #f8f9fa;
+                color: #007bff;
+            }
+
+            /* Megamenu */
+            .megamenu {
+                position: absolute;
+                top: 100%;
+                right: 0;
+                width: 900px;
+                background: white;
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+                display: none;
+                z-index: 1000;
+                padding: 20px;
+            }
+            .nav-item:hover .megamenu {
+                display: flex;
+                animation: fadeIn 0.2s ease;
+            }
+            .megamenu-column {
+                flex: 1;
+                padding: 0 15px;
+            }
+            .megamenu-title {
+                font-size: 16px;
+                font-weight: 700;
+                margin-bottom: 15px;
+                padding-bottom: 10px;
+                border-bottom: 1px solid #eee;
+            }
+            .megamenu-banner {
+                position: relative;
+                height: 100%;
+                min-height: 250px;
+                background-size: cover;
+                background-position: center;
+                border-radius: 4px;
+                overflow: hidden;
+            }
+            .banner-content {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                padding: 20px;
+                background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+                color: white;
+            }
+            .banner-tag {
+                position: absolute;
+                top: 15px;
+                left: 15px;
+                background: #dc3545;
+                color: white;
+                padding: 3px 10px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+            /* Animations */
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+
+            /* Responsive Adjustments */
+            @media (max-width: 1200px) {
+                .header-search {
+                    width: 300px;
+                }
+                .megamenu {
+                    width: 800px;
+                }
+            }
+            @media (max-width: 992px) {
+                .header-middle-container {
+                    flex-wrap: wrap;
+                }
+                .header-search {
+                    order: 3;
+                    width: 100%;
+                    margin-top: 15px;
+                }
+                .megamenu {
+                    width: 600px;
+                }
+            }
+            @media (max-width: 768px) {
+                .header-top-item {
+                    display: none;
+                }
+                .header-top-item.social-icons {
+                    display: flex;
+                }
+                .header-contact {
+                    display: none;
+                }
+                .megamenu {
+                    width: 100%;
+                    right: 0;
+                    left: 0;
+                }
+            }
+        </style>
+
+        <!-- Header Top Section - Social/Language at Top Right -->
+        <div class="header-top">
+            <div class="container">
+                <div class="header-top-container">
+                    <div class="header-top-right">
+                        <!-- Language Selector -->
+                        <div class="header-top-item language-selector">
+                            <div class="language-selector-toggle">
+                                <i class="flag-{{ app()->getLocale() === 'ar' ? 'eg' : 'us' }} flag"></i>
+                                <span>{{ app()->getLocale() === 'ar' ? 'العربية' : 'English' }}</span>
+                            </div>
+                            <div class="language-dropdown">
+                                <a href="{{ LaravelLocalization::getLocalizedURL('en', null, [], true) }}" class="language-option {{ app()->getLocale() === 'en' ? 'active' : '' }}">
+                                    <i class="flag-us flag"></i> English
+                                    @if(app()->getLocale() === 'en')
+                                        <i class="fas fa-check ml-auto"></i>
+                                    @endif
+                                </a>
+                                <a href="{{ LaravelLocalization::getLocalizedURL('ar', null, [], true) }}" class="language-option {{ app()->getLocale() === 'ar' ? 'active' : '' }}">
+                                    <i class="flag-eg flag"></i> العربية
+                                    @if(app()->getLocale() === 'ar')
+                                        <i class="fas fa-check ml-auto"></i>
+                                    @endif
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="header-top-separator"></div>
+
+                        <!-- Social Media Icons -->
+                        <div class="header-top-item social-icons">
+                            @php
+                                $socialLinks = \App\Models\Setting::getSocialMediaLinks();
+                                $iconClasses = [
+                                    'facebook'  => 'fab fa-facebook-f',
+                                    'youtube'   => 'fab fa-youtube',
+                                    'instagram' => 'fab fa-instagram',
+                                    'x'         => 'fab fa-x-twitter',
+                                    'snapchat'  => 'fab fa-snapchat-ghost',
+                                    'tiktok'    => 'fab fa-tiktok',
+                                ];
+                            @endphp
+                            @foreach($socialLinks as $platform => $url)
+                                @if(!empty($url) && isset($iconClasses[$platform]))
+                                    <a href="{{ $url }}" class="social-icon" target="_blank" rel="noopener noreferrer">
+                                        <i class="{{ $iconClasses[$platform] }}"></i>
+                                    </a>
+                                @endif
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header Middle Section - Logo, Search, Icons -->
+        <div class="header-middle">
+            <div class="container">
+                <div class="header-middle-container">
+                    <!-- Logo (Left) -->
+                    <div class="logo">
+                        @if($logo)
+                            <a href="{{ route('homepage') }}">
+                                <img src="{{ $logo }}" alt="{{ $siteName ?: config('app.name') }}" class="site-logo">
+                            </a>
+                        @else
+                            <h1 class="website-name">{{ $siteName ?: config('app.name') }}</h1>
+                        @endif
+                    </div>
+
+                    <!-- Right Section (Search, Contact, Icons) -->
+                    <div class="header-middle-right">
+                        <!-- Search Bar -->
+                        <div class="header-search">
+                            @livewire('light-global-search')
+                        </div>
+
+                        <!-- Contact Info -->
+                        <div class="header-contact d-none d-lg-flex">
+                            <div class="contact-icon">
+                                <i class="fas fa-phone-alt"></i>
+                            </div>
+                            <div class="contact-text">
+                                <span class="contact-label">{{ __('Call us now') }}</span>
+                                <a href="tel:{{ \App\Models\Setting::getContactDetails()['phone'] }}" class="contact-number">
+                                    {{ \App\Models\Setting::getContactDetails()['phone'] }}
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Icons -->
+                        <div class="header-icons">
+                            <a href="{{ url('/client/login') }}" class="header-icon" title="Login">
+                                <i class="icon-user-2"></i>
+                            </a>
+                            <a href="{{ route('wishlist') }}" class="header-icon" title="Wishlist">
+                                <i class="icon-wishlist-2"></i>
+                                <span class="icon-badge">0</span>
+                            </a>
+                            <div class="header-icon cart-icon">
+                                @livewire('cart.cart-icon')
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Header Navigation -->
+        <div class="header-nav">
+            <div class="container">
+                <nav class="main-nav">
+                    <ul class="nav-menu">
+                        <li class="nav-item active">
+                            <a href="/" class="nav-link">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="category.html" class="nav-link">Categories</a>
+                            <div class="megamenu">
+                                <div class="megamenu-column">
+                                    <h3 class="megamenu-title">Shop by Category</h3>
+                                    <a href="category.html" class="dropdown-link">Electronics</a>
+                                    <a href="category.html" class="dropdown-link">Fashion</a>
+                                    <a href="category.html" class="dropdown-link">Home & Garden</a>
+                                    <a href="category.html" class="dropdown-link">Sports</a>
+                                </div>
+                                <div class="megamenu-column">
+                                    <h3 class="megamenu-title">Featured Products</h3>
+                                    <a href="category.html" class="dropdown-link">New Arrivals</a>
+                                    <a href="category.html" class="dropdown-link">Best Sellers</a>
+                                    <a href="category.html" class="dropdown-link">Special Offers</a>
+                                </div>
+                                <div class="megamenu-column">
+                                    <div class="megamenu-banner" style="background-image: url('assets/images/menu-banner.jpg')">
+                                        <div class="banner-content">
+                                            <h4>SUMMER SALE</h4>
+                                            <p>Up to 50% off</p>
+                                            <a href="category.html" class="btn btn-light btn-sm">SHOP NOW</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="nav-item">
+                            <a href="product.html" class="nav-link">Products</a>
+                            <div class="megamenu">
+                                <div class="megamenu-column">
+                                    <h3 class="megamenu-title">Product Types</h3>
+                                    <a href="product.html" class="dropdown-link">Simple Product</a>
+                                    <a href="product.html" class="dropdown-link">Variable Product</a>
+                                    <a href="product.html" class="dropdown-link">Digital Product</a>
+                                </div>
+                                <div class="megamenu-column">
+                                    <h3 class="megamenu-title">Product Layouts</h3>
+                                    <a href="product-extended-layout.html" class="dropdown-link">Extended Layout</a>
+                                    <a href="product-grid-layout.html" class="dropdown-link">Grid Layout</a>
+                                    <a href="product-sticky-layout.html" class="dropdown-link">Sticky Layout</a>
+                                </div>
+                                <div class="megamenu-column">
+                                    <div class="megamenu-banner" style="background-image: url('assets/images/menu-banner-1.jpg')">
+                                        <div class="banner-tag">HOT</div>
+                                        <div class="banner-content">
+                                            <h4>NEW COLLECTION</h4>
+                                            <p>Limited Time Offer</p>
+                                            <a href="category.html" class="btn btn-light btn-sm">SHOP NOW</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">Pages</a>
+                            <div class="dropdown-menu">
+                                <a href="{{ route('wishlist') }}" class="dropdown-link"><i class="fas fa-heart mr-2"></i>Wishlist</a>
+                                <a href="cart.html" class="dropdown-link"><i class="fas fa-shopping-cart mr-2"></i>Cart</a>
+                                <a href="checkout.html" class="dropdown-link"><i class="fas fa-credit-card mr-2"></i>Checkout</a>
+                                <a href="dashboard.html" class="dropdown-link"><i class="fas fa-tachometer-alt mr-2"></i>Dashboard</a>
+                                <a href="about.html" class="dropdown-link"><i class="fas fa-info-circle mr-2"></i>About Us</a>
+                                <a href="contact.html" class="dropdown-link"><i class="fas fa-envelope mr-2"></i>Contact Us</a>
+                            </div>
+                        </li>
+                        <li class="nav-item">
+                            <a href="blog.html" class="nav-link">Blog</a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="contact.html" class="nav-link">Contact</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
