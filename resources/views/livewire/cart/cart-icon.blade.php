@@ -1,5 +1,5 @@
 <div>
-    <a href="javascript:void(0);" title="Cart" class="dropdown-toggle dropdown-arrow cart-toggle">
+    <a href="javascript:void(0);" title="Cart" class="dropdown-toggle dropdown- cart-toggle">
         <i class="minicart-icon"></i>
         <span class="cart-count badge-circle">{{ $cartCount }}</span>
     </a>
@@ -46,16 +46,16 @@
 
             @if($cartCount > 0)
 
-            <div class="dropdown-cart-total">
-                <span>SUBTOTAL:</span>
-                <span class="cart-total-price float-right">{{ $subtotal }}</span>
-            </div><!-- End .dropdown-cart-total -->
+                <div class="dropdown-cart-total">
+                    <span>SUBTOTAL:</span>
+                    <span class="cart-total-price float-right">{{ $subtotal }}</span>
+                </div><!-- End .dropdown-cart-total -->
 
-            <div class="dropdown-cart-action">
-                <a href="{{ route('cart.index') }}" class="btn btn-gray btn-block view-cart">View Cart</a>
-                <a href="{{ route('checkout.index') }}" class="btn btn-dark btn-block">Checkout</a>
+                <div class="dropdown-cart-action">
+                    <a href="{{ route('cart.index') }}" class="btn btn-gray btn-block view-cart">View Cart</a>
+                    <a href="{{ route('checkout.index') }}" class="btn btn-dark btn-block">Checkout</a>
 
-            </div><!-- End .dropdown-cart-total -->
+                </div><!-- End .dropdown-cart-total -->
             @endif
         </div><!-- End .dropdownmenu-wrapper -->
     </div><!-- End .dropdown-menu -->
