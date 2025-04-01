@@ -7,7 +7,7 @@
                     <div style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; text-align: center;">
                         <img src="{{ $product->getFirstMediaUrl('feature_product_image') }}" alt="{{ $product->name }}" style="width: 80px; height: 80px;">
                         <p>{{ $product->name }}</p>
-                        <p>${{ $product->discount_price_for_current_country }}</p>
+                        <p>{{ $product->discount_price_for_current_country }}</p>
                     </div>
                 @endforeach
             </div>

@@ -29,15 +29,30 @@ class FilteredProducts extends Component
 
     private function loadProducts()
     {
-        $this->products = Product::when($this->selectedCategorySlug !== 'all', function ($query) {
-            $query->whereHas('category', function ($q) {
-                $q->where('slug', $this->selectedCategorySlug);
-            });
-        })
+        $this->products = Product::with('category', 'specialPrices')
+            ->when($this->selectedCategorySlug !== 'all', function ($query) {
+                $query->whereHas('category', function ($q) {
+                    $q->where('slug', $this->selectedCategorySlug);
+                });
+            })
             ->latest()
             ->take(10)
-            ->get();
+            ->get()
+            ->map(function ($product) {
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'slug' => $product->slug,
+                    'category_slug' => $product->category->slug ?? null,
+                    'category_name' => $product->category->name ?? 'Uncategorized',
+                    'image' => $product->getFirstMediaUrl('feature_product_image'),
+                    'rating_percentage' => $product->getRatingPercentage(),
+                    'original_price' => $product->original_price,
+                    'discount_price' => $product->discount_price_for_current_country, // Manually store
+                ];
+            });
     }
+
 
     public function render()
     {
