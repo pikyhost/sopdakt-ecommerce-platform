@@ -14,7 +14,7 @@ use Illuminate\Contracts\Support\Htmlable;
 
 class Analysis extends Page
 {
-    protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
+    protected static ?string $navigationIcon = 'heroicon-o-presentation-chart-bar';
 
     protected static ?int $navigationSort = 2;
 
