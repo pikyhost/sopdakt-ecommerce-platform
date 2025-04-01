@@ -226,7 +226,7 @@
                                         <img src="{{ $product->getFirstMediaUrl('feature_product_image') }}" width="205" height="205" alt="product">
                                     </a>
                                     <div class="btn-icon-group">
-                                        @livewire('add-to-cart-home-page', ['product' => $product], key('cart-' . $product->id))
+                                        @livewire('add-to-cart-home-page', ['product' => $product], key('cart-product-' . $product->id . '-' . now()->timestamp))
                                     </div>
 
                                 </figure>
