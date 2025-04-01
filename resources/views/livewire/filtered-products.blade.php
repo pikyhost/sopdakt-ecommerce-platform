@@ -29,39 +29,32 @@
                 <div class="col-6 col-md-4 col-lg-3 col-xl-5col">
                     <div class="product-default inner-quickview inner-icon">
                         <figure>
-                            <a href="{{ route('product.show', $product['slug']) }}">
-                                <img src="{{ $product['image'] }}" width="205" height="205" alt="product">
+                            <a href="{{ route('product.show', $product->slug) }}">
+                                <img src="{{ $product->getFirstMediaUrl('feature_product_image') }}" width="205" height="205" alt="product">
                             </a>
                             <div class="btn-icon-group">
-                                @livewire('add-to-cart-home-page', ['product' => $product['id']])
+                                @livewire('add-to-cart-home-page', ['product' => $product])
                             </div>
                             <!-- Add to Compare -->
-                            @livewire('add-to-compare', ['product' => $product['id']])
+                            @livewire('add-to-compare', ['product' => $product])
+
                         </figure>
                         <div class="product-details">
                             <div class="category-wrap">
                                 <div class="category-list">
-                                    <a href="{{ route('category.products', $product['category_slug']) }}"
-                                       class="product-category">
-                                        {{ $product['category_name'] }}
-                                    </a>
+                                    <a href="{{ route('category.products', $product->category->slug) }}" class="product-category">{{ $product->category->name ?? 'Uncategorized' }}</a>
                                 </div>
-                                @livewire('love-button-home-page', ['product' => $product['id']], key('love-' . $product['id']))
-                            </div>
+                                @livewire('love-button-home-page', ['product' => $product], key('love-' . $product->id))                            </div>
                             <h3 class="product-title">
-                                <a href="{{ route('product.show', $product['slug']) }}">{{ $product['name'] }}</a>
+                                <a href="{{ route('product.show', $product->slug) }}">{{ $product->name }}</a>
                             </h3>
                             <div class="ratings-container">
                                 <div class="product-ratings">
-                                    <span class="ratings" style="width: {{ $product['rating_percentage'] }}%"></span>
+                                    <span class="ratings" style="width: {{ $product->getRatingPercentage() }}%"></span>
                                 </div>
                             </div>
                             <div class="price-box">
-                                @isset($product['discount_price'])
-                                    <span class="product-price">{{ $product['discount_price'] }}</span>
-                                @else
-                                    <span class="product-price">{{ $product['original_price'] }}</span>
-                                @endisset
+                                <span class="product-price">{{ $product->discount_price_for_current_country }}</span>
                             </div>
                         </div>
                     </div>
@@ -80,5 +73,6 @@
                 Load More...
             </a>
         </div>
+
     </div>
 </div>
