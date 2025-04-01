@@ -75,6 +75,300 @@
 
 <body>
 <div class="page-wrapper">
+    @php
+        $topNotices = App\Models\TopNotice::where('is_active', true)->get();
+        $locale = app()->getLocale();
+    @endphp
+
+    @if($topNotices->count())
+        <div class="top-notice-bar position-relative" id="top-notice" style="z-index: 1050;">
+            <div class="container">
+                <div class="notice-content-wrapper">
+                    <div class="notice-content" id="notice-content"></div>
+
+                    <div class="notice-actions" id="cta-wrapper">
+                        <a id="cta-link-1" href="#" class="notice-btn btn-primary-reverse"></a>
+                        <a id="cta-link-2" href="#" class="notice-btn btn-outline"></a>
+                    </div>
+
+                    <div class="limited-time-badge" id="limited-time-text"></div>
+                </div>
+            </div>
+
+            <!-- Progress indicator -->
+            <div class="notice-progress" id="notice-progress"></div>
+        </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const notices = @json($topNotices);
+                if (notices.length === 0) return;
+
+                let index = 0;
+                const noticeContainer = document.getElementById("top-notice");
+                const noticeContent = document.getElementById("notice-content");
+                const ctaLink1 = document.getElementById("cta-link-1");
+                const ctaLink2 = document.getElementById("cta-link-2");
+                const ctaWrapper = document.getElementById("cta-wrapper");
+                const limitedTimeText = document.getElementById("limited-time-text");
+                const progressBar = document.getElementById("notice-progress");
+
+                // Animation timing
+                const transitionDuration = 6000; // 6 seconds per notice
+                const animationDuration = 500; // 0.5s for fade animations
+
+                let progressInterval;
+                let autoRotateInterval;
+
+                function startProgressAnimation() {
+                    progressBar.style.transition = `width ${transitionDuration}ms linear`;
+                    progressBar.style.width = '100%';
+
+                    // Reset progress bar after animation completes
+                    setTimeout(() => {
+                        progressBar.style.transition = 'none';
+                        progressBar.style.width = '0%';
+                    }, transitionDuration);
+                }
+
+                function updateNotice() {
+                    if (notices.length === 0) return;
+
+                    const notice = notices[index];
+                    const locale = "{{ $locale }}";
+
+                    // Start progress animation
+                    startProgressAnimation();
+
+                    // Apply slide-out animation before updating content
+                    noticeContainer.classList.add('exiting');
+
+                    setTimeout(() => {
+                        // Update content
+                        noticeContent.innerHTML = locale === "ar" ? notice.content_ar : notice.content_en;
+
+                        // Handle CTA Links
+                        if (notice.cta_text_en && notice.cta_url) {
+                            ctaLink1.href = notice.cta_url;
+                            ctaLink1.textContent = locale === "ar" ? notice.cta_text_ar : notice.cta_text_en;
+                            ctaLink1.style.display = "inline-flex";
+                        } else {
+                            ctaLink1.style.display = "none";
+                        }
+
+                        if (notice.cta_text_2_en && notice.cta_url_2) {
+                            ctaLink2.href = notice.cta_url_2;
+                            ctaLink2.textContent = locale === "ar" ? notice.cta_text_2_ar : notice.cta_text_2_en;
+                            ctaLink2.style.display = "inline-flex";
+                        } else {
+                            ctaLink2.style.display = "none";
+                        }
+
+                        // Handle Limited Time Text - Fixed version
+                        if (notice.limited_time_text_en || notice.limited_time_text_ar) {
+                            limitedTimeText.textContent = locale === "ar" ?
+                                (notice.limited_time_text_ar || notice.limited_time_text_en) :
+                                (notice.limited_time_text_en || notice.limited_time_text_ar);
+                            limitedTimeText.style.display = "inline-block";
+                        } else {
+                            limitedTimeText.style.display = "none";
+                        }
+
+                        // Slide-in animation after content update
+                        noticeContainer.classList.remove('exiting');
+                        noticeContainer.classList.add('entering');
+
+                        setTimeout(() => {
+                            noticeContainer.classList.remove('entering');
+                        }, animationDuration);
+
+                    }, animationDuration);
+
+                    index = (index + 1) % notices.length;
+                }
+
+                // Initialize
+                updateNotice();
+                autoRotateInterval = setInterval(updateNotice, transitionDuration);
+
+                // Pause on hover
+                noticeContainer.addEventListener('mouseenter', () => {
+                    clearInterval(autoRotateInterval);
+                    progressBar.style.transition = 'none';
+                    progressBar.style.width = progressBar.style.width;
+                });
+
+                noticeContainer.addEventListener('mouseleave', () => {
+                    const remainingWidth = 100 - parseFloat(progressBar.style.width || '0');
+                    const remainingTime = (remainingWidth / 100) * transitionDuration;
+
+                    progressBar.style.transition = `width ${remainingTime}ms linear`;
+                    progressBar.style.width = '100%';
+
+                    autoRotateInterval = setInterval(updateNotice, transitionDuration);
+                });
+            });
+        </script>
+
+        <style>
+            .top-notice-bar {
+                position: relative !important;
+                background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%) !important;
+                color: white !important;
+                padding: 12px 0 !important;
+                overflow: hidden !important;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+                transform: translateY(0) !important;
+                transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 0.5s ease !important;
+            }
+
+            .top-notice-bar.exiting {
+                transform: translateY(-100%) !important;
+                opacity: 0 !important;
+            }
+
+            .top-notice-bar.entering {
+                transform: translateY(-20px) !important;
+                opacity: 0 !important;
+            }
+
+            .top-notice-bar.entering {
+                transform: translateY(0) !important;
+                opacity: 1 !important;
+            }
+
+            .top-notice-bar.closing {
+                transform: translateY(-100%) !important;
+                opacity: 0 !important;
+            }
+
+            .top-notice-bar .container {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                max-width: 1200px !important;
+                margin: 0 auto !important;
+                padding: 0 15px !important;
+                position: relative !important;
+                z-index: 2 !important;
+            }
+
+            .notice-content-wrapper {
+                display: flex !important;
+                align-items: center !important;
+                flex-wrap: wrap !important;
+                gap: 15px !important;
+                flex-grow: 1 !important;
+            }
+
+            .notice-content {
+                font-size: 16px !important;
+                font-weight: 500 !important;
+                margin-right: auto !important;
+            }
+
+            .notice-actions {
+                display: flex !important;
+                gap: 10px !important;
+                align-items: center !important;
+            }
+
+            .notice-btn {
+                display: inline-flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                padding: 6px 12px !important;
+                border-radius: 20px !important;
+                font-size: 13px !important;
+                font-weight: 600 !important;
+                text-decoration: none !important;
+                transition: all 0.3s ease !important;
+                white-space: nowrap !important;
+                border: 1px solid !important;
+            }
+
+            .btn-primary-reverse {
+                background-color: white !important;
+                color: #2b5876 !important;
+                border-color: white !important;
+            }
+
+            .btn-primary-reverse:hover {
+                background-color: transparent !important;
+                color: white !important;
+            }
+
+            .btn-outline {
+                background-color: transparent !important;
+                color: white !important;
+                border-color: rgba(255, 255, 255, 0.5) !important;
+            }
+
+            .btn-outline:hover {
+                background-color: rgba(255, 255, 255, 0.1) !important;
+                border-color: white !important;
+            }
+
+            .limited-time-badge {
+                background-color: rgba(255, 255, 255, 0.15) !important;
+                padding: 4px 10px !important;
+                border-radius: 12px !important;
+                font-size: 12px !important;
+                font-weight: 600 !important;
+                display: none !important;
+            }
+
+            .limited-time-badge:not(:empty) {
+                display: inline-block !important;
+            }
+
+            .notice-close {
+                background: none !important;
+                border: none !important;
+                color: white !important;
+                opacity: 0.7 !important;
+                cursor: pointer !important;
+                padding: 5px !important;
+                margin-left: 10px !important;
+                transition: opacity 0.3s ease !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }
+
+            .notice-close:hover {
+                opacity: 1 !important;
+            }
+
+            .notice-progress {
+                position: absolute !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                height: 3px !important;
+                width: 0% !important;
+                background-color: rgba(255, 255, 255, 0.7) !important;
+                z-index: 1 !important;
+            }
+
+            @media (max-width: 768px) {
+                .notice-content-wrapper {
+                    flex-direction: column !important;
+                    align-items: flex-start !important;
+                    gap: 8px !important;
+                }
+
+                .notice-content {
+                    margin-right: 0 !important;
+                    margin-bottom: 8px !important;
+                }
+
+                .notice-actions {
+                    width: 100% !important;
+                    justify-content: flex-start !important;
+                }
+            }
+        </style>
+    @endif
     <header class="header header-transparent">
         <div class="header-middle sticky-header">
             <div class="container-fluid">

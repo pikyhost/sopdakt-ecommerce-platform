@@ -114,9 +114,7 @@ class LastOrders extends BaseWidget
                         $locale = app()->getLocale();
                         return $locale === 'ar' ? "{$state} {$symbol}" : "{$symbol} {$state}";
                     })
-                    ->numeric()
-                    ->placeholder('-')
-                    ->sortable(),
+                    ->placeholder('-'),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('Created At'))

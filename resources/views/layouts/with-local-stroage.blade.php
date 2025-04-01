@@ -98,6 +98,12 @@
 
                     <div class="limited-time-badge" id="limited-time-text"></div>
                 </div>
+
+                <button type="button" class="notice-close" onclick="closeTopNotice()" aria-label="Close notice">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                    </svg>
+                </button>
             </div>
 
             <!-- Progress indicator -->
@@ -105,7 +111,32 @@
         </div>
 
         <script>
+            // Global close function
+            function closeTopNotice() {
+                const notice = document.getElementById('top-notice');
+                notice.classList.add('closing');
+
+                // Clear any active intervals
+                if (window.topNoticeIntervals) {
+                    window.topNoticeIntervals.forEach(interval => clearInterval(interval));
+                }
+
+                // Hide after animation
+                setTimeout(() => {
+                    notice.style.display = 'none';
+                }, 500); // Matches the animation duration
+
+                // Store closed state in localStorage
+                localStorage.setItem('topNoticeClosed', 'true');
+            }
+
             document.addEventListener("DOMContentLoaded", function () {
+                // Check if notice was previously closed
+                if (localStorage.getItem('topNoticeClosed') === 'true') {
+                    document.getElementById('top-notice').style.display = 'none';
+                    return;
+                }
+
                 const notices = @json($topNotices);
                 if (notices.length === 0) return;
 
@@ -114,7 +145,6 @@
                 const noticeContent = document.getElementById("notice-content");
                 const ctaLink1 = document.getElementById("cta-link-1");
                 const ctaLink2 = document.getElementById("cta-link-2");
-                const ctaWrapper = document.getElementById("cta-wrapper");
                 const limitedTimeText = document.getElementById("limited-time-text");
                 const progressBar = document.getElementById("notice-progress");
 
@@ -122,6 +152,8 @@
                 const transitionDuration = 6000; // 6 seconds per notice
                 const animationDuration = 500; // 0.5s for fade animations
 
+                // Store intervals in window object so close function can access them
+                window.topNoticeIntervals = [];
                 let progressInterval;
                 let autoRotateInterval;
 
@@ -169,7 +201,7 @@
                             ctaLink2.style.display = "none";
                         }
 
-                        // Handle Limited Time Text - Fixed version
+                        // Handle Limited Time Text
                         if (notice.limited_time_text_en || notice.limited_time_text_ar) {
                             limitedTimeText.textContent = locale === "ar" ?
                                 (notice.limited_time_text_ar || notice.limited_time_text_en) :
@@ -195,6 +227,7 @@
                 // Initialize
                 updateNotice();
                 autoRotateInterval = setInterval(updateNotice, transitionDuration);
+                window.topNoticeIntervals.push(autoRotateInterval);
 
                 // Pause on hover
                 noticeContainer.addEventListener('mouseenter', () => {
@@ -211,6 +244,7 @@
                     progressBar.style.width = '100%';
 
                     autoRotateInterval = setInterval(updateNotice, transitionDuration);
+                    window.topNoticeIntervals.push(autoRotateInterval);
                 });
             });
         </script>
@@ -876,8 +910,8 @@
 
                         @if($topNotices->count())
                             <!-- Main Top Notice Bar -->
-                            <div class="top-notice-bar" id="top-notice">
-                                <!-- ... (keep your existing top notice bar code exactly as is) ... -->
+                            <div class="top-notice-bar position-relative" id="top-notice" style="z-index: 1050;">
+                                <!-- ... (your existing top notice bar content) ... -->
                             </div>
 
                             <!-- Header with Integrated Announcement -->
@@ -912,7 +946,39 @@
                             </header>
 
                             <script>
+                                // Global close function
+                                function closeTopNotice() {
+                                    const notice = document.getElementById('top-notice');
+                                    const announcement = document.getElementById('header-announcement');
+
+                                    // Add closing animation
+                                    notice.classList.add('closing');
+                                    announcement.style.opacity = '0';
+                                    announcement.style.transform = 'translateY(-10px)';
+
+                                    // Clear any active intervals
+                                    if (window.topNoticeIntervals) {
+                                        window.topNoticeIntervals.forEach(interval => clearInterval(interval));
+                                    }
+
+                                    // Hide after animation
+                                    setTimeout(() => {
+                                        notice.style.display = 'none';
+                                        announcement.style.display = 'none';
+                                    }, 500); // Matches the animation duration
+
+                                    // Store closed state in localStorage
+                                    localStorage.setItem('topNoticeClosed', 'true');
+                                }
+
                                 document.addEventListener("DOMContentLoaded", function () {
+                                    // Check if notice was previously closed
+                                    if (localStorage.getItem('topNoticeClosed') === 'true') {
+                                        document.getElementById('top-notice').style.display = 'none';
+                                        document.getElementById('header-announcement').style.display = 'none';
+                                        return;
+                                    }
+
                                     const notices = @json($topNotices);
                                     if (notices.length === 0) return;
 
@@ -927,6 +993,10 @@
                                     // Animation timing
                                     const transitionDuration = 6000;
                                     const animationDuration = 500;
+
+                                    // Store intervals in window object
+                                    window.topNoticeIntervals = [];
+                                    let autoRotateInterval;
 
                                     function updateAllContent() {
                                         if (notices.length === 0) return;
@@ -945,8 +1015,11 @@
 
                                         // Update announcement
                                         if (notice.header_message_en || notice.header_message_ar) {
-                                            announcementText.textContent = locale === 'ar' ? notice.header_message_ar : notice.header_message_en;
-                                            announcementContainer.style.display = 'block';
+                                            announcementText.textContent = locale === 'ar' ?
+                                                notice.header_message_ar : notice.header_message_en;
+                                            announcementContainer.style.display = 'flex';
+                                            announcementContainer.style.opacity = '1';
+                                            announcementContainer.style.transform = 'translateY(0)';
                                         } else {
                                             announcementContainer.style.display = 'none';
                                         }
@@ -956,18 +1029,35 @@
 
                                     // Initialize
                                     updateAllContent();
-                                    setInterval(updateAllContent, transitionDuration);
+                                    autoRotateInterval = setInterval(updateAllContent, transitionDuration);
+                                    window.topNoticeIntervals.push(autoRotateInterval);
 
-                                    // ... keep your existing hover and close functionality ...
+                                    // Pause on hover (for both elements)
+                                    [noticeContainer, announcementContainer].forEach(el => {
+                                        if (el) {
+                                            el.addEventListener('mouseenter', () => {
+                                                clearInterval(autoRotateInterval);
+                                            });
+
+                                            el.addEventListener('mouseleave', () => {
+                                                autoRotateInterval = setInterval(updateAllContent, transitionDuration);
+                                                window.topNoticeIntervals.push(autoRotateInterval);
+                                            });
+                                        }
+                                    });
                                 });
                             </script>
 
                             <style>
-                                /* Add these styles to your existing CSS */
+                                /* Your existing top notice bar styles remain the same */
+
+                                /* Header announcement styles */
                                 .header-announcement {
                                     display: flex;
                                     align-items: center;
                                     transition: all 0.3s ease;
+                                    opacity: 1;
+                                    transform: translateY(0);
                                 }
 
                                 .announcement-content {
