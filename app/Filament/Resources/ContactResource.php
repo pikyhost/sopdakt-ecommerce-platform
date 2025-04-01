@@ -102,8 +102,8 @@ class ContactResource extends Resource
                     ->label(__('Created At')),
             ], Tables\Enums\FiltersLayout::Modal)
             ->actions([
-                Tables\Actions\DeleteAction::make()
-                    ->label(__('Delete')),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

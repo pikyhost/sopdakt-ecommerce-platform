@@ -80,11 +80,13 @@ class OrderResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
+                    ->copyable()
                     ->formatStateUsing(fn($state) => '#' . $state)
                     ->label(__('Number'))
                     ->searchable(),
 
                 TextColumn::make('tracking_number')
+                    ->copyable()
                     ->placeholder('-')
                     ->label(__('Tracking Number'))
                     ->searchable()

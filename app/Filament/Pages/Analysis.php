@@ -22,7 +22,7 @@ class Analysis extends Page
 
     public static function getNavigationLabel(): string
     {
-        return __('ًWebsite Analysis');
+        return __('Website Analysis');
     }
 
     public static function getNavigationGroup(): ?string
@@ -32,7 +32,7 @@ class Analysis extends Page
 
     public function getHeading(): string|Htmlable
     {
-        return __('ًWebsite Analysis');
+        return __('Website Analysis');
     }
 
     protected function getHeaderWidgets(): array
