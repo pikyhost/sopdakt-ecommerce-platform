@@ -235,7 +235,8 @@
                                         <div class="category-list">
                                             <a href="{{ route('category.products', $product->category->slug) }}" class="product-category">{{ $product->category->name ?? 'Uncategorized' }}</a>
                                         </div>
-                                        @livewire('love-button-home-page', ['product' => $product], key('love-' . $product->id))                            </div>
+                                        @livewire('love-button-home-page', ['product' => $product], key('cart-product-' . $product->id . '-' . now()->timestamp))
+                                    </div>
                                     <h3 class="product-title">
                                         <a href="{{ route('product.show', $product->slug) }}">{{ $product->name }}</a>
                                     </h3>
