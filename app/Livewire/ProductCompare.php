@@ -22,10 +22,19 @@ class ProductCompare extends Component
         $this->compareProducts = collect(Product::whereIn('id', $products)->get());
     }
 
+    public function removeFromCompare($productId)
+    {
+        $compareProducts = session()->get('compare_products', []);
+        $compareProducts = array_diff($compareProducts, [$productId]);
+
+        session()->put('compare_products', $compareProducts);
+        $this->updateCompareProducts($compareProducts);
+    }
+
     public function clearCompare()
     {
         session()->forget('compare_products');
-        $this->compareProducts = collect(); // Ensure it is always a collection
+        $this->compareProducts = collect();
         $this->dispatch('updateCompareList', []);
     }
 
