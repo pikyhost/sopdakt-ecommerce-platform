@@ -17,6 +17,10 @@ use App\Http\Controllers\{CartController,
     CategoryProductController,
     WishlistController};
 
+use Spatie\Analytics\Facades\Analytics;
+use Spatie\Analytics\Period;
+
+
 Route::redirect('/admin/settings', '/admin/settings/1/edit');
 Route::redirect('/admin/home-page-settings', '/admin/home-page-settings/1/edit');
 //Route::redirect('/admin/top-notices', '/admin/top-notices/1/edit');
@@ -75,3 +79,20 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
     Route::get('/compare-products/{ids}', [ProductComparisonController::class, 'index'])->name('compare.products');
 });
 Route::post('/jt-express-webhook', [ShippingController::class, 'handleWebhook']);
+
+Route::get('/analytics', function () {
+    $analyticsData = Analytics::fetchTotalVisitorsAndPageViews(Period::days(7));
+
+    return response()->json($analyticsData);
+});
+
+
+Route::get('/test-analytics', function () {
+    try {
+        $analyticsData = Analytics::fetchVisitorsAndPageViews(Period::days(7));
+
+        return response()->json($analyticsData);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()]);
+    }
+});

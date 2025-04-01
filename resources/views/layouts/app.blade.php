@@ -1085,7 +1085,7 @@
                         </div>
 
                         <!-- Right Section (Search, Contact, Icons) -->
-                        <div class="header-middle-right">
+                        <div class="header-middle-right" style="display: flex; justify-content: flex-end;">
                             <!-- Search Bar -->
                             <div class="header-search">
                                 @livewire('light-global-search')
@@ -1118,6 +1118,7 @@
                                 </div><!-- End .dropdown -->
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
