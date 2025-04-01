@@ -20,6 +20,8 @@ class AddToCartHomePage extends Component
     public $quantity= 1;
     public bool $showModal = false;
 
+    protected $listeners = ['cartUpdated' => '$refresh'];
+
     public function mount(Product $product)
     {
         $this->product = $product;
