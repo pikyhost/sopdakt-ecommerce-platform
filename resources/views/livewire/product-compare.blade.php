@@ -7,14 +7,14 @@
                     <div style="border: 1px solid #ccc; padding: 10px; border-radius: 5px; text-align: center;">
                         <img src="{{ $product->getFirstMediaUrl('feature_product_image') }}" alt="{{ $product->name }}" style="width: 80px; height: 80px;">
                         <p>{{ $product->name }}</p>
-                        <p class="product-price">
+                        <p>
     @php
         $currency = \App\Models\Setting::getCurrency();
         $symbol = $currency?->code ?? '';
         $locale = app()->getLocale();
         $price = $product->after_discount_price ?? $product->price;
     @endphp
-                            {{ $locale === 'ar' ? "{$price} {$symbol}" : "{$symbol} {$price}" }}
+                            {{ $locale === 'en' ? "{$price} {$symbol}" : "{$symbol} {$price}" }}
 </p>
                     </div>
                 @endforeach

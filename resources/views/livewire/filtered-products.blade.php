@@ -61,7 +61,7 @@
         $locale = app()->getLocale();
         $price = $product->after_discount_price ?? $product->price;
     @endphp
-    {{ $locale === 'ar' ? "{$price} {$symbol}" : "{$symbol} {$price}" }}
+    {{ $locale === 'en' ? "{$price} {$symbol}" : "{$symbol} {$price}" }}
 </span>
                             </div>
                         </div>
