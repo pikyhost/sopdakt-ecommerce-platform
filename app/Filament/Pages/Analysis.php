@@ -4,7 +4,6 @@ namespace App\Filament\Pages;
 
 use App\Livewire\AnalysisPageStats;
 use App\Livewire\Filters;
-use App\Livewire\Filters2;
 use App\Livewire\LastOrders;
 use App\Livewire\OrdersChart;
 use App\Livewire\RevenueChart;
@@ -23,12 +22,17 @@ class Analysis extends Page
 
     public static function getNavigationLabel(): string
     {
+        return __('ًWebsite Analysis');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
         return __('Analysis');
     }
 
     public function getHeading(): string|Htmlable
     {
-        return __('Analysis');
+        return __('ًWebsite Analysis');
     }
 
     protected function getHeaderWidgets(): array

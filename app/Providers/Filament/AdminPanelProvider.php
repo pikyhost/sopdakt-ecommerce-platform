@@ -129,6 +129,7 @@ class AdminPanelProvider extends PanelProvider
     private function getNavigationGroups(): array
     {
         $groups = [
+            __('Analysis'),
             __('Products Management'),
             __('Inventory Management'),
             __('Orders'),
