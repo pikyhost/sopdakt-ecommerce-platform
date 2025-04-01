@@ -32,7 +32,15 @@ class ShoppingCart extends Component
     public $shipping_types = [];
     public $selected_shipping = null;
 
-    protected $listeners = ['refreshCart' => 'loadCart', 'productAdded' => 'refreshCart', 'refreshComplementaryProducts' => 'refreshComplementary'];
+    protected $listeners = ['refreshCart' => 'loadCart', 'productAdded' => 'refreshCart', 'cartUpdated' => 'loadCart'];
+
+    public function refreshCart()
+    {
+        $this->loadCart(); // Reload the cart when a product is added
+    }
+
+    /*
+  protected $listeners = ['refreshCart' => 'loadCart', 'productAdded' => 'refreshCart', 'refreshComplementaryProducts' => 'refreshComplementary'];
 
     public function refreshCart()
     {
@@ -43,7 +51,8 @@ class ShoppingCart extends Component
     {
         $this->render(); // Re-render the component without resetting Livewire instances
     }
-
+     *
+     * */
 
     public function mount()
     {
