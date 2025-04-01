@@ -225,7 +225,7 @@
                                     <a href="{{ route('product.show', $product->slug) }}">
                                         <img src="{{ $product->getFirstMediaUrl('feature_product_image') }}" width="205" height="205" alt="product">
                                     </a>
-                                    <div class="btn-icon-group">
+                                    <div wire:key="cart-{{ $product->id }}" class="btn-icon-group">
                                         @livewire('add-to-cart-home-page', ['product' => $product])
                                     </div>
 

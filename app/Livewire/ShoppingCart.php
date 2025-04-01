@@ -580,10 +580,10 @@ class ShoppingCart extends Component
     {
         $cartItems = collect($this->cartItems);
 
-// Extract product IDs safely
+        // Extract product IDs safely
         $productIds = $cartItems->pluck('product.id')->filter()->unique();
 
-// Get complementary product IDs directly from the relationship
+        // Get complementary product IDs directly from the relationship
         $complementaryProductIds = Product::whereIn('id', $productIds)
             ->with('complementaryProducts:id') // Only fetch IDs
             ->get()
@@ -591,7 +591,7 @@ class ShoppingCart extends Component
             ->flatten()
             ->unique();
 
-// Fetch the actual complementary products (excluding cart items)
+        // Fetch the actual complementary products (excluding cart items)
         $complementaryProducts = Product::whereIn('id', $complementaryProductIds)
             ->whereNotIn('id', $productIds) // Exclude cart items
             ->inRandomOrder()

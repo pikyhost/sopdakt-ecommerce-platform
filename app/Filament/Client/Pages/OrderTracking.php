@@ -49,11 +49,13 @@ class OrderTracking extends Page implements HasForms, HasTable
     {
         return [
             TextColumn::make('tracking_number')
+                ->copyable()
                 ->label(__('Tracking Number'))
                 ->searchable()
                 ->weight(FontWeight::Bold),
 
             TextColumn::make('id')
+                ->copyable()
                 ->formatStateUsing(fn($state) => '#' . $state)
                 ->label(__('Number'))
                 ->searchable(),
