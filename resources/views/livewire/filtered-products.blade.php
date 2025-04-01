@@ -54,7 +54,15 @@
                                 </div>
                             </div>
                             <div class="price-box">
-                                <span class="product-price">{{ $product->discount_price_for_current_country }}</span>
+<span class="product-price">
+    @php
+        $currency = \App\Models\Setting::getCurrency();
+        $symbol = $currency?->code ?? '';
+        $locale = app()->getLocale();
+        $price = $product->after_discount_price ?? $product->price;
+    @endphp
+    {{ $locale === 'ar' ? "{$price} {$symbol}" : "{$symbol} {$price}" }}
+</span>
                             </div>
                         </div>
                     </div>
