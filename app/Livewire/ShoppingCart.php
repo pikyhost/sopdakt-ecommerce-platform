@@ -32,12 +32,18 @@ class ShoppingCart extends Component
     public $shipping_types = [];
     public $selected_shipping = null;
 
-    protected $listeners = ['refreshCart' => 'loadCart', 'productAdded' => 'refreshCart'];
+    protected $listeners = ['refreshCart' => 'loadCart', 'productAdded' => 'refreshCart', 'refreshComplementaryProducts' => 'refreshComplementary'];
 
     public function refreshCart()
     {
         $this->loadCart(); // Reload the cart when a product is added
     }
+
+    public function refreshComplementary()
+    {
+        $this->render(); // Re-render the component without resetting Livewire instances
+    }
+
 
     public function mount()
     {

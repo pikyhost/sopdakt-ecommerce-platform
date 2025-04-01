@@ -141,7 +141,7 @@ class AddToCartHomePage extends Component
         $this->closeModal();
         $this->dispatch('cartUpdated');
         $this->dispatch('productAdded', $this->product->id);
-
+        $this->dispatch('refreshComplementaryProducts');
     }
 
     private function availableSizes()
