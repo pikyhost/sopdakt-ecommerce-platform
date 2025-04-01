@@ -43,6 +43,13 @@
     <meta name="author" content="SW-THEMES">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-F5CFYBRQ0F"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-F5CFYBRQ0F');
+    </script>
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ $favicon }}">
