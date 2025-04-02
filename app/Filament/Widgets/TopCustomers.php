@@ -104,7 +104,7 @@ class TopCustomers extends BaseWidget
                         $symbol = $currency?->code ?? '';
 
                         $locale = app()->getLocale();
-                        return $locale === 'ar'
+                        return $locale === 'en'
                             ? "{$state} {$symbol}" // Example: "5000 $ إجمالي إنفاق"
                             : "{$symbol}{$state}"; // Example: "$5000 total spent"
                     })

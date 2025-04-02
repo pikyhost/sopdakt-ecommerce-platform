@@ -94,7 +94,7 @@ class TopProducts extends BaseWidget
                         $symbol = $currency?->code ?? '';
 
                         $locale = app()->getLocale();
-                        return $locale === 'ar' ? "{$state} {$symbol}" : "{$symbol} {$state}";
+                        return $locale === 'en' ? "{$state} {$symbol}" : "{$symbol} {$state}";
                     })
                 ,
 
@@ -104,7 +104,7 @@ class TopProducts extends BaseWidget
                         $symbol = $currency?->code ?? '';
 
                         $locale = app()->getLocale();
-                        return $locale === 'ar' ? "{$state} {$symbol}" : "{$symbol} {$state}";
+                        return $locale === 'en' ? "{$state} {$symbol}" : "{$symbol} {$state}";
                     })
                     ->label(__('products.After Discount Price')),
 
