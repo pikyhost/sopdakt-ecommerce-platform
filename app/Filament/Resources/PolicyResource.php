@@ -21,11 +21,6 @@ class PolicyResource extends Resource
         return __('policy.navigation_label');
     }
 
-    public static function getModelLabel(): string
-    {
-        return __('policy.model_label');
-    }
-
     public static function getNavigationGroup(): ?string
     {
         return __('policy.navigation_group');
@@ -64,19 +59,6 @@ class PolicyResource extends Resource
                             ->required()
                             ->columnSpanFull(),
                     ]),
-                Tab::make(__('policy.terms_of_service'))
-                    ->columnSpanFull()
-                    ->schema([
-                        MarkdownEditor::make('terms_of_service_en')
-                            ->label(__('policy.terms_of_service_en'))
-                            ->required()
-                            ->columnSpanFull(),
-                        MarkdownEditor::make('terms_of_service_ar')
-                            ->label(__('policy.terms_of_service_ar'))
-                            ->required()
-                            ->columnSpanFull(),
-                    ]),
-
                 Tab::make(__('policy.terms_of_service'))
                     ->columnSpanFull()
                     ->schema([

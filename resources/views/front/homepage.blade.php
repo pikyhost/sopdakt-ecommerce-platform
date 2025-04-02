@@ -564,21 +564,22 @@
                                 <!-- End .megamenu -->
                             </li>
                             <li class="d-none d-xl-block">
-                                <a href="#">Pages</a>
+                                <span>Pages</span>
                                 <ul>
                                     <li><a href="{{ route('wishlist') }}">Wishlist</a></li>
                                     <li><a href="{{ url('/cart') }}">Shopping Cart</a></li>
                                     <li><a href="{{ url('/checkout') }}">Checkout</a></li>
                                     <li><a href="{{ url('/client') }}">Dashboard</a></li>
                                     <li><a href="{{ url('/about-us') }}">About Us</a></li>
-                                    <li><a href="#">Blog</a>
-                                        <ul>
-                                            <li><a href="{{ url('/blogs') }}">Blog</a></li>
-                                        </ul>
-                                    </li>
+                                    <li><a href="{{url('/blogs')}}">Blog</a></li>
                                     <li><a href="{{ url('/client/login') }}">Login</a></li>
+                                    <li><a href="{{ route('privacy.policy') }}">Privacy Policy</a></li>
+                                    <li><a href="{{ route('refund.policy') }}">Refund Policy</a></li>
+                                    <li><a href="{{ route('terms.of.service') }}">Terms of Service</a></li>
+                                    <li><a href="{{ route('contact.us') }}">Contact Us</a></li>
                                 </ul>
                             </li>
+
                             <li><a href="{{ url('/blogs') }}">Blog</a></li>
                         </ul>
                     </nav>

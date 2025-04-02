@@ -74,6 +74,8 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
     Route::get('/order-success', [OrderCompleteController::class, 'index'])->name('order.complete');
 
     Route::view('/privacy-policy', 'pages.privacy-policy')->name('privacy.policy');
+    Route::view('/about-us', 'pages.about-us')->name('about.us');
+    Route::view('/contact-us', 'pages.contact-us')->name('contact.us');
     Route::view('/refund-policy', 'pages.refund-policy')->name('refund.policy');
     Route::view('/terms-of-service', 'pages.terms-of-service')->name('terms.of.service');
     Route::get('/compare-products/{ids}', [ProductComparisonController::class, 'index'])->name('compare.products');
