@@ -257,25 +257,6 @@
                 </div>
             </div><!-- End .col-md-7 -->
         </div>
-        <div class="row align-items-start">
-            <div
-                class="product-single-share col-md-3 col-xl-6 align-items-start justify-content-md-end mt-0">
-                <label class="sr-only">Share:</label>
-
-                <div class="social-icons mt-0 pb-5 pb-md-0">
-                    <a href="#" class="social-icon social-facebook icon-facebook" target="_blank"
-                       title="Facebook"></a>
-                    <a href="#" class="social-icon social-twitter icon-twitter" target="_blank"
-                       title="Twitter"></a>
-                    <a href="#" class="social-icon social-linkedin fab fa-linkedin-in" target="_blank"
-                       title="Linkedin"></a>
-                    <a href="#" class="social-icon social-gplus fab fa-google-plus-g" target="_blank"
-                       title="Google +"></a>
-                    <a href="#" class="social-icon social-mail icon-mail-alt" target="_blank"
-                       title="Mail"></a>
-                </div><!-- End .social-icons -->
-            </div><!-- End .product-single-share -->
-        </div><!-- End .row -->
     </div><!-- End .product-single-container -->
 
     <div class="product-single-tabs custom-product-single-tabs bg-gray mb-4">
@@ -422,7 +403,7 @@
                     </div>
                 @endforeach
             </div>
-
+            @livewire('product-compare')
         </div><!-- End .products-section -->
 
         <hr class="mt-0 m-b-5" />

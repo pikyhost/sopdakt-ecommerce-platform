@@ -406,7 +406,7 @@
         </style>
     @endif
 
-    <header class="header">
+    <header  class="header">
         <style>
             /* Base Styles */
             .header {
@@ -908,7 +908,12 @@
                         @if($topNotices->count())
                             <!-- Main Top Notice Bar -->
                             <div class="top-notice-bar" id="top-notice">
-                                <!-- ... (keep your existing top notice bar code exactly as is) ... -->
+                                <div class="notice-slider-container">
+                                    <div class="notice-slider-track" id="notice-track"></div>
+                                </div>
+                                <div class="notice-progress-container">
+                                    <div class="notice-progress" id="notice-progress"></div>
+                                </div>
                             </div>
 
                             <!-- Header with Integrated Announcement -->
@@ -947,54 +952,188 @@
                                     const notices = @json($topNotices);
                                     if (notices.length === 0) return;
 
-                                    let index = 0;
                                     // Top notice elements
+                                    const noticeTrack = document.getElementById("notice-track");
+                                    const progressBar = document.getElementById("notice-progress");
                                     const noticeContainer = document.getElementById("top-notice");
-                                    const noticeContent = document.getElementById("notice-content");
+
                                     // Announcement elements
                                     const announcementContainer = document.getElementById("header-announcement");
                                     const announcementText = document.getElementById("announcement-text");
 
-                                    // Animation timing
-                                    const transitionDuration = 6000;
-                                    const animationDuration = 500;
+                                    const locale = "{{ $locale }}";
 
-                                    function updateAllContent() {
-                                        if (notices.length === 0) return;
+                                    // Configuration
+                                    const DISPLAY_DURATION = 3000;
+                                    const ANIMATION_DURATION = 500;
+                                    let currentIndex = 0;
+                                    let rotationInterval;
+                                    let progressStartTime;
+                                    let progressRemaining = DISPLAY_DURATION;
 
-                                        const notice = notices[index];
-                                        const locale = "{{ $locale }}";
+                                    // Create notice elements
+                                    function createNoticeElement(notice) {
+                                        const noticeEl = document.createElement('div');
+                                        noticeEl.className = 'notice-slide';
 
-                                        // Update top notice
-                                        noticeContainer.classList.add('exiting');
-                                        setTimeout(() => {
-                                            noticeContent.innerHTML = locale === "ar" ? notice.content_ar : notice.content_en;
-                                            noticeContainer.classList.remove('exiting');
-                                            noticeContainer.classList.add('entering');
-                                            setTimeout(() => noticeContainer.classList.remove('entering'), animationDuration);
-                                        }, animationDuration);
+                                        noticeEl.innerHTML = `
+                    <div class="container">
+                        <div class="notice-content-wrapper">
+                            <div class="notice-content">${locale === "ar" ? notice.content_ar : notice.content_en}</div>
+                            <div class="notice-actions" id="cta-wrapper">
+                                ${notice.cta_text_en && notice.cta_url ?
+                                            `<a href="${notice.cta_url}" class="notice-btn btn-primary-reverse">
+                                        ${locale === "ar" ? notice.cta_text_ar : notice.cta_text_en}
+                                    </a>` : ''}
+                                ${notice.cta_text_2_en && notice.cta_url_2 ?
+                                            `<a href="${notice.cta_url_2}" class="notice-btn btn-outline">
+                                        ${locale === "ar" ? notice.cta_text_2_ar : notice.cta_text_2_en}
+                                    </a>` : ''}
+                                ${(notice.limited_time_text_en || notice.limited_time_text_ar) ?
+                                            `<div class="limited-time-badge">
+                                        ${locale === "ar" ?
+                                                (notice.limited_time_text_ar || notice.limited_time_text_en) :
+                                                (notice.limited_time_text_en || notice.limited_time_text_ar)}
+                                    </div>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
 
-                                        // Update announcement
+                                        return noticeEl;
+                                    }
+
+                                    // Update announcement content
+                                    function updateAnnouncement(notice) {
                                         if (notice.header_message_en || notice.header_message_ar) {
                                             announcementText.textContent = locale === 'ar' ? notice.header_message_ar : notice.header_message_en;
                                             announcementContainer.style.display = 'block';
+
+                                            // Add animation class
+                                            announcementContainer.classList.add('announcement-update');
+                                            setTimeout(() => {
+                                                announcementContainer.classList.remove('announcement-update');
+                                            }, 300);
                                         } else {
                                             announcementContainer.style.display = 'none';
                                         }
-
-                                        index = (index + 1) % notices.length;
                                     }
 
-                                    // Initialize
-                                    updateAllContent();
-                                    setInterval(updateAllContent, transitionDuration);
+                                    // Initialize slider
+                                    function initSlider() {
+                                        noticeTrack.innerHTML = '';
 
-                                    // ... keep your existing hover and close functionality ...
+                                        notices.forEach(notice => {
+                                            noticeTrack.appendChild(createNoticeElement(notice));
+                                        });
+
+                                        noticeTrack.children[0].classList.add('active');
+                                        updateAnnouncement(notices[0]);
+                                        startRotation();
+                                    }
+
+                                    function goToNextSlide() {
+                                        const slides = noticeTrack.children;
+                                        const currentSlide = slides[currentIndex];
+                                        const nextIndex = (currentIndex + 1) % slides.length;
+                                        const nextSlide = slides[nextIndex];
+                                        const nextNotice = notices[nextIndex];
+
+                                        currentSlide.classList.add('exiting');
+                                        nextSlide.classList.add('entering');
+
+                                        setTimeout(() => {
+                                            currentSlide.classList.remove('active', 'exiting');
+                                            nextSlide.classList.add('active');
+                                            nextSlide.classList.remove('entering');
+
+                                            // Update announcement when notice changes
+                                            updateAnnouncement(nextNotice);
+
+                                            currentIndex = nextIndex;
+                                            resetProgress();
+                                        }, ANIMATION_DURATION);
+                                    }
+
+                                    function startRotation() {
+                                        stopRotation();
+                                        resetProgress();
+
+                                        rotationInterval = setInterval(() => {
+                                            goToNextSlide();
+                                        }, DISPLAY_DURATION + ANIMATION_DURATION);
+                                    }
+
+                                    function stopRotation() {
+                                        clearInterval(rotationInterval);
+                                        progressBar.style.transition = 'none';
+
+                                        if (progressStartTime) {
+                                            const elapsed = Date.now() - progressStartTime;
+                                            progressRemaining = DISPLAY_DURATION - elapsed;
+                                            progressBar.style.width = `${100 - (elapsed / DISPLAY_DURATION) * 100}%`;
+                                        }
+                                    }
+
+                                    function resetProgress() {
+                                        progressBar.style.transition = 'none';
+                                        progressBar.style.width = '0%';
+
+                                        void progressBar.offsetWidth;
+
+                                        progressBar.style.transition = `width ${DISPLAY_DURATION}ms linear`;
+                                        progressBar.style.width = '100%';
+                                        progressStartTime = Date.now();
+                                    }
+
+                                    initSlider();
+
+                                    noticeContainer.addEventListener('mouseenter', stopRotation);
+
+                                    noticeContainer.addEventListener('mouseleave', () => {
+                                        progressBar.style.transition = `width ${progressRemaining}ms linear`;
+                                        progressBar.style.width = '100%';
+                                        progressStartTime = Date.now();
+
+                                        rotationInterval = setInterval(() => {
+                                            goToNextSlide();
+                                        }, progressRemaining + ANIMATION_DURATION);
+                                    });
+
+                                    noticeContainer.addEventListener('touchstart', stopRotation);
+                                    noticeContainer.addEventListener('touchend', () => {
+                                        progressBar.style.transition = `width ${progressRemaining}ms linear`;
+                                        progressBar.style.width = '100%';
+                                        progressStartTime = Date.now();
+
+                                        rotationInterval = setInterval(() => {
+                                            goToNextSlide();
+                                        }, progressRemaining + ANIMATION_DURATION);
+                                    });
                                 });
                             </script>
 
                             <style>
-                                /* Add these styles to your existing CSS */
+                                /* Top Notice Bar Styles (unchanged from previous version) */
+                                .top-notice-bar {
+                                    position: relative;
+                                    background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%);
+                                    color: white;
+                                    padding: 12px 0;
+                                    overflow: hidden;
+                                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                                }
+
+                                .notice-slider-container {
+                                    position: relative;
+                                    width: 100%;
+                                    overflow: hidden;
+                                    height: 44px;
+                                }
+
+                                /* ... (keep all your existing top notice bar styles exactly as before) ... */
+
+                                /* Header Announcement Styles */
                                 .header-announcement {
                                     display: flex;
                                     align-items: center;
@@ -1022,6 +1161,16 @@
                                     font-weight: 600;
                                     color: #ffffff;
                                     text-transform: uppercase;
+                                    transition: all 0.3s ease;
+                                }
+
+                                .announcement-update .announcement-text {
+                                    animation: fadeIn 0.3s ease;
+                                }
+
+                                @keyframes fadeIn {
+                                    0% { opacity: 0; transform: translateY(-3px); }
+                                    100% { opacity: 1; transform: translateY(0); }
                                 }
 
                                 @media (max-width: 767.98px) {
@@ -1153,31 +1302,278 @@
                     </div>
                 </div>
             </div>
+            <style>
+                /* Header Navigation Styles */
+                .header-nav {
+                    background-color: #ffffff;
+                    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+                    position: sticky;
+                    top: 0;
+                    z-index: 1000;
+                }
 
-            <!-- Header Navigation -->
-            <div class="header-nav">
+                .main-nav {
+                    display: flex;
+                    justify-content: center;
+                }
+
+                .nav-menu {
+                    display: flex;
+                    list-style: none;
+                    margin: 0;
+                    padding: 0;
+                    position: relative;
+                }
+
+                .nav-item {
+                    position: relative;
+                }
+
+                .nav-link {
+                    display: block;
+                    padding: 1.2rem 1.5rem;
+                    color: #333;
+                    text-decoration: none;
+                    font-weight: 600;
+                    font-size: 1rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    transition: all 0.3s ease;
+                    position: relative;
+                }
+
+                .nav-link:hover {
+                    color: #4e4376;
+                }
+
+                .nav-item.active .nav-link {
+                    color: #4e4376;
+                }
+
+                /* Underline animation */
+                .nav-item:not(.active) .nav-link::after {
+                    content: '';
+                    position: absolute;
+                    bottom: 1rem;
+                    left: 1.5rem;
+                    width: 0;
+                    height: 2px;
+                    background-color: #4e4376;
+                    transition: width 0.3s ease;
+                }
+
+                .nav-item:not(.active) .nav-link:hover::after {
+                    width: calc(100% - 3rem);
+                }
+
+                .nav-item.active .nav-link::before {
+                    content: '';
+                    position: absolute;
+                    bottom: 1rem;
+                    left: 1.5rem;
+                    width: calc(100% - 3rem);
+                    height: 2px;
+                    background-color: #4e4376;
+                }
+
+                /* Mobile Menu */
+                @media (max-width: 992px) {
+                    .main-nav {
+                        justify-content: flex-start;
+                        overflow-x: auto;
+                        -webkit-overflow-scrolling: touch;
+                        scrollbar-width: none;
+                    }
+
+                    .main-nav::-webkit-scrollbar {
+                        display: none;
+                    }
+
+                    .nav-menu {
+                        flex-wrap: nowrap;
+                        padding: 0 1rem;
+                    }
+
+                    .nav-link {
+                        padding: 1rem 1.2rem;
+                        font-size: 0.9rem;
+                        white-space: nowrap;
+                    }
+
+                    .nav-link::after,
+                    .nav-item.active .nav-link::before {
+                        bottom: 0.8rem;
+                        left: 1.2rem;
+                    }
+
+                    .nav-item:not(.active) .nav-link:hover::after,
+                    .nav-item.active .nav-link::before {
+                        width: calc(100% - 2.4rem);
+                    }
+                }
+
+                /* Animation for active state */
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(-5px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+
+                .nav-item.active {
+                    animation: fadeIn 0.3s ease-out;
+                }
+            </style>
+
+            <style>
+                /* Modern Navigation Styles */
+                .navbar {
+                    background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%) !important;
+                    box-shadow: 0 4px 20px rgba(43, 88, 118, 0.2);
+                    padding: 0.5rem 0;
+                    transition: all 0.3s ease;
+                }
+
+                .navbar-brand {
+                    font-family: 'Poppins', sans-serif;
+                    font-weight: 700 !important;
+                    font-size: 1.8rem !important;
+                    background: linear-gradient(to right, #ffffff, #e0e9ff);
+                    -webkit-background-clip: text;
+                    background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    letter-spacing: 0.5px;
+                    margin-right: 2rem;
+                    transition: all 0.3s ease;
+                }
+
+                .navbar-brand:hover {
+                    transform: translateY(-1px);
+                }
+
+                .navbar-nav {
+                    gap: 1.5rem !important;
+                }
+
+                .nav-link {
+                    font-family: 'Poppins', sans-serif;
+                    font-weight: 500 !important;
+                    font-size: 1.1rem !important;
+                    color: rgba(255, 255, 255, 0.9) !important;
+                    letter-spacing: 0.3px;
+                    padding: 0.5rem 0 !important;
+                    position: relative;
+                    transition: all 0.3s ease;
+                }
+
+                .nav-link::before {
+                    content: '';
+                    position: absolute;
+                    bottom: 0;
+                    left: 0;
+                    width: 0;
+                    height: 3px;
+                    background: linear-gradient(to right, #ffffff, #a7c4ff);
+                    border-radius: 3px;
+                    transition: width 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
+                }
+
+                .nav-link:hover {
+                    color: white !important;
+                    transform: translateY(-2px);
+                }
+
+                .nav-link:hover::before {
+                    width: 100%;
+                }
+
+                .nav-link.active {
+                    color: white !important;
+                    font-weight: 600 !important;
+                }
+
+                .nav-link.active::before {
+                    width: 100%;
+                    background: white;
+                }
+
+                .navbar-toggler {
+                    border: none;
+                    padding: 0.5rem;
+                }
+
+                .navbar-toggler:focus {
+                    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
+                }
+
+                .navbar-toggler-icon {
+                    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+                }
+
+                /* Mobile menu styles */
+                @media (max-width: 991.98px) {
+                    .navbar {
+                        padding: 0.75rem 0;
+                    }
+
+                    .navbar-collapse {
+                        background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%);
+                        padding: 1.5rem;
+                        margin-top: 0.5rem;
+                        border-radius: 0.5rem;
+                        box-shadow: 0 10px 30px rgba(43, 88, 118, 0.3);
+                    }
+
+                    .navbar-nav {
+                        gap: 1rem !important;
+                    }
+
+                    .nav-link {
+                        padding: 0.75rem 1rem !important;
+                        font-size: 1.05rem !important;
+                    }
+
+                    .nav-link::before {
+                        height: 2px;
+                        bottom: 0.5rem;
+                    }
+                }
+
+                /* Animation for active item */
+                @keyframes pulse {
+                    0% { transform: translateY(0); }
+                    50% { transform: translateY(-3px); }
+                    100% { transform: translateY(0); }
+                }
+
+                .nav-item.active .nav-link {
+                    animation: pulse 0.5s ease;
+                }
+            </style>
+            <nav class="navbar navbar-expand-lg navbar-dark py-2">
                 <div class="container">
-                    <nav class="main-nav">
-                        <ul class="nav-menu">
-                            <li class="nav-item active">
-                                <a href="/" class="nav-link">Home</a>
+                    <a class="navbar-brand" href="/">Home</a>
+                    <button class="navbar-toggler nav" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                        <ul class="navbar-nav gap-4">
+                            <li class="nav-item">
+                                <a class="nav-link" href="category.html">Categories</a>
                             </li>
                             <li class="nav-item">
-                                <a href="category.html" class="nav-link">Categories</a>
+                                <a class="nav-link" href="product.html">Products</a>
                             </li>
                             <li class="nav-item">
-                                <a href="product.html" class="nav-link">Products</a>
+                                <a class="nav-link" href="blog.html">Blog</a>
                             </li>
                             <li class="nav-item">
-                                <a href="blog.html" class="nav-link">Blog</a>
-                            </li>
-                            <li class="nav-item">
-                                <a href="contact.html" class="nav-link">Contact</a>
+                                <a class="nav-link" href="contact.html">Contact</a>
                             </li>
                         </ul>
-                    </nav>
+                    </div>
                 </div>
-            </div>
+            </nav>
+        </div>
     </header>
 
     <!-- Mobile Menu -->
