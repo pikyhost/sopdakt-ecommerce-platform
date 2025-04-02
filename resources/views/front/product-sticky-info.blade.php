@@ -259,106 +259,96 @@
         </div>
     </div><!-- End .product-single-container -->
 
-    <div class="product-single-tabs custom-product-single-tabs bg-gray mb-4">
+    <div class="product-single-tabs">
         <div class="container">
-            <ul class="nav nav-tabs" role="tablist">
+            <!-- Navigation Tabs -->
+            <ul class="nav nav-tabs" role="tablist" style="border-bottom: 2px solid #ddd;">
                 <li class="nav-item">
-                    <a class="nav-link active" id="product-tab-desc" data-toggle="tab"
-                       href="#product-desc-content" role="tab" aria-controls="product-desc-content"
-                       aria-selected="true">Description</a>
+                    <a class="nav-link active" id="product-tab-desc" data-toggle="tab" href="#product-desc-content" role="tab"
+                       style="color: red; font-weight: bold; padding: 12px 20px; background: royalblue; border-radius: 5px 5px 0 0;">
+                        Description
+                    </a>
                 </li>
-
                 <li class="nav-item">
-                    <a class="nav-link" id="product-tab-size" data-toggle="tab" href="#product-size-content"
-                       role="tab" aria-controls="product-size-content" aria-selected="true">Size Guide</a>
+                    <a class="nav-link" id="product-tab-size" data-toggle="tab" href="#product-size-content" role="tab"
+                       style="color: #333; font-weight: bold; padding: 12px 20px; background:royalblue; border-radius: 5px 5px 0 0;">
+                        Size Guide
+                    </a>
                 </li>
-
                 <li class="nav-item">
-                    <a class="nav-link" id="product-tab-reviews" data-toggle="tab"
-                       href="#product-reviews-content" role="tab" aria-controls="product-reviews-content"
-                       aria-selected="false">Reviews</a>
+                    <a class="nav-link" id="product-tab-reviews" data-toggle="tab" href="#product-reviews-content" role="tab"
+                       style="color: #333; font-weight: bold; padding: 12px 20px; background: royalblue; border-radius: 5px 5px 0 0;">
+                        Reviews
+                    </a>
                 </li>
-
                 <li class="nav-item">
-                    <a class="nav-link" id="product-tab-tags" data-toggle="tab" href="#product-tags-content"
-                       role="tab" aria-controls="product-tags-content" aria-selected="false">Custom Tab</a>
+                    <a class="nav-link" id="product-tab-tags" data-toggle="tab" href="#product-tags-content" role="tab"
+                       style="color: #333; font-weight: bold; padding: 12px 20px; background: royalblue; border-radius: 5px 5px 0 0;">
+                        Custom Tab
+                    </a>
                 </li>
             </ul>
-
+            <!-- Tab Content -->
             <div class="tab-content">
-                <div class="tab-pane fade show active" id="product-desc-content" role="tabpanel"
-                     aria-labelledby="product-tab-desc">
+                <!-- Description Tab -->
+                <div class="tab-pane fade show active" id="product-desc-content" role="tabpanel">
                     <div class="product-desc-content">
-                        <p>
-                            {!! \Illuminate\Support\Str::markdown($product->description) !!}
-                        </p>
-                    </div><!-- End .product-desc-content -->
-                </div><!-- End .tab-pane -->
-
-                <div class="tab-pane fade" id="product-size-content" role="tabpanel" aria-labelledby="product-tab-size">
-                    <div class="text-center">
-                        <img src="{{ $product->getProductSizeImageUrl() ?? asset('assets/images/products/default-size.png') }}"
-                             alt="Size Guide"
-                             class="img-fluid rounded shadow-lg">
+                        <p>{{ $product->description }}</p>
                     </div>
                 </div>
 
-                <div class="tab-pane fade" id="product-reviews-content" role="tabpanel"
-                     aria-labelledby="product-tab-reviews">
+                <!-- Size Guide Tab -->
+                <div class="tab-pane fade text-center" id="product-size-content" role="tabpanel">
+                    <img src="{{ $product->getProductSizeImageUrl() ?? asset('assets/images/products/default-size.png') }}"
+                         alt="Size Guide" class="img-fluid rounded-lg shadow-md">
+                </div>
+
+                <!-- Reviews Tab -->
+                <div class="tab-pane fade" id="product-reviews-content" role="tabpanel">
                     <div class="product-reviews-content">
                         @livewire('product-reviews', ['product' => $product])
-                    </div><!-- End .product-reviews-content -->
-                </div><!-- End .tab-pane -->
+                    </div>
+                </div>
 
-                <div class="tab-pane fade" id="product-tags-content" role="tabpanel" aria-labelledby="product-tab-tags">
+                <!-- Custom Tab -->
+                <div class="tab-pane fade" id="product-tags-content" role="tabpanel">
                     <h4>Product Features and Attributes</h4>
 
-
                     @if (!empty($customAttributes))
-                        <ul class="list-unstyled">
+                        <ul>
                             @foreach ($customAttributes[app()->getLocale()] ?? [] as $key => $value)
                                 <li><strong>{{ ucfirst(str_replace('_', ' ', $key)) }}:</strong> {{ $value }}</li>
                             @endforeach
                         </ul>
                     @endif
 
-                    {{-- Display Database Attributes --}}
                     @if ($product->attributes->isNotEmpty())
-                        <ul class="list-unstyled">
+                        <ul>
                             @foreach ($product->attributes as $attribute)
                                 <li>
                                     <strong>{{ $attribute->getTranslation('name', app()->getLocale()) }}</strong>:
-
-                                    @if ($attribute->type === 'boolean')
-                                        {{ $attribute->pivot->value ? 'Yes' : 'No' }}
-                                    @elseif ($attribute->type === 'select')
-                                        {{ collect(json_decode($attribute->values, true))->firstWhere('key', $attribute->pivot->value)['label'] ?? $attribute->pivot->value }}
-                                    @else
-                                        {{ $attribute->pivot->value }}
-                                    @endif
+                                    {{ $attribute->pivot->value }}
                                 </li>
                             @endforeach
                         </ul>
                     @endif
 
-                    {{-- Display Product Types --}}
                     @if ($product->types->isNotEmpty())
                         <h4>Available Types</h4>
-                        <div class="row">
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-3">
                             @foreach ($product->types as $type)
-                                <div class="col-md-4 text-center">
-                                    <img src="{{ asset('storage/' . $type->image) }}" alt="{{ $type->name }}" class="img-fluid mb-2">
-                                    <p><strong>{{ $type->name }}</strong></p>
+                                <div class="text-center">
+                                    <img src="{{ asset('storage/' . $type->image) }}"
+                                         alt="{{ $type->name }}" class="img-fluid mb-2 rounded-lg shadow-md">
+                                    <p>{{ $type->name }}</p>
                                 </div>
                             @endforeach
                         </div>
                     @endif
                 </div>
-
-
-            </div><!-- End .tab-content -->
+            </div>
         </div>
-    </div><!-- End .product-single-tabs -->
+    </div>
 
     <div class="container">
         <div class="products-section pt-0">
@@ -562,6 +552,45 @@
 @endsection
 
 @push('styles')
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+    <!-- Custom Styles -->
+    <style>
+        .product-single-tabs {
+            padding: 40px 0;
+        }
+
+        .nav-tabs .nav-link {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            border: none;
+        }
+
+        .nav-tabs .nav-link.active {
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 5px;
+        }
+
+        .tab-content {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 10px;
+        }
+
+        .tab-pane img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
     <!-- Bootstrap CSS (only for product page) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 @endpush
