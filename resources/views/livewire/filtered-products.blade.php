@@ -59,10 +59,12 @@
         $currency = \App\Models\Setting::getCurrency();
         $symbol = $currency?->code ?? '';
         $locale = app()->getLocale();
-        $price = (float) $product->after_discount_price ?? (float) $product->price;
+        $price = (float) ($product->after_discount_price ?? $product->price);
+        $formattedPrice = number_format($price, 2); // Format price with two decimal places
     @endphp
-    {{ $locale === 'en' ? "{$price} {$symbol}" : "{$symbol} {$price}" }}
+    {{ $locale === 'en' ? "{$formattedPrice} {$symbol}" : "{$symbol} {$formattedPrice}" }}
 </span>
+
                             </div>
                         </div>
                     </div>
