@@ -89,22 +89,13 @@
     @endphp
 
     @if($topNotices->count())
-        <div class="top-notice-bar position-relative" id="top-notice" style="z-index: 1050;">
-            <div class="container">
-                <div class="notice-content-wrapper">
-                    <div class="notice-content" id="notice-content"></div>
-
-                    <div class="notice-actions" id="cta-wrapper">
-                        <a id="cta-link-1" href="#" class="notice-btn btn-primary-reverse"></a>
-                        <a id="cta-link-2" href="#" class="notice-btn btn-outline"></a>
-                    </div>
-
-                    <div class="limited-time-badge" id="limited-time-text"></div>
-                </div>
+        <div class="top-notice-bar" id="top-notice">
+            <div class="notice-slider-container">
+                <div class="notice-slider-track" id="notice-track"></div>
             </div>
-
-            <!-- Progress indicator -->
-            <div class="notice-progress" id="notice-progress"></div>
+            <div class="notice-progress-container">
+                <div class="notice-progress" id="notice-progress"></div>
+            </div>
         </div>
 
         <script>
@@ -112,271 +103,305 @@
                 const notices = @json($topNotices);
                 if (notices.length === 0) return;
 
-                let index = 0;
-                const noticeContainer = document.getElementById("top-notice");
-                const noticeContent = document.getElementById("notice-content");
-                const ctaLink1 = document.getElementById("cta-link-1");
-                const ctaLink2 = document.getElementById("cta-link-2");
-                const ctaWrapper = document.getElementById("cta-wrapper");
-                const limitedTimeText = document.getElementById("limited-time-text");
+                const noticeTrack = document.getElementById("notice-track");
                 const progressBar = document.getElementById("notice-progress");
+                const noticeContainer = document.getElementById("top-notice");
+                const locale = "{{ $locale }}";
 
-                // Animation timing
-                const transitionDuration = 6000; // 6 seconds per notice
-                const animationDuration = 500; // 0.5s for fade animations
+                // Configuration
+                const DISPLAY_DURATION = 3000;
+                const ANIMATION_DURATION = 500;
+                let currentIndex = 0;
+                let rotationInterval;
+                let progressStartTime;
+                let progressRemaining = DISPLAY_DURATION;
 
-                let progressInterval;
-                let autoRotateInterval;
+                // Create notice elements
+                function createNoticeElement(notice) {
+                    const noticeEl = document.createElement('div');
+                    noticeEl.className = 'notice-slide';
 
-                function startProgressAnimation() {
-                    progressBar.style.transition = `width ${transitionDuration}ms linear`;
-                    progressBar.style.width = '100%';
+                    noticeEl.innerHTML = `
+                    <div class="container">
+                        <div class="notice-content-wrapper">
+                            <div class="notice-content">${locale === "ar" ? notice.content_ar : notice.content_en}</div>
+                            <div class="notice-actions" id="cta-wrapper">
+                                ${notice.cta_text_en && notice.cta_url ?
+                        `<a href="${notice.cta_url}" class="notice-btn btn-primary-reverse">
+                                        ${locale === "ar" ? notice.cta_text_ar : notice.cta_text_en}
+                                    </a>` : ''}
+                                ${notice.cta_text_2_en && notice.cta_url_2 ?
+                        `<a href="${notice.cta_url_2}" class="notice-btn btn-outline">
+                                        ${locale === "ar" ? notice.cta_text_2_ar : notice.cta_text_2_en}
+                                    </a>` : ''}
+                                ${(notice.limited_time_text_en || notice.limited_time_text_ar) ?
+                        `<div class="limited-time-badge">
+                                        ${locale === "ar" ?
+                            (notice.limited_time_text_ar || notice.limited_time_text_en) :
+                            (notice.limited_time_text_en || notice.limited_time_text_ar)}
+                                    </div>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
 
-                    // Reset progress bar after animation completes
-                    setTimeout(() => {
-                        progressBar.style.transition = 'none';
-                        progressBar.style.width = '0%';
-                    }, transitionDuration);
+                    return noticeEl;
                 }
 
-                function updateNotice() {
-                    if (notices.length === 0) return;
+                // Initialize slider
+                function initSlider() {
+                    noticeTrack.innerHTML = '';
 
-                    const notice = notices[index];
-                    const locale = "{{ $locale }}";
+                    notices.forEach(notice => {
+                        noticeTrack.appendChild(createNoticeElement(notice));
+                    });
 
-                    // Start progress animation
-                    startProgressAnimation();
-
-                    // Apply slide-out animation before updating content
-                    noticeContainer.classList.add('exiting');
-
-                    setTimeout(() => {
-                        // Update content
-                        noticeContent.innerHTML = locale === "ar" ? notice.content_ar : notice.content_en;
-
-                        // Handle CTA Links
-                        if (notice.cta_text_en && notice.cta_url) {
-                            ctaLink1.href = notice.cta_url;
-                            ctaLink1.textContent = locale === "ar" ? notice.cta_text_ar : notice.cta_text_en;
-                            ctaLink1.style.display = "inline-flex";
-                        } else {
-                            ctaLink1.style.display = "none";
-                        }
-
-                        if (notice.cta_text_2_en && notice.cta_url_2) {
-                            ctaLink2.href = notice.cta_url_2;
-                            ctaLink2.textContent = locale === "ar" ? notice.cta_text_2_ar : notice.cta_text_2_en;
-                            ctaLink2.style.display = "inline-flex";
-                        } else {
-                            ctaLink2.style.display = "none";
-                        }
-
-                        // Handle Limited Time Text - Fixed version
-                        if (notice.limited_time_text_en || notice.limited_time_text_ar) {
-                            limitedTimeText.textContent = locale === "ar" ?
-                                (notice.limited_time_text_ar || notice.limited_time_text_en) :
-                                (notice.limited_time_text_en || notice.limited_time_text_ar);
-                            limitedTimeText.style.display = "inline-block";
-                        } else {
-                            limitedTimeText.style.display = "none";
-                        }
-
-                        // Slide-in animation after content update
-                        noticeContainer.classList.remove('exiting');
-                        noticeContainer.classList.add('entering');
-
-                        setTimeout(() => {
-                            noticeContainer.classList.remove('entering');
-                        }, animationDuration);
-
-                    }, animationDuration);
-
-                    index = (index + 1) % notices.length;
+                    noticeTrack.children[0].classList.add('active');
+                    startRotation();
                 }
 
-                // Initialize
-                updateNotice();
-                autoRotateInterval = setInterval(updateNotice, transitionDuration);
+                function goToNextSlide() {
+                    const slides = noticeTrack.children;
+                    const currentSlide = slides[currentIndex];
+                    const nextIndex = (currentIndex + 1) % slides.length;
+                    const nextSlide = slides[nextIndex];
 
-                // Pause on hover
-                noticeContainer.addEventListener('mouseenter', () => {
-                    clearInterval(autoRotateInterval);
+                    currentSlide.classList.add('exiting');
+                    nextSlide.classList.add('entering');
+
+                    setTimeout(() => {
+                        currentSlide.classList.remove('active', 'exiting');
+                        nextSlide.classList.add('active');
+                        nextSlide.classList.remove('entering');
+
+                        currentIndex = nextIndex;
+                        resetProgress();
+                    }, ANIMATION_DURATION);
+                }
+
+                function startRotation() {
+                    stopRotation();
+                    resetProgress();
+
+                    rotationInterval = setInterval(() => {
+                        goToNextSlide();
+                    }, DISPLAY_DURATION + ANIMATION_DURATION);
+                }
+
+                function stopRotation() {
+                    clearInterval(rotationInterval);
                     progressBar.style.transition = 'none';
-                    progressBar.style.width = progressBar.style.width;
-                });
+
+                    if (progressStartTime) {
+                        const elapsed = Date.now() - progressStartTime;
+                        progressRemaining = DISPLAY_DURATION - elapsed;
+                        progressBar.style.width = `${100 - (elapsed / DISPLAY_DURATION) * 100}%`;
+                    }
+                }
+
+                function resetProgress() {
+                    progressBar.style.transition = 'none';
+                    progressBar.style.width = '0%';
+
+                    void progressBar.offsetWidth;
+
+                    progressBar.style.transition = `width ${DISPLAY_DURATION}ms linear`;
+                    progressBar.style.width = '100%';
+                    progressStartTime = Date.now();
+                }
+
+                initSlider();
+
+                noticeContainer.addEventListener('mouseenter', stopRotation);
 
                 noticeContainer.addEventListener('mouseleave', () => {
-                    const remainingWidth = 100 - parseFloat(progressBar.style.width || '0');
-                    const remainingTime = (remainingWidth / 100) * transitionDuration;
-
-                    progressBar.style.transition = `width ${remainingTime}ms linear`;
+                    progressBar.style.transition = `width ${progressRemaining}ms linear`;
                     progressBar.style.width = '100%';
+                    progressStartTime = Date.now();
 
-                    autoRotateInterval = setInterval(updateNotice, transitionDuration);
+                    rotationInterval = setInterval(() => {
+                        goToNextSlide();
+                    }, progressRemaining + ANIMATION_DURATION);
+                });
+
+                noticeContainer.addEventListener('touchstart', stopRotation);
+                noticeContainer.addEventListener('touchend', () => {
+                    progressBar.style.transition = `width ${progressRemaining}ms linear`;
+                    progressBar.style.width = '100%';
+                    progressStartTime = Date.now();
+
+                    rotationInterval = setInterval(() => {
+                        goToNextSlide();
+                    }, progressRemaining + ANIMATION_DURATION);
                 });
             });
         </script>
 
         <style>
             .top-notice-bar {
-                position: relative !important;
-                background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%) !important;
-                color: white !important;
-                padding: 12px 0 !important;
-                overflow: hidden !important;
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
-                transform: translateY(0) !important;
-                transition: transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 0.5s ease !important;
+                position: relative;
+                background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%);
+                color: white;
+                padding: 12px 0;
+                overflow: hidden;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             }
 
-            .top-notice-bar.exiting {
-                transform: translateY(-100%) !important;
-                opacity: 0 !important;
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 0 15px;
             }
 
-            .top-notice-bar.entering {
-                transform: translateY(-20px) !important;
-                opacity: 0 !important;
+            .notice-slider-container {
+                position: relative;
+                width: 100%;
+                overflow: hidden;
+                height: 44px; /* Fixed height to match original */
             }
 
-            .top-notice-bar.entering {
-                transform: translateY(0) !important;
-                opacity: 1 !important;
+            .notice-slider-track {
+                position: relative;
+                width: 100%;
             }
 
-            .top-notice-bar.closing {
-                transform: translateY(-100%) !important;
-                opacity: 0 !important;
+            .notice-slide {
+                position: absolute;
+                width: 100%;
+                opacity: 0;
+                transform: translateY(10px);
+                transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+                pointer-events: none;
             }
 
-            .top-notice-bar .container {
-                display: flex !important;
-                align-items: center !important;
-                justify-content: space-between !important;
-                max-width: 1200px !important;
-                margin: 0 auto !important;
-                padding: 0 15px !important;
-                position: relative !important;
-                z-index: 2 !important;
+            .notice-slide.active {
+                position: relative;
+                opacity: 1;
+                transform: translateY(0);
+                pointer-events: auto;
+            }
+
+            .notice-slide.exiting {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            .notice-slide.entering {
+                opacity: 0;
+                transform: translateY(10px);
             }
 
             .notice-content-wrapper {
-                display: flex !important;
-                align-items: center !important;
-                flex-wrap: wrap !important;
-                gap: 15px !important;
-                flex-grow: 1 !important;
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 15px;
             }
 
             .notice-content {
-                font-size: 16px !important;
-                font-weight: 500 !important;
-                margin-right: auto !important;
+                font-size: 16px;
+                font-weight: 500;
+                margin-right: auto;
             }
 
             .notice-actions {
-                display: flex !important;
-                gap: 10px !important;
-                align-items: center !important;
+                display: flex;
+                gap: 10px;
+                align-items: center;
             }
 
             .notice-btn {
-                display: inline-flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                padding: 6px 12px !important;
-                border-radius: 20px !important;
-                font-size: 13px !important;
-                font-weight: 600 !important;
-                text-decoration: none !important;
-                transition: all 0.3s ease !important;
-                white-space: nowrap !important;
-                border: 1px solid !important;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 6px 12px;
+                border-radius: 20px;
+                font-size: 13px;
+                font-weight: 600;
+                text-decoration: none;
+                transition: all 0.3s ease;
+                white-space: nowrap;
+                border: 1px solid;
             }
 
             .btn-primary-reverse {
-                background-color: white !important;
-                color: #2b5876 !important;
-                border-color: white !important;
+                background-color: white;
+                color: #2b5876;
+                border-color: white;
             }
 
             .btn-primary-reverse:hover {
-                background-color: transparent !important;
-                color: white !important;
+                background-color: transparent;
+                color: white;
             }
 
             .btn-outline {
-                background-color: transparent !important;
-                color: white !important;
-                border-color: rgba(255, 255, 255, 0.5) !important;
+                background-color: transparent;
+                color: white;
+                border-color: rgba(255, 255, 255, 0.5);
             }
 
             .btn-outline:hover {
-                background-color: rgba(255, 255, 255, 0.1) !important;
-                border-color: white !important;
+                background-color: rgba(255, 255, 255, 0.1);
+                border-color: white;
             }
 
             .limited-time-badge {
-                background-color: rgba(255, 255, 255, 0.15) !important;
-                padding: 4px 10px !important;
-                border-radius: 12px !important;
-                font-size: 12px !important;
-                font-weight: 600 !important;
-                display: none !important;
+                background-color: rgba(255, 255, 255, 0.15);
+                padding: 4px 10px;
+                border-radius: 12px;
+                font-size: 12px;
+                font-weight: 600;
+                animation: pulse 2s infinite;
             }
 
-            .limited-time-badge:not(:empty) {
-                display: inline-block !important;
+            @keyframes pulse {
+                0% { transform: scale(1); opacity: 0.8; }
+                50% { transform: scale(1.05); opacity: 1; }
+                100% { transform: scale(1); opacity: 0.8; }
             }
 
-            .notice-close {
-                background: none !important;
-                border: none !important;
-                color: white !important;
-                opacity: 0.7 !important;
-                cursor: pointer !important;
-                padding: 5px !important;
-                margin-left: 10px !important;
-                transition: opacity 0.3s ease !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-            }
-
-            .notice-close:hover {
-                opacity: 1 !important;
+            .notice-progress-container {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 100%;
+                height: 3px;
+                background-color: rgba(255, 255, 255, 0.1);
             }
 
             .notice-progress {
-                position: absolute !important;
-                bottom: 0 !important;
-                left: 0 !important;
-                height: 3px !important;
-                width: 0% !important;
-                background-color: rgba(255, 255, 255, 0.7) !important;
-                z-index: 1 !important;
+                height: 100%;
+                width: 0%;
+                background-color: rgba(255, 255, 255, 0.7);
             }
 
             @media (max-width: 768px) {
                 .notice-content-wrapper {
-                    flex-direction: column !important;
-                    align-items: flex-start !important;
-                    gap: 8px !important;
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 8px;
                 }
 
                 .notice-content {
-                    margin-right: 0 !important;
-                    margin-bottom: 8px !important;
+                    margin-right: 0;
+                    margin-bottom: 8px;
+                    font-size: 14px;
                 }
 
                 .notice-actions {
-                    width: 100% !important;
-                    justify-content: flex-start !important;
+                    width: 100%;
+                    justify-content: flex-start;
+                }
+
+                .notice-btn {
+                    padding: 5px 10px;
+                    font-size: 12px;
                 }
             }
         </style>
     @endif
+
     <header class="header header-transparent">
         <div class="header-middle sticky-header">
             <div class="container-fluid">
