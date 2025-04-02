@@ -4,7 +4,7 @@
     $direction = app()->getLocale() === 'ar' ? 'rtl' : 'ltr';
 @endphp
 
-@section('title', __('policy.refund_policy'))
+@section('title', __('Refund Policy'))
 
 @section('content')
     <br>

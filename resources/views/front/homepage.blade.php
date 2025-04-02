@@ -564,7 +564,7 @@
                                 <!-- End .megamenu -->
                             </li>
                             <li class="d-none d-xl-block">
-                                <span>Pages</span>
+                                <a href="#">Pages</a>
                                 <ul>
                                     <li><a href="{{ route('wishlist') }}">Wishlist</a></li>
                                     <li><a href="{{ url('/cart') }}">Shopping Cart</a></li>
