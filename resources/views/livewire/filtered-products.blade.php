@@ -59,7 +59,7 @@
         $currency = \App\Models\Setting::getCurrency();
         $symbol = $currency?->code ?? '';
         $locale = app()->getLocale();
-        $price = $product->after_discount_price ?? $product->price;
+        $price = (float) $product->after_discount_price ?? (float) $product->price;
     @endphp
     {{ $locale === 'en' ? "{$price} {$symbol}" : "{$symbol} {$price}" }}
 </span>
