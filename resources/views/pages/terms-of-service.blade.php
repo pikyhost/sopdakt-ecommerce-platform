@@ -4,7 +4,7 @@
     $direction = app()->getLocale() === 'ar' ? 'rtl' : 'ltr';
 @endphp
 
-@section('title', __('policy.privacy_policy'))
+@section('title', __('Terms of Service'))
 
 @section('content')
     <br>
