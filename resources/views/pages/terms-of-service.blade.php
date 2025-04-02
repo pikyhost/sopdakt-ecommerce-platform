@@ -9,7 +9,7 @@
 @section('content')
     <br>
     <div class="container text-center" dir="{{ $direction }}">
-        <h1>{{ __('policy.privacy_policy') }}</h1>
+        <h1>{{ __('Terms of Service') }}</h1>
         <div class="content">
             {!! \App\Models\Policy::first()?->{"terms_of_service_" . app()->getLocale()} ?? __('policy.no_policy_found') !!}
         </div>
