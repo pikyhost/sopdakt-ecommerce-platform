@@ -109,7 +109,7 @@ class LastOrders extends BaseWidget
                     ->label(__('Total'))
                     ->formatStateUsing(function ($state) {
                         $currency = Setting::getCurrency();
-                        $symbol = $currency?->symbol ?? '';
+                        $symbol = $currency?->code ?? '';
 
                         $locale = app()->getLocale();
                         return $locale === 'ar' ? "{$state} {$symbol}" : "{$symbol} {$state}";

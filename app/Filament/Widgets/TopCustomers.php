@@ -101,7 +101,7 @@ class TopCustomers extends BaseWidget
                 Tables\Columns\TextColumn::make('total_spent')
                     ->formatStateUsing(function ($state) {
                         $currency = Setting::getCurrency();
-                        $symbol = $currency?->symbol ?? '';
+                        $symbol = $currency?->code ?? '';
 
                         $locale = app()->getLocale();
                         return $locale === 'ar'

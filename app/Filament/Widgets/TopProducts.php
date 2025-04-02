@@ -91,7 +91,7 @@ class TopProducts extends BaseWidget
                     ->label(__('products.Price'))
                     ->formatStateUsing(function ($state) {
                         $currency = Setting::getCurrency();
-                        $symbol = $currency?->symbol ?? '';
+                        $symbol = $currency?->code ?? '';
 
                         $locale = app()->getLocale();
                         return $locale === 'ar' ? "{$state} {$symbol}" : "{$symbol} {$state}";
@@ -101,7 +101,7 @@ class TopProducts extends BaseWidget
                 Tables\Columns\TextColumn::make('after_discount_price')
                     ->formatStateUsing(function ($state) {
                         $currency = Setting::getCurrency();
-                        $symbol = $currency?->symbol ?? '';
+                        $symbol = $currency?->code ?? '';
 
                         $locale = app()->getLocale();
                         return $locale === 'ar' ? "{$state} {$symbol}" : "{$symbol} {$state}";
