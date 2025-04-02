@@ -76,6 +76,46 @@ class PolicyResource extends Resource
                             ->required()
                             ->columnSpanFull(),
                     ]),
+
+                Tab::make(__('policy.terms_of_service'))
+                    ->columnSpanFull()
+                    ->schema([
+                        MarkdownEditor::make('terms_of_service_en')
+                            ->label(__('policy.terms_of_service_en'))
+                            ->required()
+                            ->columnSpanFull(),
+                        MarkdownEditor::make('terms_of_service_ar')
+                            ->label(__('policy.terms_of_service_ar'))
+                            ->required()
+                            ->columnSpanFull(),
+                    ]),
+
+                Tab::make(__('policy.about_us'))
+                    ->columnSpanFull()
+                    ->schema([
+                        MarkdownEditor::make('about_us_en')
+                            ->label(__('policy.about_us_en'))
+                            ->required()
+                            ->columnSpanFull(),
+                        MarkdownEditor::make('about_us_ar')
+                            ->label(__('policy.about_us_ar'))
+                            ->required()
+                            ->columnSpanFull(),
+                    ]),
+
+                Tab::make(__('policy.contact_us'))
+                    ->columnSpanFull()
+                    ->schema([
+                        MarkdownEditor::make('contact_us_en')
+                            ->label(__('policy.contact_us_en'))
+                            ->required()
+                            ->columnSpanFull(),
+                        MarkdownEditor::make('contact_us_ar')
+                            ->label(__('policy.contact_us_ar'))
+                            ->required()
+                            ->columnSpanFull(),
+                    ]),
+
             ]),
         ])->columns(1);
     }
