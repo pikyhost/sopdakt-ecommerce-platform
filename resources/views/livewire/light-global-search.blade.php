@@ -21,6 +21,17 @@
                     <button class="clear-search" style="position: absolute; right: 15px; background: none; border: none; color: #999; cursor: pointer; display: none;">&times;</button>
                 </div>
 
+                <div class="search-wrapper" style="display: flex; align-items: center; background: #2d2d2d; border-radius: 8px; padding: 12px 15px; border: 1px solid #444; position: relative;">
+                    <i class="icon-magnifier" style="color: #aaa; font-size: 18px; margin-right: 10px;"></i>
+                    <input type="search"
+                           class="search-input"
+                           wire:model.live="query"
+                           wire:keydown.enter="performSearch"
+                           placeholder="Search products, categories..."
+                           style="flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 16px; padding-right: 30px;">
+                    <button class="clear-search" style="position: absolute; right: 15px; background: none; border: none; color: #aaa; cursor: pointer; display: none;">&times;</button>
+                </div>
+
                 @if (!empty($results))
                     <div class="search-results" style="position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #eee; border-radius: 0 0 8px 8px; margin-top: 5px; max-height: 400px; overflow-y: auto; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
                         @foreach ($results as $category => $items)
