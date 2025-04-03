@@ -80,8 +80,7 @@ class BannerResource extends Resource
                         ->label(__('Image'))
                         ->image()
                         ->required(),
-                ]),
-            ]);
+                ]);
     }
 
     public static function table(Tables\Table $table): Tables\Table
