@@ -48,15 +48,16 @@ class BannerResource extends Resource
     {
         return $form
             ->schema([
-                Select::make('type')
-                    ->columnSpanFull()
-                    ->disabled()
-                    ->label(__('Type'))
-                    ->options([
-                        'product' => __('Product'),
-                        'category' => __('Category'),
-                    ])
-                    ->required(),
+                Forms\Components\Section::make([
+                    Select::make('type')
+                        ->columnSpanFull()
+                        ->disabled()
+                        ->label(__('Type'))
+                        ->options([
+                            'product' => __('Product'),
+                            'category' => __('Category'),
+                        ])
+                        ->required(),
 
                     TextInput::make('subtitle')
                         ->label(__('Title'))
@@ -80,7 +81,8 @@ class BannerResource extends Resource
                         ->label(__('Image'))
                         ->image()
                         ->required(),
-                ]);
+                ])->columns(2)
+            ])->columns(2);
     }
 
     public static function table(Tables\Table $table): Tables\Table
@@ -98,7 +100,7 @@ class BannerResource extends Resource
 
                 TextColumn::make('type')
                     ->badge()
-                    ->color('success')
+                    ->color('primary')
                     ->label(__('Type')),
             ])
             ->actions([
