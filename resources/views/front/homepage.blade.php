@@ -458,7 +458,7 @@
                                 <div class="megamenu megamenu-fixed-width megamenu-3cols">
                                     <div class="row">
                                         <div class="col-lg-4">
-                                            <a href="#" class="nolink">Test</a>
+                                            <a href="#" class="nolink">Categories Pages</a>
                                             <ul class="submenu">
                                                 @foreach (\App\Models\Category::latest()->take(18)->get() as $category)
                                                     <li>
@@ -504,7 +504,7 @@
                                 <div class="megamenu megamenu-fixed-width">
                                     <div class="row">
                                         <div class="col-lg-4">
-                                            <a href="#" class="nolink">PRODUCT PAGES</a>
+                                            <a href="{{ url('products') }}" class="nolink">Products Pages</a>
                                             <ul class="submenu">
                                                 @foreach (\App\Models\Product::latest()->take(18)->get() as $product)
                                                     <li>
