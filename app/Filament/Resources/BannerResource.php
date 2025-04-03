@@ -19,7 +19,7 @@ use Filament\Tables\Actions\ViewAction;
 class BannerResource extends Resource
 {
     protected static ?string $model = Banner::class;
-    protected static ?string $navigationIcon = 'heroicon-o-collection';
+    protected static ?string $navigationIcon = 'heroicon-o-arrow-top-right-on-square';
     protected static ?string $navigationLabel = 'Banners';
     protected static ?string $pluralLabel = 'Banners';
 
