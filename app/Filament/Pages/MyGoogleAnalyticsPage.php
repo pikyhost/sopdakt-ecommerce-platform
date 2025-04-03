@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Livewire\PageViewsWidget;
 use Filament\Pages\Page;
 use BezhanSalleh\FilamentGoogleAnalytics\Widgets;
 use Illuminate\Contracts\Support\Htmlable;
@@ -32,7 +33,7 @@ class MyGoogleAnalyticsPage extends Page
     protected function getHeaderWidgets(): array
     {
         return [
-            Widgets\PageViewsWidget::class,
+            PageViewsWidget::class,
             Widgets\VisitorsWidget::class,
             Widgets\ActiveUsersOneDayWidget::class,
             Widgets\ActiveUsersSevenDayWidget::class,
