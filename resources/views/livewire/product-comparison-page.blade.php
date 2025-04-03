@@ -2,15 +2,15 @@
     <div class="comparison-wrapper">
         <div class="container py-5">
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <!-- Header with gradient background -->
+                <!-- Header with black background -->
                 <div class="card-header bg-black text-white py-4">
                     <div class="d-flex justify-content-between align-items-center">
                         <h2 class="h3 mb-0 fw-bold text-white">
                             Product Comparison
                         </h2>
-                        <span class="badge bg-white text-dark rounded-pill px-3 py-2">
-            {{ count($products) }} Items
-        </span>
+                        <span class="badge bg-white text-black rounded-pill px-3 py-2">
+                            {{ count($products) }} Items
+                        </span>
                     </div>
                 </div>
 
@@ -30,12 +30,11 @@
                                             <span class="d-block text-muted small mb-3">{{ $product->category->name ?? '' }}</span>
                                             <div class="ratings-container">
                                                 <div class="product-ratings">
-                                                    <span class="ratings" style="width: {{ $product->fake_average_rating * 20 }}%"></span><!-- End .ratings -->
+                                                    <span class="ratings" style="width: {{ $product->fake_average_rating * 20 }}%"></span>
                                                     <span class="tooltiptext tooltip-top"></span>
-                                                </div><!-- End .product-ratings -->
-
+                                                </div>
                                                 <span>( {{ $product->ratings()->count() }} Reviews )</span>
-                                            </div><!-- End .ratings-container -->
+                                            </div>
                                         </div>
                                     </th>
                                 @endforeach
@@ -55,8 +54,8 @@
                                                      loading="lazy">
                                                 @if($product->discount_percent)
                                                     <span class="discount-badge bg-danger text-white">
-                                                -{{ $product->discount_percent }}%
-                                            </span>
+                                                        -{{ $product->discount_percent }}%
+                                                    </span>
                                                 @endif
                                             </div>
                                         </div>
@@ -70,13 +69,14 @@
                                 @foreach($products as $product)
                                     <td class="p-3">
                                         <div class="price-display">
-                                        <span class="current-price text-success fw-bold">
-                                            {{ $product->discount_price_for_current_country }}
-                                        </span>
+                                            <span class="current-price text-success fw-bold">
+                                                {{ $product->discount_price_for_current_country }}
+                                            </span>
                                         </div>
                                     </td>
                                 @endforeach
                             </tr>
+
                             <!-- Color Options -->
                             <tr>
                                 <td class="p-3 fw-semibold text-muted">Color Options</td>
@@ -96,8 +96,8 @@
                                                            title="{{ $productColor->color->name }}">
                                                         @if($productColor->is_default)
                                                             <span class="selected-indicator">
-                                                    <i class="fas fa-check"></i>
-                                                </span>
+                                                                <i class="fas fa-check"></i>
+                                                            </span>
                                                         @endif
                                                     </label>
                                                 </div>
@@ -150,10 +150,10 @@
                                 @foreach($products as $product)
                                     <td class="p-3">
                                         <div class="availability-info">
-                                        <span class="badge bg-{{ $product->quantity > 0 ? 'success' : 'danger' }}-subtle text-{{ $product->quantity > 0 ? 'success' : 'danger' }} rounded-pill d-inline-flex align-items-center mb-2">
-                                            <i class="fas fa-{{ $product->quantity > 0 ? 'check-circle' : 'times-circle' }} me-1"></i>
-                                            {{ $product->quantity > 0 ? 'In Stock' : 'Out of Stock' }}
-                                        </span>
+                                            <span class="badge bg-{{ $product->quantity > 0 ? 'success' : 'danger' }}-subtle text-{{ $product->quantity > 0 ? 'success' : 'danger' }} rounded-pill d-inline-flex align-items-center mb-2">
+                                                <i class="fas fa-{{ $product->quantity > 0 ? 'check-circle' : 'times-circle' }} me-1"></i>
+                                                {{ $product->quantity > 0 ? 'In Stock' : 'Out of Stock' }}
+                                            </span>
                                             @if($product->is_free_shipping)
                                                 <div class="shipping-info">
                                                     <i class="fas fa-shipping-fast text-muted me-2"></i>
@@ -183,7 +183,7 @@
                 <div class="card-footer bg-light py-4 hover:bg-black transition-colors duration-300">
                     <div class="row align-items-center">
                         <div class="col-md-6 mb-3 mb-md-0">
-                            <a href="{{ url('/') }}" class="btn btn-outline-primary rounded-pill px-4">
+                            <a href="{{ url('/') }}" class="btn btn-outline-dark rounded-pill px-4">
                                 <i class="fas fa-arrow-left me-2"></i> Continue Shopping
                             </a>
                         </div>
@@ -195,26 +195,26 @@
 
     <style>
         .comparison-wrapper {
-            --primary-color: #4e54c8;
-            --secondary-color: #8f94fb;
+            --black: #000000;
+            --white: #ffffff;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #6c757d;
             --success-color: #28a745;
             --danger-color: #dc3545;
-            --light-bg: #f8f9fa;
             --border-radius: 0.5rem;
-        }
-
-        .bg-gradient-primary {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
         }
 
         .table-compare {
             border-collapse: separate;
             border-spacing: 0;
+            width: 100%;
         }
 
         .table-compare th, .table-compare td {
-            border-right: 1px solid #eee;
-            border-bottom: 1px solid #eee;
+            border-right: 1px solid var(--medium-gray);
+            border-bottom: 1px solid var(--medium-gray);
+            vertical-align: middle;
         }
 
         .table-compare th:last-child, .table-compare td:last-child {
@@ -222,12 +222,12 @@
         }
 
         .compare-product-col {
-            background-color: white;
+            background-color: var(--white);
             transition: all 0.3s ease;
         }
 
         .compare-product-col:hover {
-            box-shadow: inset 0 0 0 2px rgba(78, 84, 200, 0.1);
+            box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.05);
         }
 
         .compare-product-header {
@@ -274,14 +274,6 @@
             line-height: 1;
         }
 
-        .original-price {
-            font-size: 0.9rem;
-        }
-
-        .feature-list li {
-            font-size: 0.9rem;
-        }
-
         .color-options {
             display: flex;
             gap: 0.75rem;
@@ -310,7 +302,7 @@
         }
 
         .color-option input[type="radio"]:checked + .color-swatch {
-            border-color: var(--primary-color);
+            border-color: var(--black);
             transform: scale(1.1);
         }
 
@@ -342,7 +334,7 @@
         .size-label {
             display: inline-block;
             padding: 0.25rem 0.75rem;
-            border: 1px solid #dee2e6;
+            border: 1px solid var(--medium-gray);
             border-radius: 50px;
             font-size: 0.8rem;
             cursor: pointer;
@@ -350,29 +342,9 @@
         }
 
         .size-option input[type="radio"]:checked + .size-label {
-            background-color: var(--primary-color);
-            color: white;
-            border-color: var(--primary-color);
-        }
-
-        .stars {
-            --percent: calc(var(--rating) / 5 * 100%);
-            display: inline-block;
-            font-size: 1rem;
-            line-height: 1;
-            position: relative;
-            unicode-bidi: bidi-override;
-            color: #ddd;
-        }
-
-        .stars::before {
-            content: '★★★★★';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: var(--percent);
-            overflow: hidden;
-            color: #ffc107;
+            background-color: var(--black);
+            color: var(--white);
+            border-color: var(--black);
         }
 
         .decision-row .btn {
@@ -382,6 +354,17 @@
         .decision-row .btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Hover effects */
+        .card-footer:hover {
+            background-color: var(--black) !important;
+            color: var(--white) !important;
+        }
+
+        .card-footer:hover .btn-outline-dark {
+            color: var(--white) !important;
+            border-color: var(--white) !important;
         }
 
         @media (max-width: 992px) {
