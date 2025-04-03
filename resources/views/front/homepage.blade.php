@@ -458,30 +458,37 @@
                                 <div class="megamenu megamenu-fixed-width megamenu-3cols">
                                     <div class="row">
                                         <div class="col-lg-4">
-                                            <a href="#" class="nolink">VARIATION 1</a>
+                                            <a href="#" class="nolink">Test</a>
                                             <ul class="submenu">
                                                 @foreach (\App\Models\Category::latest()->take(18)->get() as $category)
-                                                    <li><a href="{{ route('category.products',  $category->slug) }}">{{ $category->name }}</a></li>
+                                                    <li>
+                                                        <a href="{{ route('category.products',  $category->slug) }}">{{ $category->name }}</a>
+                                                    </li>
                                                 @endforeach
                                             </ul>
                                         </div>
+
                                         <!-- Dynamic Menu Banner -->
                                         @php
-                                            $banner = \App\Models\Banner::latest()->first();
+                                            $banner = \App\Models\Banner::where('type', 'category')->first();
                                             $locale = app()->getLocale();
                                         @endphp
 
                                         @if($banner)
-                                            <div class="menu-banner">
-                                                <figure>
-                                                    <img src="{{ asset($banner->image) }}" alt="Menu banner" width="300" height="300">
-                                                </figure>
-                                                <div class="banner-content">
-                                                    <h4>
-                                                        <span class="">{{ $banner->getTranslation('subtitle', $locale) }}</span><br />
-                                                        <b class="">{{ $banner->getTranslation('discount', $locale) }}</b>
-                                                        <i>{{ $banner->getTranslation('title', $locale) }}</i>
-                                                    </h4>
+                                            <div class="col-lg-4 p-0">
+                                                <div class="menu-banner menu-banner-2">
+                                                    <figure>
+                                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($banner->image) }}"
+                                                             alt="Menu banner"
+                                                             class="product-promo"
+                                                             width="380" height="790">
+                                                    </figure>
+                                                    <div class="banner-content">
+                                                        <h4>
+                                                            <span class="">{{ $banner->getTranslation('subtitle', $locale) }}</span><br />
+                                                            <b class="">{{ $banner->getTranslation('discount', $locale) }}</b>
+                                                        </h4>
+                                                    </div>
                                                     <a href="{{ $banner->button_url }}" class="btn btn-sm btn-dark">
                                                         {{ $banner->getTranslation('button_text', $locale) }}
                                                     </a>
@@ -491,62 +498,54 @@
                                     </div>
                                 </div>
                             </li>
+
                             <li>
-                                <a href="demo18-product.html">Products</a>
+                                <a href="{{ url('products') }}">Products</a>
                                 <div class="megamenu megamenu-fixed-width">
                                     <div class="row">
                                         <div class="col-lg-4">
                                             <a href="#" class="nolink">PRODUCT PAGES</a>
                                             <ul class="submenu">
-                                                <li><a href="product.html">SIMPLE PRODUCT</a></li>
-                                                <li><a href="product-variable.html">VARIABLE PRODUCT</a></li>
-                                                <li><a href="product.html">SALE PRODUCT</a></li>
-                                                <li><a href="product.html">FEATURED & ON SALE</a></li>
-                                                <li><a href="product-custom-tab.html">WITH CUSTOM TAB</a></li>
-                                                <li><a href="product-sidebar-left.html">WITH LEFT SIDEBAR</a></li>
-                                                <li><a href="product-sidebar-right.html">WITH RIGHT SIDEBAR</a></li>
-                                                <li><a href="product-addcart-sticky.html">ADD CART STICKY</a></li>
+                                                @foreach (\App\Models\Product::latest()->take(18)->get() as $product)
+                                                    <li>
+                                                        <a href="{{ route('product.show', $product->slug) }}">{{ $product->name }}</a>
+                                                    </li>
+                                                @endforeach
                                             </ul>
                                         </div>
-                                        <!-- End .col-lg-4 -->
 
-                                        <div class="col-lg-4">
-                                            <a href="#" class="nolink">PRODUCT LAYOUTS</a>
-                                            <ul class="submenu">
-                                                <li><a href="product-extended-layout.html">EXTENDED LAYOUT</a></li>
-                                                <li><a href="product-grid-layout.html">GRID IMAGE</a></li>
-                                                <li><a href="product-full-width.html">FULL WIDTH LAYOUT</a></li>
-                                                <li><a href="product-sticky-info.html">STICKY INFO</a></li>
-                                                <li><a href="product-sticky-both.html">LEFT & RIGHT STICKY</a></li>
-                                                <li><a href="product-transparent-image.html">TRANSPARENT IMAGE</a>
-                                                </li>
-                                                <li><a href="product-center-vertical.html">CENTER VERTICAL</a></li>
-                                                <li><a href="#">BUILD YOUR OWN</a></li>
-                                            </ul>
-                                        </div>
-                                        <!-- End .col-lg-4 -->
+                                        <!-- Dynamic Menu Banner -->
+                                        @php
+                                            $banner = \App\Models\Banner::where('type', 'product')->first();
+                                            $locale = app()->getLocale();
+                                        @endphp
 
-                                        <div class="col-lg-4 p-0">
-                                            <div class="menu-banner menu-banner-2">
-                                                <figure>
-                                                    <img src="assets/images/menu-banner-1.jpg" alt="Menu banner" class="product-promo" width="380" height="790">
-                                                </figure>
-                                                <i>OFF</i>
-                                                <div class="banner-content">
-                                                    <h4>
-                                                        <span class="">UP TO</span><br />
-                                                        <b class="">50%</b>
-                                                    </h4>
+                                        @if($banner)
+                                            <div class="col-lg-4 p-0">
+                                                <div class="menu-banner menu-banner-2">
+                                                    <figure>
+                                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($banner->image) }}"
+                                                             alt="Menu banner"
+                                                             class="product-promo"
+                                                             width="380" height="790">
+                                                    </figure>
+                                                    <div class="banner-content">
+                                                        <h4>
+                                                            <span class="">{{ $banner->getTranslation('subtitle', $locale) }}</span><br />
+                                                            <b class="">{{ $banner->getTranslation('discount', $locale) }}</b>
+                                                        </h4>
+                                                    </div>
+                                                    <a href="{{ $banner->button_url }}" class="btn btn-sm btn-dark">
+                                                        {{ $banner->getTranslation('button_text', $locale) }}
+                                                    </a>
                                                 </div>
-                                                <a href="demo18-shop.html" class="btn btn-sm btn-dark">SHOP NOW</a>
                                             </div>
-                                        </div>
-                                        <!-- End .col-lg-4 -->
+                                        @endif
                                     </div>
-                                    <!-- End .row -->
                                 </div>
-                                <!-- End .megamenu -->
                             </li>
+
+
                             <li class="d-none d-xl-block">
                                 <a href="#">Pages</a>
                                 <ul>
