@@ -109,12 +109,12 @@
                 const locale = "{{ $locale }}";
 
                 // Configuration
-                const DISPLAY_DURATION = 3000;
+                const DISPLAY_DURATION = 5000;  // Increased from 3000 for better readability
                 const ANIMATION_DURATION = 500;
                 let currentIndex = 0;
                 let rotationInterval;
-                let progressStartTime;
-                let progressRemaining = DISPLAY_DURATION;
+                let progressInterval;
+                let isPaused = false;
 
                 // Create notice elements
                 function createNoticeElement(notice) {
@@ -122,28 +122,28 @@
                     noticeEl.className = 'notice-slide';
 
                     noticeEl.innerHTML = `
-                    <div class="container">
-                        <div class="notice-content-wrapper">
-                            <div class="notice-content">${locale === "ar" ? notice.content_ar : notice.content_en}</div>
-                            <div class="notice-actions" id="cta-wrapper">
-                                ${notice.cta_text_en && notice.cta_url ?
+                <div class="container">
+                    <div class="notice-content-wrapper">
+                        <div class="notice-content">${locale === "ar" ? notice.content_ar : notice.content_en}</div>
+                        <div class="notice-actions" id="cta-wrapper">
+                            ${notice.cta_text_en && notice.cta_url ?
                         `<a href="${notice.cta_url}" class="notice-btn btn-primary-reverse">
-                                        ${locale === "ar" ? notice.cta_text_ar : notice.cta_text_en}
-                                    </a>` : ''}
-                                ${notice.cta_text_2_en && notice.cta_url_2 ?
+                                    ${locale === "ar" ? notice.cta_text_ar : notice.cta_text_en}
+                                </a>` : ''}
+                            ${notice.cta_text_2_en && notice.cta_url_2 ?
                         `<a href="${notice.cta_url_2}" class="notice-btn btn-outline">
-                                        ${locale === "ar" ? notice.cta_text_2_ar : notice.cta_text_2_en}
-                                    </a>` : ''}
-                                ${(notice.limited_time_text_en || notice.limited_time_text_ar) ?
+                                    ${locale === "ar" ? notice.cta_text_2_ar : notice.cta_text_2_en}
+                                </a>` : ''}
+                            ${(notice.limited_time_text_en || notice.limited_time_text_ar) ?
                         `<div class="limited-time-badge">
-                                        ${locale === "ar" ?
+                                    ${locale === "ar" ?
                             (notice.limited_time_text_ar || notice.limited_time_text_en) :
                             (notice.limited_time_text_en || notice.limited_time_text_ar)}
-                                    </div>` : ''}
-                            </div>
+                                </div>` : ''}
                         </div>
                     </div>
-                `;
+                </div>
+            `;
 
                     return noticeEl;
                 }
@@ -156,12 +156,18 @@
                         noticeTrack.appendChild(createNoticeElement(notice));
                     });
 
-                    noticeTrack.children[0].classList.add('active');
-                    startRotation();
+                    const slides = noticeTrack.children;
+                    if (slides.length > 0) {
+                        slides[0].classList.add('active');
+                        startProgressBar();
+                        startRotation();
+                    }
                 }
 
                 function goToNextSlide() {
                     const slides = noticeTrack.children;
+                    if (slides.length <= 1) return;
+
                     const currentSlide = slides[currentIndex];
                     const nextIndex = (currentIndex + 1) % slides.length;
                     const nextSlide = slides[nextIndex];
@@ -175,72 +181,68 @@
                         nextSlide.classList.remove('entering');
 
                         currentIndex = nextIndex;
-                        resetProgress();
+                        resetProgressBar();
                     }, ANIMATION_DURATION);
                 }
 
                 function startRotation() {
                     stopRotation();
-                    resetProgress();
-
-                    rotationInterval = setInterval(() => {
-                        goToNextSlide();
-                    }, DISPLAY_DURATION + ANIMATION_DURATION);
+                    rotationInterval = setInterval(goToNextSlide, DISPLAY_DURATION + ANIMATION_DURATION);
                 }
 
                 function stopRotation() {
                     clearInterval(rotationInterval);
-                    progressBar.style.transition = 'none';
-
-                    if (progressStartTime) {
-                        const elapsed = Date.now() - progressStartTime;
-                        progressRemaining = DISPLAY_DURATION - elapsed;
-                        progressBar.style.width = `${100 - (elapsed / DISPLAY_DURATION) * 100}%`;
-                    }
+                    clearInterval(progressInterval);
+                    isPaused = true;
                 }
 
-                function resetProgress() {
-                    progressBar.style.transition = 'none';
-                    progressBar.style.width = '0%';
-
-                    void progressBar.offsetWidth;
+                function startProgressBar() {
+                    let startTime = Date.now();
+                    const endTime = startTime + DISPLAY_DURATION;
 
                     progressBar.style.transition = `width ${DISPLAY_DURATION}ms linear`;
                     progressBar.style.width = '100%';
-                    progressStartTime = Date.now();
+
+                    progressInterval = setInterval(() => {
+                        const now = Date.now();
+                        if (now >= endTime) {
+                            clearInterval(progressInterval);
+                        }
+                    }, 100);
                 }
 
+                function resetProgressBar() {
+                    progressBar.style.transition = 'none';
+                    progressBar.style.width = '0%';
+
+                    // Force reflow
+                    void progressBar.offsetWidth;
+
+                    startProgressBar();
+                }
+
+                function resumeRotation() {
+                    if (isPaused) {
+                        startRotation();
+                        isPaused = false;
+                    }
+                }
+
+                // Initialize the slider
                 initSlider();
 
+                // Event listeners
                 noticeContainer.addEventListener('mouseenter', stopRotation);
-
-                noticeContainer.addEventListener('mouseleave', () => {
-                    progressBar.style.transition = `width ${progressRemaining}ms linear`;
-                    progressBar.style.width = '100%';
-                    progressStartTime = Date.now();
-
-                    rotationInterval = setInterval(() => {
-                        goToNextSlide();
-                    }, progressRemaining + ANIMATION_DURATION);
-                });
-
+                noticeContainer.addEventListener('mouseleave', resumeRotation);
                 noticeContainer.addEventListener('touchstart', stopRotation);
-                noticeContainer.addEventListener('touchend', () => {
-                    progressBar.style.transition = `width ${progressRemaining}ms linear`;
-                    progressBar.style.width = '100%';
-                    progressStartTime = Date.now();
-
-                    rotationInterval = setInterval(() => {
-                        goToNextSlide();
-                    }, progressRemaining + ANIMATION_DURATION);
-                });
+                noticeContainer.addEventListener('touchend', resumeRotation);
             });
         </script>
 
         <style>
             .top-notice-bar {
                 position: relative;
-                background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%);
+                background: #000;
                 color: white;
                 padding: 12px 0;
                 overflow: hidden;
@@ -257,7 +259,7 @@
                 position: relative;
                 width: 100%;
                 overflow: hidden;
-                height: 44px; /* Fixed height to match original */
+                min-height: 44px;
             }
 
             .notice-slider-track {
@@ -268,6 +270,8 @@
             .notice-slide {
                 position: absolute;
                 width: 100%;
+                top: 0;
+                left: 0;
                 opacity: 0;
                 transform: translateY(10px);
                 transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
@@ -326,7 +330,7 @@
 
             .btn-primary-reverse {
                 background-color: white;
-                color: #2b5876;
+                color: #000;
                 border-color: white;
             }
 
@@ -374,6 +378,7 @@
                 height: 100%;
                 width: 0%;
                 background-color: rgba(255, 255, 255, 0.7);
+                transition: width 100ms linear;
             }
 
             @media (max-width: 768px) {
