@@ -38,23 +38,8 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
 
     Route::get('/', [HomePageController::class, 'index'])->name('homepage');
 
-    Route::get('/about-us', function () {
-        return 'To be the about us page';
-    });
-
-    Route::get('/contact-us', function () {
-        return 'To be the contact us page';
-    });
-
-    Route::view('demo', 'front.demo');
-
-    Route::get('/blogs', function () {
-        return 'To be the blogs page';
-    });
-
-    Route::get('/products', function () {
-        return 'To be the products page';
-    })->name('products');
+    Route::view('/blogs', 'pages.blogs')->name('blogs');
+    Route::view('/products', 'pages.products')->name('products');
 
     Route::get('landing-page/{slug}', [LandingPageController::class, 'show'])->name('landing-page.show-by-slug');
     Route::get('/products/{slug}', [ProductController::class, 'show'])->name('product.show');
@@ -87,7 +72,6 @@ Route::get('/analytics', function () {
 
     return response()->json($analyticsData);
 });
-
 
 Route::get('/test-analytics', function () {
     try {

@@ -113,12 +113,12 @@
                 const locale = "{{ $locale }}";
 
                 // Configuration
-                const DISPLAY_DURATION = 3000;
+                const DISPLAY_DURATION = 5000;  // Increased from 3000 for better readability
                 const ANIMATION_DURATION = 500;
                 let currentIndex = 0;
                 let rotationInterval;
-                let progressStartTime;
-                let progressRemaining = DISPLAY_DURATION;
+                let progressInterval;
+                let isPaused = false;
 
                 // Create notice elements
                 function createNoticeElement(notice) {
@@ -126,28 +126,28 @@
                     noticeEl.className = 'notice-slide';
 
                     noticeEl.innerHTML = `
-                    <div class="container">
-                        <div class="notice-content-wrapper">
-                            <div class="notice-content">${locale === "ar" ? notice.content_ar : notice.content_en}</div>
-                            <div class="notice-actions" id="cta-wrapper">
-                                ${notice.cta_text_en && notice.cta_url ?
+                <div class="container">
+                    <div class="notice-content-wrapper">
+                        <div class="notice-content">${locale === "ar" ? notice.content_ar : notice.content_en}</div>
+                        <div class="notice-actions" id="cta-wrapper">
+                            ${notice.cta_text_en && notice.cta_url ?
                         `<a href="${notice.cta_url}" class="notice-btn btn-primary-reverse">
-                                        ${locale === "ar" ? notice.cta_text_ar : notice.cta_text_en}
-                                    </a>` : ''}
-                                ${notice.cta_text_2_en && notice.cta_url_2 ?
+                                    ${locale === "ar" ? notice.cta_text_ar : notice.cta_text_en}
+                                </a>` : ''}
+                            ${notice.cta_text_2_en && notice.cta_url_2 ?
                         `<a href="${notice.cta_url_2}" class="notice-btn btn-outline">
-                                        ${locale === "ar" ? notice.cta_text_2_ar : notice.cta_text_2_en}
-                                    </a>` : ''}
-                                ${(notice.limited_time_text_en || notice.limited_time_text_ar) ?
+                                    ${locale === "ar" ? notice.cta_text_2_ar : notice.cta_text_2_en}
+                                </a>` : ''}
+                            ${(notice.limited_time_text_en || notice.limited_time_text_ar) ?
                         `<div class="limited-time-badge">
-                                        ${locale === "ar" ?
+                                    ${locale === "ar" ?
                             (notice.limited_time_text_ar || notice.limited_time_text_en) :
                             (notice.limited_time_text_en || notice.limited_time_text_ar)}
-                                    </div>` : ''}
-                            </div>
+                                </div>` : ''}
                         </div>
                     </div>
-                `;
+                </div>
+            `;
 
                     return noticeEl;
                 }
@@ -160,12 +160,18 @@
                         noticeTrack.appendChild(createNoticeElement(notice));
                     });
 
-                    noticeTrack.children[0].classList.add('active');
-                    startRotation();
+                    const slides = noticeTrack.children;
+                    if (slides.length > 0) {
+                        slides[0].classList.add('active');
+                        startProgressBar();
+                        startRotation();
+                    }
                 }
 
                 function goToNextSlide() {
                     const slides = noticeTrack.children;
+                    if (slides.length <= 1) return;
+
                     const currentSlide = slides[currentIndex];
                     const nextIndex = (currentIndex + 1) % slides.length;
                     const nextSlide = slides[nextIndex];
@@ -179,72 +185,68 @@
                         nextSlide.classList.remove('entering');
 
                         currentIndex = nextIndex;
-                        resetProgress();
+                        resetProgressBar();
                     }, ANIMATION_DURATION);
                 }
 
                 function startRotation() {
                     stopRotation();
-                    resetProgress();
-
-                    rotationInterval = setInterval(() => {
-                        goToNextSlide();
-                    }, DISPLAY_DURATION + ANIMATION_DURATION);
+                    rotationInterval = setInterval(goToNextSlide, DISPLAY_DURATION + ANIMATION_DURATION);
                 }
 
                 function stopRotation() {
                     clearInterval(rotationInterval);
-                    progressBar.style.transition = 'none';
-
-                    if (progressStartTime) {
-                        const elapsed = Date.now() - progressStartTime;
-                        progressRemaining = DISPLAY_DURATION - elapsed;
-                        progressBar.style.width = `${100 - (elapsed / DISPLAY_DURATION) * 100}%`;
-                    }
+                    clearInterval(progressInterval);
+                    isPaused = true;
                 }
 
-                function resetProgress() {
-                    progressBar.style.transition = 'none';
-                    progressBar.style.width = '0%';
-
-                    void progressBar.offsetWidth;
+                function startProgressBar() {
+                    let startTime = Date.now();
+                    const endTime = startTime + DISPLAY_DURATION;
 
                     progressBar.style.transition = `width ${DISPLAY_DURATION}ms linear`;
                     progressBar.style.width = '100%';
-                    progressStartTime = Date.now();
+
+                    progressInterval = setInterval(() => {
+                        const now = Date.now();
+                        if (now >= endTime) {
+                            clearInterval(progressInterval);
+                        }
+                    }, 100);
                 }
 
+                function resetProgressBar() {
+                    progressBar.style.transition = 'none';
+                    progressBar.style.width = '0%';
+
+                    // Force reflow
+                    void progressBar.offsetWidth;
+
+                    startProgressBar();
+                }
+
+                function resumeRotation() {
+                    if (isPaused) {
+                        startRotation();
+                        isPaused = false;
+                    }
+                }
+
+                // Initialize the slider
                 initSlider();
 
+                // Event listeners
                 noticeContainer.addEventListener('mouseenter', stopRotation);
-
-                noticeContainer.addEventListener('mouseleave', () => {
-                    progressBar.style.transition = `width ${progressRemaining}ms linear`;
-                    progressBar.style.width = '100%';
-                    progressStartTime = Date.now();
-
-                    rotationInterval = setInterval(() => {
-                        goToNextSlide();
-                    }, progressRemaining + ANIMATION_DURATION);
-                });
-
+                noticeContainer.addEventListener('mouseleave', resumeRotation);
                 noticeContainer.addEventListener('touchstart', stopRotation);
-                noticeContainer.addEventListener('touchend', () => {
-                    progressBar.style.transition = `width ${progressRemaining}ms linear`;
-                    progressBar.style.width = '100%';
-                    progressStartTime = Date.now();
-
-                    rotationInterval = setInterval(() => {
-                        goToNextSlide();
-                    }, progressRemaining + ANIMATION_DURATION);
-                });
+                noticeContainer.addEventListener('touchend', resumeRotation);
             });
         </script>
 
         <style>
             .top-notice-bar {
                 position: relative;
-                background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%);
+                background: #000;
                 color: white;
                 padding: 12px 0;
                 overflow: hidden;
@@ -261,7 +263,7 @@
                 position: relative;
                 width: 100%;
                 overflow: hidden;
-                height: 44px; /* Fixed height to match original */
+                min-height: 44px;
             }
 
             .notice-slider-track {
@@ -272,6 +274,8 @@
             .notice-slide {
                 position: absolute;
                 width: 100%;
+                top: 0;
+                left: 0;
                 opacity: 0;
                 transform: translateY(10px);
                 transition: all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
@@ -330,7 +334,7 @@
 
             .btn-primary-reverse {
                 background-color: white;
-                color: #2b5876;
+                color: #000;
                 border-color: white;
             }
 
@@ -378,6 +382,7 @@
                 height: 100%;
                 width: 0%;
                 background-color: rgba(255, 255, 255, 0.7);
+                transition: width 100ms linear;
             }
 
             @media (max-width: 768px) {
@@ -900,290 +905,6 @@
             <div class="container">
                 <div class="header-top-container py-2">
                     <div class="d-flex flex-wrap justify-content-between align-items-center">
-                        @php
-                            $topNotices = App\Models\TopNotice::where('is_active', true)->get();
-                            $locale = app()->getLocale();
-                        @endphp
-
-                        @if($topNotices->count())
-                            <!-- Main Top Notice Bar -->
-                            <div class="top-notice-bar" id="top-notice">
-                                <div class="notice-slider-container">
-                                    <div class="notice-slider-track" id="notice-track"></div>
-                                </div>
-                                <div class="notice-progress-container">
-                                    <div class="notice-progress" id="notice-progress"></div>
-                                </div>
-                            </div>
-
-                            <!-- Header with Integrated Announcement -->
-                            <header class="header">
-                                <div class="header-top">
-                                    <div class="container">
-                                        <div class="header-top-container py-2">
-                                            <div class="d-flex flex-wrap justify-content-between align-items-center">
-                                                <!-- Announcement Message - Synced with Top Notice -->
-                                                <div class="header-announcement" id="header-announcement">
-                                                    @if(!empty($topNotices[0]->header_message_en) || !empty($topNotices[0]->header_message_ar))
-                                                        <div class="announcement-content">
-                                                            <svg class="announcement-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                                                                <path d="M5 4v1h14V4H5zm0 3v8h2v-1h10v1h2V7H5zm2 9v1h6v-1H7z"/>
-                                                            </svg>
-                                                            <span class="announcement-text" id="announcement-text">
-                                        {{ $locale === 'ar' ? $topNotices[0]->header_message_ar : $topNotices[0]->header_message_en }}
-                                    </span>
-                                                        </div>
-                                                    @endif
-                                                </div>
-
-                                                <!-- Your existing header top right content here -->
-                                                <div class="header-top-right">
-                                                    <!-- ... your social/language links ... -->
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- ... rest of your header content ... -->
-                            </header>
-
-                            <script>
-                                document.addEventListener("DOMContentLoaded", function () {
-                                    const notices = @json($topNotices);
-                                    if (notices.length === 0) return;
-
-                                    // Top notice elements
-                                    const noticeTrack = document.getElementById("notice-track");
-                                    const progressBar = document.getElementById("notice-progress");
-                                    const noticeContainer = document.getElementById("top-notice");
-
-                                    // Announcement elements
-                                    const announcementContainer = document.getElementById("header-announcement");
-                                    const announcementText = document.getElementById("announcement-text");
-
-                                    const locale = "{{ $locale }}";
-
-                                    // Configuration
-                                    const DISPLAY_DURATION = 3000;
-                                    const ANIMATION_DURATION = 500;
-                                    let currentIndex = 0;
-                                    let rotationInterval;
-                                    let progressStartTime;
-                                    let progressRemaining = DISPLAY_DURATION;
-
-                                    // Create notice elements
-                                    function createNoticeElement(notice) {
-                                        const noticeEl = document.createElement('div');
-                                        noticeEl.className = 'notice-slide';
-
-                                        noticeEl.innerHTML = `
-                    <div class="container">
-                        <div class="notice-content-wrapper">
-                            <div class="notice-content">${locale === "ar" ? notice.content_ar : notice.content_en}</div>
-                            <div class="notice-actions" id="cta-wrapper">
-                                ${notice.cta_text_en && notice.cta_url ?
-                                            `<a href="${notice.cta_url}" class="notice-btn btn-primary-reverse">
-                                        ${locale === "ar" ? notice.cta_text_ar : notice.cta_text_en}
-                                    </a>` : ''}
-                                ${notice.cta_text_2_en && notice.cta_url_2 ?
-                                            `<a href="${notice.cta_url_2}" class="notice-btn btn-outline">
-                                        ${locale === "ar" ? notice.cta_text_2_ar : notice.cta_text_2_en}
-                                    </a>` : ''}
-                                ${(notice.limited_time_text_en || notice.limited_time_text_ar) ?
-                                            `<div class="limited-time-badge">
-                                        ${locale === "ar" ?
-                                                (notice.limited_time_text_ar || notice.limited_time_text_en) :
-                                                (notice.limited_time_text_en || notice.limited_time_text_ar)}
-                                    </div>` : ''}
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                                        return noticeEl;
-                                    }
-
-                                    // Update announcement content
-                                    function updateAnnouncement(notice) {
-                                        if (notice.header_message_en || notice.header_message_ar) {
-                                            announcementText.textContent = locale === 'ar' ? notice.header_message_ar : notice.header_message_en;
-                                            announcementContainer.style.display = 'block';
-
-                                            // Add animation class
-                                            announcementContainer.classList.add('announcement-update');
-                                            setTimeout(() => {
-                                                announcementContainer.classList.remove('announcement-update');
-                                            }, 300);
-                                        } else {
-                                            announcementContainer.style.display = 'none';
-                                        }
-                                    }
-
-                                    // Initialize slider
-                                    function initSlider() {
-                                        noticeTrack.innerHTML = '';
-
-                                        notices.forEach(notice => {
-                                            noticeTrack.appendChild(createNoticeElement(notice));
-                                        });
-
-                                        noticeTrack.children[0].classList.add('active');
-                                        updateAnnouncement(notices[0]);
-                                        startRotation();
-                                    }
-
-                                    function goToNextSlide() {
-                                        const slides = noticeTrack.children;
-                                        const currentSlide = slides[currentIndex];
-                                        const nextIndex = (currentIndex + 1) % slides.length;
-                                        const nextSlide = slides[nextIndex];
-                                        const nextNotice = notices[nextIndex];
-
-                                        currentSlide.classList.add('exiting');
-                                        nextSlide.classList.add('entering');
-
-                                        setTimeout(() => {
-                                            currentSlide.classList.remove('active', 'exiting');
-                                            nextSlide.classList.add('active');
-                                            nextSlide.classList.remove('entering');
-
-                                            // Update announcement when notice changes
-                                            updateAnnouncement(nextNotice);
-
-                                            currentIndex = nextIndex;
-                                            resetProgress();
-                                        }, ANIMATION_DURATION);
-                                    }
-
-                                    function startRotation() {
-                                        stopRotation();
-                                        resetProgress();
-
-                                        rotationInterval = setInterval(() => {
-                                            goToNextSlide();
-                                        }, DISPLAY_DURATION + ANIMATION_DURATION);
-                                    }
-
-                                    function stopRotation() {
-                                        clearInterval(rotationInterval);
-                                        progressBar.style.transition = 'none';
-
-                                        if (progressStartTime) {
-                                            const elapsed = Date.now() - progressStartTime;
-                                            progressRemaining = DISPLAY_DURATION - elapsed;
-                                            progressBar.style.width = `${100 - (elapsed / DISPLAY_DURATION) * 100}%`;
-                                        }
-                                    }
-
-                                    function resetProgress() {
-                                        progressBar.style.transition = 'none';
-                                        progressBar.style.width = '0%';
-
-                                        void progressBar.offsetWidth;
-
-                                        progressBar.style.transition = `width ${DISPLAY_DURATION}ms linear`;
-                                        progressBar.style.width = '100%';
-                                        progressStartTime = Date.now();
-                                    }
-
-                                    initSlider();
-
-                                    noticeContainer.addEventListener('mouseenter', stopRotation);
-
-                                    noticeContainer.addEventListener('mouseleave', () => {
-                                        progressBar.style.transition = `width ${progressRemaining}ms linear`;
-                                        progressBar.style.width = '100%';
-                                        progressStartTime = Date.now();
-
-                                        rotationInterval = setInterval(() => {
-                                            goToNextSlide();
-                                        }, progressRemaining + ANIMATION_DURATION);
-                                    });
-
-                                    noticeContainer.addEventListener('touchstart', stopRotation);
-                                    noticeContainer.addEventListener('touchend', () => {
-                                        progressBar.style.transition = `width ${progressRemaining}ms linear`;
-                                        progressBar.style.width = '100%';
-                                        progressStartTime = Date.now();
-
-                                        rotationInterval = setInterval(() => {
-                                            goToNextSlide();
-                                        }, progressRemaining + ANIMATION_DURATION);
-                                    });
-                                });
-                            </script>
-
-                            <style>
-                                /* Top Notice Bar Styles (unchanged from previous version) */
-                                .top-notice-bar {
-                                    position: relative;
-                                    background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%);
-                                    color: white;
-                                    padding: 12px 0;
-                                    overflow: hidden;
-                                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-                                }
-
-                                .notice-slider-container {
-                                    position: relative;
-                                    width: 100%;
-                                    overflow: hidden;
-                                    height: 44px;
-                                }
-
-                                /* ... (keep all your existing top notice bar styles exactly as before) ... */
-
-                                /* Header Announcement Styles */
-                                .header-announcement {
-                                    display: flex;
-                                    align-items: center;
-                                    transition: all 0.3s ease;
-                                }
-
-                                .announcement-content {
-                                    display: flex;
-                                    align-items: center;
-                                    gap: 8px;
-                                    background-color: rgba(0, 0, 0, 0.2);
-                                    padding: 4px 12px;
-                                    border-radius: 4px;
-                                }
-
-                                .announcement-icon {
-                                    width: 16px;
-                                    height: 16px;
-                                    color: #ffc107;
-                                    flex-shrink: 0;
-                                }
-
-                                .announcement-text {
-                                    font-size: 13px;
-                                    font-weight: 600;
-                                    color: #ffffff;
-                                    text-transform: uppercase;
-                                    transition: all 0.3s ease;
-                                }
-
-                                .announcement-update .announcement-text {
-                                    animation: fadeIn 0.3s ease;
-                                }
-
-                                @keyframes fadeIn {
-                                    0% { opacity: 0; transform: translateY(-3px); }
-                                    100% { opacity: 1; transform: translateY(0); }
-                                }
-
-                                @media (max-width: 767.98px) {
-                                    .announcement-content {
-                                        padding: 3px 8px;
-                                    }
-
-                                    .announcement-text {
-                                        font-size: 12px;
-                                    }
-                                }
-                            </style>
-                        @endif
                         <div class="d-flex align-items-center gap-3">
                             <!-- Language Selector -->
                             <div class="header-dropdown dropdown">
@@ -1302,277 +1023,106 @@
                     </div>
                 </div>
             </div>
-            <style>
-                /* Header Navigation Styles */
-                .header-nav {
-                    background-color: #ffffff;
-                    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
-                    position: sticky;
-                    top: 0;
-                    z-index: 1000;
-                }
 
-                .main-nav {
-                    display: flex;
-                    justify-content: center;
-                }
-
-                .nav-menu {
-                    display: flex;
-                    list-style: none;
-                    margin: 0;
-                    padding: 0;
-                    position: relative;
-                }
-
-                .nav-item {
-                    position: relative;
-                }
-
-                .nav-link {
-                    display: block;
-                    padding: 1.2rem 1.5rem;
-                    color: #333;
-                    text-decoration: none;
-                    font-weight: 600;
-                    font-size: 1rem;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                    transition: all 0.3s ease;
-                    position: relative;
-                }
-
-                .nav-link:hover {
-                    color: #4e4376;
-                }
-
-                .nav-item.active .nav-link {
-                    color: #4e4376;
-                }
-
-                /* Underline animation */
-                .nav-item:not(.active) .nav-link::after {
-                    content: '';
-                    position: absolute;
-                    bottom: 1rem;
-                    left: 1.5rem;
-                    width: 0;
-                    height: 2px;
-                    background-color: #4e4376;
-                    transition: width 0.3s ease;
-                }
-
-                .nav-item:not(.active) .nav-link:hover::after {
-                    width: calc(100% - 3rem);
-                }
-
-                .nav-item.active .nav-link::before {
-                    content: '';
-                    position: absolute;
-                    bottom: 1rem;
-                    left: 1.5rem;
-                    width: calc(100% - 3rem);
-                    height: 2px;
-                    background-color: #4e4376;
-                }
-
-                /* Mobile Menu */
-                @media (max-width: 992px) {
-                    .main-nav {
-                        justify-content: flex-start;
-                        overflow-x: auto;
-                        -webkit-overflow-scrolling: touch;
-                        scrollbar-width: none;
-                    }
-
-                    .main-nav::-webkit-scrollbar {
-                        display: none;
-                    }
-
-                    .nav-menu {
-                        flex-wrap: nowrap;
-                        padding: 0 1rem;
-                    }
-
-                    .nav-link {
-                        padding: 1rem 1.2rem;
-                        font-size: 0.9rem;
-                        white-space: nowrap;
-                    }
-
-                    .nav-link::after,
-                    .nav-item.active .nav-link::before {
-                        bottom: 0.8rem;
-                        left: 1.2rem;
-                    }
-
-                    .nav-item:not(.active) .nav-link:hover::after,
-                    .nav-item.active .nav-link::before {
-                        width: calc(100% - 2.4rem);
-                    }
-                }
-
-                /* Animation for active state */
-                @keyframes fadeIn {
-                    from { opacity: 0; transform: translateY(-5px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-
-                .nav-item.active {
-                    animation: fadeIn 0.3s ease-out;
-                }
-            </style>
-
-            <style>
-                /* Modern Navigation Styles */
-                .navbar {
-                    background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%) !important;
-                    box-shadow: 0 4px 20px rgba(43, 88, 118, 0.2);
-                    padding: 0.5rem 0;
-                    transition: all 0.3s ease;
-                }
-
-                .navbar-brand {
-                    font-family: 'Poppins', sans-serif;
-                    font-weight: 700 !important;
-                    font-size: 1.8rem !important;
-                    background: linear-gradient(to right, #ffffff, #e0e9ff);
-                    -webkit-background-clip: text;
-                    background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    letter-spacing: 0.5px;
-                    margin-right: 2rem;
-                    transition: all 0.3s ease;
-                }
-
-                .navbar-brand:hover {
-                    transform: translateY(-1px);
-                }
-
-                .navbar-nav {
-                    gap: 1.5rem !important;
-                }
-
-                .nav-link {
-                    font-family: 'Poppins', sans-serif;
-                    font-weight: 500 !important;
-                    font-size: 1.1rem !important;
-                    color: rgba(255, 255, 255, 0.9) !important;
-                    letter-spacing: 0.3px;
-                    padding: 0.5rem 0 !important;
-                    position: relative;
-                    transition: all 0.3s ease;
-                }
-
-                .nav-link::before {
-                    content: '';
-                    position: absolute;
-                    bottom: 0;
-                    left: 0;
-                    width: 0;
-                    height: 3px;
-                    background: linear-gradient(to right, #ffffff, #a7c4ff);
-                    border-radius: 3px;
-                    transition: width 0.4s cubic-bezier(0.22, 0.61, 0.36, 1);
-                }
-
-                .nav-link:hover {
-                    color: white !important;
-                    transform: translateY(-2px);
-                }
-
-                .nav-link:hover::before {
-                    width: 100%;
-                }
-
-                .nav-link.active {
-                    color: white !important;
-                    font-weight: 600 !important;
-                }
-
-                .nav-link.active::before {
-                    width: 100%;
-                    background: white;
-                }
-
-                .navbar-toggler {
-                    border: none;
-                    padding: 0.5rem;
-                }
-
-                .navbar-toggler:focus {
-                    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.25);
-                }
-
-                .navbar-toggler-icon {
-                    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
-                }
-
-                /* Mobile menu styles */
-                @media (max-width: 991.98px) {
-                    .navbar {
-                        padding: 0.75rem 0;
-                    }
-
-                    .navbar-collapse {
-                        background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%);
-                        padding: 1.5rem;
-                        margin-top: 0.5rem;
-                        border-radius: 0.5rem;
-                        box-shadow: 0 10px 30px rgba(43, 88, 118, 0.3);
-                    }
-
-                    .navbar-nav {
-                        gap: 1rem !important;
-                    }
-
-                    .nav-link {
-                        padding: 0.75rem 1rem !important;
-                        font-size: 1.05rem !important;
-                    }
-
-                    .nav-link::before {
-                        height: 2px;
-                        bottom: 0.5rem;
-                    }
-                }
-
-                /* Animation for active item */
-                @keyframes pulse {
-                    0% { transform: translateY(0); }
-                    50% { transform: translateY(-3px); }
-                    100% { transform: translateY(0); }
-                }
-
-                .nav-item.active .nav-link {
-                    animation: pulse 0.5s ease;
-                }
-            </style>
-            <nav class="navbar navbar-expand-lg navbar-dark py-2">
+            <nav class="navbar navbar-expand-lg navbar-dark py-3" style="background-color: #000;">
                 <div class="container">
-                    <a class="navbar-brand" href="/">Home</a>
-                    <button class="navbar-toggler nav" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                    <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-                        <ul class="navbar-nav gap-4">
-                            <li class="nav-item">
-                                <a class="nav-link" href="category.html">Categories</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="product.html">Products</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="blog.html">Blog</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="contact.html">Contact</a>
-                            </li>
-                        </ul>
+                    <div class="d-flex align-items-center">
+                        <a class="navbar-brand me-5 {{ request()->is(app()->getLocale()) ? 'active' : '' }}"
+                           href="{{ route('homepage') }}" style="font-size: 1.4rem;">Home</a>
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse" id="navbarNav">
+                            <ul class="navbar-nav">
+                                <li class="nav-item mx-3">
+                                    <a class="nav-link {{ request()->is(app()->getLocale().'/category*') ? 'active' : '' }}"
+                                       href="{{ url('categories') }}" style="font-size: 1.4rem;">Categories</a>
+                                </li>
+                                <li class="nav-item mx-3">
+                                    <a class="nav-link {{ request()->is(app()->getLocale().'/products*') ? 'active' : '' }}"
+                                       href="{{ url('products') }}" style="font-size: 1.4rem;">Products</a>
+                                </li>
+                                <li class="nav-item mx-3">
+                                    <a class="nav-link {{ request()->is(app()->getLocale().'/blogs*') ? 'active' : '' }}"
+                                       href="{{ url('blogs') }}" style="font-size: 1.4rem;">Blog</a>
+                                </li>
+                                <li class="nav-item mx-3">
+                                    <a class="nav-link {{ request()->is(app()->getLocale().'/contact-us') ? 'active' : '' }}"
+                                       href="{{ url('contact-us') }}" style="font-size: 1.4rem;">Contact</a>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </nav>
+
+            <style>
+                .navbar {
+                    background-color: #000 !important;
+                }
+
+                .navbar-brand,
+                .navbar-nav .nav-link {
+                    color: #fff !important;
+                    font-size: 1.4rem; /* Increased from 1.1rem */
+                    font-weight: 500;
+                    padding: 0.75rem 0; /* Increased padding */
+                    position: relative;
+                    transition: all 0.3s ease;
+                    letter-spacing: 0.5px; /* Slightly more spacing between letters */
+                }
+
+                /* Active state styles */
+                .navbar-brand.active,
+                .navbar-nav .nav-link.active {
+                    color: #fff !important;
+                    font-weight: 600;
+                }
+
+                /* Underline effect for active item - made slightly thicker */
+                .navbar-brand.active::after,
+                .navbar-nav .nav-link.active::after {
+                    content: '';
+                    position: absolute;
+                    bottom: 0.5rem; /* Adjusted position */
+                    left: 0;
+                    width: 100%;
+                    height: 3px; /* Increased from 2px */
+                    background-color: #fff;
+                    transform: scaleX(1);
+                    transition: transform 0.3s ease;
+                }
+
+                /* Hover effect */
+                .navbar-brand:hover,
+                .navbar-nav .nav-link:hover {
+                    opacity: 0.8;
+                    transform: translateY(-2px); /* Added slight lift effect */
+                }
+
+                /* Mobile view adjustments */
+                @media (max-width: 991.98px) {
+                    .navbar {
+                        padding: 1rem 0; /* More padding on mobile */
+                    }
+                    .navbar-collapse {
+                        margin-top: 1.5rem; /* Increased spacing */
+                    }
+                    .navbar-nav {
+                        flex-direction: column;
+                    }
+                    .nav-item {
+                        margin-bottom: 1.25rem; /* More space between items */
+                    }
+                    .navbar-brand,
+                    .navbar-nav .nav-link {
+                        font-size: 1.3rem; /* Slightly smaller on mobile */
+                        padding: 0.5rem 0;
+                    }
+                }
+            </style>
+
         </div>
     </header>
 
@@ -1584,31 +1134,27 @@
                 <ul class="mobile-menu">
                     <li class="active"><a href="/">Home</a></li>
                     <li>
-                        <a href="category.html">Categories</a>
+                        <a href="{{ url('categories') }}">Categories</a>
                     </li>
                     <li>
-                        <a href="product.html">Products</a>
+                        <a href="{{ url('products') }}">Products</a>
                     </li>
                     <li>
                         <a href="#">Pages</a>
                         <ul>
                             <li><a href="{{ route('wishlist') }}">Wishlist</a></li>
-                            <li><a href="cart.html">Shopping Cart</a></li>
-                            <li><a href="checkout.html">Checkout</a></li>
-                            <li><a href="dashboard.html">Dashboard</a></li>
-                            <li><a href="about.html">About Us</a></li>
+                            <li><a href="{{ url('cart') }}">Shopping Cart</a></li>
+                            <li><a href="{{ url('checkout') }}">Checkout</a></li>
+                            <li><a href="{{ url('/client') }}">Dashboard</a></li>
+                            <li><a href="{{ url('about-us') }}">About Us</a></li>
                             <li>
-                                <a href="#">Blog</a>
-                                <ul>
-                                    <li><a href="blog.html">Blog List</a></li>
-                                    <li><a href="single.html">Blog Post</a></li>
-                                </ul>
+                                <a href="{{ url('blogs') }}">Blogs</a>
                             </li>
-                            <li><a href="contact.html">Contact Us</a></li>
+                            <li><a href="{{ url('contact-us') }}">Contact Us</a></li>
                         </ul>
                     </li>
-                    <li><a href="blog.html">Blog</a></li>
-                    <li><a href="contact.html">Contact Us</a></li>
+                    <li><a href="{{ url('blogs') }}">Blog</a></li>
+                    <li><a href="{{ url('contact-us') }}">Contact Us</a></li>
                 </ul>
             </nav>
 
