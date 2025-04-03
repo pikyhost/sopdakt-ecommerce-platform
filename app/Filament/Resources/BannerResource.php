@@ -89,6 +89,11 @@ class BannerResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('type')
+                    ->badge()
+                    ->color('primary')
+                    ->label(__('Type')),
+                
                 ImageColumn::make('image')
                     ->label(__('Image')),
 
@@ -97,11 +102,6 @@ class BannerResource extends Resource
 
                 TextColumn::make('discount')
                     ->label(__('Discount')),
-
-                TextColumn::make('type')
-                    ->badge()
-                    ->color('primary')
-                    ->label(__('Type')),
             ])
             ->actions([
                 EditAction::make(),
