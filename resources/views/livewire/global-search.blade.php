@@ -17,7 +17,12 @@
             <div class="search-container" style="position: relative;">
                 <div class="search-wrapper" style="display: flex; align-items: center; background: #2d2d2d; border-radius: 8px; padding: 12px 15px; border: 1px solid #444; position: relative;">
                     <i class="icon-magnifier" style="color: #aaa; font-size: 18px; margin-right: 10px;"></i>
-                    <input type="search" class="search-input" wire:model.live="query" placeholder="Search products, categories..." style="flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 16px; padding-right: 30px;">
+                    <input type="search"
+                           class="search-input"
+                           wire:model.live="query"
+                           wire:keydown.enter="performSearch"
+                           placeholder="Search products, categories..."
+                           style="flex: 1; background: transparent; border: none; outline: none; color: #fff; font-size: 16px; padding-right: 30px;">
                     <button class="clear-search" style="position: absolute; right: 15px; background: none; border: none; color: #aaa; cursor: pointer; display: none;">&times;</button>
                 </div>
 
@@ -128,6 +133,13 @@
             searchInput.addEventListener('focus', function() {
                 if (this.value.length > 0) {
                     clearSearchBtn.style.display = 'block';
+                }
+            });
+
+            // Handle Enter key press to prevent form submission
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
                 }
             });
         });

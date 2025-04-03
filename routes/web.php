@@ -65,6 +65,10 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
     Route::view('/refund-policy', 'pages.refund-policy')->name('refund.policy');
     Route::view('/terms-of-service', 'pages.terms-of-service')->name('terms.of.service');
     Route::get('/compare-products/{ids}', [ProductComparisonController::class, 'index'])->name('compare.products');
+
+    Route::get('/search/{query}', function ($query) {
+        return view('search-results', ['query' => $query]);
+    })->name('search.results');
 });
 Route::post('/jt-express-webhook', [ShippingController::class, 'handleWebhook']);
 
