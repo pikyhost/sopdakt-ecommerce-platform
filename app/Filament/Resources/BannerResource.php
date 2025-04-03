@@ -59,7 +59,7 @@ class BannerResource extends Resource
                     ->required(),
 
                     TextInput::make('subtitle')
-                        ->label(__('Subtitle'))
+                        ->label(__('Title'))
                         ->nullable(),
 
                     TextInput::make('discount')
@@ -91,7 +91,7 @@ class BannerResource extends Resource
                     ->label(__('Image')),
 
                 TextColumn::make('subtitle')
-                    ->label(__('Subtitle')),
+                    ->label(__('Title')),
 
                 TextColumn::make('discount')
                     ->label(__('Discount')),
