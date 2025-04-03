@@ -9,6 +9,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextArea;
+use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\ImageColumn;
@@ -18,6 +19,8 @@ use Filament\Tables\Actions\ViewAction;
 
 class BannerResource extends Resource
 {
+    use Translatable;
+
     protected static ?string $model = Banner::class;
     protected static ?string $navigationIcon = 'heroicon-o-arrow-top-right-on-square';
     protected static ?string $navigationLabel = 'Banners';
@@ -29,38 +32,31 @@ class BannerResource extends Resource
             ->schema([
                 TextInput::make('title')
                     ->label(__('Title'))
-                    ->required()
-                    ->translateLabel(),
+                    ->required(),
 
                 TextArea::make('subtitle')
                     ->label(__('Subtitle'))
-                    ->translateLabel()
                     ->nullable(),
 
                 TextInput::make('discount')
                     ->label(__('Discount'))
-                    ->translateLabel()
                     ->nullable(),
 
                 TextInput::make('button_text')
                     ->label(__('Button Text'))
-                    ->translateLabel()
                     ->nullable(),
 
                 TextInput::make('button_url')
                     ->label(__('Button URL'))
-                    ->translateLabel()
                     ->nullable(),
 
                 FileUpload::make('image')
                     ->label(__('Image'))
-                    ->translateLabel()
                     ->image()
                     ->required(),
 
                 Select::make('type')
                     ->label(__('Type'))
-                    ->translateLabel()
                     ->options([
                         'product' => __('Product'),
                         'category' => __('Category'),
@@ -86,7 +82,6 @@ class BannerResource extends Resource
                     ->sortable(),
             ])
             ->actions([
-                ViewAction::make(),
                 EditAction::make(),
             ]);
     }
