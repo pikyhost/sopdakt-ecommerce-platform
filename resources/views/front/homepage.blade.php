@@ -460,57 +460,36 @@
                                         <div class="col-lg-4">
                                             <a href="#" class="nolink">VARIATION 1</a>
                                             <ul class="submenu">
-                                                <li><a href="category.html">Fullwidth Banner</a></li>
-                                                <li><a href="category-banner-boxed-slider.html">Boxed Slider
-                                                        Banner</a>
-                                                </li>
-                                                <li><a href="category-banner-boxed-image.html">Boxed Image
-                                                        Banner</a>
-                                                </li>
-                                                <li><a href="category.html">Left Sidebar</a></li>
-                                                <li><a href="category-sidebar-right.html">Right Sidebar</a></li>
-                                                <li><a href="category-off-canvas.html">Off Canvas Filter</a></li>
-                                                <li><a href="category-horizontal-filter1.html">Horizontal
-                                                        Filter1</a>
-                                                </li>
-                                                <li><a href="category-horizontal-filter2.html">Horizontal
-                                                        Filter2</a>
-                                                </li>
+                                                @foreach (\App\Models\Category::latest()->take(18)->get() as $category)
+                                                    <li><a href="{{ route('category.products',  $category->slug) }}">{{ $category->name }}</a></li>
+                                                @endforeach
                                             </ul>
                                         </div>
-                                        <div class="col-lg-4">
-                                            <a href="#" class="nolink">VARIATION 2</a>
-                                            <ul class="submenu">
-                                                <li><a href="category-list.html">List Types</a></li>
-                                                <li><a href="category-infinite-scroll.html">Ajax Infinite Scroll</a>
-                                                </li>
-                                                <li><a href="category.html">3 Columns Products</a></li>
-                                                <li><a href="category-4col.html">4 Columns Products</a></li>
-                                                <li><a href="category-5col.html">5 Columns Products</a></li>
-                                                <li><a href="category-6col.html">6 Columns Products</a></li>
-                                                <li><a href="category-7col.html">7 Columns Products</a></li>
-                                                <li><a href="category-8col.html">8 Columns Products</a></li>
-                                            </ul>
-                                        </div>
-                                        <div class="col-lg-4 p-0">
+                                        <!-- Dynamic Menu Banner -->
+                                        @php
+                                            $banner = \App\Models\Banner::latest()->first();
+                                            $locale = app()->getLocale();
+                                        @endphp
+
+                                        @if($banner)
                                             <div class="menu-banner">
                                                 <figure>
-                                                    <img src="assets/images/menu-banner.jpg" alt="Menu banner" width="300" height="300">
+                                                    <img src="{{ asset($banner->image) }}" alt="Menu banner" width="300" height="300">
                                                 </figure>
                                                 <div class="banner-content">
                                                     <h4>
-                                                        <span class="">UP TO</span><br />
-                                                        <b class="">50%</b>
-                                                        <i>OFF</i>
+                                                        <span class="">{{ $banner->getTranslation('subtitle', $locale) }}</span><br />
+                                                        <b class="">{{ $banner->getTranslation('discount', $locale) }}</b>
+                                                        <i>{{ $banner->getTranslation('title', $locale) }}</i>
                                                     </h4>
-                                                    <a href="demo18-shop.html" class="btn btn-sm btn-dark">SHOP
-                                                        NOW</a>
+                                                    <a href="{{ $banner->button_url }}" class="btn btn-sm btn-dark">
+                                                        {{ $banner->getTranslation('button_text', $locale) }}
+                                                    </a>
                                                 </div>
                                             </div>
-                                        </div>
+                                        @endif
                                     </div>
                                 </div>
-                                <!-- End .megamenu -->
                             </li>
                             <li>
                                 <a href="demo18-product.html">Products</a>
