@@ -93,7 +93,7 @@ class BannerResource extends Resource
                     ->badge()
                     ->color('primary')
                     ->label(__('Type')),
-                
+
                 ImageColumn::make('image')
                     ->label(__('Image')),
 
