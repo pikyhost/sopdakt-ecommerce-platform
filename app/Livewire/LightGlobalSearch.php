@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use App\Models\Product;
 use App\Models\Category;
@@ -9,6 +10,7 @@ use App\Models\Label;
 
 class LightGlobalSearch extends Component
 {
+    #[Url]
     public $query = '';
     public $results = [];
     public $showMore = false;
@@ -53,6 +55,16 @@ class LightGlobalSearch extends Component
             'Categories' => $categories->take(6),
         ];
     }
+
+    public function performSearch()
+    {
+        if (empty($this->query)) {
+            return;
+        }
+
+        return redirect()->route('search.results', ['query' => $this->query]);
+    }
+
 
     public function render()
     {

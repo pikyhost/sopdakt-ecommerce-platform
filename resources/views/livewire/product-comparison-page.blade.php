@@ -3,14 +3,14 @@
         <div class="container py-5">
             <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
                 <!-- Header with gradient background -->
-                <div class="card-header bg-gradient-primary text-white py-4">
+                <div class="card-header bg-black text-white py-4">
                     <div class="d-flex justify-content-between align-items-center">
-                        <h2 class="h3 mb-0 fw-bold">
+                        <h2 class="h3 mb-0 fw-bold text-white">
                             Product Comparison
                         </h2>
-                        <span class="badge bg-white text-primary rounded-pill px-3 py-2">
-                        {{ count($products) }} Items
-                    </span>
+                        <span class="badge bg-white text-dark rounded-pill px-3 py-2">
+            {{ count($products) }} Items
+        </span>
                     </div>
                 </div>
 
@@ -180,7 +180,7 @@
                 </div>
 
                 <!-- Footer with summary -->
-                <div class="card-footer bg-light py-4">
+                <div class="card-footer bg-light py-4 hover:bg-black transition-colors duration-300">
                     <div class="row align-items-center">
                         <div class="col-md-6 mb-3 mb-md-0">
                             <a href="{{ url('/') }}" class="btn btn-outline-primary rounded-pill px-4">

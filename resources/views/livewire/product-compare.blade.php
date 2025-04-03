@@ -77,8 +77,8 @@
     <style>
         /* Base styles */
         .compare-products-section {
-            --primary-color: #2b5876;
-            --secondary-color: #4e4376;
+            --primary-color: black;
+            --secondary-color: black;
             --accent-color: #4fc3f7;
             --text-color: #2d3748;
             --light-gray: #f8fafc;
@@ -111,6 +111,7 @@
         }
 
         .compare-title-wrapper {
+            color:white;
             display: flex;
             align-items: center;
             gap: 0.75rem;
@@ -123,6 +124,7 @@
         }
 
         .compare-title {
+            color:white;
             margin: 0;
             font-size: 1.25rem;
             font-weight: 600;
