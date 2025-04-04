@@ -35,7 +35,7 @@ class SettingResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return __('Global Settings');
+        return __('Website Settings');
     }
 
     public static function getPluralLabel(): string
