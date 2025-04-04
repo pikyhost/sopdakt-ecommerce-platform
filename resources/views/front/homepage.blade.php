@@ -545,7 +545,6 @@
                                 </div>
                             </li>
 
-
                             <li class="d-none d-xl-block">
                                 <a href="#">Pages</a>
                                 <ul>
@@ -1165,123 +1164,73 @@
         <span class="mobile-menu-close"><i class="fa fa-times"></i></span>
         <nav class="mobile-nav">
             <ul class="mobile-menu">
-                <li><a href="demo18.html">Home</a></li>
+                <li><a href="{{ url('/') }}">Home</a></li>
+
+                <!-- Categories -->
                 <li>
-                    <a href="demo18-shop.html">Categories</a>
+                    <a href="{{ url('/categories') }}">Categories</a>
                     <ul>
-                        <li><a href="category.html">Full Width Banner</a></li>
-                        <li><a href="category-banner-boxed-slider.html">Boxed Slider Banner</a></li>
-                        <li><a href="category-banner-boxed-image.html">Boxed Image Banner</a></li>
-                        <li><a href="category-sidebar-left.html">Left Sidebar</a></li>
-                        <li><a href="category-sidebar-right.html">Right Sidebar</a></li>
-                        <li><a href="category-off-canvas.html">Off Canvas Filter</a></li>
-                        <li><a href="category-horizontal-filter1.html">Horizontal Filter 1</a></li>
-                        <li><a href="category-horizontal-filter2.html">Horizontal Filter 2</a></li>
-                        <li><a href="#">List Types</a></li>
-                        <li><a href="category-infinite-scroll.html">Ajax Infinite Scroll<span
-                                    class="tip tip-new">New</span></a></li>
-                        <li><a href="category.html">3 Columns Products</a></li>
-                        <li><a href="category-4col.html">4 Columns Products</a></li>
-                        <li><a href="category-5col.html">5 Columns Products</a></li>
-                        <li><a href="category-6col.html">6 Columns Products</a></li>
-                        <li><a href="category-7col.html">7 Columns Products</a></li>
-                        <li><a href="category-8col.html">8 Columns Products</a></li>
+                        @foreach (\App\Models\Category::latest()->take(18)->get() as $category)
+                            <li>
+                                <a href="{{ route('category.products', $category->slug) }}">{{ $category->name }}</a>
+                            </li>
+                        @endforeach
                     </ul>
                 </li>
+
+                <!-- Products -->
                 <li>
-                    <a href="demo18-product.html">Products</a>
+                    <a href="{{ url('/products') }}">Products</a>
                     <ul>
-                        <li>
-                            <a href="#" class="nolink">PRODUCT PAGES</a>
-                            <ul>
-                                <li><a href="product.html">SIMPLE PRODUCT</a></li>
-                                <li><a href="product-variable.html">VARIABLE PRODUCT</a></li>
-                                <li><a href="product.html">SALE PRODUCT</a></li>
-                                <li><a href="product.html">FEATURED & ON SALE</a></li>
-                                <li><a href="product-sticky-info.html">WIDTH CUSTOM TAB</a></li>
-                                <li><a href="product-sidebar-left.html">WITH LEFT SIDEBAR</a></li>
-                                <li><a href="product-sidebar-right.html">WITH RIGHT SIDEBAR</a></li>
-                                <li><a href="product-addcart-sticky.html">ADD CART STICKY</a></li>
-                            </ul>
-                        </li>
-                        <li>
-                            <a href="#" class="nolink">PRODUCT LAYOUTS</a>
-                            <ul>
-                                <li><a href="product-extended-layout.html">EXTENDED LAYOUT</a></li>
-                                <li><a href="product-grid-layout.html">GRID IMAGE</a></li>
-                                <li><a href="product-full-width.html">FULL WIDTH LAYOUT</a></li>
-                                <li><a href="product-sticky-info.html">STICKY INFO</a></li>
-                                <li><a href="product-sticky-both.html">LEFT & RIGHT STICKY</a></li>
-                                <li><a href="product-transparent-image.html">TRANSPARENT IMAGE</a></li>
-                                <li><a href="product-center-vertical.html">CENTER VERTICAL</a></li>
-                                <li><a href="#">BUILD YOUR OWN</a></li>
-                            </ul>
-                        </li>
+                        @foreach (\App\Models\Product::latest()->take(18)->get() as $product)
+                            <li>
+                                <a href="{{ route('product.show', $product->slug) }}">{{ $product->name }}</a>
+                            </li>
+                        @endforeach
                     </ul>
                 </li>
+
+                <!-- Pages -->
                 <li>
-                    <a href="#">Pages<span class="tip tip-hot">Hot!</span></a>
+                    <a href="#">Pages</a>
                     <ul>
-                        <li>
-                            <a href="{{ route('wishlist') }}">Wishlist</a>
-                        </li>
-                        <li>
-                            <a href="cart.html">Shopping Cart</a>
-                        </li>
-                        <li>
-                            <a href="{{ url('checkout') }}">Checkout</a>
-                        </li>
-                        <li>
-                            <a href="dashboard.html">Dashboard</a>
-                        </li>
-                        <li>
-                            <a href="login.html">Login</a>
-                        </li>
-                        <li>
-                            <a href="forgot-password.html">Forgot Password</a>
-                        </li>
+                        <li><a href="{{ route('wishlist') }}">Wishlist</a></li>
+                        <li><a href="{{ url('/cart') }}">Shopping Cart</a></li>
+                        <li><a href="{{ url('/checkout') }}">Checkout</a></li>
+                        <li><a href="{{ url('/client') }}">Dashboard</a></li>
+                        <li><a href="{{ url('/about-us') }}">About Us</a></li>
+                        <li><a href="{{ url('/blogs') }}">Blog</a></li>
+                        <li><a href="{{ url('/client/login') }}">Login</a></li>
+                        <li><a href="{{ route('privacy.policy') }}">Privacy Policy</a></li>
+                        <li><a href="{{ route('refund.policy') }}">Refund Policy</a></li>
+                        <li><a href="{{ route('terms.of.service') }}">Terms of Service</a></li>
+                        <li><a href="{{ route('contact.us') }}">Contact Us</a></li>
                     </ul>
                 </li>
-                <li><a href="blog.html">Blog</a></li>
-                <li>
-                    <a href="#">Elements</a>
-                    <ul class="custom-scrollbar">
-                        <li><a href="element-accordions.html">Accordion</a></li>
-                        <li><a href="element-alerts.html">Alerts</a></li>
-                        <li><a href="element-animations.html">Animations</a></li>
-                        <li><a href="element-banners.html">Banners</a></li>
-                        <li><a href="element-buttons.html">Buttons</a></li>
-                        <li><a href="element-call-to-action.html">Call to Action</a></li>
-                        <li><a href="element-countdown.html">Count Down</a></li>
-                        <li><a href="element-counters.html">Counters</a></li>
-                        <li><a href="element-headings.html">Headings</a></li>
-                        <li><a href="element-icons.html">Icons</a></li>
-                        <li><a href="element-info-box.html">Info box</a></li>
-                        <li><a href="element-posts.html">Posts</a></li>
-                        <li><a href="element-products.html">Products</a></li>
-                        <li><a href="element-product-categories.html">Product Categories</a></li>
-                        <li><a href="element-tabs.html">Tabs</a></li>
-                        <li><a href="element-testimonial.html">Testimonials</a></li>
-                    </ul>
-                </li>
+
+                <!-- Blog -->
+                <li><a href="{{ url('/blogs') }}">Blog</a></li>
             </ul>
 
-            <ul class="mobile-menu">
-                <li><a href="login.html">My Account</a></li>
-                <li><a href="demo18-contact.html">Contact Us</a></li>
-                <li><a href="blog.html">Blog</a></li>
+            <ul class="mobile-menu mt-2">
+                <li><a href="{{ url('client/my-profile') }}">My Account</a></li>
+                <li><a href="{{ route('contact.us') }}">Contact Us</a></li>
                 <li><a href="{{ route('wishlist') }}">My Wishlist</a></li>
-                <li><a href="cart.html">Cart</a></li>
-                <li><a href="login.html" class="login-link">Log In</a></li>
+                <li><a href="{{ url('cart') }}">Cart</a></li>
+                <li><a href="{{ url('client/login') }}">Log In</a></li>
+                <li><a href="{{ url('client/password-reset/request') }}">Forgot Password</a></li>
             </ul>
         </nav>
-        <!-- End .mobile-nav -->
 
-        <form class="search-wrapper mb-2" action="#">
-            <input type="text" class="form-control mb-0" placeholder="Search..." required />
-            <button class="btn icon-search text-white bg-transparent p-0" type="submit"></button>
+        <!-- Search -->
+        <form class="search-wrapper mb-2" action="{{ route('search') }}" method="GET">
+            <input type="text" name="q" class="form-control mb-0" placeholder="Search..." required />
+            <button class="btn icon-search text-white bg-transparent p-0" type="submit">
+                <i class="fa fa-search"></i>
+            </button>
         </form>
 
+        <!-- Social Icons -->
         <div class="social-icons">
             @foreach($socialLinks as $platform => $url)
                 @if(!empty($url) && isset($iconClasses[$platform]))
@@ -1292,18 +1241,17 @@
             @endforeach
         </div>
     </div>
-    <!-- End .mobile-menu-wrapper -->
 </div>
 <!-- End .mobile-menu-container -->
 
 <div class="sticky-navbar">
     <div class="sticky-info">
-        <a href="demo18.html">
+        <a href="{{ url('/') }}">
             <i class="icon-home"></i>Home
         </a>
     </div>
     <div class="sticky-info">
-        <a href="demo18-shop.html" class="">
+        <a href="{{ url('/categories') }}" class="">
             <i class="icon-bars"></i>Categories
         </a>
     </div>
@@ -1313,12 +1261,12 @@
         </a>
     </div>
     <div class="sticky-info">
-        <a href="login.html" class="">
+        <a href="{{ url('client/my-profile') }}" class="">
             <i class="icon-user-2"></i>Account
         </a>
     </div>
     <div class="sticky-info">
-        <a href="cart.html" class="">
+        <a href="{{ url('cart') }}" class="">
             <i class="icon-shopping-cart position-relative">
                 <span class="cart-count badge-circle">3</span>
             </i>Cart
