@@ -37,7 +37,7 @@ class TopCustomers extends BaseWidget
             ->paginated(false)
             ->query(
                 \App\Models\User::query()
-                    ->select('users.id', 'users.name')
+                    ->select('users.*')
                     ->selectRaw('COUNT(orders.id) as total_orders, SUM(orders.total) as total_spent')
                     ->join('orders', 'users.id', '=', 'orders.user_id')
                     ->groupBy('users.id', 'users.name')
