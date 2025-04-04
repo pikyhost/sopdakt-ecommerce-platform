@@ -11,6 +11,11 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\FileUpload;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 
 class SettingResource extends Resource
 {
@@ -46,6 +51,84 @@ class SettingResource extends Resource
     public static function getLabel(): string
     {
         return __('Settings');
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('site_name')
+                    ->label(__('Website Name')),
+
+                TextColumn::make('phone')
+                    ->label(__('phone')),
+
+                TextColumn::make('email')
+                    ->label(__('email')),
+
+                ImageColumn::make('logo_en')
+                    ->label(__('Logo (English)')),
+
+                ImageColumn::make('logo_ar')
+                    ->label(__('Logo (Arabic)')),
+
+                ImageColumn::make('dark_logo_en')
+                    ->label(__('Dark Logo (English)')),
+
+                ImageColumn::make('dark_logo_ar')
+                    ->label(__('Dark Logo (Arabic)')),
+
+                ImageColumn::make('favicon')
+                    ->label(__('Favicon (English & Arabic)')),
+
+                TextColumn::make('facebook')
+                    ->label(__('facebook'))
+                    ->url(fn ($record) => $record->facebook, true)
+                    ->openUrlInNewTab(),
+
+                TextColumn::make('youtube')
+                    ->label(__('youtube'))
+                    ->url(fn ($record) => $record->youtube, true)
+                    ->openUrlInNewTab(),
+
+                TextColumn::make('instagram')
+                    ->label(__('instagram'))
+                    ->url(fn ($record) => $record->instagram, true)
+                    ->openUrlInNewTab(),
+
+                TextColumn::make('x')
+                    ->label(__('x'))
+                    ->url(fn ($record) => $record->x, true)
+                    ->openUrlInNewTab(),
+
+                TextColumn::make('snapchat')
+                    ->label(__('snapchat'))
+                    ->url(fn ($record) => $record->snapchat, true)
+                    ->openUrlInNewTab(),
+
+                TextColumn::make('tiktok')
+                    ->label(__('tiktok'))
+                    ->url(fn ($record) => $record->tiktok, true)
+                    ->openUrlInNewTab(),
+
+                TextColumn::make('tax_percentage')
+                    ->label(__('Tax Percentage'))
+                    ->suffix('%'),
+
+                TextColumn::make('currency.name')
+                    ->label(__('Currency')),
+
+                IconColumn::make('shipping_type_enabled')
+                    ->label(__('Enable Shipping Types'))
+                    ->boolean(),
+
+                IconColumn::make('shipping_locations_enabled')
+                    ->label(__('Enable Shipping Locations'))
+                    ->boolean(),
+            ])
+            ->actions([
+                EditAction::make(),
+            ]);
     }
 
     public static function form(Form $form): Form
