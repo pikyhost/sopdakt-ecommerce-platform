@@ -140,7 +140,13 @@ class UserResource extends Resource
                 }),
 
             PhoneInput::make('phone')
-                ->unique(ignoreRecord: true)
+                ->enableIpLookup(true) // Enable IP-based country detection
+                ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
+                ->required()
+                ->rules([
+                    'max:20', // Match database column limit
+                    'unique:users,phone', // Ensure uniqueness in the `users` table
+                ])
                 ->label(__('Phone Number')),
 
         Forms\Components\Select::make('roles')
