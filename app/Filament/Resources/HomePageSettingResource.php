@@ -10,6 +10,10 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Columns\ImageColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Table;
 
 class HomePageSettingResource extends Resource
 {
@@ -188,6 +192,103 @@ class HomePageSettingResource extends Resource
                             ->label(__('Latest Button URL'))
                             ->required(),
                     ])->columnSpanFull(),
+            ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('main_heading')
+                    ->label(__('Main Heading')),
+
+                TextColumn::make('discount_text')
+                    ->label(__('Discount Text')),
+
+                TextColumn::make('discount_value')
+                    ->label(__('Discount Value')),
+
+                TextColumn::make('starting_price')
+                    ->label(__('Starting Price')),
+
+                TextColumn::make('currency_symbol')
+                    ->label(__('Currency Symbol')),
+
+                TextColumn::make('button_text')
+                    ->label(__('Button Text')),
+
+                TextColumn::make('button_url')
+                    ->label(__('Button URL'))
+                    ->url(fn ($record) => $record->button_url, true)
+                    ->openUrlInNewTab(),
+
+                ImageColumn::make('slider1_image')
+                    ->label(__('Slider 1 Background Image')),
+
+                ImageColumn::make('slider2_image')
+                    ->label(__('Slider 2 Background Image')),
+
+                TextColumn::make('center_main_heading')
+                    ->label(__('Center Main Heading')),
+
+                TextColumn::make('center_button_text')
+                    ->label(__('Center Button Text')),
+
+                TextColumn::make('center_button_url')
+                    ->label(__('Center Button URL'))
+                    ->url(fn ($record) => $record->center_button_url, true)
+                    ->openUrlInNewTab(),
+
+                ImageColumn::make('center_image')
+                    ->label(__('Center Image')),
+
+                TextColumn::make('last1_heading')
+                    ->label(__('Last 1 Heading')),
+
+                TextColumn::make('last1_subheading')
+                    ->label(__('Last 1 Subheading')),
+
+                TextColumn::make('last1_button_text')
+                    ->label(__('Last 1 Button Text')),
+
+                TextColumn::make('last1_button_url')
+                    ->label(__('Last 1 Button URL'))
+                    ->url(fn ($record) => $record->last1_button_url, true)
+                    ->openUrlInNewTab(),
+
+                ImageColumn::make('last1_image')
+                    ->label(__('Last First Image')),
+
+                TextColumn::make('last2_heading')
+                    ->label(__('Last 2 Heading')),
+
+                TextColumn::make('last2_subheading')
+                    ->label(__('Last 2 Subheading')),
+
+                TextColumn::make('last2_button_text')
+                    ->label(__('Last 2 Button Text')),
+
+                TextColumn::make('last2_button_url')
+                    ->label(__('Last 2 Button URL'))
+                    ->url(fn ($record) => $record->last2_button_url, true)
+                    ->openUrlInNewTab(),
+
+                ImageColumn::make('last2_image')
+                    ->label(__('Last Second Image')),
+
+                TextColumn::make('latest_heading')
+                    ->label(__('Latest Heading')),
+
+                TextColumn::make('latest_button_text')
+                    ->label(__('Latest Button Text')),
+
+                TextColumn::make('latest_button_url')
+                    ->label(__('Latest Button URL'))
+                    ->url(fn ($record) => $record->latest_button_url, true)
+                    ->openUrlInNewTab(),
+            ])
+            ->actions([
+                EditAction::make(),
             ]);
     }
 

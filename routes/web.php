@@ -2,7 +2,6 @@
 
 use App\Livewire\AcceptGuestInvitation;
 use App\Livewire\AcceptInvitation;
-use App\Models\Order;
 use Illuminate\Support\Facades\Route;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use App\Http\Controllers\{CartController,
@@ -19,20 +18,6 @@ use App\Http\Controllers\{CartController,
 
 use Spatie\Analytics\Facades\Analytics;
 use Spatie\Analytics\Period;
-
-
-
-Route::get('/admin/settings', function () {
-    return redirect('/admin/settings/1/edit');
-});
-
-Route::get('/admin/home-page-settings', function () {
-    return redirect('/admin/home-page-settings/1/edit');
-});
-
-Route::get('/admin/policies', function () {
-    return redirect('/admin/policies/1/edit');
-});
 
 Route::middleware('signed')
     ->get('invitation/{invitation}/accept', AcceptInvitation::class)
