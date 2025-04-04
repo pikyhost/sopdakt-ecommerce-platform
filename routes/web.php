@@ -21,10 +21,18 @@ use Spatie\Analytics\Facades\Analytics;
 use Spatie\Analytics\Period;
 
 
-Route::redirect('/admin/settings', '/admin/settings/1/edit');
-Route::redirect('/admin/home-page-settings', '/admin/home-page-settings/1/edit');
-//Route::redirect('/admin/top-notices', '/admin/top-notices/1/edit');
-Route::redirect('/admin/policies', '/admin/policies/1/edit');
+
+Route::get('/admin/settings', function () {
+    return redirect('/admin/settings/1/edit');
+});
+
+Route::get('/admin/home-page-settings', function () {
+    return redirect('/admin/home-page-settings/1/edit');
+});
+
+Route::get('/admin/policies', function () {
+    return redirect('/admin/policies/1/edit');
+});
 
 Route::middleware('signed')
     ->get('invitation/{invitation}/accept', AcceptInvitation::class)
