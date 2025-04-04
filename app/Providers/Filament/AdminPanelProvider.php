@@ -173,7 +173,7 @@ class AdminPanelProvider extends PanelProvider
                     )
                     ->navigationGroup(__('Settings Management'))
                     ->navigationLabel(__('My Env'))
-                    ->navigationIcon('heroicon-o-cog-8-tooth')
+                    ->navigationIcon('heroicon-o-wrench-screwdriver')
                     ->navigationSort(1)
                     ->slug('env-editor'),
                 \BezhanSalleh\FilamentGoogleAnalytics\FilamentGoogleAnalyticsPlugin::make(),
