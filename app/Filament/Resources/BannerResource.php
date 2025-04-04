@@ -23,6 +23,7 @@ class BannerResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-bars-2';
     protected static ?string $navigationLabel = 'Banners';
     protected static ?string $pluralLabel = 'Banners';
+    protected static ?int $navigationSort = 2;
 
     public static function getNavigationGroup(): ?string
     {

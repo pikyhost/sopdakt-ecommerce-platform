@@ -16,6 +16,8 @@ class TopNoticeResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-bars-arrow-up';
 
+    protected static ?int $navigationSort = 1;
+
     public static function getNavigationLabel(): string
     {
         return __('Top Notice');

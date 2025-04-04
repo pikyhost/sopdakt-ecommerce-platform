@@ -19,6 +19,8 @@ class HomePageSettingResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-adjustments-horizontal';
 
+    protected static ?int $navigationSort = 3;
+
     public static function getNavigationGroup(): ?string
     {
         return __('Pages Settings Management');
