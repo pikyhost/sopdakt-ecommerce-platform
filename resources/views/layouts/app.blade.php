@@ -1045,7 +1045,7 @@
                                 </li>
                                 <li class="nav-item mx-3">
                                     <a class="nav-link {{ request()->is(app()->getLocale().'/blogs*') ? 'active' : '' }}"
-                                       href="{{ url('blogs') }}" style="font-size: 1.4rem;">Blog</a>
+                                       href="{{ url('blogs') }}" style="font-size: 1.4rem;">Blogs</a>
                                 </li>
                                 <li class="nav-item mx-3">
                                     <a class="nav-link {{ request()->is(app()->getLocale().'/contact-us') ? 'active' : '' }}"
@@ -1153,7 +1153,7 @@
                             <li><a href="{{ url('contact-us') }}">Contact Us</a></li>
                         </ul>
                     </li>
-                    <li><a href="{{ url('blogs') }}">Blog</a></li>
+                    <li><a href="{{ url('blogs') }}">Blogs</a></li>
                     <li><a href="{{ url('contact-us') }}">Contact Us</a></li>
                 </ul>
             </nav>
@@ -1303,12 +1303,12 @@
 
 
             <ul class="mobile-menu">
-                <li><a href="login.html">My Account</a></li>
-                <li><a href="contact.html">Contact Us</a></li>
-                <li><a href="blog.html">Blog</a></li>
+                <li><a href="{{ url('client/my-profile') }}">My Account</a></li>
+                <li><a href="{{ url('contact-us') }}">Contact Us</a></li>
+                <li><a href="{{ url('blogs') }}">Blogs</a></li>
                 <li><a href="{{ route('wishlist') }}">My Wishlist</a></li>
-                <li><a href="cart.html">Cart</a></li>
-                <li><a href="login.html" class="login-link">Log In</a></li>
+                <li><a href="{{ url('cart') }}">Cart</a></li>
+                <li><a href="{{ url('client/login') }}" class="login-link">Log In</a></li>
             </ul>
         </nav><!-- End .mobile-nav -->
 
@@ -1336,7 +1336,7 @@
         </a>
     </div>
     <div class="sticky-info">
-        <a href="/categoires" class="">
+        <a href="{{ url('/categoires') }}" class="">
             <i class="icon-bars"></i>Categories
         </a>
     </div>
@@ -1346,12 +1346,12 @@
         </a>
     </div>
     <div class="sticky-info">
-        <a href="login.html" class="">
+        <a href="{{ url('client/my-profile') }}" class="">
             <i class="icon-user-2"></i>Account
         </a>
     </div>
     <div class="sticky-info">
-        <a href="cart.html" class="">
+        <a href="{{ url('cart') }}" class="">
             <i class="icon-shopping-cart position-relative">
                 <span class="cart-count badge-circle">3</span>
             </i>Cart
