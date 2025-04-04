@@ -25,6 +25,9 @@
         'snapchat'  => 'fa-brands fa-snapchat',
         'tiktok'    => 'fa-brands fa-tiktok',
     ];
+    $user = auth()->user();
+    $isGuest = auth()->guest();
+    $isClient = $user && $user->hasRole('client'); // Assuming Spatie Laravel Permissions
 @endphp
 
     <!DOCTYPE html>
@@ -551,10 +554,18 @@
                                     <li><a href="{{ route('wishlist') }}">Wishlist</a></li>
                                     <li><a href="{{ url('/cart') }}">Shopping Cart</a></li>
                                     <li><a href="{{ url('/checkout') }}">Checkout</a></li>
-                                    <li><a href="{{ url('/client') }}">Dashboard</a></li>
+                                    <li>
+                                        <a href="{{ $isGuest ? url('/client/login') : ($isClient ? url('/client') : url('/admin')) }}">
+                                            {{ $isGuest ? 'Login' : 'Dashboard' }}
+                                        </a>
+                                    </li>
+                                    @if($isGuest)
+                                        <li><a href="{{ url('/client/login') }}">Login</a></li>
+                                    @elseif(!$isClient)
+                                        <li><a href="{{ url('/admin/login') }}">Login</a></li>
+                                    @endif
                                     <li><a href="{{ url('/about-us') }}">About Us</a></li>
                                     <li><a href="{{url('/blogs')}}">Blogs</a></li>
-                                    <li><a href="{{ url('/client/login') }}">Login</a></li>
                                     <li><a href="{{ route('privacy.policy') }}">Privacy Policy</a></li>
                                     <li><a href="{{ route('refund.policy') }}">Refund Policy</a></li>
                                     <li><a href="{{ route('terms.of.service') }}">Terms of Service</a></li>
@@ -1197,11 +1208,18 @@
                         <li><a href="{{ route('wishlist') }}">Wishlist</a></li>
                         <li><a href="{{ url('/cart') }}">Shopping Cart</a></li>
                         <li><a href="{{ url('/checkout') }}">Checkout</a></li>
-                        <li><a href="{{ url('/client') }}">Dashboard</a></li>
+                        <li>
+                            <a href="{{ $isGuest ? url('/client/login') : ($isClient ? url('/client') : url('/admin')) }}">
+                                {{ $isGuest ? 'Login' : 'Dashboard' }}
+                            </a>
+                        </li>
                         <li><a href="{{ url('/about-us') }}">About Us</a></li>
                         <li><a href="{{ url('/blogs') }}">Blog</a></li>
-                        <li><a href="{{ url('/client/login') }}">Login</a></li>
-                        <li><a href="{{ route('privacy.policy') }}">Privacy Policy</a></li>
+                        @if($isGuest)
+                            <li><a href="{{ url('/client/login') }}">Login</a></li>
+                        @elseif(!$isClient)
+                            <li><a href="{{ url('/admin/login') }}">Login</a></li>
+                        @endif                        <li><a href="{{ route('privacy.policy') }}">Privacy Policy</a></li>
                         <li><a href="{{ route('refund.policy') }}">Refund Policy</a></li>
                         <li><a href="{{ route('terms.of.service') }}">Terms of Service</a></li>
                         <li><a href="{{ route('contact.us') }}">Contact Us</a></li>
@@ -1213,12 +1231,19 @@
             </ul>
 
             <ul class="mobile-menu mt-2">
-                <li><a href="{{ url('client/my-profile') }}">My Account</a></li>
+                <li>
+                    <a href="{{ url($isClient ? 'client/my-profile' : 'admin/my-profile') }}">
+                        My Account
+                    </a>
+                </li>
                 <li><a href="{{ route('contact.us') }}">Contact Us</a></li>
                 <li><a href="{{ route('wishlist') }}">My Wishlist</a></li>
                 <li><a href="{{ url('cart') }}">Cart</a></li>
-                <li><a href="{{ url('client/login') }}">Log In</a></li>
-                <li><a href="{{ url('client/password-reset/request') }}">Forgot Password</a></li>
+                @if($isGuest)
+                    <li><a href="{{ url('/client/login') }}">Login</a></li>
+                @elseif(!$isClient)
+                    <li><a href="{{ url('/admin/login') }}">Login</a></li>
+                @endif                <li><a href="{{ url('client/password-reset/request') }}">Forgot Password</a></li>
             </ul>
         </nav>
 
@@ -1253,8 +1278,8 @@
         </a>
     </div>
     <div class="sticky-info">
-        <a href="{{ url('client/my-profile') }}" class="">
-            <i class="icon-user-2"></i>Account
+        <a href="{{ url($isClient ? 'client/my-profile' : 'admin/my-profile') }}" class="">
+            <i class="icon-user-2"></i> Account
         </a>
     </div>
     <div class="sticky-info">

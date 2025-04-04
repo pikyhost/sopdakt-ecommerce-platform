@@ -1145,8 +1145,11 @@
                             <li><a href="{{ route('wishlist') }}">Wishlist</a></li>
                             <li><a href="{{ url('cart') }}">Shopping Cart</a></li>
                             <li><a href="{{ url('checkout') }}">Checkout</a></li>
-                            <li><a href="{{ url('/client') }}">Dashboard</a></li>
-                            <li><a href="{{ url('about-us') }}">About Us</a></li>
+                            <li>
+                                <a href="{{ $isGuest ? url('/client/login') : ($isClient ? url('/client') : url('/admin')) }}">
+                                    {{ $isGuest ? 'Login' : 'Dashboard' }}
+                                </a>
+                            </li>                            <li><a href="{{ url('about-us') }}">About Us</a></li>
                             <li>
                                 <a href="{{ url('blogs') }}">Blogs</a>
                             </li>
@@ -1287,7 +1290,9 @@
                             <a href="{{ url('checkout') }}">Checkout</a>
                         </li>
                         <li>
-                            <a href="{{ url('client') }}">Dashboard</a>
+                            <a href="{{ $isGuest ? url('/client/login') : ($isClient ? url('/client') : url('/admin')) }}">
+                                {{ $isGuest ? 'Login' : 'Dashboard' }}
+                            </a>
                         </li>
                         <li>
                             <a href="{{ url('client/login') }}">Login</a>
@@ -1303,12 +1308,20 @@
 
 
             <ul class="mobile-menu">
-                <li><a href="{{ url('client/my-profile') }}">My Account</a></li>
+                @php
+                    $user = auth()->user();
+                    $isClient = $user && $user->hasRole('client'); // Check if user has 'client' role
+                    $dashboardUrl = $isClient ? 'client' : 'admin';
+                @endphp
+                <li>
+                    <a href="{{ url($user ? "$dashboardUrl/my-profile" : "$dashboardUrl/login") }}" class="login-link">
+                        {{ $user ? 'My Account' : 'Log In' }}
+                    </a>
+                </li>
                 <li><a href="{{ url('contact-us') }}">Contact Us</a></li>
                 <li><a href="{{ url('blogs') }}">Blogs</a></li>
                 <li><a href="{{ route('wishlist') }}">My Wishlist</a></li>
                 <li><a href="{{ url('cart') }}">Cart</a></li>
-                <li><a href="{{ url('client/login') }}" class="login-link">Log In</a></li>
             </ul>
         </nav><!-- End .mobile-nav -->
 
