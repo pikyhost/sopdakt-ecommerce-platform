@@ -26,7 +26,7 @@
         'snapchat'  => 'fa-brands fa-snapchat',
         'tiktok'    => 'fa-brands fa-tiktok',
     ];
-    
+
     $user = auth()->user();
     $isGuest = auth()->guest();
     $isClient = $user && $user->hasRole('client'); // Assuming Spatie Laravel Permissions

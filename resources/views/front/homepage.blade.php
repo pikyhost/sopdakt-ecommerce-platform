@@ -559,11 +559,6 @@
                                             {{ $isGuest ? 'Login' : 'Dashboard' }}
                                         </a>
                                     </li>
-                                    @if($isGuest)
-                                        <li><a href="{{ url('/client/login') }}">Login</a></li>
-                                    @elseif(!$isClient)
-                                        <li><a href="{{ url('/admin/login') }}">Login</a></li>
-                                    @endif
                                     <li><a href="{{ url('/about-us') }}">About Us</a></li>
                                     <li><a href="{{url('/blogs')}}">Blogs</a></li>
                                     <li><a href="{{ route('privacy.policy') }}">Privacy Policy</a></li>
