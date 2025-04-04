@@ -16,6 +16,8 @@ class PolicyResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-scale';
 
+    protected static ?int $navigationSort = 100;
+
     public static function getNavigationLabel(): string
     {
         return __('policy.navigation_label');
