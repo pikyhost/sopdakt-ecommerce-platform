@@ -79,7 +79,7 @@
         <div class="product-more-container d-flex justify-content-center">
             <a href="{{ $selectedCategorySlug !== 'all' ? route('category.products', ['slug' => $selectedCategorySlug]) : route('products') }}"
                onclick="event.stopPropagation();"
-               class="btn btn-outline-dark">
+               class="btn btn-dark">
                 Load More...
             </a>
         </div>
