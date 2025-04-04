@@ -1221,15 +1221,7 @@
                 <li><a href="{{ url('client/password-reset/request') }}">Forgot Password</a></li>
             </ul>
         </nav>
-
-        <!-- Search -->
-        <form class="search-wrapper mb-2" action="{{ route('search') }}" method="GET">
-            <input type="text" name="q" class="form-control mb-0" placeholder="Search..." required />
-            <button class="btn icon-search text-white bg-transparent p-0" type="submit">
-                <i class="fa fa-search"></i>
-            </button>
-        </form>
-
+        
         <!-- Social Icons -->
         <div class="social-icons">
             @foreach($socialLinks as $platform => $url)
