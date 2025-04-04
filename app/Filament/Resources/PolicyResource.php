@@ -31,11 +31,6 @@ class PolicyResource extends Resource
         return __('policy.navigation_group');
     }
 
-    public static function getLabel(): ?string
-    {
-        return __('policy.label');
-    }
-
     public static function form(Form $form): Form
     {
         return $form->schema([
