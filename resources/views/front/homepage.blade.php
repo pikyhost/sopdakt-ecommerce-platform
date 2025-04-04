@@ -553,7 +553,7 @@
                                     <li><a href="{{ url('/checkout') }}">Checkout</a></li>
                                     <li><a href="{{ url('/client') }}">Dashboard</a></li>
                                     <li><a href="{{ url('/about-us') }}">About Us</a></li>
-                                    <li><a href="{{url('/blogs')}}">Blog</a></li>
+                                    <li><a href="{{url('/blogs')}}">Blogs</a></li>
                                     <li><a href="{{ url('/client/login') }}">Login</a></li>
                                     <li><a href="{{ route('privacy.policy') }}">Privacy Policy</a></li>
                                     <li><a href="{{ route('refund.policy') }}">Refund Policy</a></li>
@@ -562,7 +562,7 @@
                                 </ul>
                             </li>
 
-                            <li><a href="{{ url('/blogs') }}">Blog</a></li>
+                            <li><a href="{{ url('/blogs') }}">Blogs</a></li>
                         </ul>
                     </nav>
                 </div>
@@ -1221,7 +1221,7 @@
                 <li><a href="{{ url('client/password-reset/request') }}">Forgot Password</a></li>
             </ul>
         </nav>
-        
+
         <!-- Social Icons -->
         <div class="social-icons">
             @foreach($socialLinks as $platform => $url)
