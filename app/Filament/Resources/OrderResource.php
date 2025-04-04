@@ -492,7 +492,7 @@ class OrderResource extends Resource
     private static function prepareJtExpressOrderData($order): array
     {
         $data = [
-            'tracking_number'   => '#'. $order->id. ' EGY' . time() . rand(1000, 9999),
+            'tracking_number'   => time() . rand(1000, 9999),
             'weight'            => 1.0, // You might want to calculate the total weight dynamically
             'quantity'          => 1,  // $order->items->sum('quantity') Sum of all item quantities in the order
 
