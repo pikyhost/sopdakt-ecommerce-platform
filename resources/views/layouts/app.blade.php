@@ -1270,39 +1270,34 @@
             <ul class="mobile-menu">
                 <li><a href="/">Home</a></li>
                 <li>
-                    <a href="">Categories</a>
+                    <a href="{{ url('categories') }}">Categories</a>
                 </li>
                 <li>
-                    <a href="product.html">Products</a>
+                    <a href="{{ url('products') }}">Products</a>
                 </li>
                 <li>
-                    <a href="#">Pages<span class="tip tip-hot">Hot!</span></a>
                     <ul>
                         <li>
                             <a href="{{ route('wishlist') }}">Wishlist</a>
                         </li>
                         <li>
-                            <a href="cart.html">Shopping Cart</a>
+                            <a href="{{ url('cart') }}">Shopping Cart</a>
                         </li>
                         <li>
-                            <a href="checkout.html">Checkout</a>
+                            <a href="{{ url('checkout') }}">Checkout</a>
                         </li>
                         <li>
-                            <a href="dashboard.html">Dashboard</a>
+                            <a href="{{ url('client') }}">Dashboard</a>
                         </li>
                         <li>
-                            <a href="login.html">Login</a>
+                            <a href="{{ url('client/login') }}">Login</a>
                         </li>
                         <li>
-                            <a href="forgot-password.html">Forgot Password</a>
+                            <a href="{{ url('client/password-reset/reset') }}">Forgot Password</a>
                         </li>
                     </ul>
                 </li>
-                <li><a href="blog.html">Blog</a></li>
-                <li><a href="#">Elements</a>
-                    <ul class="custom-scrollbar">
-                        <li><a href="element-accordions.html">Accordion</a></li>
-                    </ul>
+                <li><a href="{{ url('blogs') }}">Blogs</a></li>
                 </li>
             </ul>
 
