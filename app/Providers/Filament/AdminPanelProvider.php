@@ -171,8 +171,8 @@ class AdminPanelProvider extends PanelProvider
                         'JT_EXPRESS_CUSTOMER_CODE',
                         'JT_EXPRESS_PASSWORD'
                     )
-                    ->navigationGroup('System Tools')
-                    ->navigationLabel('My Env')
+                    ->navigationGroup(__('Settings Management'))
+                    ->navigationLabel(__('My Env'))
                     ->navigationIcon('heroicon-o-cog-8-tooth')
                     ->navigationSort(1)
                     ->slug('env-editor'),
