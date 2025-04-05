@@ -48,9 +48,8 @@ class ProductResource extends Resource
     protected static ?int $navigationSort = 1;
 
     protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
-    
-        protected static ?string $recordTitleAttribute = 'name';
 
+    protected static ?string $recordTitleAttribute = 'name';
 
     public static function getNavigationLabel(): string
     {
