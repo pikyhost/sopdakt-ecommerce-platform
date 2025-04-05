@@ -190,7 +190,8 @@ class AdminPanelProvider extends PanelProvider
                         shouldRegisterNavigation: true
                     )
                     ->avatarUploadComponent(fn ($fileUpload) => $fileUpload->columnSpan('full')),
-            ]);
+            ])
+            ->renderHook(PanelsRenderHook::SIDEBAR_NAV_START, fn () => view('filament.components.navigation-filter'));;
     }
 
     private function getNavigationGroups(): array
