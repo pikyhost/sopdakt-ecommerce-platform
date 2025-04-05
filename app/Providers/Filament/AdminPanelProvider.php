@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\Pages\Dashboard;
 use App\Livewire\ProfileContactDetails;
 use App\Models\Setting;
+use App\Support\NavigationGroupManager;
 use CharrafiMed\GlobalSearchModal\GlobalSearchModalPlugin;
 use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
@@ -196,7 +197,6 @@ class AdminPanelProvider extends PanelProvider
 
     private function getNavigationGroups(): array
     {
-        // Define the EXACT order you want using group identifiers
         $fixedOrder = [
             'analysis',
             'products',
@@ -207,11 +207,10 @@ class AdminPanelProvider extends PanelProvider
             'shipping',
             'user-experience',
             'settings',
-            'pages-settings'
+            'pages-settings',
         ];
 
-        // Map each group to its translated label
-        $groupLabels = [
+        $labels = [
             'analysis' => __('Analysis'),
             'products' => __('Products Management'),
             'inventory' => __('Inventory Management'),
@@ -219,30 +218,16 @@ class AdminPanelProvider extends PanelProvider
             'orders-contacts' => __('Orders & Contacts'),
             'payments' => __('Payment Management'),
             'shipping' => __('Shipping Management'),
-            'user-experience' => __('user_experience'),
+            'user-experience' => __('User Experience'),
             'settings' => __('Settings Management'),
             'pages-settings' => __('Pages Settings Management'),
         ];
 
-        $currentRoute = request()->route()?->getName();
-        $activeGroupKey = null;
+        $manager = new NavigationGroupManager($fixedOrder, request()->route()?->getName());
 
-        // Find which group should be expanded
-        foreach ($fixedOrder as $groupKey) {
-            if ($currentRoute && str_contains($currentRoute, $groupKey)) {
-                $activeGroupKey = $groupKey;
-                break;
-            }
+        foreach ($labels as $key => $label) {
+            $manager->add($key, $label);
         }
 
-        // Build the navigation groups in our predefined order
-        $navigationGroups = [];
-        foreach ($fixedOrder as $groupKey) {
-            $navigationGroups[] = NavigationGroup::make($groupLabels[$groupKey])
-                ->collapsed($groupKey !== $activeGroupKey);
-        }
-
-        return $navigationGroups;
-    }
-
-}
+        return $manager->all($fixedOrder);
+    }}
