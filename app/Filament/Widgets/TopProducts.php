@@ -99,6 +99,7 @@ class TopProducts extends BaseWidget
                 ,
 
                 Tables\Columns\TextColumn::make('after_discount_price')
+                    ->placeholder('-')
                     ->formatStateUsing(function ($state) {
                         $currency = Setting::getCurrency();
                         $symbol = $currency?->code ?? '';
