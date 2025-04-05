@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Dashboard;
+use App\Filament\Widgets\HomePageRedirect;
 use App\Livewire\ProfileContactDetails;
 use App\Models\Setting;
 use App\Support\NavigationGroupManager;
@@ -65,6 +66,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
+                HomePageRedirect::class,
             ])
             ->renderHook(
                 PanelsRenderHook::FOOTER,

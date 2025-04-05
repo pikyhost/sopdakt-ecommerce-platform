@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Client\Pages\Auth\ClientLogin;
 use App\Filament\Client\Pages\Auth\ClientRegister;
+use App\Filament\Widgets\HomePageRedirect;
 use App\Livewire\ProfileContactDetails;
 use App\Models\Setting;
 use App\Rules\CustomPassword;
@@ -66,6 +67,7 @@ class ClientPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Client/Widgets'), for: 'App\\Filament\\Client\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
+                HomePageRedirect::class,
             ])
             ->spa()
             ->userMenuItems([
