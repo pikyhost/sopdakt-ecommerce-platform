@@ -23,7 +23,7 @@ class RedirectHomePageClient extends Widget
         return Action::make('redirectToHomePage')
             ->button()
             ->icon('heroicon-o-home')
-            ->color('primary')
+            ->color('danger')
             ->label(__('Go to Website Homepage')) // Translated label
             ->url('/')
             ->openUrlInNewTab(false);

@@ -16,6 +16,8 @@ class RedirectHomePage extends Widget
 
     protected static ?string $pollingInterval = null;
 
+    protected static ?int $sort = -2;
+
     protected static bool $isLazy = false;
 
     public function goToMainPage(): Action
@@ -23,7 +25,7 @@ class RedirectHomePage extends Widget
         return Action::make('redirectToHomePage')
             ->button()
             ->icon('heroicon-o-home')
-            ->color('primary')
+            ->color('danger')
             ->label(__('Go to Website Homepage')) // Translated label
             ->url('/')
             ->openUrlInNewTab(false);
