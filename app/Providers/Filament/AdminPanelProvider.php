@@ -194,40 +194,70 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->renderHook(PanelsRenderHook::SIDEBAR_NAV_START, fn () => view('navigation-filter'));
     }
-
     private function getNavigationGroups(): array
     {
-        $fixedOrder = [
-            'analysis',
-            'products',
-            'inventory',
-            'orders',
-            'orders-contacts',
-            'payments',
-            'shipping',
-            'user-experience',
-            'settings',
-            'pages-settings',
+        // Define groups in EXACT order with their translations
+        $groups = [
+            'analysis' => [
+                'label' => __('Analysis'),
+                'collapsed' => true,
+            ],
+            'products' => [
+                'label' => __('Products Management'),
+                'collapsed' => true,
+            ],
+            'inventory' => [
+                'label' => __('Inventory Management'),
+                'collapsed' => true,
+            ],
+            'orders' => [
+                'label' => __('Orders'),
+                'collapsed' => true,
+            ],
+            'orders-contacts' => [
+                'label' => __('Orders & Contacts'),
+                'collapsed' => true,
+            ],
+            'payments' => [
+                'label' => __('Payment Management'),
+                'collapsed' => true,
+            ],
+            'shipping' => [
+                'label' => __('Shipping Management'),
+                'collapsed' => true,
+            ],
+            'user-experience' => [
+                'label' => __('user_experience'),
+                'collapsed' => true,
+            ],
+            'settings' => [
+                'label' => __('Settings Management'),
+                'collapsed' => true,
+            ],
+            'pages-settings' => [
+                'label' => __('Pages Settings Management'),
+                'collapsed' => true,
+            ],
         ];
 
-        $labels = [
-            'analysis' => __('Analysis'),
-            'products' => __('Products Management'),
-            'inventory' => __('Inventory Management'),
-            'orders' => __('Orders'),
-            'orders-contacts' => __('Orders & Contacts'),
-            'payments' => __('Payment Management'),
-            'shipping' => __('Shipping Management'),
-            'user-experience' => __('User Experience'),
-            'settings' => __('Settings Management'),
-            'pages-settings' => __('Pages Settings Management'),
-        ];
+        $currentRoute = request()->route()?->getName();
+        $activeGroupKey = null;
 
-        $manager = new NavigationGroupManager($fixedOrder, request()->route()?->getName());
-
-        foreach ($labels as $key => $label) {
-            $manager->add($key, $label);
+        // Find active group
+        foreach (array_keys($groups) as $groupKey) {
+            if ($currentRoute && str_contains($currentRoute, $groupKey)) {
+                $activeGroupKey = $groupKey;
+                break;
+            }
         }
 
-        return $manager->all($fixedOrder);
-    }}
+        // Build navigation items in EXACT defined order
+        $navigationItems = [];
+        foreach ($groups as $groupKey => $group) {
+            $navigationItems[] = NavigationGroup::make($group['label'])
+                ->collapsed($activeGroupKey ? $groupKey !== $activeGroupKey : $group['collapsed']);
+        }
+
+        return $navigationItems;
+    }
+}

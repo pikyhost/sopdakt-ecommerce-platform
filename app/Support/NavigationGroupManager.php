@@ -9,7 +9,7 @@ class NavigationGroupManager
     protected array $groups = [];
     protected ?string $activeGroupKey = null;
 
-    public function __construct(array $fixedOrder, string $currentRoute)
+    public function __construct(array $fixedOrder, ?string $currentRoute = null)
     {
         foreach ($fixedOrder as $groupKey) {
             if ($currentRoute && str_contains($currentRoute, $groupKey)) {

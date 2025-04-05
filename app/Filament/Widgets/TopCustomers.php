@@ -91,7 +91,7 @@ class TopCustomers extends BaseWidget
                         $locale = app()->getLocale();
                         return $locale === 'ar'
                             ? "{$state} طلب" // Example: "50 طلب منفّذ"
-                            : "{$state} orders"; // Example: "50 completed orders"
+                            : "{$state} order"; // Example: "50 completed orders"
                     })
                     ->color('success')
                     ->badge()
@@ -105,8 +105,8 @@ class TopCustomers extends BaseWidget
 
                         $locale = app()->getLocale();
                         return $locale === 'en'
-                            ? "{$state} . ' ' . {$symbol}" // Example: "5000 $ إجمالي إنفاق"
-                            : "{$symbol}  . ' ' . {$state}"; // Example: "$5000 total spent"
+                            ? "{$state} {$symbol}" // Example: "5000 $ إجمالي إنفاق"
+                            : "{$symbol} {$state}"; // Example: "$5000 total spent"
                     })
                     ->color('success')
                     ->badge()
