@@ -12,7 +12,7 @@ class RedirectHomePageClient extends Widget
     use InteractsWithActions;
     use InteractsWithForms;
 
-    protected static string $view = 'filament.widgets.home-page-redirect';
+    protected static string $view = 'filament.client.widgets.redirect-home-page-client';
 
     protected static ?string $pollingInterval = null;
 

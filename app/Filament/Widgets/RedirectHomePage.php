@@ -9,10 +9,10 @@ use Filament\Widgets\Widget;
 
 class RedirectHomePage extends Widget
 {
+    protected static string $view = 'filament.widgets.redirect-home-page';
+
     use InteractsWithActions;
     use InteractsWithForms;
-
-    protected static string $view = 'filament.widgets.home-page-redirect';
 
     protected static ?string $pollingInterval = null;
 
@@ -31,6 +31,6 @@ class RedirectHomePage extends Widget
 
     public static function canView(): bool
     {
-       return true;
+        return true;
     }
 }
