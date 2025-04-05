@@ -1,16 +1,13 @@
 <?php
 
-namespace App\Filament\Widgets;
+namespace App\Filament\Client\Widgets;
 
 use Filament\Actions\Action;
 use Filament\Actions\Concerns\InteractsWithActions;
-use Filament\Actions\Contracts\HasActions;
-use Filament\Facades\Filament;
 use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
 use Filament\Widgets\Widget;
 
-class HomePageRedirect extends Widget implements HasActions, HasForms
+class RedirectHomePageClient extends Widget
 {
     use InteractsWithActions;
     use InteractsWithForms;
@@ -34,6 +31,6 @@ class HomePageRedirect extends Widget implements HasActions, HasForms
 
     public static function canView(): bool
     {
-        return Filament::auth()->check();
+        return true;
     }
 }
