@@ -196,31 +196,51 @@ class AdminPanelProvider extends PanelProvider
 
     private function getNavigationGroups(): array
     {
-        $groups = [
-            __('Analysis'),
-            __('Products Management'),
-            __('Inventory Management'),
-            __('Orders'),
-            __('Orders & Contacts'),
-            __('Payment Management'),
-            __('Shipping Management'),
-            __('user_experience'),
-            __('Settings Management'),
-            __('Pages Settings Management')
+        // Define groups with fixed sort order using numeric keys
+        $groupOrder = [
+            1 => 'analysis',
+            2 => 'products',
+            3 => 'inventory',
+            4 => 'orders',
+            5 => 'orders-contacts',
+            6 => 'payments',
+            7 => 'shipping',
+            8 => 'user-experience',
+            9 => 'settings',
+            10 => 'pages-settings',
         ];
 
-        $navigationGroups = array_map(fn($group) => NavigationGroup::make(__($group)), $groups);
+        // Map group keys to their translated labels
+        $groupLabels = [
+            'analysis' => __('Analysis'),
+            'products' => __('Products Management'),
+            'inventory' => __('Inventory Management'),
+            'orders' => __('Orders'),
+            'orders-contacts' => __('Orders & Contacts'),
+            'payments' => __('Payment Management'),
+            'shipping' => __('Shipping Management'),
+            'user-experience' => __('user_experience'),
+            'settings' => __('Settings Management'),
+            'pages-settings' => __('Pages Settings Management'),
+        ];
 
-        $activeGroup = null;
-        foreach ($navigationGroups as $navigationGroup) {
-            if ($navigationGroup->isActive()) {
-                $activeGroup = $navigationGroup->getLabel();
+        $currentRoute = request()->route()?->getName();
+        $activeGroupKey = null;
+
+        // Determine active group
+        foreach ($groupOrder as $groupKey) {
+            if ($currentRoute && str_contains($currentRoute, $groupKey)) {
+                $activeGroupKey = $groupKey;
                 break;
             }
         }
 
-        return array_map(fn($navigationGroup) => $navigationGroup->collapsed($navigationGroup->getLabel() !== $activeGroup),
-            $navigationGroups
-        );
-    }
-}
+        // Build navigation groups in predefined order
+        $navigationGroups = [];
+        foreach ($groupOrder as $groupKey) {
+            $navigationGroups[] = NavigationGroup::make($groupLabels[$groupKey])
+                ->collapsed($groupKey !== $activeGroupKey);
+        }
+
+        return $navigationGroups;
+    }}
