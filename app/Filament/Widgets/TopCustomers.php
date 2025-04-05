@@ -127,13 +127,6 @@ class TopCustomers extends BaseWidget
                     ->label(__('Phone'))
                     ->placeholder('-')
                     ->searchable(),
-
-                TextColumn::make('second_phone')
-                    ->iconColor('primary')
-                    ->icon('heroicon-o-phone')
-                    ->label(__('Second Phone'))
-                    ->placeholder('-')
-                    ->searchable(),
             ])
             ->actions([
                 Tables\Actions\Action::make('view')
