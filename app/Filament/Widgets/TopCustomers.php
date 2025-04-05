@@ -105,14 +105,13 @@ class TopCustomers extends BaseWidget
 
                         $locale = app()->getLocale();
                         return $locale === 'en'
-                            ? "{$state} {$symbol}" // Example: "5000 $ إجمالي إنفاق"
-                            : "{$symbol}{$state}"; // Example: "$5000 total spent"
+                            ? "{$state} . ' ' . {$symbol}" // Example: "5000 $ إجمالي إنفاق"
+                            : "{$symbol}  . ' ' . {$state}"; // Example: "$5000 total spent"
                     })
                     ->color('success')
                     ->badge()
                     ->label(__('Total Spent'))
                     ->sortable(),
-
 
                 TextColumn::make('email')
                     ->placeholder('-')

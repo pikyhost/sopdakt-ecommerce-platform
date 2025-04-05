@@ -196,21 +196,21 @@ class AdminPanelProvider extends PanelProvider
 
     private function getNavigationGroups(): array
     {
-        // Define groups with fixed sort order using numeric keys
-        $groupOrder = [
-            1 => 'analysis',
-            2 => 'products',
-            3 => 'inventory',
-            4 => 'orders',
-            5 => 'orders-contacts',
-            6 => 'payments',
-            7 => 'shipping',
-            8 => 'user-experience',
-            9 => 'settings',
-            10 => 'pages-settings',
+        // Define the EXACT order you want using group identifiers
+        $fixedOrder = [
+            'analysis',
+            'products',
+            'inventory',
+            'orders',
+            'orders-contacts',
+            'payments',
+            'shipping',
+            'user-experience',
+            'settings',
+            'pages-settings'
         ];
 
-        // Map group keys to their translated labels
+        // Map each group to its translated label
         $groupLabels = [
             'analysis' => __('Analysis'),
             'products' => __('Products Management'),
@@ -227,20 +227,22 @@ class AdminPanelProvider extends PanelProvider
         $currentRoute = request()->route()?->getName();
         $activeGroupKey = null;
 
-        // Determine active group
-        foreach ($groupOrder as $groupKey) {
+        // Find which group should be expanded
+        foreach ($fixedOrder as $groupKey) {
             if ($currentRoute && str_contains($currentRoute, $groupKey)) {
                 $activeGroupKey = $groupKey;
                 break;
             }
         }
 
-        // Build navigation groups in predefined order
+        // Build the navigation groups in our predefined order
         $navigationGroups = [];
-        foreach ($groupOrder as $groupKey) {
+        foreach ($fixedOrder as $groupKey) {
             $navigationGroups[] = NavigationGroup::make($groupLabels[$groupKey])
                 ->collapsed($groupKey !== $activeGroupKey);
         }
 
         return $navigationGroups;
-    }}
+    }
+
+}

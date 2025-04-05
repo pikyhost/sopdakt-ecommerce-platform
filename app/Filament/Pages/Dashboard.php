@@ -20,13 +20,11 @@ class Dashboard extends BaseDashboard
                     ->schema([
                         DatePicker::make('startDate')
                             ->native()
-                            ->label(__('Start date'))
-                            ->maxDate(fn (Get $get) => $get('endDate') ?: now()),
+                            ->label(__('Start date')),
                         DatePicker::make('endDate')
                             ->native()
                             ->label(__('End date'))
-                            ->minDate(fn (Get $get) => $get('startDate') ?: now())
-                            ->maxDate(now()),
+                            ->minDate(fn (Get $get) => $get('startDate') ?: now()),
                     ])
                     ->columns(2),
             ]);
