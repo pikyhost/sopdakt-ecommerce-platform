@@ -604,17 +604,7 @@
                                 </ul>
                             </div><!-- End .header-menu -->
                         </div><!-- End .header-dropdown -->
-                        <div class="header-dropdown">
-                            <a href="#">LINKS</a>
-                            <div class="header-menu">
-                                <ul>
-                                    <li><a href="{{ url('/about-us') }}">ABOUT US</a>
-                                    </li>
-                                    <li><a href="{{ url('/contact-us') }}">CONTACT US</a></li>
-                                </ul>
-                            </div>
-                            <!-- End .header-menu -->
-                        </div>
+                      
                         <!-- End .header-dropown -->
                     </div>
                     <!-- End .header-dropdowns -->
