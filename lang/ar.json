@@ -24,6 +24,7 @@
 
     "env.APP_LOCALE.label": "اللغة الافتراضية",
     "env.APP_LOCALE.helper": "اللغة الافتراضية للموقع الإلكتروني.",
+    "Server Settings": "إعدادات السيرفر",
 
     "env.GEOIP_IPGEOLOCATION_KEY.label": "مفتاح GeoIP API",
     "env.GEOIP_IPGEOLOCATION_KEY.helper": "مفتاح API المستخدم لتحديد موقع المستخدم.",

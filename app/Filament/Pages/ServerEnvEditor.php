@@ -51,6 +51,16 @@ class ServerEnvEditor extends Page implements Forms\Contracts\HasForms
         return __('Settings Management');
     }
 
+    public static function getNavigationLabel(): string
+    {
+        return __('Server Settings');
+    }
+
+    public static function getLabel(): ?string
+    {
+        return __('Server Settings');
+    }
+
     protected function getFormSchema(): array
     {
         return [
