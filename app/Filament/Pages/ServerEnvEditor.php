@@ -49,45 +49,96 @@ class ServerEnvEditor extends Page implements Forms\Contracts\HasForms
     protected function getFormSchema(): array
     {
         return [
-            Forms\Components\Section::make('General')
+            Forms\Components\Section::make(__('env.general'))
                 ->schema([
-                    Forms\Components\TextInput::make('APP_NAME')->label('Application Name')
-                        ->helperText('Displayed throughout the app'),
-                    Forms\Components\TextInput::make('APP_LOCALE')->label('App Locale')
-                        ->helperText('Example: en, ar, fr'),
+                    Forms\Components\TextInput::make('APP_NAME')
+                        ->label(__('env.APP_NAME.label'))
+                        ->helperText(__('env.APP_NAME.helper')),
+
+                    Forms\Components\TextInput::make('APP_LOCALE')
+                        ->label(__('env.APP_LOCALE.label'))
+                        ->helperText(__('env.APP_LOCALE.helper')),
                 ]),
 
-            Forms\Components\Section::make('GeoIP Service')
+            Forms\Components\Section::make(__('env.geoip'))
                 ->schema([
-                    Forms\Components\TextInput::make('GEOIP_IPGEOLOCATION_KEY')->label('GeoIP API Key'),
-                    Forms\Components\TextInput::make('GEOIP_SERVICE')->label('GeoIP Provider'),
+                    Forms\Components\TextInput::make('GEOIP_IPGEOLOCATION_KEY')
+                        ->label(__('env.GEOIP_IPGEOLOCATION_KEY.label'))
+                        ->helperText(__('env.GEOIP_IPGEOLOCATION_KEY.helper')),
+
+                    Forms\Components\TextInput::make('GEOIP_SERVICE')
+                        ->label(__('env.GEOIP_SERVICE.label'))
+                        ->helperText(__('env.GEOIP_SERVICE.helper')),
                 ]),
 
-            Forms\Components\Section::make('JT Express API')
+            Forms\Components\Section::make(__('env.jt_express'))
                 ->schema([
-                    Forms\Components\TextInput::make('JT_EXPRESS_BASE_URL')->label('Base URL'),
-                    Forms\Components\TextInput::make('JT_EXPRESS_API_ACCOUNT')->label('API Account'),
-                    Forms\Components\TextInput::make('JT_EXPRESS_PRIVATE_KEY')->label('Private Key'),
-                    Forms\Components\TextInput::make('JT_EXPRESS_CUSTOMER_CODE')->label('Customer Code'),
-                    Forms\Components\TextInput::make('JT_EXPRESS_PASSWORD')->label('Password'),
+                    Forms\Components\TextInput::make('JT_EXPRESS_BASE_URL')
+                        ->label(__('env.JT_EXPRESS_BASE_URL.label'))
+                        ->helperText(__('env.JT_EXPRESS_BASE_URL.helper')),
+
+                    Forms\Components\TextInput::make('JT_EXPRESS_API_ACCOUNT')
+                        ->label(__('env.JT_EXPRESS_API_ACCOUNT.label'))
+                        ->helperText(__('env.JT_EXPRESS_API_ACCOUNT.helper')),
+
+                    Forms\Components\TextInput::make('JT_EXPRESS_PRIVATE_KEY')
+                        ->label(__('env.JT_EXPRESS_PRIVATE_KEY.label'))
+                        ->helperText(__('env.JT_EXPRESS_PRIVATE_KEY.helper')),
+
+                    Forms\Components\TextInput::make('JT_EXPRESS_CUSTOMER_CODE')
+                        ->label(__('env.JT_EXPRESS_CUSTOMER_CODE.label'))
+                        ->helperText(__('env.JT_EXPRESS_CUSTOMER_CODE.helper')),
+
+                    Forms\Components\TextInput::make('JT_EXPRESS_PASSWORD')
+                        ->label(__('env.JT_EXPRESS_PASSWORD.label'))
+                        ->helperText(__('env.JT_EXPRESS_PASSWORD.helper')),
                 ]),
 
-            Forms\Components\Section::make('Analytics')
+            Forms\Components\Section::make(__('env.analytics'))
                 ->schema([
-                    Forms\Components\TextInput::make('ANALYTICS_PROPERTY_ID')->label('Property ID'),
-                    Forms\Components\TextInput::make('ANALYTICS_SERVICE_ACCOUNT_JSON')->label('Service Account Path'),
+                    Forms\Components\TextInput::make('ANALYTICS_PROPERTY_ID')
+                        ->label(__('env.ANALYTICS_PROPERTY_ID.label'))
+                        ->helperText(__('env.ANALYTICS_PROPERTY_ID.helper')),
+
+                    Forms\Components\TextInput::make('ANALYTICS_SERVICE_ACCOUNT_JSON')
+                        ->label(__('env.ANALYTICS_SERVICE_ACCOUNT_JSON.label'))
+                        ->helperText(__('env.ANALYTICS_SERVICE_ACCOUNT_JSON.helper')),
                 ]),
 
-            Forms\Components\Section::make('Mail Settings')
+            Forms\Components\Section::make(__('env.mail'))
                 ->schema([
-                    Forms\Components\TextInput::make('MAIL_MAILER')->label('Mailer'),
-                    Forms\Components\TextInput::make('MAIL_HOST')->label('Mail Host'),
-                    Forms\Components\TextInput::make('MAIL_PORT')->label('Port')->numeric(),
-                    Forms\Components\TextInput::make('MAIL_USERNAME')->label('Username'),
-                    Forms\Components\TextInput::make('MAIL_PASSWORD')->label('Password'),
-                    Forms\Components\TextInput::make('MAIL_ENCRYPTION')->label('Encryption'),
-                    Forms\Components\TextInput::make('MAIL_FROM_ADDRESS')->label('From Address'),
-                    Forms\Components\TextInput::make('MAIL_FROM_NAME')->label('From Name'),
+                    Forms\Components\TextInput::make('MAIL_MAILER')
+                        ->label(__('env.MAIL_MAILER.label'))
+                        ->helperText(__('env.MAIL_MAILER.helper')),
+
+                    Forms\Components\TextInput::make('MAIL_HOST')
+                        ->label(__('env.MAIL_HOST.label'))
+                        ->helperText(__('env.MAIL_HOST.helper')),
+
+                    Forms\Components\TextInput::make('MAIL_PORT')
+                        ->label(__('env.MAIL_PORT.label'))
+                        ->numeric()
+                        ->helperText(__('env.MAIL_PORT.helper')),
+
+                    Forms\Components\TextInput::make('MAIL_USERNAME')
+                        ->label(__('env.MAIL_USERNAME.label'))
+                        ->helperText(__('env.MAIL_USERNAME.helper')),
+
+                    Forms\Components\TextInput::make('MAIL_PASSWORD')
+                        ->label(__('env.MAIL_PASSWORD.label'))
+                        ->helperText(__('env.MAIL_PASSWORD.helper')),
+
+                    Forms\Components\TextInput::make('MAIL_ENCRYPTION')
+                        ->label(__('env.MAIL_ENCRYPTION.label'))
+                        ->helperText(__('env.MAIL_ENCRYPTION.helper')),
+
+                    Forms\Components\TextInput::make('MAIL_FROM_ADDRESS')
+                        ->label(__('env.MAIL_FROM_ADDRESS.label'))
+                        ->helperText(__('env.MAIL_FROM_ADDRESS.helper')),
+
+                    Forms\Components\TextInput::make('MAIL_FROM_NAME')
+                        ->label(__('env.MAIL_FROM_NAME.label'))
+                        ->helperText(__('env.MAIL_FROM_NAME.helper')),
                 ]),
         ];
     }

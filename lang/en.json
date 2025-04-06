@@ -10,6 +10,68 @@
     "Subtitle": "Subtitle",
     "Discount": "Discount",
     "Menu Banners": "Menu Banners",
+    "env.general": "General Settings",
+    "env.geoip": "GeoIP Service",
+    "env.jt_express": "JT Express API",
+    "env.analytics": "Analytics",
+    "env.mail": "Mail Settings",
+
+    "env.APP_NAME.label": "Application Name",
+    "env.APP_NAME.helper": "The public name displayed across your application.",
+
+    "env.APP_LOCALE.label": "App Locale",
+    "env.APP_LOCALE.helper": "Default language used by the application (e.g., en, ar).",
+
+    "env.GEOIP_IPGEOLOCATION_KEY.label": "GeoIP API Key",
+    "env.GEOIP_IPGEOLOCATION_KEY.helper": "API key used for detecting user location.",
+
+    "env.GEOIP_SERVICE.label": "GeoIP Service Provider",
+    "env.GEOIP_SERVICE.helper": "Name of the service used for IP geolocation.",
+
+    "env.JT_EXPRESS_BASE_URL.label": "Base URL",
+    "env.JT_EXPRESS_BASE_URL.helper": "Main endpoint for JT Express API integration.",
+
+    "env.JT_EXPRESS_API_ACCOUNT.label": "API Account",
+    "env.JT_EXPRESS_API_ACCOUNT.helper": "Your registered JT Express API account ID.",
+
+    "env.JT_EXPRESS_PRIVATE_KEY.label": "Private Key",
+    "env.JT_EXPRESS_PRIVATE_KEY.helper": "Private key used to authenticate JT Express API requests.",
+
+    "env.JT_EXPRESS_CUSTOMER_CODE.label": "Customer Code",
+    "env.JT_EXPRESS_CUSTOMER_CODE.helper": "Unique code provided to your company by JT Express.",
+
+    "env.JT_EXPRESS_PASSWORD.label": "API Password",
+    "env.JT_EXPRESS_PASSWORD.helper": "Password used to access JT Express services.",
+
+    "env.ANALYTICS_PROPERTY_ID.label": "Analytics Property ID",
+    "env.ANALYTICS_PROPERTY_ID.helper": "Property ID linked to your Google Analytics account.",
+
+    "env.ANALYTICS_SERVICE_ACCOUNT_JSON.label": "Service Account JSON Path",
+    "env.ANALYTICS_SERVICE_ACCOUNT_JSON.helper": "Absolute path to the JSON key file for Google Analytics.",
+
+    "env.MAIL_MAILER.label": "Mailer Driver",
+    "env.MAIL_MAILER.helper": "The mailer driver to use (e.g., smtp).",
+
+    "env.MAIL_HOST.label": "Mail Host",
+    "env.MAIL_HOST.helper": "The hostname of your SMTP server.",
+
+    "env.MAIL_PORT.label": "Mail Port",
+    "env.MAIL_PORT.helper": "Port number used to connect to the mail server (e.g., 587).",
+
+    "env.MAIL_USERNAME.label": "Mail Username",
+    "env.MAIL_USERNAME.helper": "Username used for SMTP authentication.",
+
+    "env.MAIL_PASSWORD.label": "Mail Password",
+    "env.MAIL_PASSWORD.helper": "Password used to authenticate your mail account.",
+
+    "env.MAIL_ENCRYPTION.label": "Encryption Method",
+    "env.MAIL_ENCRYPTION.helper": "Security protocol (e.g., tls or ssl) used for mail sending.",
+
+    "env.MAIL_FROM_ADDRESS.label": "From Address",
+    "env.MAIL_FROM_ADDRESS.helper": "Email address that will appear as the sender.",
+
+    "env.MAIL_FROM_NAME.label": "From Name",
+    "env.MAIL_FROM_NAME.helper": "Name that appears on outgoing emails.",
     "Button Text": "Button Text",
     "My Env": "Server Settings",
     "Button URL": "Button URL",

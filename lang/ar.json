@@ -13,6 +13,68 @@
     "Go to Website Homepage": "الذهاب إلى الصفحة الرئيسية لواجهة الموقع",
     "product.available_countries": "الدول المتاحة",
     "Menu Banners": "لافتات القائمة",
+    "env.general": "الإعدادات العامة",
+    "env.geoip": "خدمة تحديد الموقع GeoIP",
+    "env.jt_express": "واجهة برمجة التطبيقات لـ JT Express",
+    "env.analytics": "التحليلات",
+    "env.mail": "إعدادات البريد الإلكتروني",
+
+    "env.APP_NAME.label": "اسم التطبيق",
+    "env.APP_NAME.helper": "الاسم العام الظاهر في جميع أنحاء التطبيق.",
+
+    "env.APP_LOCALE.label": "اللغة الافتراضية",
+    "env.APP_LOCALE.helper": "اللغة الافتراضية للتطبيق مثل (en، ar).",
+
+    "env.GEOIP_IPGEOLOCATION_KEY.label": "مفتاح GeoIP API",
+    "env.GEOIP_IPGEOLOCATION_KEY.helper": "مفتاح API المستخدم لتحديد موقع المستخدم.",
+
+    "env.GEOIP_SERVICE.label": "مزود خدمة GeoIP",
+    "env.GEOIP_SERVICE.helper": "اسم الخدمة المستخدمة لتحديد الموقع عن طريق IP.",
+
+    "env.JT_EXPRESS_BASE_URL.label": "الرابط الأساسي",
+    "env.JT_EXPRESS_BASE_URL.helper": "نقطة الاتصال الرئيسية لتكامل API الخاص بـ JT Express.",
+
+    "env.JT_EXPRESS_API_ACCOUNT.label": "حساب API",
+    "env.JT_EXPRESS_API_ACCOUNT.helper": "رقم حسابك المسجل في JT Express API.",
+
+    "env.JT_EXPRESS_PRIVATE_KEY.label": "المفتاح السري",
+    "env.JT_EXPRESS_PRIVATE_KEY.helper": "المفتاح السري المستخدم للمصادقة على طلبات API.",
+
+    "env.JT_EXPRESS_CUSTOMER_CODE.label": "رمز العميل",
+    "env.JT_EXPRESS_CUSTOMER_CODE.helper": "الرمز الفريد المخصص لشركتك من قبل JT Express.",
+
+    "env.JT_EXPRESS_PASSWORD.label": "كلمة مرور API",
+    "env.JT_EXPRESS_PASSWORD.helper": "كلمة المرور المستخدمة للوصول إلى خدمات JT Express.",
+
+    "env.ANALYTICS_PROPERTY_ID.label": "معرّف الخاصية في التحليلات",
+    "env.ANALYTICS_PROPERTY_ID.helper": "معرّف الخاصية المرتبط بحساب Google Analytics الخاص بك.",
+
+    "env.ANALYTICS_SERVICE_ACCOUNT_JSON.label": "مسار حساب الخدمة",
+    "env.ANALYTICS_SERVICE_ACCOUNT_JSON.helper": "المسار الكامل لملف JSON لحساب الخدمة في Google Analytics.",
+
+    "env.MAIL_MAILER.label": "طريقة الإرسال",
+    "env.MAIL_MAILER.helper": "نوع السائق المستخدم للبريد مثل (smtp).",
+
+    "env.MAIL_HOST.label": "خادم البريد",
+    "env.MAIL_HOST.helper": "اسم المضيف لخادم SMTP الخاص بك.",
+
+    "env.MAIL_PORT.label": "منفذ البريد",
+    "env.MAIL_PORT.helper": "رقم المنفذ المستخدم للاتصال بخادم البريد (مثل 587).",
+
+    "env.MAIL_USERNAME.label": "اسم المستخدم",
+    "env.MAIL_USERNAME.helper": "اسم المستخدم المستخدم للمصادقة SMTP.",
+
+    "env.MAIL_PASSWORD.label": "كلمة مرور البريد",
+    "env.MAIL_PASSWORD.helper": "كلمة المرور المستخدمة لتوثيق حساب البريد.",
+
+    "env.MAIL_ENCRYPTION.label": "طريقة التشفير",
+    "env.MAIL_ENCRYPTION.helper": "بروتوكول الأمان المستخدم في إرسال البريد (مثل tls أو ssl).",
+
+    "env.MAIL_FROM_ADDRESS.label": "عنوان الإرسال",
+    "env.MAIL_FROM_ADDRESS.helper": "عنوان البريد الإلكتروني الذي سيظهر كمرسل.",
+
+    "env.MAIL_FROM_NAME.label": "اسم المرسل",
+    "env.MAIL_FROM_NAME.helper": "الاسم الذي سيظهر في الرسائل المرسلة.",
     "My Env": "إعدادات السيرفر",
     "policy.terms_of_service": "شروط الخدمة",
     "policy.terms_of_service_en": "شروط الخدمة (بالإنجليزية)",
