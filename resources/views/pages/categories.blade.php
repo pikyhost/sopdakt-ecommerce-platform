@@ -7,7 +7,7 @@
     <div class="container text-center">
         <h1>{{ __('Categories') }}</h1>
         <div class="content">
-            <p>Welcome to the Categories page!</p>
+            <p>coming soon!</p>
         </div>
     </div>
 @endsection
