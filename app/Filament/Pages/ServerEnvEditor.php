@@ -7,7 +7,7 @@ use Filament\Pages\Page;
 use Illuminate\Support\Facades\File;
 use Filament\Notifications\Notification;
 
-class EnvEditor extends Page implements Forms\Contracts\HasForms
+class ServerEnvEditor extends Page implements Forms\Contracts\HasForms
 {
     use Forms\Concerns\InteractsWithForms;
 
