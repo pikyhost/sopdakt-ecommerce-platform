@@ -19,11 +19,11 @@
     "env.analytics": "التحليلات",
     "env.mail": "إعدادات البريد الإلكتروني",
 
-    "env.APP_NAME.label": "اسم التطبيق",
-    "env.APP_NAME.helper": "الاسم العام الظاهر في جميع أنحاء التطبيق.",
+    "env.APP_NAME.label": "اسم الموقع الإلكتروني",
+    "env.APP_NAME.helper": "الاسم العام الظاهر في جميع أنحاء الموقع الإلكتروني.",
 
     "env.APP_LOCALE.label": "اللغة الافتراضية",
-    "env.APP_LOCALE.helper": "اللغة الافتراضية للتطبيق مثل (en، ar).",
+    "env.APP_LOCALE.helper": "اللغة الافتراضية للموقع الإلكتروني.",
 
     "env.GEOIP_IPGEOLOCATION_KEY.label": "مفتاح GeoIP API",
     "env.GEOIP_IPGEOLOCATION_KEY.helper": "مفتاح API المستخدم لتحديد موقع المستخدم.",
@@ -810,6 +810,7 @@
     "Avatar": "الصورة الرمزية",
     "profile.contact_details": "تفاصيل الاتصال",
     "profile.contact_description": "قم بتحديث رقم الهاتف والعنوان واللغة المفضلة",
+    "Save": "حفظ",
     "profile.save": "حفظ",
     "Users Management" : "إدارة المستخدمين",
     "Products Management" : "إدارة المنتجات",
