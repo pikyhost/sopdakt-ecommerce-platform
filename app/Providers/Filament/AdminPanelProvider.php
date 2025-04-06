@@ -108,76 +108,76 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->unsavedChangesAlerts()
             ->plugins([
-                FilamentEnvEditorPlugin::make()
-                    ->hideKeys(
-                        'APP_ENV',
-                        'APP_MAINTENANCE_STORE',
-                        'APP_KEY',
-                        'APP_DEBUG',
-                        'APP_TIMEZONE',
-                        'APP_URL',
-                        'APP_LOCALE',
-                        'APP_FALLBACK_LOCALE',
-                        'APP_FAKER_LOCALE',
-                        'APP_MAINTENANCE_DRIVER',
-                        'PHP_CLI_SERVER_WORKERS',
-                        'BCRYPT_ROUNDS',
-                        'LOG_CHANNEL',
-                        'LOG_STACK',
-                        'LOG_DEPRECATIONS_CHANNEL',
-                        'LOG_LEVEL',
-
-                        // Database Settings
-                        'DB_CONNECTION',
-                        'DB_HOST',
-                        'DB_PORT',
-                        'DB_DATABASE',
-                        'DB_USERNAME',
-                        'DB_PASSWORD',
-
-                        // Session & Caching
-                        'SESSION_DRIVER',
-                        'SESSION_LIFETIME',
-                        'SESSION_ENCRYPT',
-                        'SESSION_PATH',
-                        'SESSION_DOMAIN',
-                        'CACHE_STORE',
-                        'CACHE_PREFIX',
-                        'MEMCACHED_HOST',
-                        'REDIS_CLIENT',
-                        'REDIS_HOST',
-                        'REDIS_PASSWORD',
-                        'REDIS_PORT',
-
-                        // Broadcast & Queue
-                        'BROADCAST_CONNECTION',
-                        'FILESYSTEM_DISK',
-                        'QUEUE_CONNECTION',
-
-                        // AWS Storage
-                        'AWS_ACCESS_KEY_ID',
-                        'AWS_SECRET_ACCESS_KEY',
-                        'AWS_DEFAULT_REGION',
-                        'AWS_BUCKET',
-                        'AWS_USE_PATH_STYLE_ENDPOINT',
-
-                        // Vite & GeoIP
-                        'VITE_APP_NAME',
-                        'GEOIP_IPGEOLOCATION_KEY',
-                        'GEOIP_SERVICE',
-
-                        // JT Express API
-                        'JT_EXPRESS_BASE_URL',
-                        'JT_EXPRESS_API_ACCOUNT',
-                        'JT_EXPRESS_PRIVATE_KEY',
-                        'JT_EXPRESS_CUSTOMER_CODE',
-                        'JT_EXPRESS_PASSWORD'
-                    )
-                    ->navigationGroup(__('Settings Management'))
-                    ->navigationLabel(__('My Env'))
-                    ->navigationIcon('heroicon-o-wrench-screwdriver')
-                    ->navigationSort(1)
-                    ->slug('env-editor'),
+//                FilamentEnvEditorPlugin::make()
+//                    ->hideKeys(
+//                        'APP_ENV',
+//                        'APP_MAINTENANCE_STORE',
+//                        'APP_KEY',
+//                        'APP_DEBUG',
+//                        'APP_TIMEZONE',
+//                        'APP_URL',
+//                        'APP_LOCALE',
+//                        'APP_FALLBACK_LOCALE',
+//                        'APP_FAKER_LOCALE',
+//                        'APP_MAINTENANCE_DRIVER',
+//                        'PHP_CLI_SERVER_WORKERS',
+//                        'BCRYPT_ROUNDS',
+//                        'LOG_CHANNEL',
+//                        'LOG_STACK',
+//                        'LOG_DEPRECATIONS_CHANNEL',
+//                        'LOG_LEVEL',
+//
+//                        // Database Settings
+//                        'DB_CONNECTION',
+//                        'DB_HOST',
+//                        'DB_PORT',
+//                        'DB_DATABASE',
+//                        'DB_USERNAME',
+//                        'DB_PASSWORD',
+//
+//                        // Session & Caching
+//                        'SESSION_DRIVER',
+//                        'SESSION_LIFETIME',
+//                        'SESSION_ENCRYPT',
+//                        'SESSION_PATH',
+//                        'SESSION_DOMAIN',
+//                        'CACHE_STORE',
+//                        'CACHE_PREFIX',
+//                        'MEMCACHED_HOST',
+//                        'REDIS_CLIENT',
+//                        'REDIS_HOST',
+//                        'REDIS_PASSWORD',
+//                        'REDIS_PORT',
+//
+//                        // Broadcast & Queue
+//                        'BROADCAST_CONNECTION',
+//                        'FILESYSTEM_DISK',
+//                        'QUEUE_CONNECTION',
+//
+//                        // AWS Storage
+//                        'AWS_ACCESS_KEY_ID',
+//                        'AWS_SECRET_ACCESS_KEY',
+//                        'AWS_DEFAULT_REGION',
+//                        'AWS_BUCKET',
+//                        'AWS_USE_PATH_STYLE_ENDPOINT',
+//
+//                        // Vite & GeoIP
+//                        'VITE_APP_NAME',
+//                        'GEOIP_IPGEOLOCATION_KEY',
+//                        'GEOIP_SERVICE',
+//
+//                        // JT Express API
+//                        'JT_EXPRESS_BASE_URL',
+//                        'JT_EXPRESS_API_ACCOUNT',
+//                        'JT_EXPRESS_PRIVATE_KEY',
+//                        'JT_EXPRESS_CUSTOMER_CODE',
+//                        'JT_EXPRESS_PASSWORD'
+//                    )
+//                    ->navigationGroup(__('Settings Management'))
+//                    ->navigationLabel(__('My Env'))
+//                    ->navigationIcon('heroicon-o-wrench-screwdriver')
+//                    ->navigationSort(1)
+//                    ->slug('env-editor'),
                 \BezhanSalleh\FilamentGoogleAnalytics\FilamentGoogleAnalyticsPlugin::make(),
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
                 SimpleLightBoxPlugin::make(),
