@@ -3,7 +3,7 @@
     $locale = app()->getLocale();
 
     // Use settings directly since they are returned as an array
-    $siteName = $settings["site_name_{$locale}"] ?? $settings["site_name_en"] ?? 'Default Site Name';
+    $siteName = $settings['site_name'] ?? env('APP_NAME', 'Default Site Name');
 
     // Translations for the footer
     $footerTexts = [

@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use Filament\Forms;
 use Filament\Pages\Page;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\File;
 use Filament\Notifications\Notification;
 
@@ -49,6 +50,11 @@ class ServerEnvEditor extends Page implements Forms\Contracts\HasForms
     public static function getNavigationGroup(): ?string
     {
         return __('Settings Management');
+    }
+
+    public function getHeading(): string|Htmlable
+    {
+        return __('Server Settings');
     }
 
     public static function getNavigationLabel(): string
