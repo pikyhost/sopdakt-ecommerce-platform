@@ -16,6 +16,8 @@ class EnvEditor extends Page implements Forms\Contracts\HasForms
     protected static ?string $navigationLabel = '.env Editor';
     protected static ?string $title = 'Edit .env File';
 
+    protected static ?string $slug = 'edit-server-settings';
+
     public ?string $envContent = '';
 
     public function mount(): void
