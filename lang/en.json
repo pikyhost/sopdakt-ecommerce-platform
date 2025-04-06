@@ -58,7 +58,8 @@
     "env.MAIL_PORT.label": "Mail Port",
     "env.MAIL_PORT.helper": "Port number used to connect to the mail server (e.g., 587).",
 
-
+    "env.warning.title": "⚠️ Important Notice",
+    "env.warning.body": "You are about to edit sensitive system settings. These values control how your website works. Changing them the wrong way can stop your website from working. Only make changes if you are sure about what you're doing, or ask for help first.",
     "env.APP_LOCALE.options.en": "English",
     "env.APP_LOCALE.options.ar": "Arabic",
 

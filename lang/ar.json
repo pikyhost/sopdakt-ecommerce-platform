@@ -29,6 +29,9 @@
     "env.GEOIP_IPGEOLOCATION_KEY.label": "مفتاح GeoIP API",
     "env.GEOIP_IPGEOLOCATION_KEY.helper": "مفتاح API المستخدم لتحديد موقع المستخدم.",
 
+    "env.warning.title": "⚠️ تنبيه مهم",
+    "env.warning.body": "أنت على وشك تعديل إعدادات مهمة في النظام. هذه القيم تؤثر على كيفية عمل الموقع. التغيير الخاطئ قد يؤدي إلى توقف الموقع عن العمل. لا تقم بأي تعديل إلا إذا كنت متأكدًا أو اطلب المساعدة أولاً.",
+
     "env.GEOIP_SERVICE.label": "مزود خدمة GeoIP",
     "env.GEOIP_SERVICE.helper": "اسم الخدمة المستخدمة لتحديد الموقع عن طريق IP.",
 
