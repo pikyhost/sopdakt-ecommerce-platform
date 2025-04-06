@@ -1,8 +1,11 @@
 <x-filament::page>
-    <x-filament::callout color="danger" icon="heroicon-o-exclamation-triangle" class="mb-6">
-        <strong>{{ __('env.warning.title') }}</strong><br>
-        {{ __('env.warning.body') }}
-    </x-filament::callout>
+    <div class="p-4 mb-6 text-red-800 border border-red-300 rounded-lg bg-red-50 dark:bg-red-950 dark:text-red-200 dark:border-red-800">
+        <div class="flex items-center mb-2 font-semibold">
+
+            {{ __('env.warning.title') }}
+        </div>
+        <p>{{ __('env.warning.body') }}</p>
+    </div>
 
     {{ $this->form }}
 

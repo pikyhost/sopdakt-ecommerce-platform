@@ -20,7 +20,7 @@
     "env.APP_NAME.helper": "The public name displayed across your application.",
 
     "env.APP_LOCALE.label": "App Locale",
-    "env.APP_LOCALE.helper": "Default language used by the application (e.g., en, ar).",
+    "env.APP_LOCALE.helper": "Default language used by the application.",
 
     "env.GEOIP_IPGEOLOCATION_KEY.label": "GeoIP API Key",
     "env.GEOIP_IPGEOLOCATION_KEY.helper": "API key used for detecting user location.",
