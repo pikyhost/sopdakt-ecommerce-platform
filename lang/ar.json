@@ -61,6 +61,9 @@
     "env.MAIL_PORT.label": "منفذ البريد",
     "env.MAIL_PORT.helper": "رقم المنفذ المستخدم للاتصال بخادم البريد (مثل 587).",
 
+    "env.APP_LOCALE.options.en": "الإنجليزية",
+    "env.APP_LOCALE.options.ar": "العربية",
+
     "env.MAIL_USERNAME.label": "اسم المستخدم",
     "env.MAIL_USERNAME.helper": "اسم المستخدم المستخدم للمصادقة SMTP.",
 

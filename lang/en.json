@@ -58,6 +58,10 @@
     "env.MAIL_PORT.label": "Mail Port",
     "env.MAIL_PORT.helper": "Port number used to connect to the mail server (e.g., 587).",
 
+
+    "env.APP_LOCALE.options.en": "English",
+    "env.APP_LOCALE.options.ar": "Arabic",
+
     "env.MAIL_USERNAME.label": "Mail Username",
     "env.MAIL_USERNAME.helper": "Username used for SMTP authentication.",
 

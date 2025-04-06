@@ -11,10 +11,10 @@ class ServerEnvEditor extends Page implements Forms\Contracts\HasForms
 {
     use Forms\Concerns\InteractsWithForms;
 
-    protected static ?string $navigationIcon = 'heroicon-o-cog';
-    protected static ?string $title = 'Edit .env Settings';
+    protected static ?string $navigationIcon = 'heroicon-o-wrench-screwdriver';
+    protected static ?string $title = 'Server Settings';
     protected static string $view = 'filament.pages.env-editor';
-    protected static ?string $slug = 'edit-serveer-settings';
+    protected static ?string $slug = 'edit-server-settings';
 
     public string $APP_NAME;
     public string $APP_LOCALE;
@@ -46,6 +46,11 @@ class ServerEnvEditor extends Page implements Forms\Contracts\HasForms
         }
     }
 
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Settings Management');
+    }
+
     protected function getFormSchema(): array
     {
         return [
@@ -53,11 +58,16 @@ class ServerEnvEditor extends Page implements Forms\Contracts\HasForms
                 ->schema([
                     Forms\Components\TextInput::make('APP_NAME')
                         ->label(__('env.APP_NAME.label'))
-                        ->helperText(__('env.APP_NAME.helper')),
+                        ->helperText(__('env.APP_NAME.helper'))
+                        ->afterStateUpdated(fn ($state, callable $set) => $set('APP_NAME', str_contains($state, ' ') ? "\"{$state}\"" : $state)),
 
-                    Forms\Components\TextInput::make('APP_LOCALE')
+                    Forms\Components\Select::make('APP_LOCALE')
                         ->label(__('env.APP_LOCALE.label'))
-                        ->helperText(__('env.APP_LOCALE.helper')),
+                        ->helperText(__('env.APP_LOCALE.helper'))
+                        ->options([
+                            'en' => __('env.APP_LOCALE.options.en'),
+                            'ar' => __('env.APP_LOCALE.options.ar'),
+                        ]),
                 ]),
 
             Forms\Components\Section::make(__('env.geoip'))
