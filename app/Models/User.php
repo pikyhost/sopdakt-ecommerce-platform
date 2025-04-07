@@ -89,7 +89,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
      */
     public function preferredLocale(): string
     {
-        return $this->locale;
+        return $this->preferred_language ?? config('app.locale');
     }
 
     public function addresses()

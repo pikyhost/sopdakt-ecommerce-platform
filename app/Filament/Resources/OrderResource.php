@@ -477,15 +477,10 @@ class OrderResource extends Resource
         // ✅ Refresh the order to make sure tracking number is loaded
         $order->refresh();
 
-        // ✅ Log updated values
-        Log::info("Order #{$order->id} updated to status: $newStatus");
-        Log::info("Tracking Number: " . ($order->tracking_number ?? 'N/A'));
-
         // ✅ Send email AFTER tracking number is updated
         $email = $order->user->email ?? $order->contact->email;
         if ($email) {
             Mail::to($email)->send(new OrderStatusMail($order, $status));
-            Log::info("Order status email sent to: $email");
         }
     }
 
