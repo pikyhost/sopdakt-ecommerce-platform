@@ -58,23 +58,8 @@ class SettingResource extends Resource
     {
         return $table
             ->columns([
-                Forms\Components\TextInput::make('site_name')
-                    ->label(__('Website Name'))
-                    ->afterStateUpdated(function ($state) {
-                        // Update APP_NAME in .env file
-                        $envPath = base_path('.env');
-                        $envContent = File::get($envPath);
-
-                        // Clean quotes and prepare new line
-                        $cleanValue = trim($state);
-                        $envValue = str_contains($cleanValue, ' ') ? "\"{$cleanValue}\"" : $cleanValue;
-
-                        // Replace APP_NAME line
-                        $envContent = preg_replace('/^APP_NAME=.*$/m', "APP_NAME={$envValue}", $envContent);
-
-                        // Write back to .env
-                        File::put($envPath, $envContent);
-                    }),
+                TextColumn::make('site_name')
+                    ->label(__('Website Name')),
 
                 TextColumn::make('phone')
                     ->label(__('phone')),
@@ -155,8 +140,23 @@ class SettingResource extends Resource
                     ->collapsed(true)
                     ->description(__('Update website name and contact info'))
                     ->schema([
-                        TextInput::make('site_name')
-                            ->label(__('Website Name')),
+                        Forms\Components\TextInput::make('site_name')
+                            ->label(__('Website Name'))
+                            ->afterStateUpdated(function ($state) {
+                                // Update APP_NAME in .env file
+                                $envPath = base_path('.env');
+                                $envContent = File::get($envPath);
+
+                                // Clean quotes and prepare new line
+                                $cleanValue = trim($state);
+                                $envValue = str_contains($cleanValue, ' ') ? "\"{$cleanValue}\"" : $cleanValue;
+
+                                // Replace APP_NAME line
+                                $envContent = preg_replace('/^APP_NAME=.*$/m', "APP_NAME={$envValue}", $envContent);
+
+                                // Write back to .env
+                                File::put($envPath, $envContent);
+                            }),
 
                         Forms\Components\TextInput::make('phone')
                             ->label(__('phone')),
