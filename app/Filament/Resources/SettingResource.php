@@ -16,6 +16,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\File;
 
 class SettingResource extends Resource
 {
@@ -57,8 +58,23 @@ class SettingResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('site_name')
-                    ->label(__('Website Name')),
+                Forms\Components\TextInput::make('site_name')
+                    ->label(__('Website Name'))
+                    ->afterStateUpdated(function ($state) {
+                        // Update APP_NAME in .env file
+                        $envPath = base_path('.env');
+                        $envContent = File::get($envPath);
+
+                        // Clean quotes and prepare new line
+                        $cleanValue = trim($state);
+                        $envValue = str_contains($cleanValue, ' ') ? "\"{$cleanValue}\"" : $cleanValue;
+
+                        // Replace APP_NAME line
+                        $envContent = preg_replace('/^APP_NAME=.*$/m', "APP_NAME={$envValue}", $envContent);
+
+                        // Write back to .env
+                        File::put($envPath, $envContent);
+                    }),
 
                 TextColumn::make('phone')
                     ->label(__('phone')),

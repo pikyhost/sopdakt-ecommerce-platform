@@ -75,7 +75,18 @@ class ServerEnvEditor extends Page implements Forms\Contracts\HasForms
                     Forms\Components\TextInput::make('APP_NAME')
                         ->label(__('env.APP_NAME.label'))
                         ->helperText(__('env.APP_NAME.helper'))
-                        ->afterStateUpdated(fn ($state, callable $set) => $set('APP_NAME', str_contains($state, ' ') ? "\"{$state}\"" : $state)),
+                        ->afterStateUpdated(function ($state, callable $set) {
+                            $value = str_contains($state, ' ') ? "\"{$state}\"" : $state;
+
+                            // Set the formatted value
+                            $set('APP_NAME', $value);
+
+                            // Remove quotes when saving to DB
+                            $cleanValue = str_replace('"', '', $state);
+
+                            // Update site_name in settings and clear/cache
+                            \App\Models\Setting::updateSettings(['site_name' => $cleanValue]);
+                        }),
 
                     Forms\Components\Select::make('APP_LOCALE')
                         ->label(__('env.APP_LOCALE.label'))
