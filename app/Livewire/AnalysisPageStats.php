@@ -22,8 +22,9 @@ class AnalysisPageStats extends BaseWidget
 
     public function mount(): void
     {
-        $this->fromDate = now()->subWeek();
-        $this->toDate = now();
+        // Default to last month if not already set
+        $this->fromDate = $this->fromDate ?? now()->copy()->startOfMonth()->subMonth();
+        $this->toDate = $this->toDate ?? now()->copy()->endOfMonth()->subMonth();
     }
 
     #[On('updateFromDate')]
@@ -46,38 +47,37 @@ class AnalysisPageStats extends BaseWidget
         $startDate = $this->fromDate;
         $endDate = $this->toDate;
 
-        // Query for total revenue and total orders in the selected period
+        // Queries within selected period
         $totalRevenueQuery = Order::whereBetween('created_at', [$startDate, $endDate]);
         $ordersForSelectedPeriodQuery = Order::whereBetween('created_at', [$startDate, $endDate]);
         $newUsers = User::whereBetween('created_at', [$startDate, $endDate])->count();
 
-
-        // Fetch counts
         $totalRevenue = $totalRevenueQuery->sum('total');
         $ordersForSelectedPeriod = $ordersForSelectedPeriodQuery->count();
+
         $pendingOrders = Order::whereBetween('created_at', [$startDate, $endDate])
             ->where('status', OrderStatus::Pending)->count();
+
         $completedOrders = Order::whereBetween('created_at', [$startDate, $endDate])
             ->where('status', OrderStatus::Completed)->count();
+
         $cancelledOrders = Order::whereBetween('created_at', [$startDate, $endDate])
             ->where('status', OrderStatus::Cancelled)->count();
+
         $refundedOrders = Order::whereBetween('created_at', [$startDate, $endDate])
             ->where('status', OrderStatus::Refund)->count();
 
-        // Get unique customer count
         $uniqueCustomers = Order::whereBetween('created_at', [$startDate, $endDate])
             ->distinct('user_id')->count('user_id');
 
-        // Calculate Win/Loss Ratio
         $totalLosses = $cancelledOrders + $refundedOrders;
         $winLossRatio = $totalLosses > 0 ? round($completedOrders / $totalLosses, 2) : 'N/A';
 
-        // Calculate Average Sale
         $averageSale = $ordersForSelectedPeriod > 0 ? round($totalRevenue / $ordersForSelectedPeriod, 2) : 0;
 
-        // Calculate Customer Expense
         $customerExpense = $uniqueCustomers > 0 ? round($totalRevenue / $uniqueCustomers, 2) : 0;
 
+        // Grouped filtered stats
         return [
             Stat::make($locale === 'ar' ? 'إجمالي الإيرادات' : 'Total Revenue', number_format($totalRevenue))
                 ->color('primary')
@@ -118,6 +118,7 @@ class AnalysisPageStats extends BaseWidget
                 ->color('info')
                 ->description($locale === 'ar' ? 'متوسط الإنفاق لكل عميل في الفترة المختارة.' : 'Average spending per customer in the selected period.')
                 ->descriptionIcon('heroicon-m-user-group'),
+
             Stat::make($locale === 'ar' ? 'المستخدمون الجدد' : 'New Users Joined', $newUsers)
                 ->color('primary')
                 ->description($locale === 'ar' ? 'عدد المستخدمين الجدد الذين انضموا خلال الفترة المحددة.' : 'Number of new users who joined within the selected time range.')

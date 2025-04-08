@@ -49,7 +49,7 @@ class TopProducts extends BaseWidget
                     ->selectRaw('SUM(order_items.quantity) as total_sold')
                     ->join('order_items', 'products.id', '=', 'order_items.product_id')
                     ->join('orders', 'order_items.order_id', '=', 'orders.id')
-                    ->whereBetween('orders.created_at', [$startDate, $endDate])
+                    ->whereBetween('products.created_at', [$startDate, $endDate])
                     // ->where('orders.status', 'completed') // Uncomment if you want to only consider completed orders
                     ->groupBy('products.id')
                     ->orderByDesc('total_sold')
