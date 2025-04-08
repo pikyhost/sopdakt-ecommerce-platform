@@ -20,7 +20,7 @@ class UsersChart extends ChartWidget
 
     public function mount(): void
     {
-        $this->fromDate = now()->subWeek();
+        $this->fromDate = now()->subMonth();
         $this->toDate = now();
     }
 
