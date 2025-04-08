@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\Product;
 use App\Models\Setting;
+use Carbon\Carbon;
 use Filament\Support\Enums\FontFamily;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
@@ -12,31 +13,44 @@ use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Support\Facades\App;
 use Mokhosh\FilamentRating\Columns\RatingColumn;
 use Filament\Tables\Columns\TextColumn\TextColumnSize;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 
 class TopProducts extends BaseWidget
 {
+    use InteractsWithPageFilters;
+
     protected static ?string $pollingInterval = null;
     protected static bool $isLazy = false;
     protected int | string | array $columnSpan = 'full';
 
     public function table(Table $table): Table
     {
+        $locale = App::getLocale();
+
+        // Get filter dates or default to last month
+        $startDate = !is_null($this->filters['startDate'] ?? null)
+            ? Carbon::parse($this->filters['startDate'])
+            : now()->subMonth()->startOfDay();
+
+        $endDate = !is_null($this->filters['endDate'] ?? null)
+            ? Carbon::parse($this->filters['endDate'])
+            : now()->endOfDay();
+
         return $table
             ->heading(__('Top Products'))
-            ->description(function () {
-                $locale = App::getLocale();
-
-                return $locale === 'ar'
+            ->description(
+                $locale === 'ar'
                     ? 'تعرف على المنتجات الأكثر طلبًا بناءً على عدد المرات التي تم طلبها 🔥🛒'
-                    : 'Discover the most popular products based on the number of times they have been ordered 🛒🔥';
-            })
+                    : 'Discover the most popular products based on the number of times they have been ordered 🛒🔥'
+            )
             ->query(
-                \App\Models\Product::query()
+                Product::query()
                     ->select('products.*')
                     ->selectRaw('SUM(order_items.quantity) as total_sold')
                     ->join('order_items', 'products.id', '=', 'order_items.product_id')
                     ->join('orders', 'order_items.order_id', '=', 'orders.id')
-//                    ->where('orders.status', 'completed')
+                    ->whereBetween('orders.created_at', [$startDate, $endDate])
+                    // ->where('orders.status', 'completed') // Uncomment if you want to only consider completed orders
                     ->groupBy('products.id')
                     ->orderByDesc('total_sold')
                     ->limit(10)
