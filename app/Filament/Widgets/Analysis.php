@@ -19,39 +19,31 @@ class Analysis extends BaseWidget
 
     protected function getStats(): array
     {
-        $locale = App::getLocale(); // Get the current language
+        $locale = App::getLocale();
 
-        // Get the start and end date from filters
-        $startDate = ! is_null($this->filters['startDate'] ?? null) ?
-            Carbon::parse($this->filters['startDate']) :
-            null;
+        // Default to last month if no filters
+        $startDate = !is_null($this->filters['startDate'] ?? null)
+            ? Carbon::parse($this->filters['startDate'])
+            : now()->subMonth()->startOfMonth();
 
-        $endDate = ! is_null($this->filters['endDate'] ?? null) ?
-            Carbon::parse($this->filters['endDate']) :
-            now();
+        $endDate = !is_null($this->filters['endDate'] ?? null)
+            ? Carbon::parse($this->filters['endDate'])
+            : now()->subMonth()->endOfMonth();
 
-        // Total Products Count
+        // Total Products Count (not date-filtered)
         $totalProducts = Product::count();
 
-        // Total Orders Count
-        $totalOrders = Order::count();
+        // Orders + Revenue WITHIN selected period (or last month by default)
+        $ordersQuery = Order::whereBetween('created_at', [$startDate, $endDate]);
 
-        // Total Revenue (Sum of 'total' column in orders)
+        $totalOrders = $ordersQuery->count();
+        $totalRevenue = $ordersQuery->sum('total');
+
+        // All-time total revenue (outside filter)
         $totalRevenueWithoutPeriod = Order::sum('total');
 
-        // Total Revenue for selected period
-        $totalRevenueQuery = Order::query();
-        $ordersForSelectedPeriodQuery = Order::query();
-
-        if ($startDate) {
-            $totalRevenueQuery->whereBetween('created_at', [$startDate, $endDate]);
-            $ordersForSelectedPeriodQuery->whereBetween('created_at', [$startDate, $endDate]);
-        }
-        $totalRevenue = $totalRevenueQuery->sum('total');
-        $ordersForSelectedPeriod = $ordersForSelectedPeriodQuery->count();
-
-        // Processing Orders Count (Orders in pending, preparing, shipping)
-        $processingOrders = Order::whereIn('status', ['pending', 'preparing', 'shipping'])->count();
+        // Processing Orders in selected period
+        $processingOrders = $ordersQuery->whereIn('status', ['pending', 'preparing', 'shipping'])->count();
 
         return [
             // Total Products
@@ -63,16 +55,25 @@ class Analysis extends BaseWidget
                 ->description($locale === 'ar' ? 'إجمالي عدد المنتجات المتاحة في المتجر.' : 'Total available products in the store.')
                 ->descriptionIcon('heroicon-m-archive-box'),
 
-            // Total Orders
+            // Orders in selected period (or last month)
             Stat::make(
-                $locale === 'ar' ? 'إجمالي عدد الطلبات' : 'Total Orders',
+                $locale === 'ar' ? 'عدد الطلبات (الفترة)' : 'Orders (Selected Period)',
                 $totalOrders
             )
-                ->color('success')
-                ->description($locale === 'ar' ? 'إجمالي عدد الطلبات التي تمت في المتجر.' : 'Total completed orders in the store.')
+                ->color('info')
+                ->description($locale === 'ar' ? 'عدد الطلبات ضمن النطاق الزمني المحدد.' : 'Orders within the selected time range.')
                 ->descriptionIcon('heroicon-o-shopping-bag'),
 
-            // Total Revenue
+            // Revenue in selected period
+            Stat::make(
+                $locale === 'ar' ? 'الإيرادات (الفترة)' : 'Revenue (Selected Period)',
+                number_format($totalRevenue)
+            )
+                ->color('primary')
+                ->description($locale === 'ar' ? 'الإيرادات ضمن النطاق الزمني المحدد.' : 'Revenue within the selected time range.')
+                ->descriptionIcon('heroicon-m-banknotes'),
+
+            // All-time Revenue
             Stat::make(
                 $locale === 'ar' ? 'إجمالي الإيرادات' : 'Total Revenue',
                 number_format($totalRevenueWithoutPeriod)
@@ -81,32 +82,15 @@ class Analysis extends BaseWidget
                 ->description($locale === 'ar' ? 'إجمالي الإيرادات المكتسبة من المتجر.' : 'Total revenue earned from the store.')
                 ->descriptionIcon('heroicon-m-banknotes'),
 
-            // Revenue for selected period
-            Stat::make(
-                $locale === 'ar' ? 'إيرادات الفترة المحددة' : 'Revenue for Selected Period',
-                number_format($totalRevenue)
-            )
-                ->color('primary')
-                ->description($locale === 'ar' ? 'الإيرادات ضمن النطاق الزمني المحدد.' : 'Revenue within the selected time range.')
-                ->descriptionIcon('heroicon-m-banknotes'),
-
-            // Orders for selected period
-            Stat::make(
-                $locale === 'ar' ? 'عدد الطلبات لفترة زمنية مختارة' : 'Orders for Selected Period',
-                $ordersForSelectedPeriod
-            )
-                ->color('info')
-                ->description($locale === 'ar' ? 'عدد الطلبات ضمن النطاق الزمني المحدد.' : 'Number of orders within the selected time range.')
-                ->descriptionIcon('heroicon-o-shopping-bag'),
-
-            // Processing Orders
+            // Processing Orders in selected period
             Stat::make(
                 $locale === 'ar' ? 'الطلبات قيد المعالجة' : 'Processing Orders',
                 $processingOrders
             )
                 ->color('warning')
-                ->description($locale === 'ar' ? 'الطلبات التي لا تزال في حالة المعالجة.' : 'Orders that are still being processed.')
+                ->description($locale === 'ar' ? 'الطلبات التي لا تزال في حالة المعالجة ضمن الفترة.' : 'Orders still being processed in selected period.')
                 ->descriptionIcon('heroicon-m-cog'),
         ];
     }
+
 }

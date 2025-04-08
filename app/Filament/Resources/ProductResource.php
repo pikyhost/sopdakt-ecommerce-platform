@@ -624,16 +624,19 @@ class ProductResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('sku')
+                    ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->label(__('SKU')),
 
                 Tables\Columns\TextColumn::make('colors.name')
+                    ->searchable()
                     ->placeholder('-')
                     ->label(__('Colors'))
                     ->limitList(2)
                     ->badge(),
 
                 Tables\Columns\TextColumn::make('sizes.name')
+                    ->searchable()
                     ->placeholder('-')
                     ->label(__('Sizes'))
                     ->limitList(2)

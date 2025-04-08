@@ -193,8 +193,10 @@ class AdminPanelProvider extends PanelProvider
                     )
                     ->avatarUploadComponent(fn ($fileUpload) => $fileUpload->columnSpan('full')),
             ])
+            ->databaseNotifications()
             ->renderHook(PanelsRenderHook::SIDEBAR_NAV_START, fn () => view('navigation-filter'));
     }
+
     private function getNavigationGroups(): array
     {
         // Define groups in EXACT order with their translations
