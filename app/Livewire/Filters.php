@@ -34,10 +34,10 @@ class Filters extends Widget implements HasForms
                         DatePicker::make('from')
                             ->label(__('Start date'))
                             ->live()
-                            ->afterStateUpdated(fn (?string $state) => $this->dispatch('updateFromDate1', from: $state)),
+                            ->afterStateUpdated(fn (?string $state) => $state ? $this->dispatch('updateFromDate1', from: $state) : null),
                         DatePicker::make('to')
                             ->label(__('End date')) ->live()
-                            ->afterStateUpdated(fn (?string $state) => $this->dispatch('updateToDate1', to: $state)),
+                            ->afterStateUpdated(fn (?string $state) => $state ? $this->dispatch('updateToDate1', from: $state) : null),
                     ])->columns(2),
 
                 Section::make()

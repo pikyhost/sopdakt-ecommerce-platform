@@ -25,7 +25,7 @@ class RevenueComparisonChart extends ChartWidget
 
     protected function getData(): array
     {
-        $fromDate = $this->fromDate ??= now()->subWeek();
+        $fromDate = $this->fromDate ??= now()->subMonth();
         $toDate = $this->toDate ??= now();
 
         $data = Trend::model(Order::class)

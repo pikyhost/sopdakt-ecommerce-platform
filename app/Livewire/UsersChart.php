@@ -54,16 +54,20 @@ class UsersChart extends ChartWidget
     }
 
     #[On('updateFromDate1')]
-    public function updateFromDate(string $from): void
+    public function updateFromDate(?string $from): void
     {
-        $this->fromDate = Carbon::parse($from);
-        $this->dispatch('$refresh'); // This tells Livewire to refresh the component
+        if ($from) {
+            $this->fromDate = Carbon::parse($from)->startOfDay();
+        }
+        $this->dispatch('$refresh');
     }
 
     #[On('updateToDate1')]
-    public function updateToDate(string $to): void
+    public function updateToDate(?string $to): void
     {
-        $this->toDate = Carbon::parse($to);
+        if ($to) {
+            $this->toDate = Carbon::parse($to)->endOfDay();
+        }
         $this->dispatch('$refresh');
     }
 

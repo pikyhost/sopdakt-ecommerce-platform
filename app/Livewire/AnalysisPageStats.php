@@ -26,16 +26,20 @@ class AnalysisPageStats extends BaseWidget
         $this->toDate = now();
     }
     #[On('updateFromDate1')]
-    public function updateFromDate(string $from): void
+    public function updateFromDate(?string $from): void
     {
-        $this->fromDate = Carbon::parse($from)->startOfDay();
+        if ($from) {
+            $this->fromDate = Carbon::parse($from)->startOfDay();
+        }
         $this->dispatch('$refresh');
     }
 
     #[On('updateToDate1')]
-    public function updateToDate(string $to): void
+    public function updateToDate(?string $to): void
     {
-        $this->toDate = Carbon::parse($to)->endOfDay();
+        if ($to) {
+            $this->toDate = Carbon::parse($to)->endOfDay();
+        }
         $this->dispatch('$refresh');
     }
 
