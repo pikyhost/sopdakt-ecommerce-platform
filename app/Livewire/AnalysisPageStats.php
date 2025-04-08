@@ -13,8 +13,8 @@ use App\Enums\OrderStatus;
 
 class AnalysisPageStats extends BaseWidget
 {
-    public Carbon $fromDate;
-    public Carbon $toDate;
+    public ?Carbon $fromDate = null;
+    public ?Carbon $toDate = null;
 
     protected static ?int $sort = 2;
     protected static ?string $pollingInterval = null;
@@ -43,8 +43,9 @@ class AnalysisPageStats extends BaseWidget
     protected function getStats(): array
     {
         $locale = App::getLocale();
-        $startDate = $this->fromDate->copy()->startOfDay();
-        $endDate = $this->toDate->copy()->endOfDay();
+        // Fallback if dates not set
+        $startDate = $this->fromDate ?? now()->copy()->startOfMonth()->subMonth();
+        $endDate = $this->toDate ?? now()->copy()->endOfMonth()->subMonth();
 
         // Queries within selected period
         $totalRevenueQuery = Order::whereBetween('created_at', [$startDate, $endDate]);
