@@ -21,6 +21,8 @@ class RevenueComparisonChart extends ChartWidget
     protected static ?string $pollingInterval = null;
     protected static bool $isLazy = false;
 
+    protected int | string | array $columnSpan = 'full';
+
     public function getHeading(): string|Htmlable|null
     {
         return __('Revenue Chart Comparison');
