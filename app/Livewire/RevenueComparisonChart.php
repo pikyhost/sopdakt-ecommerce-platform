@@ -12,26 +12,43 @@ use Illuminate\Support\Carbon;
 
 class RevenueComparisonChart extends ChartWidget
 {
-    public \Illuminate\Support\Carbon $fromDate;
-    public Carbon $toDate;
+    public Carbon $fromDate1;
+    public Carbon $toDate1;
+
+    public Carbon $fromDate2;
+    public Carbon $toDate2;
 
     protected static ?string $pollingInterval = null;
     protected static bool $isLazy = false;
 
     public function getHeading(): string|Htmlable|null
     {
-        return __('Revenue Chart 2 (for comparison)');
+        return __('Revenue Chart Comparison');
     }
 
     protected function getData(): array
     {
-        $fromDate = $this->fromDate ??= now()->subMonth();
-        $toDate = $this->toDate ??= now();
+        // Default values if not set
+        $fromDate1 = $this->fromDate1 ??= now()->subMonth();
+        $toDate1 = $this->toDate1 ??= now();
 
-        $data = Trend::model(Order::class)
+        $fromDate2 = $this->fromDate2 ??= now()->subMonths(2)->startOfMonth();
+        $toDate2 = $this->toDate2 ??= now()->subMonth()->endOfMonth();
+
+        // First dataset (Chart 1)
+        $data1 = Trend::model(Order::class)
             ->between(
-                start: $fromDate,
-                end: $toDate,
+                start: $fromDate1,
+                end: $toDate1,
+            )
+            ->perDay()
+            ->sum('total');
+
+        // Second dataset (Chart 2)
+        $data2 = Trend::model(Order::class)
+            ->between(
+                start: $fromDate2,
+                end: $toDate2,
             )
             ->perDay()
             ->sum('total');
@@ -39,28 +56,61 @@ class RevenueComparisonChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => __('Revenue Chart 2 (for comparison)'),
-                    'data' => $data->map(fn (TrendValue $value) => $value->aggregate),
-                    'backgroundColor' => 'rgba(75, 192, 192, 0.5)',
+                    'label' => __('Revenue Chart 1'),
+                    'data' => $data1->map(fn (TrendValue $value) => $value->aggregate),
                     'borderColor' => 'rgba(75, 192, 192, 1)',
-                    'fill' => true,
+                    'backgroundColor' => 'rgba(75, 192, 192, 0.2)',
+                    'fill' => false,
+                    'tension' => 0.4,
+                ],
+                [
+                    'label' => __('Revenue Chart 2'),
+                    'data' => $data2->map(fn (TrendValue $value) => $value->aggregate),
+                    'borderColor' => 'rgba(255, 99, 132, 1)',
+                    'backgroundColor' => 'rgba(255, 99, 132, 0.2)',
+                    'fill' => false,
+                    'tension' => 0.4,
                 ],
             ],
-            'labels' => $data->map(fn (TrendValue $value) => $value->date),
+            'labels' => $data1->map(fn (TrendValue $value) => $value->date),
         ];
     }
 
-    #[On('updateFromDate2')]
-    public function updateFromDate(string $from): void
+    // Event handlers for Chart 1
+    #[On('updateFromDate1')]
+    public function updateFromDate1(?string $from): void
     {
-        $this->fromDate = Carbon::parse($from);
+        if ($from) {
+            $this->fromDate1 = Carbon::parse($from)->startOfDay();
+        }
+        $this->dispatch('$refresh');
+    }
+
+    #[On('updateToDate1')]
+    public function updateToDate1(?string $to): void
+    {
+        if ($to) {
+            $this->toDate1 = Carbon::parse($to)->endOfDay();
+        }
+        $this->dispatch('$refresh');
+    }
+
+    // Event handlers for Chart 2
+    #[On('updateFromDate2')]
+    public function updateFromDate2(?string $from): void
+    {
+        if ($from) {
+            $this->fromDate2 = Carbon::parse($from)->startOfDay();
+        }
         $this->dispatch('$refresh');
     }
 
     #[On('updateToDate2')]
-    public function updateToDate(string $to): void
+    public function updateToDate2(?string $to): void
     {
-        $this->toDate = Carbon::parse($to);
+        if ($to) {
+            $this->toDate2 = Carbon::parse($to)->endOfDay();
+        }
         $this->dispatch('$refresh');
     }
 

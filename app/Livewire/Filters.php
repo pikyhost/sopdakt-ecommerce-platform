@@ -34,10 +34,16 @@ class Filters extends Widget implements HasForms
                         DatePicker::make('from')
                             ->label(__('Start date'))
                             ->live()
-                            ->afterStateUpdated(fn (?string $state) => $state ? $this->dispatch('updateFromDate1', from: $state) : null),
+                            ->afterStateUpdated(fn (?string $state) =>
+                            filled($state) ? $this->dispatch('updateFromDate1', from: $state) : null
+                            ),
+
                         DatePicker::make('to')
-                            ->label(__('End date')) ->live()
-                            ->afterStateUpdated(fn (?string $state) => $state ? $this->dispatch('updateToDate1', from: $state) : null),
+                            ->label(__('End date'))
+                            ->live()
+                            ->afterStateUpdated(fn (?string $state) =>
+                            filled($state) ? $this->dispatch('updateToDate1', to: $state) : null
+                            ),
                     ])->columns(2),
 
                 Section::make()
@@ -46,11 +52,18 @@ class Filters extends Widget implements HasForms
                         DatePicker::make('from2')
                             ->label(__('Start date for Revenue Chart 2'))
                             ->live()
-                            ->afterStateUpdated(fn (?string $state) => $this->dispatch('updateFromDate2', from: $state)),
+                            ->afterStateUpdated(fn (?string $state) =>
+                            filled($state) ? $this->dispatch('updateFromDate2', from: $state) : null
+                            ),
+
                         DatePicker::make('to2')
-                            ->label(__('End date for Revenue Chart 2')) ->live()
-                            ->afterStateUpdated(fn (?string $state) => $this->dispatch('updateToDate2', to: $state)),
+                            ->label(__('End date for Revenue Chart 2'))
+                            ->live()
+                            ->afterStateUpdated(fn (?string $state) =>
+                            filled($state) ? $this->dispatch('updateToDate2', to: $state) : null
+                            ),
                     ])->columns(2),
             ])->columns(2);
     }
+
 }

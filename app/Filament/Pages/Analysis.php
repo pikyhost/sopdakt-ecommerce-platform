@@ -48,7 +48,6 @@ class Analysis extends Page
             AnalysisPageStats::class,
             UsersChart::class,
             OrdersChart::class,
-            RevenueChart::class,
             RevenueComparisonChart::class,
             LastOrders::class,
         ];
