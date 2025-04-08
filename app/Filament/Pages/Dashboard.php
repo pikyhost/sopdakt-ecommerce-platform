@@ -18,11 +18,11 @@ class Dashboard extends BaseDashboard
                 Section::make()
                     ->schema([
                         DatePicker::make('startDate')
-                            ->label(__('Start date'))
-                            ->default(now()->subMonth()->startOfMonth()),
+                            ->native()
+                            ->label(__('Start date')),
                         DatePicker::make('endDate')
-                            ->label(__('End date'))
-                            ->default(now()->endOfMonth()),
+                            ->native()
+                            ->label(__('End date')),
                     ])
                     ->columns(2),
             ]);

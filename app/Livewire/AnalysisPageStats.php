@@ -26,26 +26,25 @@ class AnalysisPageStats extends BaseWidget
         $this->fromDate = $this->fromDate ?? now()->copy()->startOfMonth()->subMonth();
         $this->toDate = $this->toDate ?? now()->copy()->endOfMonth()->subMonth();
     }
-
     #[On('updateFromDate')]
     public function updateFromDate(string $from): void
     {
-        $this->fromDate = Carbon::parse($from);
+        $this->fromDate = Carbon::parse($from)->startOfDay();
         $this->dispatch('$refresh');
     }
 
     #[On('updateToDate')]
     public function updateToDate(string $to): void
     {
-        $this->toDate = Carbon::parse($to);
+        $this->toDate = Carbon::parse($to)->endOfDay();
         $this->dispatch('$refresh');
     }
 
     protected function getStats(): array
     {
         $locale = App::getLocale();
-        $startDate = $this->fromDate;
-        $endDate = $this->toDate;
+        $startDate = $this->fromDate->copy()->startOfDay();
+        $endDate = $this->toDate->copy()->endOfDay();
 
         // Queries within selected period
         $totalRevenueQuery = Order::whereBetween('created_at', [$startDate, $endDate]);
