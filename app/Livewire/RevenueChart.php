@@ -50,14 +50,14 @@ class RevenueChart extends ChartWidget
         ];
     }
 
-    #[On('updateFromDate')]
+    #[On('updateFromDate1')]
     public function updateFromDate(string $from): void
     {
         $this->fromDate = Carbon::parse($from);
         $this->dispatch('$refresh');
     }
 
-    #[On('updateToDate')]
+    #[On('updateToDate1')]
     public function updateToDate(string $to): void
     {
         $this->toDate = Carbon::parse($to);
