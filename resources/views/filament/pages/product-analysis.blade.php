@@ -1,5 +1,5 @@
 <x-filament::page>
-    <div class="space-y-6">
+    <div class="space-y-6" wire:ignore>
         <!-- Product Summary Card -->
         <x-filament::card>
             <div class="flex items-start gap-4">
@@ -86,8 +86,8 @@
                         @foreach($colorData as $color)
                             <tr class="border-b">
                                 <td class="py-2 flex items-center gap-2">
-                                    <span class="w-4 h-4 rounded-full inline-block"
-                                          style="background-color: {{ $color['code'] }}"></span>
+                                        <span class="w-4 h-4 rounded-full inline-block"
+                                              style="background-color: {{ $color['code'] }}"></span>
                                     {{ $color['color'] }}
                                 </td>
                                 <td class="text-right py-2">{{ $color['total'] }}</td>

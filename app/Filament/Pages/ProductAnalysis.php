@@ -58,10 +58,20 @@ class ProductAnalysis extends Page
             ->where('oi.product_id', $this->product->id)
             ->whereBetween('oi.created_at', [$this->fromDate, $this->toDate])
             ->join('sizes as s', 'oi.size_id', '=', 's.id')
-            ->select('s.name as size', DB::raw('SUM(oi.quantity) as total'))
+            ->select(
+                's.name',
+                DB::raw('SUM(oi.quantity) as total')
+            )
             ->groupBy('oi.size_id', 's.name')
             ->orderByDesc('total')
             ->get()
+            ->map(function ($item) {
+                $sizeName = json_decode($item->name, true);
+                return [
+                    'size' => $sizeName[app()->getLocale()] ?? $sizeName['en'],
+                    'total' => $item->total
+                ];
+            })
             ->toArray();
     }
 
@@ -71,10 +81,22 @@ class ProductAnalysis extends Page
             ->where('order_items.product_id', $this->product->id)
             ->whereBetween('order_items.created_at', [$this->fromDate, $this->toDate])
             ->join('colors', 'order_items.color_id', '=', 'colors.id')
-            ->select('colors.name as color', 'colors.code as code', DB::raw('SUM(order_items.quantity) as total'))
+            ->select(
+                'colors.name',
+                'colors.code',
+                DB::raw('SUM(order_items.quantity) as total')
+            )
             ->groupBy('order_items.color_id', 'colors.name', 'colors.code')
             ->orderByDesc('total')
             ->get()
+            ->map(function ($item) {
+                $colorName = json_decode($item->name, true);
+                return [
+                    'color' => $colorName[app()->getLocale()] ?? $colorName['en'],
+                    'code' => $item->code,
+                    'total' => $item->total
+                ];
+            })
             ->toArray();
     }
 
@@ -134,7 +156,6 @@ class ProductAnalysis extends Page
         $this->locationData = $this->getLocationDistribution();
         $this->statusData = $this->getStatusDistribution();
 
-        // Dispatch event to update charts
         $this->dispatch('updateCharts', [
             'sizeData' => $this->sizeData,
             'colorData' => $this->colorData,
