@@ -87,7 +87,7 @@
                             <tr class="border-b">
                                 <td class="py-2 flex items-center gap-2">
                                     <span class="w-4 h-4 rounded-full inline-block"
-                                          style="background-color: {{ $color['hex'] }}"></span>
+                                          style="background-color: {{ $color['code'] }}"></span>
                                     {{ $color['color'] }}
                                 </td>
                                 <td class="text-right py-2">{{ $color['total'] }}</td>
@@ -153,7 +153,7 @@
                         labels: @json(array_column($colorData, 'color')),
                         datasets: [{
                             data: @json(array_column($colorData, 'total')),
-                            backgroundColor: @json(array_column($colorData, 'hex'))
+                            backgroundColor: @json(array_column($colorData, 'code'))
                         }]
                     }
                 });

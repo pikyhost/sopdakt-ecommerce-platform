@@ -73,11 +73,12 @@ class ProductAnalysis extends Page
     protected function getSizeDistribution(): array
     {
         return OrderItem::query()
-            ->where('product_id', $this->product->id)
-            ->whereBetween('created_at', [$this->fromDate, $this->toDate])
-            ->join('sizes', 'order_items.size_id', '=', 'sizes.id')
-            ->select('sizes.name as size', DB::raw('SUM(quantity) as total'))
-            ->groupBy('size_id', 'sizes.name')
+            ->from('order_items as oi')
+            ->where('oi.product_id', $this->product->id)
+            ->whereBetween('oi.created_at', [$this->fromDate, $this->toDate])
+            ->join('sizes as s', 'oi.size_id', '=', 's.id')
+            ->select('s.name as size', DB::raw('SUM(oi.quantity) as total'))
+            ->groupBy('oi.size_id', 's.name')
             ->orderByDesc('total')
             ->get()
             ->toArray();
@@ -86,11 +87,11 @@ class ProductAnalysis extends Page
     protected function getColorDistribution(): array
     {
         return OrderItem::query()
-            ->where('product_id', $this->product->id)
-            ->whereBetween('created_at', [$this->fromDate, $this->toDate])
+            ->where('order_items.product_id', $this->product->id)
+            ->whereBetween('order_items.created_at', [$this->fromDate, $this->toDate])
             ->join('colors', 'order_items.color_id', '=', 'colors.id')
-            ->select('colors.name as color', 'colors.hex as hex', DB::raw('SUM(quantity) as total'))
-            ->groupBy('color_id', 'colors.name', 'colors.hex')
+            ->select('colors.name as color', 'colors.code as code', DB::raw('SUM(order_items.quantity) as total'))
+            ->groupBy('order_items.color_id', 'colors.name', 'colors.code')
             ->orderByDesc('total')
             ->get()
             ->toArray();
@@ -99,11 +100,11 @@ class ProductAnalysis extends Page
     protected function getTimeDistribution(): array
     {
         return OrderItem::query()
-            ->where('product_id', $this->product->id)
-            ->whereBetween('created_at', [$this->fromDate, $this->toDate])
+            ->where('order_items.product_id', $this->product->id)
+            ->whereBetween('order_items.created_at', [$this->fromDate, $this->toDate])
             ->select(
-                DB::raw('DATE(created_at) as date'),
-                DB::raw('SUM(quantity) as total')
+                DB::raw('DATE(order_items.created_at) as date'),
+                DB::raw('SUM(order_items.quantity) as total')
             )
             ->groupBy('date')
             ->orderBy('date')
@@ -114,15 +115,15 @@ class ProductAnalysis extends Page
     protected function getLocationDistribution(): array
     {
         return OrderItem::query()
-            ->where('product_id', $this->product->id)
+            ->where('order_items.product_id', $this->product->id)
             ->whereBetween('order_items.created_at', [$this->fromDate, $this->toDate])
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->join('countries', 'orders.country_id', '=', 'countries.id')
             ->select(
                 'countries.name as country',
-                DB::raw('SUM(quantity) as total')
+                DB::raw('SUM(order_items.quantity) as total')
             )
-            ->groupBy('country_id', 'countries.name')
+            ->groupBy('orders.country_id', 'countries.name')
             ->orderByDesc('total')
             ->get()
             ->toArray();
@@ -131,12 +132,12 @@ class ProductAnalysis extends Page
     protected function getStatusDistribution(): array
     {
         return OrderItem::query()
-            ->where('product_id', $this->product->id)
+            ->where('order_items.product_id', $this->product->id)
             ->whereBetween('order_items.created_at', [$this->fromDate, $this->toDate])
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->select(
                 'orders.status',
-                DB::raw('SUM(quantity) as total')
+                DB::raw('SUM(order_items.quantity) as total')
             )
             ->groupBy('orders.status')
             ->orderByDesc('total')
