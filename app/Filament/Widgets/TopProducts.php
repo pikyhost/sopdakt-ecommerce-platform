@@ -28,12 +28,12 @@ class TopProducts extends BaseWidget
         $locale = App::getLocale();
 
         // Get filter dates or default to last month
-        $startDate = !is_null($this->filters['startDate'] ?? null)
-            ? Carbon::parse($this->filters['startDate'])
+        $startDate = !is_null($this->filters['startDateDashboard'] ?? null)
+            ? Carbon::parse($this->filters['startDateDashboard'])
             : now()->subMonth()->startOfDay();
 
-        $endDate = !is_null($this->filters['endDate'] ?? null)
-            ? Carbon::parse($this->filters['endDate'])
+        $endDate = !is_null($this->filters['endDateDashboard'] ?? null)
+            ? Carbon::parse($this->filters['endDateDashboard'])
             : now()->endOfDay();
 
         return $table

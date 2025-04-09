@@ -29,23 +29,22 @@ class MyGoogleAnalyticsPage extends Page
         return __('Google Analytics');
     }
 
-//    protected function getHeaderWidgets(): array
-//    {
-//        return [
-//            Widgets\PageViewsWidget::class,
-//            Widgets\VisitorsWidget::class,
-//            Widgets\ActiveUsersOneDayWidget::class,
-//            Widgets\ActiveUsersSevenDayWidget::class,
-//            Widgets\ActiveUsersTwentyEightDayWidget::class,
-//            Widgets\SessionsWidget::class,
-//            Widgets\SessionsDurationWidget::class,
-//            Widgets\SessionsByCountryWidget::class,
-//            Widgets\SessionsByDeviceWidget::class,
-//            Widgets\MostVisitedPagesWidget::class,
-//            Widgets\TopReferrersListWidget::class,
-//        ];
-//    }
-
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            Widgets\PageViewsWidget::class,
+            Widgets\VisitorsWidget::class,
+            Widgets\ActiveUsersOneDayWidget::class,
+            Widgets\ActiveUsersSevenDayWidget::class,
+            Widgets\ActiveUsersTwentyEightDayWidget::class,
+            Widgets\SessionsWidget::class,
+            Widgets\SessionsDurationWidget::class,
+            Widgets\SessionsByCountryWidget::class,
+            Widgets\SessionsByDeviceWidget::class,
+            Widgets\MostVisitedPagesWidget::class,
+            Widgets\TopReferrersListWidget::class,
+        ];
+    }
 
     /*
 

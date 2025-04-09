@@ -17,17 +17,12 @@ class Dashboard extends BaseDashboard
             ->schema([
                 Section::make()
                     ->schema([
-                        DatePicker::make('startDate')
-                            ->label(__('Start date'))
-                            ->live()
-                            ->afterStateUpdated(fn () => $this->dispatch('$refresh')),
-                        DatePicker::make('endDate')
-                            ->label(__('End date'))
-                            ->live()
-                            ->afterStateUpdated(fn () => $this->dispatch('$refresh')),
+                        DatePicker::make('startDateDashboard')
+                            ->label(__('Start date')),
+                        DatePicker::make('endDateDashboard')
+                            ->label(__('End date')),
                     ])
                     ->columns(2),
             ]);
     }
-
 }
