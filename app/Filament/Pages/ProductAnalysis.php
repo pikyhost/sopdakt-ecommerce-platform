@@ -24,27 +24,17 @@ class ProductAnalysis extends Page
     public array $locationData = [];
     public array $statusData = [];
 
-    public function mount(Product $product, string $from, string $to): void
+    public function mount(Product $product): void
     {
         $this->product = $product;
-        $this->fromDate = Carbon::parse($from);
-        $this->toDate = Carbon::parse($to);
+        $this->fromDate = now()->subMonth();
+        $this->toDate = now();
         $this->loadAnalysisData();
     }
 
-    // In your Filament page class
     public static function getRoutePath(): string
     {
-        return '/products/{product}/analysis/{from}/{to}';
-    }
-
-    public static function getRouteParameters(): array
-    {
-        return [
-            'product',
-            'from',
-            'to'
-        ];
+        return '/products/{product}/analysis';
     }
 
     #[On('updateFromDateProduct')]
@@ -59,15 +49,6 @@ class ProductAnalysis extends Page
     {
         $this->toDate = Carbon::parse($to)->endOfDay();
         $this->loadAnalysisData();
-    }
-
-    protected function loadAnalysisData(): void
-    {
-        $this->sizeData = $this->getSizeDistribution();
-        $this->colorData = $this->getColorDistribution();
-        $this->timeData = $this->getTimeDistribution();
-        $this->locationData = $this->getLocationDistribution();
-        $this->statusData = $this->getStatusDistribution();
     }
 
     protected function getSizeDistribution(): array
@@ -143,6 +124,24 @@ class ProductAnalysis extends Page
             ->orderByDesc('total')
             ->get()
             ->toArray();
+    }
+
+    protected function loadAnalysisData(): void
+    {
+        $this->sizeData = $this->getSizeDistribution();
+        $this->colorData = $this->getColorDistribution();
+        $this->timeData = $this->getTimeDistribution();
+        $this->locationData = $this->getLocationDistribution();
+        $this->statusData = $this->getStatusDistribution();
+
+        // Dispatch event to update charts
+        $this->dispatch('updateCharts', [
+            'sizeData' => $this->sizeData,
+            'colorData' => $this->colorData,
+            'timeData' => $this->timeData,
+            'locationData' => $this->locationData,
+            'statusData' => $this->statusData,
+        ]);
     }
 
     public function getHeading(): string|Htmlable

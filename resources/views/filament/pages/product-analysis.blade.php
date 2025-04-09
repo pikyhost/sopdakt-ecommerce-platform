@@ -130,87 +130,80 @@
     @push('scripts')
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
+            // Initialize chart variables
+            let sizeChart, colorChart, timeChart, locationChart, statusChart;
+
             document.addEventListener('livewire:init', () => {
+                // Initialize charts
+                initializeCharts();
+
+                // Listen for data updates
+                Livewire.on('updateCharts', (data) => {
+                    updateCharts(data);
+                });
+            });
+
+            function initializeCharts() {
                 // Size Distribution Chart
-                new Chart(document.getElementById('sizeChart'), {
+                sizeChart = new Chart(document.getElementById('sizeChart'), {
                     type: 'pie',
-                    data: {
-                        labels: @json(array_column($sizeData, 'size')),
-                        datasets: [{
-                            data: @json(array_column($sizeData, 'total')),
-                            backgroundColor: [
-                                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
-                                '#9966FF', '#FF9F40', '#8AC249', '#EA5545'
-                            ]
-                        }]
-                    }
+                    data: { labels: [], datasets: [{ data: [], backgroundColor: [] }] }
                 });
 
                 // Color Distribution Chart
-                new Chart(document.getElementById('colorChart'), {
+                colorChart = new Chart(document.getElementById('colorChart'), {
                     type: 'doughnut',
-                    data: {
-                        labels: @json(array_column($colorData, 'color')),
-                        datasets: [{
-                            data: @json(array_column($colorData, 'total')),
-                            backgroundColor: @json(array_column($colorData, 'code'))
-                        }]
-                    }
+                    data: { labels: [], datasets: [{ data: [], backgroundColor: [] }] }
                 });
 
                 // Time Distribution Chart
-                new Chart(document.getElementById('timeChart'), {
+                timeChart = new Chart(document.getElementById('timeChart'), {
                     type: 'line',
-                    data: {
-                        labels: @json(array_column($timeData, 'date')),
-                        datasets: [{
-                            label: 'Daily Sales',
-                            data: @json(array_column($timeData, 'total')),
-                            borderColor: '#3B82F6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                            fill: true
-                        }]
-                    },
-                    options: {
-                        scales: {
-                            y: { beginAtZero: true }
-                        }
-                    }
+                    data: { labels: [], datasets: [{ data: [], borderColor: '#3B82F6' }] },
+                    options: { scales: { y: { beginAtZero: true } } }
                 });
 
                 // Location Distribution Chart
-                new Chart(document.getElementById('locationChart'), {
+                locationChart = new Chart(document.getElementById('locationChart'), {
                     type: 'bar',
-                    data: {
-                        labels: @json(array_column($locationData, 'country')),
-                        datasets: [{
-                            label: 'Orders by Country',
-                            data: @json(array_column($locationData, 'total')),
-                            backgroundColor: '#10B981'
-                        }]
-                    },
-                    options: {
-                        indexAxis: 'y',
-                        scales: {
-                            x: { beginAtZero: true }
-                        }
-                    }
+                    data: { labels: [], datasets: [{ data: [], backgroundColor: '#10B981' }] },
+                    options: { indexAxis: 'y', scales: { x: { beginAtZero: true } } }
                 });
 
                 // Status Distribution Chart
-                new Chart(document.getElementById('statusChart'), {
+                statusChart = new Chart(document.getElementById('statusChart'), {
                     type: 'polarArea',
-                    data: {
-                        labels: @json(array_column($statusData, 'status')),
-                        datasets: [{
-                            data: @json(array_column($statusData, 'total')),
-                            backgroundColor: [
-                                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'
-                            ]
-                        }]
-                    }
+                    data: { labels: [], datasets: [{ data: [], backgroundColor: [] }] }
                 });
-            });
+            }
+
+            function updateCharts(data) {
+                // Update Size Chart
+                sizeChart.data.labels = data.sizeData.map(item => item.size);
+                sizeChart.data.datasets[0].data = data.sizeData.map(item => item.total);
+                sizeChart.update();
+
+                // Update Color Chart
+                colorChart.data.labels = data.colorData.map(item => item.color);
+                colorChart.data.datasets[0].data = data.colorData.map(item => item.total);
+                colorChart.data.datasets[0].backgroundColor = data.colorData.map(item => item.code);
+                colorChart.update();
+
+                // Update Time Chart
+                timeChart.data.labels = data.timeData.map(item => item.date);
+                timeChart.data.datasets[0].data = data.timeData.map(item => item.total);
+                timeChart.update();
+
+                // Update Location Chart
+                locationChart.data.labels = data.locationData.map(item => item.country);
+                locationChart.data.datasets[0].data = data.locationData.map(item => item.total);
+                locationChart.update();
+
+                // Update Status Chart
+                statusChart.data.labels = data.statusData.map(item => item.status);
+                statusChart.data.datasets[0].data = data.statusData.map(item => item.total);
+                statusChart.update();
+            }
         </script>
     @endpush
 </x-filament::page>

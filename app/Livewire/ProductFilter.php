@@ -20,6 +20,14 @@ class ProductFilter extends Widget implements HasForms
 
     public ?array $data = [];
 
+    public function mount(): void
+    {
+        $this->form->fill([
+            'fromProduct' => now()->subMonth()->format('Y-m-d'),
+            'toProduct' => now()->format('Y-m-d'),
+        ]);
+    }
+
     public function form(Form $form): Form
     {
         return $form
