@@ -56,8 +56,6 @@ class ProductAnalysis extends Page
         $this->loadAnalysisData();
     }
 
-    // ... [Keep all your getDistribution methods exactly as they are] ...
-
     protected function loadAnalysisData(): void
     {
         $this->sizeData = $this->getSizeDistribution();
@@ -171,7 +169,7 @@ class ProductAnalysis extends Page
             ->get()
             ->toArray();
     }
-    
+
     public function getHeading(): string|Htmlable
     {
         return __('Product Analysis: ') . $this->product->name;
