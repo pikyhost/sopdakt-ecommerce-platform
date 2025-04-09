@@ -145,7 +145,20 @@ class TopProducts extends BaseWidget
                     ->label(__('View'))
                     ->action(function (Product $record) {
                         return redirect('/products/'.$record->slug);
+                    }),
+
+                Tables\Actions\Action::make('analyze')
+                    ->color('primary')
+                    ->icon('heroicon-o-chart-bar')
+                    ->label(__('Detailed Analysis'))
+                    ->url(function (Product $record): string {
+                        return route('product.analysis', [
+                            'product' => $record->id,
+                            'from' => $this->fromDate->format('Y-m-d'),
+                            'to' => $this->toDate->format('Y-m-d')
+                        ]);
                     })
+                    ->openUrlInNewTab(),
             ]);
     }
 }

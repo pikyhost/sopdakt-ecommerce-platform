@@ -24,12 +24,27 @@ class ProductAnalysis extends Page
     public array $locationData = [];
     public array $statusData = [];
 
-    public function mount(Product $product, string $from = null, string $to = null): void
+    public function mount(Product $product, string $from, string $to): void
     {
         $this->product = $product;
-        $this->fromDate = $from ? Carbon::parse($from) : now()->subMonth();
-        $this->toDate = $to ? Carbon::parse($to) : now();
+        $this->fromDate = Carbon::parse($from);
+        $this->toDate = Carbon::parse($to);
         $this->loadAnalysisData();
+    }
+
+    // In your Filament page class
+    public static function getRoutePath(): string
+    {
+        return '/products/{product}/analysis/{from}/{to}';
+    }
+
+    public static function getRouteParameters(): array
+    {
+        return [
+            'product',
+            'from',
+            'to'
+        ];
     }
 
     #[On('updateFromDateProduct')]
