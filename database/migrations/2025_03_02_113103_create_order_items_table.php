@@ -23,7 +23,6 @@ return new class extends Migration
             $table->unsignedInteger('subtotal'); // quantity * price_per_unit
             $table->timestamps();
             $table->foreignId('currency_id')->constrained('currencies')->cascadeOnDelete(); // العملة الأصلية
-
         });
     }
 
