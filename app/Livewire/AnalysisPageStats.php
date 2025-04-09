@@ -82,7 +82,7 @@ class AnalysisPageStats extends BaseWidget
 
         // Grouped filtered stats
         return [
-            Stat::make($locale === 'ar' ? 'إجمالي الإيرادات' : 'Total Sales', number_format($totalRevenue))
+            Stat::make($locale === 'ar' ? 'إجمالي المبيعات' : 'Total Sales', number_format($totalRevenue))
                 ->color('primary')
                 ->description($locale === 'ar' ? 'إجمالي المبيعات خلال الفترة المحددة.' : 'Total sales within the selected time range.')
                 ->descriptionIcon('heroicon-m-banknotes'),

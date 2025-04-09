@@ -50,14 +50,14 @@ class Filters extends Widget implements HasForms
                     ->description(__('filter2_desc'))
                     ->schema([
                         DatePicker::make('from2')
-                            ->label(__('Start date for Revenue Chart 2'))
+                            ->label(__('Start date for Sales Chart 2'))
                             ->live()
                             ->afterStateUpdated(fn (?string $state) =>
                             filled($state) ? $this->dispatch('updateFromDate2', from: $state) : null
                             ),
 
                         DatePicker::make('to2')
-                            ->label(__('End date for Revenue Chart 2'))
+                            ->label(__('End date for Sales Chart 2'))
                             ->live()
                             ->afterStateUpdated(fn (?string $state) =>
                             filled($state) ? $this->dispatch('updateToDate2', to: $state) : null
