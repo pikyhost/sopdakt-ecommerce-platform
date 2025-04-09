@@ -39,7 +39,7 @@ class ProductFilter extends Widget implements HasForms
                     ->closeOnDateSelection()
                     ->live()
                     ->afterStateUpdated(fn (?string $state) =>
-                    filled($state) ? $this->dispatch('updateFromDateProduct', from: $state) : null
+                    $this->dispatch('updateFromDateProduct', from: $state)
                     ),
                 DatePicker::make('toProduct')
                     ->label(__('End date'))
@@ -47,7 +47,7 @@ class ProductFilter extends Widget implements HasForms
                     ->closeOnDateSelection()
                     ->live()
                     ->afterStateUpdated(fn (?string $state) =>
-                    filled($state) ? $this->dispatch('updateToDateProduct', to: $state) : null
+                    $this->dispatch('updateToDateProduct', to: $state)
                     ),
             ])
             ->columns(2);

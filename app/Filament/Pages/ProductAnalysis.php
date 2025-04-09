@@ -24,16 +24,26 @@ class ProductAnalysis extends Page
     public array $locationData = [];
     public array $statusData = [];
 
-    protected $listeners = [
-        'updateFromDateProduct' => 'updateFromDate',
-        'updateToDateProduct' => 'updateToDate',
-    ];
 
     public function mount(Product $product): void
     {
         $this->product = $product;
         $this->fromDate = now()->subMonth();
         $this->toDate = now();
+        $this->loadAnalysisData();
+    }
+
+    #[On('updateFromDateProduct')]
+    public function updateFromDateProduct($from): void
+    {
+        $this->fromDate = $from;
+        $this->loadAnalysisData();
+    }
+
+    #[On('updateToDateProduct')]
+    public function updateToDateProduct($to): void
+    {
+        $this->toDate = $to;
         $this->loadAnalysisData();
     }
 
