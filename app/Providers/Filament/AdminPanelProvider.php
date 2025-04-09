@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Dashboard;
+use App\Filament\Pages\ProductAnalysis;
 use App\Filament\Widgets\HomePageRedirect;
 use App\Livewire\ProfileContactDetails;
 use App\Models\Setting;
@@ -58,7 +59,8 @@ class AdminPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
-               Dashboard::class,
+                Dashboard::class,
+                ProductAnalysis::class,
             ])
             ->resources([
                 config('filament-logger.activity_resource')

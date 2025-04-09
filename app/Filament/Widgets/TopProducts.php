@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Pages\ProductAnalysis;
 use App\Models\Product;
 use App\Models\Setting;
 use Carbon\Carbon;
@@ -151,13 +152,11 @@ class TopProducts extends BaseWidget
                     ->color('primary')
                     ->icon('heroicon-o-chart-bar')
                     ->label(__('Detailed Analysis'))
-                    ->url(function (Product $record): string {
-                        return route('product.analysis', [
-                            'product' => $record->id,
-                            'from' => $this->fromDate->format('Y-m-d'),
-                            'to' => $this->toDate->format('Y-m-d')
-                        ]);
-                    })
+                    ->url(fn (Product $record): string => ProductAnalysis::getUrl([
+                        'product' => $record->id,
+                        'from' => now()->subMonth()->toDateString(),  // temporary test
+                        'to' => now()->toDateString(),                // temporary test
+                    ]))
                     ->openUrlInNewTab(),
             ]);
     }
