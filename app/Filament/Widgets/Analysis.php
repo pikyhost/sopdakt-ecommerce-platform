@@ -62,11 +62,11 @@ class Analysis extends BaseWidget
                 ->descriptionIcon('heroicon-o-shopping-bag'),
 
             Stat::make(
-                $locale === 'ar' ? 'إجمالي الإيرادات' : 'Total Revenue',
+                $locale === 'ar' ? 'إجمالي المبيعات' : 'Total Sales',
                 number_format($totalRevenue)
             )
                 ->color('primary')
-                ->description($locale === 'ar' ? 'إجمالي الإيرادات في النطاق الزمني المحدد.' : 'Total revenue in selected time range.')
+                ->description($locale === 'ar' ? 'إجمالي المبيعات في النطاق الزمني المحدد.' : 'Total sales in selected time range.')
                 ->descriptionIcon('heroicon-m-banknotes'),
 
             Stat::make(

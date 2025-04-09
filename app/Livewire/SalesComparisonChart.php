@@ -10,7 +10,7 @@ use Illuminate\Contracts\Support\Htmlable;
 use Livewire\Attributes\On;
 use Illuminate\Support\Carbon;
 
-class RevenueComparisonChart extends ChartWidget
+class SalesComparisonChart extends ChartWidget
 {
     public Carbon $fromDate1;
     public Carbon $toDate1;
@@ -21,11 +21,11 @@ class RevenueComparisonChart extends ChartWidget
     protected static ?string $pollingInterval = null;
     protected static bool $isLazy = false;
 
-    protected int | string | array $columnSpan = 'full';
+    protected static ?string $maxHeight = '300px';
 
     public function getHeading(): string|Htmlable|null
     {
-        return __('Revenue Chart Comparison');
+        return __('Sales Chart Comparison');
     }
 
     protected function getData(): array
@@ -58,7 +58,7 @@ class RevenueComparisonChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => __('Revenue Chart 1'),
+                    'label' => __('Sales Chart 1'),
                     'data' => $data1->map(fn (TrendValue $value) => $value->aggregate),
                     'borderColor' => 'rgba(75, 192, 192, 1)',
                     'backgroundColor' => 'rgba(75, 192, 192, 0.2)',
@@ -66,7 +66,7 @@ class RevenueComparisonChart extends ChartWidget
                     'tension' => 0.4,
                 ],
                 [
-                    'label' => __('Revenue Chart 2'),
+                    'label' => __('Sales Chart 2'),
                     'data' => $data2->map(fn (TrendValue $value) => $value->aggregate),
                     'borderColor' => 'rgba(255, 99, 132, 1)',
                     'backgroundColor' => 'rgba(255, 99, 132, 0.2)',
