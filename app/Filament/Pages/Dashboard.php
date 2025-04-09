@@ -13,6 +13,8 @@ class Dashboard extends BaseDashboard
 
     protected bool $persistsFiltersInSession = false;
 
+    public ?array $tableFilters = null;
+
     public function filtersForm(Form $form): Form
     {
         return $form
