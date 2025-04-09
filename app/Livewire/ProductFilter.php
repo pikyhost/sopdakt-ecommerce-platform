@@ -22,17 +22,10 @@ class ProductFilter extends Widget implements HasForms
 
     public function mount(): void
     {
-        $defaultFrom = now()->subMonth()->format('Y-m-d');
-        $defaultTo = now()->format('Y-m-d');
-
         $this->form->fill([
-            'fromProduct' => $defaultFrom,
-            'toProduct' => $defaultTo,
+            'fromProduct' => now()->subMonth()->format('Y-m-d'),
+            'toProduct' => now()->format('Y-m-d'),
         ]);
-
-        // Dispatch default values on initial mount
-        $this->dispatch('updateFromDateProduct', from: $defaultFrom);
-        $this->dispatch('updateToDateProduct', to: $defaultTo);
     }
 
     public function form(Form $form): Form
@@ -46,7 +39,7 @@ class ProductFilter extends Widget implements HasForms
                     ->closeOnDateSelection()
                     ->live()
                     ->afterStateUpdated(fn (?string $state) =>
-                    $this->dispatch('updateFromDateProduct', from: $state)
+                    filled($state) ? $this->dispatch('updateFromDateProduct', from: $state) : null
                     ),
                 DatePicker::make('toProduct')
                     ->label(__('End date'))
@@ -54,7 +47,7 @@ class ProductFilter extends Widget implements HasForms
                     ->closeOnDateSelection()
                     ->live()
                     ->afterStateUpdated(fn (?string $state) =>
-                    $this->dispatch('updateToDateProduct', to: $state)
+                    filled($state) ? $this->dispatch('updateToDateProduct', to: $state) : null
                     ),
             ])
             ->columns(2);

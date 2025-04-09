@@ -24,31 +24,41 @@ class ProductAnalysis extends Page
     public array $locationData = [];
     public array $statusData = [];
 
-    public function mount(Product $product): void
+    public function mount(Product $product, string $from, string $to): void
     {
         $this->product = $product;
-        $this->fromDate = now()->subMonth();
-        $this->toDate = now();
+        $this->fromDate = Carbon::parse($from);
+        $this->toDate = Carbon::parse($to);
         $this->loadAnalysisData();
     }
 
+    // In your Filament page class
+    public static function getRoutePath(): string
+    {
+        return '/products/{product}/analysis/{from}/{to}';
+    }
+
+    public static function getRouteParameters(): array
+    {
+        return [
+            'product',
+            'from',
+            'to'
+        ];
+    }
+
     #[On('updateFromDateProduct')]
-    public function updateFromDateProduct($from): void
+    public function updateFromDate(string $from): void
     {
         $this->fromDate = Carbon::parse($from)->startOfDay();
         $this->loadAnalysisData();
     }
 
     #[On('updateToDateProduct')]
-    public function updateToDateProduct($to): void
+    public function updateToDate(string $to): void
     {
         $this->toDate = Carbon::parse($to)->endOfDay();
         $this->loadAnalysisData();
-    }
-
-    public static function getRoutePath(): string
-    {
-        return '/products/{product}/analysis';
     }
 
     protected function loadAnalysisData(): void
@@ -58,15 +68,6 @@ class ProductAnalysis extends Page
         $this->timeData = $this->getTimeDistribution();
         $this->locationData = $this->getLocationDistribution();
         $this->statusData = $this->getStatusDistribution();
-
-        // Dispatching the updated data to the frontend (Livewire) or JavaScript for visualization.
-        $this->dispatch('updateCharts', [
-            'sizeData' => $this->sizeData,
-            'colorData' => $this->colorData,
-            'timeData' => $this->timeData,
-            'locationData' => $this->locationData,
-            'statusData' => $this->statusData,
-        ]);
     }
 
     protected function getSizeDistribution(): array
@@ -76,56 +77,34 @@ class ProductAnalysis extends Page
             ->where('oi.product_id', $this->product->id)
             ->whereBetween('oi.created_at', [$this->fromDate, $this->toDate])
             ->join('sizes as s', 'oi.size_id', '=', 's.id')
-            ->select(
-                's.name',
-                DB::raw('SUM(oi.quantity) as total')
-            )
+            ->select('s.name as size', DB::raw('SUM(oi.quantity) as total'))
             ->groupBy('oi.size_id', 's.name')
             ->orderByDesc('total')
             ->get()
-            ->map(function ($item) {
-                $sizeName = json_decode($item->name, true);
-                return [
-                    'size' => $sizeName[app()->getLocale()] ?? $sizeName['en'],
-                    'total' => $item->total
-                ];
-            })
             ->toArray();
     }
 
     protected function getColorDistribution(): array
     {
         return OrderItem::query()
-            ->where('order_items.product_id', $this->product->id)
-            ->whereBetween('order_items.created_at', [$this->fromDate, $this->toDate])
+            ->where('product_id', $this->product->id)
+            ->whereBetween('created_at', [$this->fromDate, $this->toDate])
             ->join('colors', 'order_items.color_id', '=', 'colors.id')
-            ->select(
-                'colors.name',
-                'colors.code',
-                DB::raw('SUM(order_items.quantity) as total')
-            )
-            ->groupBy('order_items.color_id', 'colors.name', 'colors.code')
+            ->select('colors.name as color', 'colors.hex as hex', DB::raw('SUM(quantity) as total'))
+            ->groupBy('color_id', 'colors.name', 'colors.hex')
             ->orderByDesc('total')
             ->get()
-            ->map(function ($item) {
-                $colorName = json_decode($item->name, true);
-                return [
-                    'color' => $colorName[app()->getLocale()] ?? $colorName['en'],
-                    'code' => $item->code,
-                    'total' => $item->total
-                ];
-            })
             ->toArray();
     }
 
     protected function getTimeDistribution(): array
     {
         return OrderItem::query()
-            ->where('order_items.product_id', $this->product->id)
-            ->whereBetween('order_items.created_at', [$this->fromDate, $this->toDate])
+            ->where('product_id', $this->product->id)
+            ->whereBetween('created_at', [$this->fromDate, $this->toDate])
             ->select(
-                DB::raw('DATE(order_items.created_at) as date'),
-                DB::raw('SUM(order_items.quantity) as total')
+                DB::raw('DATE(created_at) as date'),
+                DB::raw('SUM(quantity) as total')
             )
             ->groupBy('date')
             ->orderBy('date')
@@ -136,15 +115,15 @@ class ProductAnalysis extends Page
     protected function getLocationDistribution(): array
     {
         return OrderItem::query()
-            ->where('order_items.product_id', $this->product->id)
+            ->where('product_id', $this->product->id)
             ->whereBetween('order_items.created_at', [$this->fromDate, $this->toDate])
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->join('countries', 'orders.country_id', '=', 'countries.id')
             ->select(
                 'countries.name as country',
-                DB::raw('SUM(order_items.quantity) as total')
+                DB::raw('SUM(quantity) as total')
             )
-            ->groupBy('orders.country_id', 'countries.name')
+            ->groupBy('country_id', 'countries.name')
             ->orderByDesc('total')
             ->get()
             ->toArray();
@@ -153,12 +132,12 @@ class ProductAnalysis extends Page
     protected function getStatusDistribution(): array
     {
         return OrderItem::query()
-            ->where('order_items.product_id', $this->product->id)
+            ->where('product_id', $this->product->id)
             ->whereBetween('order_items.created_at', [$this->fromDate, $this->toDate])
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->select(
                 'orders.status',
-                DB::raw('SUM(order_items.quantity) as total')
+                DB::raw('SUM(quantity) as total')
             )
             ->groupBy('orders.status')
             ->orderByDesc('total')
@@ -174,7 +153,7 @@ class ProductAnalysis extends Page
     protected function getHeaderWidgets(): array
     {
         return [
-            \App\Livewire\ProductFilter::class, // Ensure this widget is included to handle the date range filter
+            \App\Livewire\ProductFilter::class,
         ];
     }
 }

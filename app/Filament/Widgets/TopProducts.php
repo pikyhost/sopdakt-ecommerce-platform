@@ -154,6 +154,8 @@ class TopProducts extends BaseWidget
                     ->label(__('Detailed Analysis'))
                     ->url(fn (Product $record): string => ProductAnalysis::getUrl([
                         'product' => $record->slug,
+                        'from' => now()->subMonth()->toDateString(),  // temporary test
+                        'to' => now()->toDateString(),                // temporary test
                     ]))
                     ->openUrlInNewTab(),
             ]);
