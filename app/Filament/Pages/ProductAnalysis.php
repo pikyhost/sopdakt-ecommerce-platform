@@ -5,15 +5,22 @@ namespace App\Filament\Pages;
 use App\Models\OrderItem;
 use App\Models\Product;
 use Carbon\Carbon;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Grid;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\DB;
-use Livewire\Attributes\On;
 
-class ProductAnalysis extends Page
+class ProductAnalysis extends Page implements HasForms
 {
+    use InteractsWithForms;
+
     protected static string $view = 'filament.pages.product-analysis';
     protected static bool $shouldRegisterNavigation = false;
+    protected static ?string $slug = 'products/{product}/analysis/{from}/{to}';
 
     public Product $product;
     public Carbon $fromDate;
@@ -26,12 +33,65 @@ class ProductAnalysis extends Page
     public array $cityData = [];
     public array $statusData = [];
 
+    public $from_date;
+    public $to_date;
+    public array $colorSizeData = [];
+
+
     public function mount(Product $product, string $from, string $to): void
     {
         $this->product = $product;
         $this->fromDate = Carbon::parse($from);
         $this->toDate = Carbon::parse($to);
+
+        $this->from_date = $this->fromDate->format('Y-m-d');
+        $this->to_date = $this->toDate->format('Y-m-d');
+
+        $this->form->fill([
+            'from_date' => $this->from_date,
+            'to_date' => $this->to_date,
+        ]);
+
         $this->loadAnalysisData();
+    }
+
+    protected function getFormSchema(): array
+    {
+        return [
+            Section::make([
+                DatePicker::make('from_date')
+                    ->columnSpan(4)
+                    ->label('From Date'),
+
+                DatePicker::make('to_date')
+                    ->columnSpan(4)
+                    ->label('To Date'),
+            ])->columns(8)
+        ];
+    }
+
+    public function submit(): void
+    {
+        $data = $this->form->getState();
+
+        $this->redirect(self::getUrl([
+            'product' => $this->product->slug,
+            'from' => $data['from_date'],
+            'to' => $data['to_date'],
+        ]));
+    }
+
+
+    protected function loadAnalysisData(): void
+    {
+        $this->sizeData = $this->getSizeDistribution();
+        $this->colorData = $this->getColorDistribution();
+        $this->timeData = $this->getTimeDistribution();
+        $this->countryData = $this->getCountryDistribution();
+        $this->governorateData = $this->getGovernorateDistribution();
+        $this->cityData = $this->getCityDistribution();
+        $this->statusData = $this->getStatusDistribution();
+        $this->colorSizeData = $this->getColorSizeDistribution();
     }
 
     public static function getRoutePath(): string
@@ -48,29 +108,35 @@ class ProductAnalysis extends Page
         ];
     }
 
-    #[On('updateFromDateProduct')]
-    public function updateFromDate(string $from): void
+    // Add this new method to your class
+    protected function getColorSizeDistribution(): array
     {
-        $this->fromDate = Carbon::parse($from)->startOfDay();
-        $this->loadAnalysisData();
-    }
-
-    #[On('updateToDateProduct')]
-    public function updateToDate(string $to): void
-    {
-        $this->toDate = Carbon::parse($to)->endOfDay();
-        $this->loadAnalysisData();
-    }
-
-    protected function loadAnalysisData(): void
-    {
-        $this->sizeData = $this->getSizeDistribution();
-        $this->colorData = $this->getColorDistribution();
-        $this->timeData = $this->getTimeDistribution();
-        $this->countryData = $this->getCountryDistribution();
-        $this->governorateData = $this->getGovernorateDistribution();
-        $this->cityData = $this->getCityDistribution();
-        $this->statusData = $this->getStatusDistribution();
+        return OrderItem::query()
+            ->where('order_items.product_id', $this->product->id)
+            ->whereBetween('order_items.created_at', [$this->fromDate, $this->toDate])
+            ->join('colors', 'order_items.color_id', '=', 'colors.id')
+            ->join('sizes', 'order_items.size_id', '=', 'sizes.id')
+            ->select(
+                'colors.name as color_name',
+                'colors.code as color_code',
+                'sizes.name as size_name',
+                DB::raw('SUM(order_items.quantity) as total_quantity'),
+                DB::raw('COUNT(DISTINCT order_items.order_id) as order_count')
+            )
+            ->groupBy('order_items.color_id', 'colors.name', 'colors.code', 'order_items.size_id', 'sizes.name')
+            ->orderByDesc('total_quantity')
+            ->limit(10) // Limit to top 10 combinations
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'color' => json_decode($item->color_name, true) ?? ['en' => $item->color_name],
+                    'color_code' => $item->color_code,
+                    'size' => json_decode($item->size_name, true) ?? ['en' => $item->size_name],
+                    'total_quantity' => $item->total_quantity,
+                    'order_count' => $item->order_count
+                ];
+            })
+            ->toArray();
     }
 
     protected function getSizeDistribution(): array
