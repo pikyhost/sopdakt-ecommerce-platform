@@ -3,9 +3,6 @@
 namespace App\Filament\Pages;
 
 use App\Livewire\DashboardFilter;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Form;
 use Filament\Pages\Dashboard as BaseDashboard;
 
 class Dashboard extends BaseDashboard

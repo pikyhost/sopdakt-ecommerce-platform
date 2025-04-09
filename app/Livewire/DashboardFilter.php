@@ -2,7 +2,6 @@
 
 namespace App\Livewire;
 
-use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Components\DatePicker;
@@ -28,23 +27,19 @@ class DashboardFilter extends Widget implements HasForms
         return $form
             ->statePath('data')
             ->schema([
-                Section::make()
-                    ->description(__('filter1_desc'))
-                    ->schema([
-                        DatePicker::make('fromDashboard')
-                            ->label(__('Start date'))
-                            ->live()
-                            ->afterStateUpdated(fn (?string $state) =>
-                            filled($state) ? $this->dispatch('updateFromDateDashboard', from: $state) : null
-                            ),
+                DatePicker::make('fromDashboard')
+                    ->label(__('Start date'))
+                    ->live()
+                    ->afterStateUpdated(fn (?string $state) =>
+                    filled($state) ? $this->dispatch('updateFromDateDashboard', from: $state) : null
+                    ),
 
-                        DatePicker::make('toDashboard')
-                            ->label(__('End date'))
-                            ->live()
-                            ->afterStateUpdated(fn (?string $state) =>
-                            filled($state) ? $this->dispatch('updateToDateDashboard', to: $state) : null
-                            ),
-                    ])->columns(2),
+                DatePicker::make('toDashboard')
+                    ->label(__('End date'))
+                    ->live()
+                    ->afterStateUpdated(fn (?string $state) =>
+                    filled($state) ? $this->dispatch('updateToDateDashboard', to: $state) : null
+                    ),
             ])->columns(2);
     }
 

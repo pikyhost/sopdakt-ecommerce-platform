@@ -5,30 +5,46 @@ namespace App\Filament\Widgets;
 use App\Models\Order;
 use App\Models\Product;
 use Carbon\Carbon;
-use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\App;
+use Livewire\Attributes\On;
 
 class Analysis extends BaseWidget
 {
-    use InteractsWithPageFilters;
-
     protected static ?string $pollingInterval = null;
     protected static bool $isLazy = false;
 
+    public Carbon $fromDate;
+    public Carbon $toDate;
+
+    public function mount(): void
+    {
+        $this->fromDate = now()->subMonth();
+        $this->toDate = now();
+    }
+
+    #[On('updateFromDateDashboard')]
+    public function updateFromDate(string $from): void
+    {
+        $this->fromDate = Carbon::parse($from)->startOfDay();
+        $this->dispatch('$refresh');
+    }
+
+    #[On('updateToDateDashboard')]
+    public function updateToDate(string $to): void
+    {
+        $this->toDate = Carbon::parse($to)->endOfDay();
+        $this->dispatch('$refresh');
+    }
+
     protected function getStats(): array
     {
-        $locale = App::getLocale(); // Get the current language
+        $locale = App::getLocale();
 
-        // Default: last month
-        $startDate = !is_null($this->filters['startDateDashboard'] ?? null)
-            ? Carbon::parse($this->filters['startDateDashboard'])
-            : now()->subMonth()->startOfDay();
-
-        $endDate = !is_null($this->filters['endDateDashboard'] ?? null)
-            ? Carbon::parse($this->filters['endDateDashboard'])
-            : now()->endOfDay();
+        // Use the date properties instead of filters
+        $startDate = $this->fromDate;
+        $endDate = $this->toDate;
 
         // Get filtered products
         $totalProducts = Product::whereBetween('created_at', [$startDate, $endDate])->count();
