@@ -853,7 +853,7 @@
     "The selected country group has already been added.": "تمت إضافة مجموعة الدول المحددة بالفعل.",
     "You cannot select both a Country and a Country Group at the same time.": "لا يمكنك تحديد دولة ومجموعة دول في نفس الوقت.",
     "You must select either a Country or a Country Group.": "يجب عليك اختيار إما دولة أو مجموعة دول.",
-
+    "orders.label": "الطلبات",
     "bundles.form.heroicon_o_bolt": "رمز البرق",
     "bundles.form.columns": "الأعمدة",
     "bundles.form.column_span_full": "عرض العمود بالكامل",
