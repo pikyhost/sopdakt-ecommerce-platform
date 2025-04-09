@@ -14,13 +14,11 @@ class SalesComparisonChart extends ChartWidget
 {
     public Carbon $fromDate1;
     public Carbon $toDate1;
-
     public Carbon $fromDate2;
     public Carbon $toDate2;
 
     protected static ?string $pollingInterval = null;
     protected static bool $isLazy = false;
-
     protected int | string | array $columnSpan = 'full';
 
     public function getHeading(): string|Htmlable|null
@@ -37,48 +35,46 @@ class SalesComparisonChart extends ChartWidget
         $fromDate2 = $this->fromDate2 ??= now()->subMonths(2)->startOfMonth();
         $toDate2 = $this->toDate2 ??= now()->subMonth()->endOfMonth();
 
-        // First dataset (Chart 1)
+        // Get data for both periods
         $data1 = Trend::model(Order::class)
-            ->between(
-                start: $fromDate1,
-                end: $toDate1,
-            )
+            ->between(start: $fromDate1, end: $toDate1)
             ->perDay()
             ->sum('total');
 
-        // Second dataset (Chart 2)
         $data2 = Trend::model(Order::class)
-            ->between(
-                start: $fromDate2,
-                end: $toDate2,
-            )
+            ->between(start: $fromDate2, end: $toDate2)
             ->perDay()
             ->sum('total');
+
+        // Create combined labels with proper date formatting
+        $labels1 = $data1->map(fn (TrendValue $value) => Carbon::parse($value->date)->format('Y-m-d'));
+        $labels2 = $data2->map(fn (TrendValue $value) => Carbon::parse($value->date)->format('Y-m-d'));
 
         return [
             'datasets' => [
                 [
-                    'label' => __('Sales Chart 1'),
+                    'label' => __('Period 1') . ' (' . $fromDate1->format('M d') . ' - ' . $toDate1->format('M d') . ')',
                     'data' => $data1->map(fn (TrendValue $value) => $value->aggregate),
                     'borderColor' => 'rgba(75, 192, 192, 1)',
                     'backgroundColor' => 'rgba(75, 192, 192, 0.2)',
+                    'borderWidth' => 2,
+                    'tension' => 0.3,
                     'fill' => false,
-                    'tension' => 0.4,
                 ],
                 [
-                    'label' => __('Sales Chart 2'),
+                    'label' => __('Period 2') . ' (' . $fromDate2->format('M d') . ' - ' . $toDate2->format('M d') . ')',
                     'data' => $data2->map(fn (TrendValue $value) => $value->aggregate),
                     'borderColor' => 'rgba(255, 99, 132, 1)',
                     'backgroundColor' => 'rgba(255, 99, 132, 0.2)',
+                    'borderWidth' => 2,
+                    'tension' => 0.3,
                     'fill' => false,
-                    'tension' => 0.4,
                 ],
             ],
-            'labels' => $data1->map(fn (TrendValue $value) => $value->date),
+            'labels' => $labels1->merge($labels2)->unique()->sort()->values()->toArray(),
         ];
     }
 
-    // Event handlers for Chart 1
     #[On('updateFromDate1')]
     public function updateFromDate1(?string $from): void
     {
@@ -97,7 +93,6 @@ class SalesComparisonChart extends ChartWidget
         $this->dispatch('$refresh');
     }
 
-    // Event handlers for Chart 2
     #[On('updateFromDate2')]
     public function updateFromDate2(?string $from): void
     {
