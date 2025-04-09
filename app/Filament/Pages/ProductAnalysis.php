@@ -24,7 +24,6 @@ class ProductAnalysis extends Page
     public array $locationData = [];
     public array $statusData = [];
 
-
     public function mount(Product $product): void
     {
         $this->product = $product;
@@ -36,34 +35,20 @@ class ProductAnalysis extends Page
     #[On('updateFromDateProduct')]
     public function updateFromDateProduct($from): void
     {
-        $this->fromDate = $from;
+        $this->fromDate = Carbon::parse($from)->startOfDay();
         $this->loadAnalysisData();
     }
 
     #[On('updateToDateProduct')]
     public function updateToDateProduct($to): void
     {
-        $this->toDate = $to;
+        $this->toDate = Carbon::parse($to)->endOfDay();
         $this->loadAnalysisData();
     }
 
     public static function getRoutePath(): string
     {
         return '/products/{product}/analysis';
-    }
-
-    #[On('updateFromDateProduct')]
-    public function updateFromDate(string $from): void
-    {
-        $this->fromDate = Carbon::parse($from)->startOfDay();
-        $this->loadAnalysisData();
-    }
-
-    #[On('updateToDateProduct')]
-    public function updateToDate(string $to): void
-    {
-        $this->toDate = Carbon::parse($to)->endOfDay();
-        $this->loadAnalysisData();
     }
 
     protected function loadAnalysisData(): void
@@ -74,6 +59,7 @@ class ProductAnalysis extends Page
         $this->locationData = $this->getLocationDistribution();
         $this->statusData = $this->getStatusDistribution();
 
+        // Dispatching the updated data to the frontend (Livewire) or JavaScript for visualization.
         $this->dispatch('updateCharts', [
             'sizeData' => $this->sizeData,
             'colorData' => $this->colorData,
@@ -188,7 +174,7 @@ class ProductAnalysis extends Page
     protected function getHeaderWidgets(): array
     {
         return [
-            \App\Livewire\ProductFilter::class,
+            \App\Livewire\ProductFilter::class, // Ensure this widget is included to handle the date range filter
         ];
     }
 }

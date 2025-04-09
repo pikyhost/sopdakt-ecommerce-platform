@@ -22,10 +22,17 @@ class ProductFilter extends Widget implements HasForms
 
     public function mount(): void
     {
+        $defaultFrom = now()->subMonth()->format('Y-m-d');
+        $defaultTo = now()->format('Y-m-d');
+
         $this->form->fill([
-            'fromProduct' => now()->subMonth()->format('Y-m-d'),
-            'toProduct' => now()->format('Y-m-d'),
+            'fromProduct' => $defaultFrom,
+            'toProduct' => $defaultTo,
         ]);
+
+        // Dispatch default values on initial mount
+        $this->dispatch('updateFromDateProduct', from: $defaultFrom);
+        $this->dispatch('updateToDateProduct', to: $defaultTo);
     }
 
     public function form(Form $form): Form
