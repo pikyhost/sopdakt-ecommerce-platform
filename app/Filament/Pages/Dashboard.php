@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Livewire\DashboardFilter;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
@@ -9,24 +10,10 @@ use Filament\Pages\Dashboard as BaseDashboard;
 
 class Dashboard extends BaseDashboard
 {
-    use BaseDashboard\Concerns\HasFiltersForm;
-
-    protected bool $persistsFiltersInSession = false;
-
-    public ?array $tableFilters = null;
-
-    public function filtersForm(Form $form): Form
+    protected function getHeaderWidgets(): array
     {
-        return $form
-            ->schema([
-                Section::make()
-                    ->schema([
-                        DatePicker::make('startDateDashboard')
-                            ->label(__('Start date')),
-                        DatePicker::make('endDateDashboard')
-                            ->label(__('End date')),
-                    ])
-                    ->columns(2),
-            ]);
+        return [
+            DashboardFilter::class,
+        ];
     }
 }
