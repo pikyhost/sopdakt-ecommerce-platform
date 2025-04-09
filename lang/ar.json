@@ -847,6 +847,8 @@
     "Phone number": "رقم الهاتف",
     "Is active": "نشط",
     "Last modified at": "آخر تعديل في",
+    "Current Period" : "الفترة الحالية",
+    "Comparison Period" : "فترة المقارنة",
     "roles": "الدور",
     "Currency": "العملة",
     "The selected country has already been added.": "تمت إضافة الدولة المحددة بالفعل.",

@@ -19,6 +19,8 @@ class BundlesRelationManager extends RelationManager
 {
     protected static string $relationship = 'bundles';
 
+    protected static bool $isLazy = false;
+
     /**
      * @param Model $ownerRecord
      * @param string $pageClass
