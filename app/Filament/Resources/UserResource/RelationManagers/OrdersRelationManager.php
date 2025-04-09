@@ -3,14 +3,34 @@
 namespace App\Filament\Resources\UserResource\RelationManagers;
 
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class OrdersRelationManager extends RelationManager
 {
     protected static string $relationship = 'orders';
+
+    public static function getTitle(Model $ownerRecord, string $pageClass): string
+    {
+        return __('orders.label');
+    }
+
+    protected static function getModelLabel(): ?string
+    {
+        return __('orders.label');
+    }
+
+    protected static function getPluralModelLabel(): ?string
+    {
+        return __('orders.label');
+    }
+
+    protected static function getPluralRecordLabel(): ?string
+    {
+        return __('orders.label');
+    }
 
     public function table(Table $table): Table
     {
@@ -23,13 +43,6 @@ class OrdersRelationManager extends RelationManager
                     ->label(__('Number'))
                     ->searchable(),
 
-                TextColumn::make('tracking_number')
-                    ->copyable()
-                    ->placeholder('-')
-                    ->label(__('Tracking Number'))
-                    ->searchable()
-                    ->weight(FontWeight::Bold),
-
                 Tables\Columns\TextColumn::make('user.name')
                     ->formatStateUsing(function ($record) {
                         return $record->user->name.' (#'.$record->user_id.')';
@@ -40,32 +53,10 @@ class OrdersRelationManager extends RelationManager
                     ->numeric()
                     ->sortable(),
 
-                Tables\Columns\TextColumn::make('contact.name')
-                    ->formatStateUsing(function ($record) {
-                        return $record->contact->name.' (#'.$record->contact_id.')';
-                    })
-                    ->label(__('Contact Name'))
-                    ->searchable()
-                    ->placeholder('-')
-                    ->numeric()
-                    ->sortable(),
-
                 TextColumn::make('user.phone')
                     ->iconColor('primary')
                     ->icon('heroicon-o-phone')
                     ->label(__('User Phone Number'))
-                    ->placeholder(__('No phone number saved'))
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('user.second_phone')
-                    ->label(__('Second Phone Number'))
-                    ->searchable()
-                    ->placeholder('-'),
-
-                TextColumn::make('contact.phone')
-                    ->iconColor('primary')
-                    ->icon('heroicon-o-phone')
-                    ->label(__('Contact Phone Number'))
                     ->placeholder(__('No phone number saved'))
                     ->searchable(),
 
@@ -127,12 +118,6 @@ class OrdersRelationManager extends RelationManager
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('Created At'))
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label(__('Updated At'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
