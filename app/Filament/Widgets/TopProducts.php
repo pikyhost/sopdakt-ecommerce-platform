@@ -153,7 +153,7 @@ class TopProducts extends BaseWidget
                     ->icon('heroicon-o-chart-bar')
                     ->label(__('Detailed Analysis'))
                     ->url(fn (Product $record): string => ProductAnalysis::getUrl([
-                        'product' => $record->id,
+                        'product' => $record->slug,
                         'from' => now()->subMonth()->toDateString(),  // temporary test
                         'to' => now()->toDateString(),                // temporary test
                     ]))
