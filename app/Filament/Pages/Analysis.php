@@ -7,6 +7,7 @@ use App\Livewire\Filters;
 use App\Livewire\LastOrders;
 use App\Livewire\OrdersChart;
 use App\Livewire\RevenueComparisonChart;
+use App\Livewire\SalesComparisonChart;
 use App\Livewire\UsersChart;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
@@ -47,7 +48,7 @@ class Analysis extends Page
             AnalysisPageStats::class,
             UsersChart::class,
             OrdersChart::class,
-            RevenueComparisonChart::class,
+            SalesComparisonChart::class,
             LastOrders::class,
         ];
     }

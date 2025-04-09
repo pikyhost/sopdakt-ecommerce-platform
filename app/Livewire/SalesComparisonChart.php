@@ -21,7 +21,7 @@ class SalesComparisonChart extends ChartWidget
     protected static ?string $pollingInterval = null;
     protected static bool $isLazy = false;
 
-    protected static ?string $maxHeight = '300px';
+    protected int | string | array $columnSpan = 'full';
 
     public function getHeading(): string|Htmlable|null
     {
