@@ -4,7 +4,6 @@ namespace App\Filament\Resources\UserResource\RelationManagers;
 
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 
@@ -41,23 +40,6 @@ class OrdersRelationManager extends RelationManager
                     ->copyable()
                     ->formatStateUsing(fn($state) => '#' . $state)
                     ->label(__('Number'))
-                    ->searchable(),
-
-                Tables\Columns\TextColumn::make('user.name')
-                    ->formatStateUsing(function ($record) {
-                        return $record->user->name.' (#'.$record->user_id.')';
-                    })
-                    ->label(__('User Name'))
-                    ->searchable()
-                    ->placeholder('-')
-                    ->numeric()
-                    ->sortable(),
-
-                TextColumn::make('user.phone')
-                    ->iconColor('primary')
-                    ->icon('heroicon-o-phone')
-                    ->label(__('User Phone Number'))
-                    ->placeholder(__('No phone number saved'))
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('status')
@@ -119,8 +101,7 @@ class OrdersRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('Created At'))
                     ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->sortable(),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
