@@ -37,7 +37,7 @@ class ProductFilter extends Widget implements HasForms
                     ->label(__('Start date'))
                     ->native(false)
                     ->closeOnDateSelection()
-                    ->live()
+                    ->live(debounce: 500)
                     ->afterStateUpdated(fn (?string $state) =>
                     filled($state) ? $this->dispatch('updateFromDateProduct', from: $state) : null
                     ),
@@ -45,7 +45,7 @@ class ProductFilter extends Widget implements HasForms
                     ->label(__('End date'))
                     ->native(false)
                     ->closeOnDateSelection()
-                    ->live()
+                    ->live(debounce: 500)
                     ->afterStateUpdated(fn (?string $state) =>
                     filled($state) ? $this->dispatch('updateToDateProduct', to: $state) : null
                     ),

@@ -24,6 +24,11 @@ class ProductAnalysis extends Page
     public array $locationData = [];
     public array $statusData = [];
 
+    protected $listeners = [
+        'updateFromDateProduct' => 'updateFromDate',
+        'updateToDateProduct' => 'updateToDate',
+    ];
+
     public function mount(Product $product): void
     {
         $this->product = $product;
@@ -49,6 +54,25 @@ class ProductAnalysis extends Page
     {
         $this->toDate = Carbon::parse($to)->endOfDay();
         $this->loadAnalysisData();
+    }
+
+    // ... [Keep all your getDistribution methods exactly as they are] ...
+
+    protected function loadAnalysisData(): void
+    {
+        $this->sizeData = $this->getSizeDistribution();
+        $this->colorData = $this->getColorDistribution();
+        $this->timeData = $this->getTimeDistribution();
+        $this->locationData = $this->getLocationDistribution();
+        $this->statusData = $this->getStatusDistribution();
+
+        $this->dispatch('updateCharts', [
+            'sizeData' => $this->sizeData,
+            'colorData' => $this->colorData,
+            'timeData' => $this->timeData,
+            'locationData' => $this->locationData,
+            'statusData' => $this->statusData,
+        ]);
     }
 
     protected function getSizeDistribution(): array
@@ -147,24 +171,7 @@ class ProductAnalysis extends Page
             ->get()
             ->toArray();
     }
-
-    protected function loadAnalysisData(): void
-    {
-        $this->sizeData = $this->getSizeDistribution();
-        $this->colorData = $this->getColorDistribution();
-        $this->timeData = $this->getTimeDistribution();
-        $this->locationData = $this->getLocationDistribution();
-        $this->statusData = $this->getStatusDistribution();
-
-        $this->dispatch('updateCharts', [
-            'sizeData' => $this->sizeData,
-            'colorData' => $this->colorData,
-            'timeData' => $this->timeData,
-            'locationData' => $this->locationData,
-            'statusData' => $this->statusData,
-        ]);
-    }
-
+    
     public function getHeading(): string|Htmlable
     {
         return __('Product Analysis: ') . $this->product->name;
