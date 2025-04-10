@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Widgets\TopProducts;
 use App\Livewire\AnalysisPageStats;
 use App\Livewire\Filters;
 use App\Livewire\LastOrders;
@@ -48,6 +49,7 @@ class Analysis extends Page
             UsersChart::class,
             OrdersChart::class,
             SalesComparisonChart::class,
+            TopProducts::class,
             LastOrders::class,
         ];
     }

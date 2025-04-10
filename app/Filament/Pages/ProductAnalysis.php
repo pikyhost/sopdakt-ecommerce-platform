@@ -31,6 +31,8 @@ class ProductAnalysis extends Page implements HasForms
     public array $cityData = [];
     public array $statusData = [];
 
+    public int $totalOrderCount;
+
     public $from_date;
     public $to_date;
     public array $colorSizeData = [];
@@ -41,6 +43,7 @@ class ProductAnalysis extends Page implements HasForms
         $this->product = $product;
         $this->fromDate = Carbon::parse($from)->startOfDay(); // Start of the from date
         $this->toDate = Carbon::parse($to)->endOfDay(); // End of the to date (includes all of today)
+        $this->totalOrderCount = $this->getTotalOrderCount();
 
         $this->from_date = $this->fromDate->format('Y-m-d');
         $this->to_date = $this->toDate->format('Y-m-d');
@@ -106,35 +109,49 @@ class ProductAnalysis extends Page implements HasForms
         ];
     }
 
-    // Add this new method to your class
     protected function getColorSizeDistribution(): array
     {
         return OrderItem::query()
             ->from('order_items as oi')
-            ->join('orders as o', 'oi.order_id', '=', 'o.id')
-            ->join('colors as c', 'oi.color_id', '=', 'c.id')
-            ->join('sizes as s', 'oi.size_id', '=', 's.id')
+            ->leftJoin('orders as o', 'oi.order_id', '=', 'o.id')
+            ->leftJoin('colors as c', 'oi.color_id', '=', 'c.id')
+            ->leftJoin('sizes as s', 'oi.size_id', '=', 's.id')
             ->where('oi.product_id', $this->product->id)
             ->whereBetween('oi.created_at', [$this->fromDate, $this->toDate])
             ->selectRaw('
-            c.name as color_name,
-            c.code as color_code,
-            s.name as size_name,
+            IFNULL(c.name, \'{"en":"N/A"}\') as color_name,
+            IFNULL(c.code, \'#cccccc\') as color_code,
+            IFNULL(s.name, \'{"en":"N/A"}\') as size_name,
             SUM(oi.quantity) as total_quantity,
             COUNT(DISTINCT oi.order_id) as order_count
         ')
-            ->groupBy('oi.color_id', 'c.name', 'c.code', 'oi.size_id', 's.name')
+            ->groupByRaw('
+            IFNULL(c.name, \'{"en":"N/A"}\'),
+            IFNULL(c.code, \'#cccccc\'),
+            IFNULL(s.name, \'{"en":"N/A"}\')
+        ')
             ->orderByDesc('total_quantity')
             ->limit(10)
             ->get()
-            ->map(fn($item) => [
-                'color' => json_decode($item->color_name, true) ?? ['en' => $item->color_name],
-                'color_code' => $item->color_code,
-                'size' => json_decode($item->size_name, true) ?? ['en' => $item->size_name],
-                'total_quantity' => $item->total_quantity,
-                'order_count' => $item->order_count,
-            ])
+            ->map(function ($item) {
+                return [
+                    'color' => json_decode($item->color_name, true),
+                    'color_code' => $item->color_code,
+                    'size' => json_decode($item->size_name, true),
+                    'total_quantity' => (int) $item->total_quantity,
+                    'order_count' => (int) $item->order_count,
+                ];
+            })
             ->toArray();
+    }
+
+    protected function getTotalOrderCount(): int
+    {
+        return OrderItem::query()
+            ->where('product_id', $this->product->id)
+            ->whereBetween('created_at', [$this->fromDate, $this->toDate])
+            ->distinct('order_id')
+            ->count('order_id');
     }
 
 

@@ -24,7 +24,7 @@ class LastOrders extends BaseWidget
 
     public function getHeading(): string|Htmlable|null
     {
-        return __('Recent Transactions');
+        return __('Last Orders');
     }
 
     public function mount(): void

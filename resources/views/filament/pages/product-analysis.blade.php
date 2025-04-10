@@ -70,14 +70,15 @@
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8"> <!-- Added top margin -->
                         @php
                             $stats = [
-                                ['title' => __('Total Ordered'), 'value' => number_format(array_sum(array_column($sizeData, 'total'))), 'color' => 'blue', 'icon' => 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z'],
+                                ['title' => __('Total Ordered'), 'value' => number_format($totalOrderCount), 'color' => 'blue', 'icon' => 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z'],
                                 ['title' => __('Unique Sizes'), 'value' => count($sizeData), 'color' => 'emerald', 'icon' => 'M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3'],
                                 ['title' => __('Color Variants'), 'value' => count($colorData), 'color' => 'purple', 'icon' => 'M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01'],
                                 ['title' => __('Countries'), 'value' => count($countryData), 'color' => 'amber', 'icon' => 'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z'],
                             ];
                         @endphp
 
-                        @foreach($stats as $stat)
+
+                    @foreach($stats as $stat)
                             <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 hover:shadow-xs transition-all duration-200">
                                 <div class="flex justify-between items-start h-full">
                                     <div class="pr-2">
@@ -101,6 +102,7 @@
             </div>
         </x-filament::card>
 
+        <!-- Size Distribution - Updated Table Text Styles -->
         <x-filament::card class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div class="p-6">
                 <div class="flex items-center justify-between mb-6">
@@ -129,11 +131,9 @@
                                         {{ __('Share (%)') }}
                                     </th>
                                 </tr>
-
-                                </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                                @foreach($sizeData as $size)
+                                @forelse($sizeData as $size)
                                     @php
                                         $sizeName = is_array($size['size'])
                                             ? ($size['size'][app()->getLocale()] ?? $size['size']['en'])
@@ -152,7 +152,13 @@
                                             {{ $percentage }}%
                                         </td>
                                     </tr>
-                                @endforeach
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-300">
+                                            {{ app()->getLocale() === 'ar' ? 'لا تتوفر أحجام مختلفة' : 'No different sizes available' }}
+                                        </td>
+                                    </tr>
+                                @endforelse
                                 </tbody>
                             </table>
                         </div>
@@ -194,7 +200,7 @@
                                 </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                                @foreach($colorData as $color)
+                                @forelse($colorData as $color)
                                     @php
                                         $colorName = is_array($color['color']) ?
                                             ($color['color'][app()->getLocale()] ?? $color['color']['en']) :
@@ -213,7 +219,13 @@
                                             {{ $percentage }}%
                                         </td>
                                     </tr>
-                                @endforeach
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-300">
+                                            {{ app()->getLocale() === 'ar' ? 'لا تتوفر ألوان مختلفة' : 'No different colors available' }}
+                                        </td>
+                                    </tr>
+                                @endforelse
                                 </tbody>
                             </table>
                         </div>
@@ -302,6 +314,7 @@
         </x-filament::card>
 
         <!-- Geographical Distribution - Updated Table Text Styles -->
+        <!-- Geographical Distribution - Updated Table Text Styles -->
         <x-filament::card class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div class="p-6">
                 <div class="flex items-center justify-between mb-6">
@@ -341,17 +354,15 @@
                                 </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                                @php
-                                    $countryTotal = max(1, array_sum(array_column($countryData, 'total')));
-                                @endphp
-                                @foreach($countryData as $country)
+                                @forelse($countryData as $country)
+                                    @php
+                                        $countryTotal = max(1, array_sum(array_column($countryData, 'total')));
+                                        $countryName = is_array($country['country']) ?
+                                            ($country['country'][app()->getLocale()] ?? $country['country']['en']) :
+                                            $country['country'];
+                                    @endphp
                                     <tr class="transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 group">
                                         <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-start group-hover:text-primary-600 dark:group-hover:text-primary-400">
-                                            @php
-                                                $countryName = is_array($country['country']) ?
-                                                    ($country['country'][app()->getLocale()] ?? $country['country']['en']) :
-                                                    $country['country'];
-                                            @endphp
                                             {{ $countryName }}
                                         </td>
                                         <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-end group-hover:text-primary-600 dark:group-hover:text-primary-400">
@@ -361,7 +372,13 @@
                                             {{ round(($country['total'] / $countryTotal) * 100, 1) }}%
                                         </td>
                                     </tr>
-                                @endforeach
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-300">
+                                            {{ app()->getLocale() === 'ar' ? 'لا توجد بيانات متاحة للبلدان' : 'No country data available' }}
+                                        </td>
+                                    </tr>
+                                @endforelse
                                 </tbody>
                             </table>
                         </div>
@@ -394,17 +411,15 @@
                                 </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                                @php
-                                    $governorateTotal = max(1, array_sum(array_column($governorateData, 'total')));
-                                @endphp
-                                @foreach($governorateData as $governorate)
+                                @forelse($governorateData as $governorate)
+                                    @php
+                                        $governorateTotal = max(1, array_sum(array_column($governorateData, 'total')));
+                                        $govName = is_array($governorate['governorate']) ?
+                                            ($governorate['governorate'][app()->getLocale()] ?? $governorate['governorate']['en']) :
+                                            $governorate['governorate'];
+                                    @endphp
                                     <tr class="transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 group">
                                         <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-start group-hover:text-primary-600 dark:group-hover:text-primary-400">
-                                            @php
-                                                $govName = is_array($governorate['governorate']) ?
-                                                    ($governorate['governorate'][app()->getLocale()] ?? $governorate['governorate']['en']) :
-                                                    $governorate['governorate'];
-                                            @endphp
                                             {{ $govName }}
                                         </td>
                                         <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-end group-hover:text-primary-600 dark:group-hover:text-primary-400">
@@ -414,7 +429,13 @@
                                             {{ round(($governorate['total'] / $governorateTotal) * 100, 1) }}%
                                         </td>
                                     </tr>
-                                @endforeach
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-300">
+                                            {{ app()->getLocale() === 'ar' ? 'لا توجد بيانات متاحة للمحافظات' : 'No governorate data available' }}
+                                        </td>
+                                    </tr>
+                                @endforelse
                                 </tbody>
                             </table>
                         </div>
@@ -447,17 +468,15 @@
                                 </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                                @php
-                                    $cityTotal = max(1, array_sum(array_column($cityData, 'total')));
-                                @endphp
-                                @foreach($cityData as $city)
+                                @forelse($cityData as $city)
+                                    @php
+                                        $cityTotal = max(1, array_sum(array_column($cityData, 'total')));
+                                        $cityName = is_array($city['city']) ?
+                                            ($city['city'][app()->getLocale()] ?? $city['city']['en']) :
+                                            $city['city'];
+                                    @endphp
                                     <tr class="transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 group">
                                         <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-start group-hover:text-primary-600 dark:group-hover:text-primary-400">
-                                            @php
-                                                $cityName = is_array($city['city']) ?
-                                                    ($city['city'][app()->getLocale()] ?? $city['city']['en']) :
-                                                    $city['city'];
-                                            @endphp
                                             {{ $cityName }}
                                         </td>
                                         <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-end group-hover:text-primary-600 dark:group-hover:text-primary-400">
@@ -467,7 +486,13 @@
                                             {{ round(($city['total'] / $cityTotal) * 100, 1) }}%
                                         </td>
                                     </tr>
-                                @endforeach
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-300">
+                                            {{ app()->getLocale() === 'ar' ? 'لا توجد بيانات متاحة للمدن' : 'No city data available' }}
+                                        </td>
+                                    </tr>
+                                @endforelse
                                 </tbody>
                             </table>
                         </div>
@@ -713,22 +738,21 @@
                 });
 
                 // Color-Size Combination Chart
-                // Color-Size Combination Chart
+
                 const colorSizeChart = new Chart(document.getElementById('colorSizeChart'), {
                     type: 'bar',
                     data: {
                         labels: @json(collect($colorSizeData)->take(10)->map(function($item) {
-            // Create label combining color and size
             $colorName = is_array($item['color']) ?
                 ($item['color'][app()->getLocale()] ?? $item['color']['en']) :
                 $item['color'];
             $sizeName = is_array($item['size']) ?
                 ($item['size'][app()->getLocale()] ?? $item['size']['en']) :
                 $item['size'];
-            return $colorName . ' - ' . $sizeName; // Use PHP concatenation (.) instead of JS (+)
+            return $colorName . ' - ' . $sizeName;
         })),
                         datasets: [{
-                            label: 'Quantity',
+                            label: '{{ __("Quantity") }}',
                             data: @json(collect($colorSizeData)->take(10)->pluck('total_quantity')),
                             backgroundColor: @json(collect($colorSizeData)->take(10)->map(function($item) {
                 return $item['color_code'];
@@ -748,7 +772,7 @@
                             tooltip: {
                                 callbacks: {
                                     label: function(context) {
-                                        return `Quantity: ${context.parsed.x.toLocaleString()}`;
+                                        return '{{ __("Quantity") }}: ' + context.parsed.x.toLocaleString();
                                     }
                                 }
                             }
@@ -761,7 +785,7 @@
                                 },
                                 title: {
                                     display: true,
-                                    text: 'Quantity',
+                                    text: '{{ __("Quantity") }}',
                                     color: textColor
                                 }
                             },
@@ -776,7 +800,6 @@
                                         size: 11
                                     },
                                     callback: function(value, index, values) {
-                                        // Truncate long labels to prevent overlapping
                                         const label = this.getLabelForValue(value);
                                         return label.length > 20 ? label.substring(0, 20) + '...' : label;
                                     }
@@ -785,7 +808,7 @@
                         },
                         layout: {
                             padding: {
-                                right: 20 // Add padding to prevent label cutoff
+                                right: 20
                             }
                         }
                     }
