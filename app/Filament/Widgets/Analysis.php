@@ -24,24 +24,37 @@ class Analysis extends BaseWidget
         $this->toDate = now();
     }
 
-    #[On('updateFromDateDashboard')]
-    public function updateFromDate(string $state): void
+//    #[On('updateFromDateDashboard')]
+//    public function updateFromDate(string $state): void
+//    {
+//        if ($state) {
+//            $this->fromDate = \Illuminate\Support\Carbon::parse($state)->startOfDay();
+//        }
+//        $this->dispatch('$refresh');
+//    }
+//
+//    #[On('updateToDateDashboard')]
+//    public function updateToDate(string $state): void
+//    {
+//        if ($state) {
+//            $this->toDate = \Illuminate\Support\Carbon::parse($state)->endOfDay();
+//        }
+//        $this->dispatch('$refresh');
+//    }
+
+    #[On('updateFromDate')]
+    public function updateFromDate(string $from): void
     {
-        if ($state) {
-            $this->fromDate = \Illuminate\Support\Carbon::parse($state)->startOfDay();
-        }
-        $this->dispatch('$refresh');
+        $this->fromDate = Carbon::make($from);
+        $this->updateChartData();
     }
 
-    #[On('updateToDateDashboard')]
-    public function updateToDate(string $state): void
+    #[On('updateToDate')]
+    public function updateToDate(string $to): void
     {
-        if ($state) {
-            $this->toDate = \Illuminate\Support\Carbon::parse($state)->endOfDay();
-        }
-        $this->dispatch('$refresh');
+        $this->toDate = Carbon::make($to);
+        $this->updateChartData();
     }
-
 
     public function goto(string $url): void
     {
@@ -52,8 +65,8 @@ class Analysis extends BaseWidget
     {
         $locale = App::getLocale();
 
-        $startDate = $this->fromDate;
-        $endDate = $this->toDate;
+        $startDate = $this->fromDate ??= now()->subWeek();
+        $endDate = $this->toDate ??= now();
 
         // Stats calculations
         $totalProducts = Product::whereBetween('created_at', [$startDate, $endDate])->count();
