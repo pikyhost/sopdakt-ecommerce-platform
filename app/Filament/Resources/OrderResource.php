@@ -202,6 +202,9 @@ class OrderResource extends Resource
             ->filters([
                 Tables\Filters\Filter::make('created_at')
                     ->form([
+                        Tables\Filters\SelectFilter::make('status')
+                            ->label(__('Status'))
+                            ->multiple(),
                         Forms\Components\DatePicker::make('created_from')
                             ->label(__('filters.created_from'))
                             ->placeholder(fn ($state): string => 'Dec 18, ' . now()->subYear()->format('Y')),

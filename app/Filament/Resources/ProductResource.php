@@ -720,8 +720,13 @@ class ProductResource extends Resource
             ])
             ->filters([
                 DateFilter::make('created_at')
-                    ->columnSpan(['sm' => 2, 'md' => 2, 'lg' => 2, 'xl' => 2, '2xl' => 2, 'default' => 2])
+                    ->columnSpanFull()
                     ->label(__('Creation date')),
+
+                Filter::make('is_published')->toggle()->label(__("Is Active?"))->columnSpanFull(),
+
+                Filter::make('is_featured')->toggle()->label(__("Is Featured?"))->columnSpanFull(),
+
             ], Tables\Enums\FiltersLayout::AboveContentCollapsible)
             ->filtersFormColumns(4)
             ->actions([
