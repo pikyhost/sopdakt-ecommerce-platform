@@ -31,14 +31,14 @@ class DashboardFilter extends Widget implements HasForms
                     ->label(__('Start date'))
                     ->live()
                     ->afterStateUpdated(fn (?string $state) =>
-                    filled($state) ? $this->dispatch('updateFromDateDashboard', from: $state) : null
+                    filled($state) ? $this->dispatch('updateFromDateDashboard', $state) : null
                     ),
 
                 DatePicker::make('toDashboard')
                     ->label(__('End date'))
                     ->live()
                     ->afterStateUpdated(fn (?string $state) =>
-                    filled($state) ? $this->dispatch('updateToDateDashboard', to: $state) : null
+                    filled($state) ? $this->dispatch('updateToDateDashboard', $state) : null
                     ),
             ])->columns(2);
     }

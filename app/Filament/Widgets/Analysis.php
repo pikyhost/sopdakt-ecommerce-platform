@@ -25,18 +25,17 @@ class Analysis extends BaseWidget
     }
 
     #[On('updateFromDateDashboard')]
-    public function updateFromDate(string $from): void
+    public function updateFromDate(string $state): void
     {
-        $this->fromDate = Carbon::parse($from)->startOfDay();
-        $this->dispatch('$refresh');
+        $this->fromDate = Carbon::parse($state)->startOfDay();
     }
 
     #[On('updateToDateDashboard')]
-    public function updateToDate(string $to): void
+    public function updateToDate(string $state): void
     {
-        $this->toDate = Carbon::parse($to)->endOfDay();
-        $this->dispatch('$refresh');
+        $this->toDate = Carbon::parse($state)->endOfDay();
     }
+
 
     public function goto(string $url): void
     {
@@ -47,8 +46,8 @@ class Analysis extends BaseWidget
     {
         $locale = App::getLocale();
 
-        $startDate = $this->fromDate->copy()->startOfDay()->toDateTimeString();
-        $endDate = $this->toDate->copy()->endOfDay()->toDateTimeString();
+        $startDate = $this->fromDate;
+        $endDate = $this->toDate;
 
         // Stats calculations
         $totalProducts = Product::whereBetween('created_at', [$startDate, $endDate])->count();
@@ -80,7 +79,7 @@ class Analysis extends BaseWidget
                 ->icon('heroicon-m-archive-box')
                 ->extraAttributes([
                     'class' => 'cursor-pointer',
-                    'wire:click' => '$wire.goto("' . $productUrl . '")',
+                    'onclick' => "window.location.href = '{$productUrl}'",
                 ]),
 
             Stat::make(
@@ -92,7 +91,7 @@ class Analysis extends BaseWidget
                 ->icon('heroicon-o-shopping-bag')
                 ->extraAttributes([
                     'class' => 'cursor-pointer',
-                    'wire:click' => '$wire.goto("' . $ordersUrl . '")',
+                    'onclick' => "window.location.href = '{$ordersUrl}'",
                 ]),
 
             Stat::make(
@@ -104,7 +103,7 @@ class Analysis extends BaseWidget
                 ->icon('heroicon-m-banknotes')
                 ->extraAttributes([
                     'class' => 'cursor-pointer',
-                    'wire:click' => '$wire.goto("' . $revenueUrl . '")',
+                    'onclick' => "window.location.href = '{$revenueUrl}'",
                 ]),
 
             Stat::make(
@@ -116,8 +115,9 @@ class Analysis extends BaseWidget
                 ->icon('heroicon-m-cog')
                 ->extraAttributes([
                     'class' => 'cursor-pointer',
-                    'wire:click' => '$wire.goto("' . $processingUrl . '")',
+                    'onclick' => "window.location.href = '{$processingUrl}'",
                 ]),
         ];
+
     }
 }
