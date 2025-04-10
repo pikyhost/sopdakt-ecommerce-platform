@@ -2,14 +2,13 @@
 
 namespace App\Filament\Widgets;
 
-use Filament\Forms\Form;
-use Filament\Forms\Components\Grid;
-use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Grid;
 use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\View\LegacyComponents\Widget;
+use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Form;
 
-class Filters extends Widget implements HasForms
+class Filters extends \Filament\View\LegacyComponents\Widget implements HasForms
 {
     use InteractsWithForms;
 
