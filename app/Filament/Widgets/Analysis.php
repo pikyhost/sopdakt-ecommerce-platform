@@ -27,13 +27,19 @@ class Analysis extends BaseWidget
     #[On('updateFromDateDashboard')]
     public function updateFromDate(string $state): void
     {
-        $this->fromDate = Carbon::parse($state)->startOfDay();
+        if ($state) {
+            $this->fromDate = \Illuminate\Support\Carbon::parse($state)->startOfDay();
+        }
+        $this->dispatch('$refresh');
     }
 
     #[On('updateToDateDashboard')]
     public function updateToDate(string $state): void
     {
-        $this->toDate = Carbon::parse($state)->endOfDay();
+        if ($state) {
+            $this->toDate = \Illuminate\Support\Carbon::parse($state)->endOfDay();
+        }
+        $this->dispatch('$refresh');
     }
 
 
