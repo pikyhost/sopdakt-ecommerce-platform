@@ -14,33 +14,8 @@ class Analysis extends BaseWidget
 {
     protected static ?string $pollingInterval = null;
     protected static bool $isLazy = false;
-
     public Carbon $fromDate;
     public Carbon $toDate;
-
-    public function mount(): void
-    {
-        $this->fromDate = now()->subMonth();
-        $this->toDate = now();
-    }
-
-//    #[On('updateFromDateDashboard')]
-//    public function updateFromDate(string $state): void
-//    {
-//        if ($state) {
-//            $this->fromDate = \Illuminate\Support\Carbon::parse($state)->startOfDay();
-//        }
-//        $this->dispatch('$refresh');
-//    }
-//
-//    #[On('updateToDateDashboard')]
-//    public function updateToDate(string $state): void
-//    {
-//        if ($state) {
-//            $this->toDate = \Illuminate\Support\Carbon::parse($state)->endOfDay();
-//        }
-//        $this->dispatch('$refresh');
-//    }
 
     #[On('updateFromDate')]
     public function updateFromDate(string $from): void
@@ -55,7 +30,6 @@ class Analysis extends BaseWidget
         $this->toDate = Carbon::make($to);
         $this->updateChartData();
     }
-
     public function goto(string $url): void
     {
         redirect()->to($url);
@@ -65,7 +39,7 @@ class Analysis extends BaseWidget
     {
         $locale = App::getLocale();
 
-        $startDate = $this->fromDate ??= now()->subWeek();
+        $startDate = $this->fromDate ??= now()->subMonth();
         $endDate = $this->toDate ??= now();
 
         // Stats calculations
