@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Widgets\Filters;
 use App\Filament\Widgets\RedirectHomePage;
 use App\Filament\Widgets\TopCustomers;
 use App\Filament\Widgets\TopProducts;
@@ -16,7 +17,7 @@ class Dashboard extends BaseDashboard
         return [
             AccountWidget::class,
             RedirectHomePage::class,
-            DashboardFilter::class,
+            Filters::class,
         ];
     }
 

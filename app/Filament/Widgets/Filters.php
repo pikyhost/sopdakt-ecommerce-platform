@@ -37,3 +37,4 @@ class Filters extends Widget implements HasForms
                     ]),
             ]);
     }
+}
