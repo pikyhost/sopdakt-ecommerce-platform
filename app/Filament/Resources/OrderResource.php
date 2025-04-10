@@ -31,6 +31,7 @@ use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Mail;
@@ -200,11 +201,16 @@ class OrderResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                SelectFilter::make('status')
+                    ->label(__('Status'))
+                    ->multiple()
+                    ->options(
+                        collect(OrderStatus::cases())
+                            ->mapWithKeys(fn ($status) => [$status->value => $status->getLabel()])
+                            ->toArray()
+                    ),
                 Tables\Filters\Filter::make('created_at')
                     ->form([
-                        Tables\Filters\SelectFilter::make('status')
-                            ->label(__('Status'))
-                            ->multiple(),
                         Forms\Components\DatePicker::make('created_from')
                             ->label(__('filters.created_from'))
                             ->placeholder(fn ($state): string => 'Dec 18, ' . now()->subYear()->format('Y')),

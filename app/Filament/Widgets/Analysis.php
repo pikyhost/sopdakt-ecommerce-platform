@@ -38,27 +38,37 @@ class Analysis extends BaseWidget
         $this->dispatch('$refresh');
     }
 
+    public function goto(string $url): void
+    {
+        redirect()->to($url);
+    }
+
     protected function getStats(): array
     {
         $locale = App::getLocale();
 
-        // Use the date properties instead of filters
-        $startDate = $this->fromDate;
-        $endDate = $this->toDate;
+        $startDate = $this->fromDate->copy()->startOfDay()->toDateTimeString();
+        $endDate = $this->toDate->copy()->endOfDay()->toDateTimeString();
 
-        // Get filtered products
+        // Stats calculations
         $totalProducts = Product::whereBetween('created_at', [$startDate, $endDate])->count();
-
-        // Get filtered orders
         $totalOrders = Order::whereBetween('created_at', [$startDate, $endDate])->count();
-
-        // Total Revenue for selected period
         $totalRevenue = Order::whereBetween('created_at', [$startDate, $endDate])->sum('total');
-
-        // Processing Orders within period
         $processingOrders = Order::whereBetween('created_at', [$startDate, $endDate])
             ->whereIn('status', ['pending', 'preparing', 'shipping'])
             ->count();
+
+        // Build URLs
+        $encodedFrom = urlencode($startDate);
+        $encodedUntil = urlencode($endDate);
+
+        $productUrl = "/admin/products?tableFilters[created_at][clause]=between&tableFilters[created_at][from]={$encodedFrom}&tableFilters[created_at][period]=days&tableFilters[created_at][until]={$encodedUntil}&tableFilters[is_published][isActive]=false&tableFilters[is_featured][isActive]=false";
+
+        $ordersUrl = "/admin/orders?tableFilters[created_at][created_from]={$encodedFrom}&tableFilters[created_at][created_until]={$encodedUntil}";
+
+        $revenueUrl = $productUrl;
+
+        $processingUrl = "/admin/orders?tableFilters[status][values][0]=pending&tableFilters[status][values][1]=preparing&tableFilters[status][values][2]=shipping";
 
         return [
             Stat::make(
@@ -67,7 +77,11 @@ class Analysis extends BaseWidget
             )
                 ->color('success')
                 ->description($locale === 'ar' ? 'عدد المنتجات المُضافة في النطاق الزمني المحدد.' : 'Products added within selected time range.')
-                ->icon('heroicon-m-archive-box'),
+                ->icon('heroicon-m-archive-box')
+                ->extraAttributes([
+                    'class' => 'cursor-pointer',
+                    'wire:click' => '$wire.goto("' . $productUrl . '")',
+                ]),
 
             Stat::make(
                 $locale === 'ar' ? 'عدد الطلبات في الفترة' : 'Orders in Period',
@@ -75,7 +89,11 @@ class Analysis extends BaseWidget
             )
                 ->color('success')
                 ->description($locale === 'ar' ? 'عدد الطلبات في النطاق الزمني المحدد.' : 'Orders placed within selected time range.')
-                ->icon('heroicon-o-shopping-bag'),
+                ->icon('heroicon-o-shopping-bag')
+                ->extraAttributes([
+                    'class' => 'cursor-pointer',
+                    'wire:click' => '$wire.goto("' . $ordersUrl . '")',
+                ]),
 
             Stat::make(
                 $locale === 'ar' ? 'إجمالي المبيعات' : 'Total Sales',
@@ -83,7 +101,11 @@ class Analysis extends BaseWidget
             )
                 ->color('primary')
                 ->description($locale === 'ar' ? 'إجمالي المبيعات في النطاق الزمني المحدد.' : 'Total sales in selected time range.')
-                ->icon('heroicon-m-banknotes'),
+                ->icon('heroicon-m-banknotes')
+                ->extraAttributes([
+                    'class' => 'cursor-pointer',
+                    'wire:click' => '$wire.goto("' . $revenueUrl . '")',
+                ]),
 
             Stat::make(
                 $locale === 'ar' ? 'الطلبات قيد المعالجة' : 'Processing Orders',
@@ -91,7 +113,11 @@ class Analysis extends BaseWidget
             )
                 ->color('warning')
                 ->description($locale === 'ar' ? 'الطلبات التي لا تزال قيد المعالجة في الفترة المحددة.' : 'Orders still processing in selected time range.')
-                ->icon('heroicon-m-cog'),
+                ->icon('heroicon-m-cog')
+                ->extraAttributes([
+                    'class' => 'cursor-pointer',
+                    'wire:click' => '$wire.goto("' . $processingUrl . '")',
+                ]),
         ];
     }
 }
