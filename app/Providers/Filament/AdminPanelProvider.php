@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\ProductAnalysis;
+use App\Filament\Widgets\Filters;
 use App\Filament\Widgets\HomePageRedirect;
 use App\Livewire\ProfileContactDetails;
 use App\Models\Setting;
@@ -67,6 +68,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
+
             ])
             ->renderHook(
                 PanelsRenderHook::FOOTER,

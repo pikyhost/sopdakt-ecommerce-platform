@@ -12,5 +12,21 @@ use Filament\Widgets\AccountWidget;
 
 class Dashboard extends BaseDashboard
 {
-   
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            AccountWidget::class,
+            RedirectHomePage::class,
+            Filters::class,
+        ];
+    }
+
+    public function getWidgets(): array
+    {
+        return [
+            \App\Filament\Widgets\Analysis::class,
+            TopProducts::class,
+            TopCustomers::class,
+        ];
+    }
 }

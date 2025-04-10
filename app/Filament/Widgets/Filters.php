@@ -7,8 +7,9 @@ use Filament\Forms\Components\Grid;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
+use Filament\Widgets\Widget;
 
-class Filters extends \Filament\View\LegacyComponents\Widget implements HasForms
+class Filters extends Widget implements HasForms
 {
     use InteractsWithForms;
 
