@@ -773,15 +773,15 @@
                     type: 'bar',
                     data: {
                         labels: @json(collect($countryData)->take(5)->map(function($item) {
-                    return is_array($item['country']) ?
-                        ($item['country'][app()->getLocale()] ?? $item['country']['en']) :
-                        $item['country'];
-                })),
+            return is_array($item['country'])
+                ? ($item['country'][app()->getLocale()] ?? $item['country']['en'])
+                : $item['country'];
+        })),
                         datasets: [{
-                            label: 'Quantity',
+                            label: @json(__('charts.quantity')),
                             data: @json(collect($countryData)->take(5)->pluck('total')->map(function($value) {
-                        return (int)$value;
-                    })),
+                return (int)$value;
+            })),
                             backgroundColor: '#3B82F6',
                             borderColor: '#2563EB',
                             borderWidth: 0
@@ -798,7 +798,7 @@
                             tooltip: {
                                 callbacks: {
                                     label: function(context) {
-                                        return `Quantity: ${context.raw.toLocaleString()}`;
+                                        return `{{ __('charts.quantity') }}: ${context.raw.toLocaleString()}`;
                                     }
                                 }
                             }
@@ -819,20 +819,20 @@
                     }
                 });
 
-                // Governorate Chart
+// Governorate Chart
                 const governorateChart = new Chart(document.getElementById('governorateChart'), {
                     type: 'bar',
                     data: {
                         labels: @json(collect($governorateData)->take(5)->map(function($item) {
-                    return is_array($item['governorate']) ?
-                        ($item['governorate'][app()->getLocale()] ?? $item['governorate']['en']) :
-                        $item['governorate'];
-                })),
+            return is_array($item['governorate'])
+                ? ($item['governorate'][app()->getLocale()] ?? $item['governorate']['en'])
+                : $item['governorate'];
+        })),
                         datasets: [{
-                            label: 'Quantity',
+                            label: @json(__('charts.quantity')),
                             data: @json(collect($governorateData)->take(5)->pluck('total')->map(function($value) {
-                        return (int)$value;
-                    })),
+                return (int)$value;
+            })),
                             backgroundColor: '#10B981',
                             borderColor: '#059669',
                             borderWidth: 0
@@ -849,7 +849,7 @@
                             tooltip: {
                                 callbacks: {
                                     label: function(context) {
-                                        return `Quantity: ${context.raw.toLocaleString()}`;
+                                        return `{{ __('charts.quantity') }}: ${context.raw.toLocaleString()}`;
                                     }
                                 }
                             }
@@ -870,20 +870,20 @@
                     }
                 });
 
-                // City Chart
+// City Chart
                 const cityChart = new Chart(document.getElementById('cityChart'), {
                     type: 'bar',
                     data: {
                         labels: @json(collect($cityData)->take(5)->map(function($item) {
-                    return is_array($item['city']) ?
-                        ($item['city'][app()->getLocale()] ?? $item['city']['en']) :
-                        $item['city'];
-                })),
+            return is_array($item['city'])
+                ? ($item['city'][app()->getLocale()] ?? $item['city']['en'])
+                : $item['city'];
+        })),
                         datasets: [{
-                            label: 'Quantity',
+                            label: @json(__('charts.quantity')),
                             data: @json(collect($cityData)->take(5)->pluck('total')->map(function($value) {
-                        return (int)$value;
-                    })),
+                return (int)$value;
+            })),
                             backgroundColor: '#F59E0B',
                             borderColor: '#D97706',
                             borderWidth: 0
@@ -900,7 +900,7 @@
                             tooltip: {
                                 callbacks: {
                                     label: function(context) {
-                                        return `Quantity: ${context.raw.toLocaleString()}`;
+                                        return `{{ __('charts.quantity') }}: ${context.raw.toLocaleString()}`;
                                     }
                                 }
                             }
@@ -921,13 +921,13 @@
                     }
                 });
 
-                // Time Chart
+// Time Chart
                 const timeChart = new Chart(document.getElementById('timeChart'), {
                     type: 'line',
                     data: {
                         labels: @json(array_column($timeData, 'date')),
                         datasets: [{
-                            label: 'Quantity Sold',
+                            label: @json(__('charts.quantity_sold')),
                             data: @json(array_column($timeData, 'total')),
                             borderColor: '#3B82F6',
                             backgroundColor: isDark ? '#1E40AF30' : '#3B82F620',
@@ -951,10 +951,10 @@
                                 ...commonOptions.plugins.tooltip,
                                 callbacks: {
                                     title: function(context) {
-                                        return `Date: ${context[0].label}`;
+                                        return `{{ __('charts.date') }}: ${context[0].label}`;
                                     },
                                     label: function(context) {
-                                        return `Quantity: ${context.parsed.y.toLocaleString()}`;
+                                        return `{{ __('charts.quantity') }}: ${context.parsed.y.toLocaleString()}`;
                                     }
                                 }
                             },
@@ -974,13 +974,13 @@
                     }
                 });
 
-                // Status Chart
+// Status Chart
                 const statusChart = new Chart(document.getElementById('statusChart'), {
                     type: 'polarArea',
                     data: {
                         labels: @json(array_column($statusData, 'status')),
                         datasets: [{
-                            label: 'Quantity',
+                            label: @json(__('charts.quantity')),
                             data: @json(array_column($statusData, 'total')),
                             backgroundColor: [
                                 '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6',
@@ -998,10 +998,10 @@
                                 ...commonOptions.plugins.tooltip,
                                 callbacks: {
                                     title: function(context) {
-                                        return `Status: ${context[0].label}`;
+                                        return `{{ __('charts.status') }}: ${context[0].label}`;
                                     },
                                     label: function(context) {
-                                        return `Quantity: ${context.raw.toLocaleString()}`;
+                                        return `{{ __('charts.quantity') }}: ${context.raw.toLocaleString()}`;
                                     }
                                 }
                             },

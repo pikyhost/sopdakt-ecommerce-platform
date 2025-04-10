@@ -227,8 +227,10 @@
     "Upload website favicon": "Upload website favicon",
     "Favicon (English)": "Favicon (English)",
     "Favicon (Arabic)": "Favicon (Arabic)",
-    "Total Units": "إجمالي العدد",
-
+    "charts.quantity_sold": "Quantity Sold",
+    "charts.quantity": "Quantity",
+    "charts.date": "Date",
+    "charts.status": "Status",
     "messages.login_to_review": "You need to log in to leave a review.",
     "messages.login_here": "Login here",
     "image": "Image",
