@@ -30,9 +30,7 @@ class ProductAnalysis extends Page implements HasForms
     public array $governorateData = [];
     public array $cityData = [];
     public array $statusData = [];
-
     public int $totalOrderCount;
-
     public $from_date;
     public $to_date;
     public array $colorSizeData = [];
@@ -61,10 +59,12 @@ class ProductAnalysis extends Page implements HasForms
         return [
             Section::make([
                 DatePicker::make('from_date')
+                    ->native(false)
                     ->columnSpan(4)
                     ->label(__('Start date')),
 
                 DatePicker::make('to_date')
+                    ->native(false)
                     ->columnSpan(4)
                     ->label(__('End date')),
             ])->columns(8)
@@ -81,7 +81,6 @@ class ProductAnalysis extends Page implements HasForms
             'to' => $data['to_date'],
         ]));
     }
-
 
     protected function loadAnalysisData(): void
     {

@@ -4,8 +4,11 @@ namespace App\Providers;
 
 use App\Http\Responses\LogoutResponse;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Http\Responses\Auth\Contracts\LogoutResponse as LogoutResponseContract;
 use Filament\Navigation\NavigationGroup;
+use Illuminate\Support\Facades\App;
 use Livewire\Livewire;
 use App\Enums\UserRole;
 use Filament\Tables\Table;
@@ -42,6 +45,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->configureDatePicker();
+        $this->configureDateTimePicker();
         ProfileContactDetails::setSort(10);
 
         LanguageSwitch::configureUsing(function (LanguageSwitch $switch) {
@@ -105,6 +110,48 @@ class AppServiceProvider extends ServiceProvider
         $state = $column->getState();
 
         return is_string($state) && strlen($state) > $column->getCharacterLimit() ? $state : null;
+    }
+
+    protected function configureDatePicker(): void
+    {
+        DatePicker::configureUsing(function (DatePicker $datePicker) {
+            $locale = App::getLocale();
+
+            $datePicker
+                ->displayFormat('d/m/Y')
+                ->native(false);
+
+            if ($locale === 'ar') {
+                $datePicker
+                    ->suffixIcon('heroicon-m-calendar')
+                    ->prefixIcon(null); // Remove prefix icon for RTL
+            } else {
+                $datePicker
+                    ->prefixIcon('heroicon-m-calendar')
+                    ->suffixIcon(null); // Remove suffix icon for LTR
+            }
+        });
+    }
+
+    protected function configureDateTimePicker(): void
+    {
+        DateTimePicker::configureUsing(function (DatePicker $datePicker) {
+            $locale = App::getLocale();
+
+            $datePicker
+                ->displayFormat('d/m/Y')
+                ->native(false);
+
+            if ($locale === 'ar') {
+                $datePicker
+                    ->suffixIcon('heroicon-m-calendar')
+                    ->prefixIcon(null); // Remove prefix icon for RTL
+            } else {
+                $datePicker
+                    ->prefixIcon('heroicon-m-calendar')
+                    ->suffixIcon(null); // Remove suffix icon for LTR
+            }
+        });
     }
 
 }

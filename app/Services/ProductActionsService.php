@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\UserRole;
 use App\Filament\Pages\ProductAnalysis;
 use App\Models\Cart;
 use App\Models\CartItem;
@@ -165,6 +166,13 @@ class ProductActionsService
                 }),
 
             Action::make('analyze')
+                ->hidden(function () {
+                        if (auth()->check()) {
+                            return auth()->user()->hasRole(UserRole::Client->value);
+                        }
+
+                        return false;
+                })
                 ->color('primary')
                 ->icon('heroicon-o-chart-bar')
                 ->label(__('Detailed Analysis'))
