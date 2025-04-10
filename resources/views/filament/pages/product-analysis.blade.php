@@ -974,11 +974,10 @@
                     }
                 });
 
-// Status Chart
                 const statusChart = new Chart(document.getElementById('statusChart'), {
                     type: 'polarArea',
                     data: {
-                        labels: @json(array_column($statusData, 'status')),
+                        labels: @json(array_map(fn($status) => \App\Enums\OrderStatus::from($status)->getLabel(), array_column($statusData, 'status'))),
                         datasets: [{
                             label: @json(__('charts.quantity')),
                             data: @json(array_column($statusData, 'total')),
