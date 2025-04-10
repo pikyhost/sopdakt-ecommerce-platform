@@ -4,29 +4,15 @@
             {{ $this->form }}
             <br>
             <x-filament::button type="submit">
-                Apply Filter
+                {{ __('Apply Filter') }}
             </x-filament::button>
         </div>
     </form>
-    <div class="space-y-4">
-        <!-- Product Summary Card -->
-        <div class="mb-4 text-right" dir="rtl">
-            <div class="flex items-center text-blue-600 hover:text-blue-800 transition duration-200 ease-in-out">
-                <a href="{{ url()->previous() }}" class="flex items-center hover:underline go-back-link" onclick="disableLink(this)">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19l7-7-7-7" />
-                    </svg>
-                    <span class="font-medium go-back-text">
-                {{ \Illuminate\Support\Facades\App::getLocale() == 'ar' ? 'العودة للخلف' : "Go Back" }}
-            </span>
-                </a>
-            </div>
-        </div>
 
-        <!-- The Product Card -->
-        <x-filament::card class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-md border-0 overflow-hidden">
+    <div class="space-y-6">
+        <x-filament::card class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 shadow-lg border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
             <div class="relative">
-                <!-- Decorative Background Pattern -->
+                <!-- Decorative Pattern -->
                 <div class="absolute inset-0 opacity-10 dark:opacity-5 pointer-events-none select-none">
                     <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxjaXJjbGUgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIuMDgyIiBjeD0iMjAiIGN5PSIyMCIgcj0iMSIvPjwvZz48L3N2Zz4=')]"></div>
                 </div>
@@ -35,74 +21,55 @@
                     <!-- Product Image -->
                     <div class="flex-shrink-0 self-center md:self-start">
                         <div class="relative h-36 w-36 md:h-40 md:w-40 rounded-xl overflow-hidden shadow-lg ring-2 ring-white/50 dark:ring-gray-700/50">
-                            <img
-                                src="{{ $product->getFirstMediaUrl('feature_product_image') }}"
-                                alt="{{ $product->name }}"
-                                class="h-full w-full object-cover"
-                                loading="lazy"
-                            >
+                            <img src="{{ $product->getFirstMediaUrl('feature_product_image') }}" alt="{{ $product->name }}" class="h-full w-full object-cover" loading="lazy">
                             <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-                            <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
-                                <p class="text-xs font-medium text-white truncate">{{ $product->sku }}</p>
+                            <div class="absolute bottom-0 w-full p-2 bg-gradient-to-t from-black/60 to-transparent text-xs text-white truncate">
+                                {{ $product->sku }}
                             </div>
                         </div>
                     </div>
 
                     <!-- Product Info -->
                     <div class="flex-1 flex flex-col justify-between">
-                        <!-- Title and Meta -->
-                        <div class="mb-4">
+                        <!-- Title and Category -->
+                        <div class="mb-4 space-y-2">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white leading-tight">
+                                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
                                     {{ $product->name }}
                                 </h2>
-                                <span class="px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200 whitespace-nowrap">
+                                <span class="px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200">
                             {{ $product->category->name }}
                         </span>
                             </div>
 
-                            <!-- Date with Better Icon and Spacing -->
-                            <div class="flex items-center gap-2 mt-2 text-sm text-gray-600 dark:text-gray-400">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 2v2m8-2v2M3 8h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" />
-                                </svg>
-                                <span class="font-medium tracking-wide">
+                            <!-- Date -->
+                            <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                <x-heroicon-o-calendar class="w-5 h-5 text-gray-400 dark:text-gray-500" />
+                                <span>
                             {{ $fromDate->format('M d, Y') }} – {{ $toDate->format('M d, Y') }}
                         </span>
                             </div>
                         </div>
 
-                        <!-- Stats Section -->
-                        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Stats -->
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                             @php
                                 $stats = [
-                                    [
-                                        'label' => 'Total Ordered',
-                                        'value' => number_format(array_sum(array_column($sizeData, 'total'))),
-                                        'color' => 'from-blue-500 to-blue-300',
-                                    ],
-                                    [
-                                        'label' => 'Unique Sizes',
-                                        'value' => count($sizeData),
-                                        'color' => 'from-green-500 to-green-300',
-                                    ],
-                                    [
-                                        'label' => 'Unique Colors',
-                                        'value' => count($colorData),
-                                        'color' => 'from-purple-500 to-purple-300',
-                                    ],
-                                    [
-                                        'label' => 'Countries',
-                                        'value' => count($countryData),
-                                        'color' => 'from-amber-500 to-amber-300',
-                                    ],
+                                    ['key' => 'product.total_ordered', 'value' => number_format(array_sum(array_column($sizeData, 'total'))), 'color' => 'from-blue-500 to-blue-300'],
+                                    ['key' => 'product.unique_sizes', 'value' => count($sizeData), 'color' => 'from-green-500 to-green-300'],
+                                    ['key' => 'product.unique_colors', 'value' => count($colorData), 'color' => 'from-purple-500 to-purple-300'],
+                                    ['key' => 'product.countries', 'value' => count($countryData), 'color' => 'from-amber-500 to-amber-300'],
                                 ];
                             @endphp
 
                             @foreach ($stats as $stat)
-                                <div class="bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-gray-200/50 dark:border-gray-600/30 transition-shadow hover:shadow-md">
-                                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">{{ $stat['label'] }}</p>
-                                    <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $stat['value'] }}</p>
+                                <div class="bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-600 hover:shadow-md transition-shadow">
+                                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
+                                        {{ __($stat['key']) }}
+                                    </p>
+                                    <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                                        {{ $stat['value'] }}
+                                    </p>
                                     <div class="h-1 mt-2 bg-gradient-to-r {{ $stat['color'] }} rounded-full"></div>
                                 </div>
                             @endforeach
@@ -649,10 +616,10 @@
                     type: 'pie',
                     data: {
                         labels: @json(collect($sizeData)->map(function($item) {
-                            return is_array($item['size']) ?
-                                ($item['size'][app()->getLocale()] ?? $item['size']['en']) :
-                                $item['size'];
-                        })),
+                    return is_array($item['size']) ?
+                        ($item['size'][app()->getLocale()] ?? $item['size']['en']) :
+                        $item['size'];
+                })),
                         datasets: [{
                             data: @json(array_column($sizeData, 'total')),
                             backgroundColor: [
@@ -667,6 +634,14 @@
                         ...commonOptions,
                         plugins: {
                             ...commonOptions.plugins,
+                            tooltip: {
+                                ...commonOptions.plugins.tooltip,
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Quantity: ${context.raw.toLocaleString()}`;
+                                    }
+                                }
+                            },
                             datalabels: {
                                 color: textColor
                             }
@@ -679,10 +654,10 @@
                     type: 'doughnut',
                     data: {
                         labels: @json(collect($colorData)->map(function($item) {
-                            return is_array($item['color']) ?
-                                ($item['color'][app()->getLocale()] ?? $item['color']['en']) :
-                                $item['color'];
-                        })),
+                    return is_array($item['color']) ?
+                        ($item['color'][app()->getLocale()] ?? $item['color']['en']) :
+                        $item['color'];
+                })),
                         datasets: [{
                             data: @json(array_column($colorData, 'total')),
                             backgroundColor: @json(array_column($colorData, 'code')),
@@ -695,6 +670,14 @@
                         cutout: '65%',
                         plugins: {
                             ...commonOptions.plugins,
+                            tooltip: {
+                                ...commonOptions.plugins.tooltip,
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Quantity: ${context.raw.toLocaleString()}`;
+                                    }
+                                }
+                            },
                             legend: {
                                 ...commonOptions.plugins.legend,
                                 position: 'right'
@@ -703,7 +686,7 @@
                     }
                 });
 
-
+                // Color-Size Combination Chart
                 // Color-Size Combination Chart
                 const colorSizeChart = new Chart(document.getElementById('colorSizeChart'), {
                     type: 'bar',
@@ -781,21 +764,20 @@
                         }
                     }
                 });
-
                 // Country Chart
                 const countryChart = new Chart(document.getElementById('countryChart'), {
                     type: 'bar',
                     data: {
                         labels: @json(collect($countryData)->take(5)->map(function($item) {
-            return is_array($item['country']) ?
-                ($item['country'][app()->getLocale()] ?? $item['country']['en']) :
-                $item['country'];
-        })),
+                    return is_array($item['country']) ?
+                        ($item['country'][app()->getLocale()] ?? $item['country']['en']) :
+                        $item['country'];
+                })),
                         datasets: [{
                             label: 'Quantity',
                             data: @json(collect($countryData)->take(5)->pluck('total')->map(function($value) {
-                return (int)$value;
-            })),
+                        return (int)$value;
+                    })),
                             backgroundColor: '#3B82F6',
                             borderColor: '#2563EB',
                             borderWidth: 0
@@ -833,20 +815,20 @@
                     }
                 });
 
-// Governorate Chart
+                // Governorate Chart
                 const governorateChart = new Chart(document.getElementById('governorateChart'), {
                     type: 'bar',
                     data: {
                         labels: @json(collect($governorateData)->take(5)->map(function($item) {
-            return is_array($item['governorate']) ?
-                ($item['governorate'][app()->getLocale()] ?? $item['governorate']['en']) :
-                $item['governorate'];
-        })),
+                    return is_array($item['governorate']) ?
+                        ($item['governorate'][app()->getLocale()] ?? $item['governorate']['en']) :
+                        $item['governorate'];
+                })),
                         datasets: [{
                             label: 'Quantity',
                             data: @json(collect($governorateData)->take(5)->pluck('total')->map(function($value) {
-                return (int)$value;
-            })),
+                        return (int)$value;
+                    })),
                             backgroundColor: '#10B981',
                             borderColor: '#059669',
                             borderWidth: 0
@@ -884,20 +866,20 @@
                     }
                 });
 
-// City Chart
+                // City Chart
                 const cityChart = new Chart(document.getElementById('cityChart'), {
                     type: 'bar',
                     data: {
                         labels: @json(collect($cityData)->take(5)->map(function($item) {
-            return is_array($item['city']) ?
-                ($item['city'][app()->getLocale()] ?? $item['city']['en']) :
-                $item['city'];
-        })),
+                    return is_array($item['city']) ?
+                        ($item['city'][app()->getLocale()] ?? $item['city']['en']) :
+                        $item['city'];
+                })),
                         datasets: [{
                             label: 'Quantity',
                             data: @json(collect($cityData)->take(5)->pluck('total')->map(function($value) {
-                return (int)$value;
-            })),
+                        return (int)$value;
+                    })),
                             backgroundColor: '#F59E0B',
                             borderColor: '#D97706',
                             borderWidth: 0
@@ -953,13 +935,25 @@
                             pointBorderWidth: 2,
                             pointHoverBackgroundColor: '#FFFFFF',
                             pointHoverBorderColor: '#3B82F6',
-                            pointHoverBorderWidth: 2
+                            pointHoverBorderWidth: 2,
+                            pointHoverRadius: 6
                         }]
                     },
                     options: {
                         ...commonOptions,
                         plugins: {
                             ...commonOptions.plugins,
+                            tooltip: {
+                                ...commonOptions.plugins.tooltip,
+                                callbacks: {
+                                    title: function(context) {
+                                        return `Date: ${context[0].label}`;
+                                    },
+                                    label: function(context) {
+                                        return `Quantity: ${context.parsed.y.toLocaleString()}`;
+                                    }
+                                }
+                            },
                             legend: {
                                 display: false
                             }
@@ -996,6 +990,17 @@
                         ...commonOptions,
                         plugins: {
                             ...commonOptions.plugins,
+                            tooltip: {
+                                ...commonOptions.plugins.tooltip,
+                                callbacks: {
+                                    title: function(context) {
+                                        return `Status: ${context[0].label}`;
+                                    },
+                                    label: function(context) {
+                                        return `Quantity: ${context.raw.toLocaleString()}`;
+                                    }
+                                }
+                            },
                             legend: {
                                 position: 'right'
                             }

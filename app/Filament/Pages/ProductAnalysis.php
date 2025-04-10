@@ -6,7 +6,6 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
@@ -61,11 +60,11 @@ class ProductAnalysis extends Page implements HasForms
             Section::make([
                 DatePicker::make('from_date')
                     ->columnSpan(4)
-                    ->label('From Date'),
+                    ->label(__('Start date')),
 
                 DatePicker::make('to_date')
                     ->columnSpan(4)
-                    ->label('To Date'),
+                    ->label(__('End date')),
             ])->columns(8)
         ];
     }

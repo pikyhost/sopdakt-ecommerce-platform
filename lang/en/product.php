@@ -59,4 +59,9 @@ return [
     'media_upload' => 'Upload Media',
     'alt_text' => 'Alt Text',
     'media_type' => 'Media Type',
+
+    'total_ordered' => 'Total Ordered',
+    'unique_sizes' => 'Unique Sizes',
+    'unique_colors' => 'Unique Colors',
+    'countries' => 'Countries',
 ];

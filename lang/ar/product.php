@@ -59,4 +59,9 @@ return [
     'media_upload' => 'تحميل الوسائط',
     'alt_text' => 'نص بديل',
     'media_type' => 'نوع الوسائط',
+
+    'total_ordered' => 'إجمالي الطلبات',
+    'unique_sizes' => 'المقاسات الفريدة',
+    'unique_colors' => 'الألوان الفريدة',
+    'countries' => 'الدول',
 ];
