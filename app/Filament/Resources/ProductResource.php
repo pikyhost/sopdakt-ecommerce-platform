@@ -38,6 +38,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\Rule;
 use Mokhosh\FilamentRating\Columns\RatingColumn;
 use Mokhosh\FilamentRating\Components\Rating;
+use Webbingbrasil\FilamentAdvancedFilter\Filters\DateFilter;
 
 class ProductResource extends Resource
 {
@@ -712,6 +713,9 @@ class ProductResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->filters([
+                DateFilter::make('created_at'),
             ])
             ->actions([
                 Tables\Actions\ActionGroup::make(

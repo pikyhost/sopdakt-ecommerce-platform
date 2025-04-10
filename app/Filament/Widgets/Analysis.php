@@ -67,7 +67,7 @@ class Analysis extends BaseWidget
             )
                 ->color('success')
                 ->description($locale === 'ar' ? 'عدد المنتجات المُضافة في النطاق الزمني المحدد.' : 'Products added within selected time range.')
-                ->descriptionIcon('heroicon-m-archive-box'),
+                ->icon('heroicon-m-archive-box'),
 
             Stat::make(
                 $locale === 'ar' ? 'عدد الطلبات في الفترة' : 'Orders in Period',
@@ -75,7 +75,7 @@ class Analysis extends BaseWidget
             )
                 ->color('success')
                 ->description($locale === 'ar' ? 'عدد الطلبات في النطاق الزمني المحدد.' : 'Orders placed within selected time range.')
-                ->descriptionIcon('heroicon-o-shopping-bag'),
+                ->icon('heroicon-o-shopping-bag'),
 
             Stat::make(
                 $locale === 'ar' ? 'إجمالي المبيعات' : 'Total Sales',
@@ -83,7 +83,7 @@ class Analysis extends BaseWidget
             )
                 ->color('primary')
                 ->description($locale === 'ar' ? 'إجمالي المبيعات في النطاق الزمني المحدد.' : 'Total sales in selected time range.')
-                ->descriptionIcon('heroicon-m-banknotes'),
+                ->icon('heroicon-m-banknotes'),
 
             Stat::make(
                 $locale === 'ar' ? 'الطلبات قيد المعالجة' : 'Processing Orders',
@@ -91,7 +91,7 @@ class Analysis extends BaseWidget
             )
                 ->color('warning')
                 ->description($locale === 'ar' ? 'الطلبات التي لا تزال قيد المعالجة في الفترة المحددة.' : 'Orders still processing in selected time range.')
-                ->descriptionIcon('heroicon-m-cog'),
+                ->icon('heroicon-m-cog'),
         ];
     }
 }

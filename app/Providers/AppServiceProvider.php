@@ -115,42 +115,20 @@ class AppServiceProvider extends ServiceProvider
     protected function configureDatePicker(): void
     {
         DatePicker::configureUsing(function (DatePicker $datePicker) {
-            $locale = App::getLocale();
-
             $datePicker
                 ->displayFormat('d/m/Y')
+                ->suffixIcon('heroicon-m-calendar')
                 ->native(false);
-
-            if ($locale === 'ar') {
-                $datePicker
-                    ->suffixIcon('heroicon-m-calendar')
-                    ->prefixIcon(null); // Remove prefix icon for RTL
-            } else {
-                $datePicker
-                    ->prefixIcon('heroicon-m-calendar')
-                    ->suffixIcon(null); // Remove suffix icon for LTR
-            }
         });
     }
 
     protected function configureDateTimePicker(): void
     {
         DateTimePicker::configureUsing(function (DatePicker $datePicker) {
-            $locale = App::getLocale();
-
             $datePicker
                 ->displayFormat('d/m/Y')
+                ->suffixIcon('heroicon-m-calendar')
                 ->native(false);
-
-            if ($locale === 'ar') {
-                $datePicker
-                    ->suffixIcon('heroicon-m-calendar')
-                    ->prefixIcon(null); // Remove prefix icon for RTL
-            } else {
-                $datePicker
-                    ->prefixIcon('heroicon-m-calendar')
-                    ->suffixIcon(null); // Remove suffix icon for LTR
-            }
         });
     }
 
