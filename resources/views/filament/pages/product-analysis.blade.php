@@ -98,7 +98,7 @@
                                 <thead class="bg-gray-50 dark:bg-gray-700">
                                 <tr>
                                     <th class="px-4 py-3 text-start text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-2/4">
-                                        {{ __('Label') }}
+                                        {{ __('Name') }}
                                     </th>
                                     <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/4">
                                         {{ __('Total Units') }}
@@ -460,10 +460,12 @@
             <x-filament::card class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="p-5">
                     <div class="flex items-center justify-between mb-5">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Sales Over Time</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                            {{ __('Sales Over Time') }}
+                        </h3>
                         <span class="text-xs px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-200">
-                            {{ count($timeData) }} days
-                        </span>
+                    {{ count($timeData) }} {{ __('days') }}
+                </span>
                     </div>
 
                     <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 h-80">
@@ -476,10 +478,12 @@
             <x-filament::card class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="p-5">
                     <div class="flex items-center justify-between mb-5">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Order Status</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                            {{ __('Order Status') }}
+                        </h3>
                         <span class="text-xs px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-200">
-                            {{ count($statusData) }} statuses
-                        </span>
+                    {{ count($statusData) }} {{ __('statuses') }}
+                </span>
                     </div>
 
                     <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 h-80">
