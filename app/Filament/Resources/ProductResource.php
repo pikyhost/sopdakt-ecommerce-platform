@@ -33,11 +33,15 @@ use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\ActionSize;
 use Filament\Tables;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Mokhosh\FilamentRating\Columns\RatingColumn;
 use Mokhosh\FilamentRating\Components\Rating;
+use Spatie\Permission\Models\Role;
 use Webbingbrasil\FilamentAdvancedFilter\Filters\DateFilter;
 
 class ProductResource extends Resource
@@ -715,8 +719,11 @@ class ProductResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                DateFilter::make('created_at'),
-            ])
+                DateFilter::make('created_at')
+                    ->columnSpan(['sm' => 2, 'md' => 2, 'lg' => 2, 'xl' => 2, '2xl' => 2, 'default' => 2])
+                    ->label(__('Creation date')),
+            ], Tables\Enums\FiltersLayout::AboveContentCollapsible)
+            ->filtersFormColumns(4)
             ->actions([
                 Tables\Actions\ActionGroup::make(
                     array_merge([
