@@ -10,70 +10,92 @@
     </form>
 
     <div class="space-y-6">
-        <x-filament::card class="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 shadow-lg border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
-            <div class="relative">
-                <!-- Decorative Pattern -->
-                <div class="absolute inset-0 opacity-10 dark:opacity-5 pointer-events-none select-none">
-                    <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxjaXJjbGUgZmlsbD0iIzAwMCIgZmlsbC1vcGFjaXR5PSIuMDgyIiBjeD0iMjAiIGN5PSIyMCIgcj0iMSIvPjwvZz48L3N2Zz4=')]"></div>
+        <x-filament::card class="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300 shadow-xs hover:shadow-sm">
+            <div class="flex flex-col md:flex-row gap-0">
+                <!-- Image Section -->
+                <div class="w-full md:w-1/3 p-6 flex items-center justify-center bg-gray-50 dark:bg-gray-800/20">
+                    <div class="relative w-full h-64 md:h-full aspect-square rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                        @if($product->getFirstMediaUrl('feature_product_image'))
+                            <img
+                                src="{{ $product->getFirstMediaUrl('feature_product_image') }}"
+                                alt="{{ $product->name }}"
+                                class="w-full h-full object-contain p-5 bg-white dark:bg-gray-800"
+                                loading="lazy"
+                            >
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent pointer-events-none"></div>
+                        @else
+                            <div class="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+                                <svg class="w-12 h-12 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                        @endif
+                    </div>
                 </div>
 
-                <div class="relative z-10 flex flex-col md:flex-row gap-6 p-6 md:p-8">
-                    <!-- Product Image -->
-                    <div class="flex-shrink-0 self-center md:self-start">
-                        <div class="relative h-36 w-36 md:h-40 md:w-40 rounded-xl overflow-hidden shadow-lg ring-2 ring-white/50 dark:ring-gray-700/50">
-                            <img src="{{ $product->getFirstMediaUrl('feature_product_image') }}" alt="{{ $product->name }}" class="h-full w-full object-cover" loading="lazy">
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-                            <div class="absolute bottom-0 w-full p-2 bg-gradient-to-t from-black/60 to-transparent text-xs text-white truncate">
-                                {{ $product->sku }}
+                <!-- Content Section -->
+                <div class="w-full md:w-2/3 p-6 md:pl-6">
+                    <!-- Header Section -->
+                    <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-6">
+                        <div class="space-y-4">
+                            <h1 class="text-2xl font-bold text-gray-900 dark:text-white leading-tight">
+                                {{ $product->name }}
+                            </h1>
+
+                            <div class="flex flex-wrap items-center gap-3 mt-2 mb-8"> <!-- Increased gap and bottom margin -->
+                                @if($product->sku)
+                                    <span class="text-xs font-medium text-gray-700 dark:text-primary-200 bg-gray-100 dark:bg-gray-900/80 px-3 py-1.5 rounded-md border border-gray-200 dark:border-gray-700">
+                                <span class="font-semibold">SKU:</span> {{ $product->sku }}
+                            </span>
+                                @endif
+
+                                @if($product->category?->name)
+                                    <span class="text-xs font-medium text-primary-700 dark:text-primary-200 bg-primary-50 dark:bg-primary-900/20 px-3 py-1.5 rounded-full border border-primary-100 dark:border-primary-900/30">
+                                {{ $product->category->name }}
+                            </span>
+                                @endif
                             </div>
+                        </div>
+
+                        <div class="flex items-center text-sm text-gray-600 dark:text-primary-200 bg-gray-50 dark:bg-gray-900/80 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700">
+                            <svg class="w-4 h-4 mr-3 text-gray-500 dark:text-primary-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span class="whitespace-nowrap">{{ $fromDate->format('M d, Y') }} – {{ $toDate->format('M d, Y') }}</span>
                         </div>
                     </div>
+                    <br>
 
-                    <!-- Product Info -->
-                    <div class="flex-1 flex flex-col justify-between">
-                        <!-- Title and Category -->
-                        <div class="mb-4 space-y-2">
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                                <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">
-                                    {{ $product->name }}
-                                </h2>
-                                <span class="px-3 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200">
-                            {{ $product->category->name }}
-                        </span>
-                            </div>
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8"> <!-- Added top margin -->
+                        @php
+                            $stats = [
+                                ['title' => __('Total Ordered'), 'value' => number_format(array_sum(array_column($sizeData, 'total'))), 'color' => 'blue', 'icon' => 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z'],
+                                ['title' => __('Unique Sizes'), 'value' => count($sizeData), 'color' => 'emerald', 'icon' => 'M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3'],
+                                ['title' => __('Color Variants'), 'value' => count($colorData), 'color' => 'purple', 'icon' => 'M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01'],
+                                ['title' => __('Countries'), 'value' => count($countryData), 'color' => 'amber', 'icon' => 'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z'],
+                            ];
+                        @endphp
 
-                            <!-- Date -->
-                            <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                                <x-heroicon-o-calendar class="w-5 h-5 text-gray-400 dark:text-gray-500" />
-                                <span>
-                            {{ $fromDate->format('M d, Y') }} – {{ $toDate->format('M d, Y') }}
-                        </span>
-                            </div>
-                        </div>
-
-                        <!-- Stats -->
-                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                            @php
-                                $stats = [
-                                    ['key' => 'product.total_ordered', 'value' => number_format(array_sum(array_column($sizeData, 'total'))), 'color' => 'from-blue-500 to-blue-300'],
-                                    ['key' => 'product.unique_sizes', 'value' => count($sizeData), 'color' => 'from-green-500 to-green-300'],
-                                    ['key' => 'product.unique_colors', 'value' => count($colorData), 'color' => 'from-purple-500 to-purple-300'],
-                                    ['key' => 'product.countries', 'value' => count($countryData), 'color' => 'from-amber-500 to-amber-300'],
-                                ];
-                            @endphp
-
-                            @foreach ($stats as $stat)
-                                <div class="bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-600 hover:shadow-md transition-shadow">
-                                    <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
-                                        {{ __($stat['key']) }}
-                                    </p>
-                                    <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                                        {{ $stat['value'] }}
-                                    </p>
-                                    <div class="h-1 mt-2 bg-gradient-to-r {{ $stat['color'] }} rounded-full"></div>
+                        @foreach($stats as $stat)
+                            <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 hover:shadow-xs transition-all duration-200">
+                                <div class="flex justify-between items-start h-full">
+                                    <div class="pr-2">
+                                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                                            {{ $stat['title'] }}
+                                        </p>
+                                        <p class="text-xl font-semibold text-gray-800 dark:text-gray-100 leading-tight">
+                                            {{ $stat['value'] }}
+                                        </p>
+                                    </div>
+                                    <div class="p-2 rounded-lg bg-{{ $stat['color'] }}-50 dark:bg-{{ $stat['color'] }}-900/20 text-{{ $stat['color'] }}-600 dark:text-{{ $stat['color'] }}-400">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $stat['icon'] }}"></path>
+                                        </svg>
+                                    </div>
                                 </div>
-                            @endforeach
-                        </div>
+                            </div>
+                        @endforeach
                     </div>
                 </div>
             </div>
@@ -974,6 +996,7 @@
                     }
                 });
 
+                // Status Chart
                 const statusChart = new Chart(document.getElementById('statusChart'), {
                     type: 'polarArea',
                     data: {
