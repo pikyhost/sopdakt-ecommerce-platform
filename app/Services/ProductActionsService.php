@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Filament\Pages\ProductAnalysis;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
@@ -162,6 +163,17 @@ class ProductActionsService
                     $record->decrement('quantity', $quantity);
                     Notification::make()->success()->title(__('Product added to cart successfully!'))->send();
                 }),
+
+            Action::make('analyze')
+                ->color('primary')
+                ->icon('heroicon-o-chart-bar')
+                ->label(__('Detailed Analysis'))
+                ->url(fn (Product $record): string => ProductAnalysis::getUrl([
+                    'product' => $record->slug,
+                    'from' => now()->subMonth()->toDateString(),  // temporary test
+                    'to' => now()->toDateString(),                // temporary test
+                ]))
+                ->openUrlInNewTab(),
 
 //            Action::make('rate_and_comment')
 //                ->color('primary')
