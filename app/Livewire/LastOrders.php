@@ -50,7 +50,7 @@ class LastOrders extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-            ->heading(__('Recent Transactions'))
+            ->heading(__('Last Orders'))
             ->paginationPageOptions([5, 10])
             ->query(
                 Order::query()
