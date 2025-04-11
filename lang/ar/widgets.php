@@ -9,7 +9,6 @@ return [
         'chart_revenue' => 'المبيعات',
         'period' => 'الفترة',
         'date_format' => 'dd MMM',
-        'currency_symbol' => 'ر.س.', // Adjust based on your currency
         'zoom' => 'تكبير',
         'zoomin' => 'تكبير',
         'zoomout' => 'تصغير',

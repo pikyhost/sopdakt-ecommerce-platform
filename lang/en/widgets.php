@@ -9,7 +9,6 @@ return [
         'chart_revenue' => 'Sales',
         'period' => 'Period',
         'date_format' => 'dd MMM',
-        'currency_symbol' => '$',
         'zoom' => 'Zoom',
         'zoomin' => 'Zoom In',
         'zoomout' => 'Zoom Out',

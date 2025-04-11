@@ -17,8 +17,8 @@ class CustomComparisonWidget extends Widget
 
     protected static ?string $pollingInterval = null;
     protected static bool $isLazy = false;
-    protected static string $view = 'livewire.custom-comparison-widget';
     protected int | string | array $columnSpan = 'full';
+    protected static string $view = 'livewire.custom-comparison-widget';
 
     public function mount(): void
     {
@@ -49,7 +49,14 @@ class CustomComparisonWidget extends Widget
             ->whereBetween('created_at', [$this->fromDate1, $this->toDate1])
             ->groupBy('date')
             ->orderBy('date')
-            ->get();
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'x' => $item->date,
+                    'y' => $item->revenue
+                ];
+            })
+            ->toArray();
 
         // Get daily breakdown for period 2
         $dailyPeriod2 = Order::query()
@@ -60,18 +67,29 @@ class CustomComparisonWidget extends Widget
             ->whereBetween('created_at', [$this->fromDate2, $this->toDate2])
             ->groupBy('date')
             ->orderBy('date')
-            ->get();
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'x' => $item->date,
+                    'y' => $item->revenue
+                ];
+            })
+            ->toArray();
 
         return [
             'period1' => [
                 'total' => $period1Revenue,
                 'daily' => $dailyPeriod1,
-                'label' => $this->fromDate1->format('M d, Y') . ' - ' . $this->toDate1->format('M d, Y')
+                'from_date' => $this->fromDate1,
+                'to_date' => $this->toDate1,
+                'label' => $this->fromDate1->format('M d, Y').' - '.$this->toDate1->format('M d, Y')
             ],
             'period2' => [
                 'total' => $period2Revenue,
                 'daily' => $dailyPeriod2,
-                'label' => $this->fromDate2->format('M d, Y') . ' - ' . $this->toDate2->format('M d, Y')
+                'from_date' => $this->fromDate2,
+                'to_date' => $this->toDate2,
+                'label' => $this->fromDate2->format('M d, Y').' - '.$this->toDate2->format('M d, Y')
             ],
         ];
     }
@@ -81,7 +99,7 @@ class CustomComparisonWidget extends Widget
     {
         if ($from) {
             $this->fromDate1 = Carbon::parse($from)->startOfDay();
-            $this->dispatch('updateChart');
+            $this->dispatch('updateChart', data: $this->getRevenueData());
         }
     }
 
@@ -90,7 +108,7 @@ class CustomComparisonWidget extends Widget
     {
         if ($to) {
             $this->toDate1 = Carbon::parse($to)->endOfDay();
-            $this->dispatch('updateChart');
+            $this->dispatch('updateChart', data: $this->getRevenueData());
         }
     }
 
@@ -99,7 +117,7 @@ class CustomComparisonWidget extends Widget
     {
         if ($from) {
             $this->fromDate2 = Carbon::parse($from)->startOfDay();
-            $this->dispatch('updateChart');
+            $this->dispatch('updateChart', data: $this->getRevenueData());
         }
     }
 
@@ -108,7 +126,7 @@ class CustomComparisonWidget extends Widget
     {
         if ($to) {
             $this->toDate2 = Carbon::parse($to)->endOfDay();
-            $this->dispatch('updateChart');
+            $this->dispatch('updateChart', data: $this->getRevenueData());
         }
     }
 }

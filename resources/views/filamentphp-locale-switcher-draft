@@ -21,3 +21,269 @@
         theme="dark"
     />
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<x-filament-widgets::widget>
+    <x-filament::section>
+        <div class="grid grid-cols-1 gap-4 sm:gap-6">
+            <!-- Summary Cards - Responsive Layout -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                @php
+                    $data = $this->getRevenueData();
+                    $period1 = $data['period1'];
+                    $period2 = $data['period2'];
+                    $change = $period1['total'] - $period2['total'];
+                    $percentage = $period2['total'] > 0 ? ($change / $period2['total']) * 100 : 0;
+                    $currency = \App\Models\Setting::getCurrency();
+                    $currencyCode = $currency ? $currency->code : 'USD';
+                @endphp
+
+                <x-filament::card class="h-full">
+                    <div class="p-3 sm:p-4">
+                        <h3 class="text-sm sm:text-base font-medium text-gray-900">Period 1: {{ $period1['label'] }}</h3>
+                        <p class="text-xl sm:text-2xl font-bold mt-1 sm:mt-2">{{ $currencyCode }} {{ number_format($period1['total'] / 100, 2) }}</p>
+                    </div>
+                </x-filament::card>
+
+                <x-filament::card class="h-full">
+                    <div class="p-3 sm:p-4">
+                        <h3 class="text-sm sm:text-base font-medium text-gray-900">Period 2: {{ $period2['label'] }}</h3>
+                        <p class="text-xl sm:text-2xl font-bold mt-1 sm:mt-2">{{ $currencyCode }} {{ number_format($period2['total'] / 100, 2) }}</p>
+                    </div>
+                </x-filament::card>
+            </div>
+
+            <!-- Comparison Summary - Responsive -->
+            <x-filament::card>
+                <div class="p-3 sm:p-4">
+                    <h3 class="text-sm sm:text-base font-medium text-gray-900">Comparison Summary</h3>
+                    <div class="mt-1 sm:mt-2 text-xs sm:text-sm">
+                        @if($change >= 0)
+                            <p class="text-green-600 font-bold">
+                                <span class="text-base sm:text-xl">+{{ $currencyCode }} {{ number_format(abs($change) / 100, 2) }}</span>
+                                <span class="text-xs sm:text-sm">(+{{ number_format(abs($percentage), 2) }}%)</span>
+                                <span class="block sm:inline">increase compared to Period 2</span>
+                            </p>
+                        @else
+                            <p class="text-red-600 font-bold">
+                                <span class="text-base sm:text-xl">-{{ $currencyCode }} {{ number_format(abs($change) / 100, 2) }}</span>
+                                <span class="text-xs sm:text-sm">(-{{ number_format(abs($percentage), 2) }}%)</span>
+                                <span class="block sm:inline">decrease compared to Period 2</span>
+                            </p>
+                        @endif
+                    </div>
+                </div>
+            </x-filament::card>
+
+            <!-- Spline Area Chart - Responsive Container -->
+            <div wire:ignore class="bg-white rounded-lg shadow p-2 sm:p-4">
+                <div id="revenueComparisonChart" style="min-height: 300px;"></div>
+            </div>
+        </div>
+
+        @push('scripts')
+            <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+            <script>
+                document.addEventListener('livewire:initialized', () => {
+                    let revenueComparisonChart;
+                    let resizeTimer;
+
+                    const formatSeriesData = (series) => {
+                        return series.map(item => ({
+                            x: new Date(item.x).getTime(),
+                            y: item.y
+                        }));
+                    };
+
+                    const initChart = (data) => {
+                        const currencyCode = '{{ $currencyCode }}';
+
+                        const options = {
+                            series: [
+                                {
+                                    name: data.period1.label,
+                                    data: formatSeriesData(data.period1.daily)
+                                },
+                                {
+                                    name: data.period2.label,
+                                    data: formatSeriesData(data.period2.daily)
+                                }
+                            ],
+                            chart: {
+                                height: '100%',
+                                type: 'area',
+                                toolbar: {
+                                    show: true,
+                                    tools: {
+                                        zoom: true,
+                                        zoomin: true,
+                                        zoomout: true,
+                                        pan: true,
+                                        reset: true
+                                    },
+                                    autoSelected: 'zoom'
+                                },
+                                animations: {
+                                    enabled: true,
+                                    easing: 'easeinout',
+                                    speed: 800
+                                },
+                                redrawOnParentResize: true,
+                                redrawOnWindowResize: true
+                            },
+                            dataLabels: {
+                                enabled: false
+                            },
+                            stroke: {
+                                curve: 'smooth',
+                                width: 2
+                            },
+                            fill: {
+                                type: 'gradient',
+                                gradient: {
+                                    shadeIntensity: 1,
+                                    opacityFrom: 0.7,
+                                    opacityTo: 0.3,
+                                    stops: [0, 90, 100]
+                                }
+                            },
+                            xaxis: {
+                                type: 'datetime',
+                                labels: {
+                                    format: 'dd MMM',
+                                    style: {
+                                        fontSize: '10px',
+                                        fontFamily: 'inherit'
+                                    }
+                                }
+                            },
+                            yaxis: {
+                                title: {
+                                    text: `Revenue (${currencyCode})`,
+                                    style: {
+                                        fontSize: '12px'
+                                    }
+                                },
+                                labels: {
+                                    formatter: function(value) {
+                                        return `${currencyCode} ` + value.toFixed(2);
+                                    },
+                                    style: {
+                                        fontSize: '10px',
+                                        fontFamily: 'inherit'
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                x: {
+                                    format: 'dd MMM yyyy'
+                                },
+                                y: {
+                                    formatter: function(val) {
+                                        return `${currencyCode} ` + val.toFixed(2);
+                                    }
+                                },
+                                style: {
+                                    fontSize: '12px',
+                                    fontFamily: 'inherit'
+                                }
+                            },
+                            colors: ['#3b82f6', '#10b981'],
+                            legend: {
+                                position: 'top',
+                                fontSize: '12px',
+                                itemMargin: {
+                                    horizontal: 10,
+                                    vertical: 5
+                                }
+                            },
+                            responsive: [{
+                                breakpoint: 640,
+                                options: {
+                                    chart: {
+                                        toolbar: {
+                                            show: true,
+                                            tools: {
+                                                zoom: false,
+                                                zoomin: false,
+                                                zoomout: false,
+                                                pan: false,
+                                                reset: true
+                                            }
+                                        }
+                                    },
+                                    legend: {
+                                        position: 'bottom',
+                                        horizontalAlign: 'center'
+                                    }
+                                }
+                            }]
+                        };
+
+                        if (revenueComparisonChart) {
+                            revenueComparisonChart.destroy();
+                        }
+
+                        revenueComparisonChart = new ApexCharts(
+                            document.querySelector("#revenueComparisonChart"),
+                            options
+                        );
+                        revenueComparisonChart.render();
+                    };
+
+                    // Initial render
+                    initChart(@json($this->getRevenueData()));
+
+                    // Handle chart updates
+                    Livewire.on('updateChart', (event) => {
+                        revenueComparisonChart.updateSeries([
+                            {
+                                name: event.data.period1.label,
+                                data: formatSeriesData(event.data.period1.daily)
+                            },
+                            {
+                                name: event.data.period2.label,
+                                data: formatSeriesData(event.data.period2.daily)
+                            }
+                        ]);
+                    });
+
+                    // Handle window resize with debounce
+                    window.addEventListener('resize', function() {
+                        clearTimeout(resizeTimer);
+                        resizeTimer = setTimeout(function() {
+                            if (revenueComparisonChart) {
+                                revenueComparisonChart.updateOptions({
+                                    chart: {
+                                        width: '100%'
+                                    }
+                                });
+                            }
+                        }, 200);
+                    });
+                });
+            </script>
+        @endpush
+    </x-filament::section>
+</x-filament-widgets::widget>
