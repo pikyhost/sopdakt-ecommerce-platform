@@ -255,13 +255,13 @@ class SettingResource extends Resource
                             ->prefix("%")
                             ->label(__('Tax Percentage'))
                             ->required()
-                            ->helperText(__('Enter the applicable tax percentage for purchases.')),
-                        
+                            ->helperText(__('Enter the applicable tax percentage for purchases')),
+
                         Forms\Components\Checkbox::make('shipping_type_enabled')
                             ->columnSpanFull()
                             ->label(__('Enable Shipping Types'))
                             ->default(true)
-                            ->helperText(__('Enable or disable shipping type selection on checkout.')),
+                            ->helperText(__('Enable or disable shipping type selection on checkout')),
 
                         Forms\Components\Checkbox::make('shipping_locations_enabled')
                             ->columnSpanFull()
