@@ -12,6 +12,10 @@ class LocationsAnalysisWidget extends Widget
 {
     protected static string $view = 'livewire.locations-analysis-widget';
 
+    protected static ?string $pollingInterval = null;
+    protected static bool $isLazy = false;
+    protected int | string | array $columnSpan = 'full';
+
     public Carbon $fromDate;
     public Carbon $toDate;
 
@@ -35,7 +39,6 @@ class LocationsAnalysisWidget extends Widget
         }
 
         $this->loadAnalysisData();
-        $this->dispatch('$refresh');
     }
 
     #[On('updateToDate1')]
@@ -46,7 +49,6 @@ class LocationsAnalysisWidget extends Widget
         }
 
         $this->loadAnalysisData();
-        $this->dispatch('$refresh');
     }
 
     protected function loadAnalysisData(): void
@@ -55,6 +57,7 @@ class LocationsAnalysisWidget extends Widget
         $this->governorateData = $this->getGovernorateDistribution();
         $this->cityData = $this->getCityDistribution();
     }
+
 
     protected function getCountryDistribution(): Collection
     {
@@ -94,7 +97,6 @@ class LocationsAnalysisWidget extends Widget
             ->selectRaw('c.name as city, COUNT(orders.id) as total')
             ->groupBy('orders.city_id', 'c.name')
             ->orderByDesc('total')
-            ->limit(15)
             ->get()
             ->map(fn ($item) => [
                 'city' => json_decode($item->city, true) ?? ['en' => $item->city],

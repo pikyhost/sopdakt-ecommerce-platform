@@ -34,4 +34,8 @@ class Governorate extends Model
         return $this->hasMany(City::class);
     }
 
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 }

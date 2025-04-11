@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\CountryResource\Pages\ManageCountries;
+use App\Filament\Resources\CountryResource\Pages\ViewCountry;
 use App\Models\Country;
 use App\Traits\HasMakeCostZeroAction;
 use Closure;
@@ -13,14 +14,11 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
-use Filament\Support\Enums\ActionSize;
 use Filament\Support\Enums\FontWeight;
-use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
@@ -165,6 +163,36 @@ class CountryResource extends Resource
         ];
     }
 
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                TextEntry::make('id')
+                    ->label(__('id'))
+                    ->weight(FontWeight::Bold),
+
+                TextEntry::make('name')
+                    ->label(__('name')),
+
+                TextEntry::make('code')
+                    ->label(__('code'))
+                    ->badge(),
+
+                TextEntry::make('cost')
+                    ->label(__('shipping_cost.cost')),
+
+                TextEntry::make('shipping_estimate_time')
+                    ->label(__('shipping_cost.shipping_estimate_time')),
+
+                TextEntry::make('created_at')
+                    ->label(__('category.created_at'))
+                    ->dateTime(),
+
+                TextEntry::make('updated_at')
+                    ->label(__('category.updated_at'))
+                    ->dateTime(),
+            ]);
+    }
 
     private static function getTableActions(): array
     {
@@ -188,6 +216,7 @@ class CountryResource extends Resource
     {
         return [
             'index' => ManageCountries::route('/'),
+            'view'  => ViewCountry::route('/{record}'),
         ];
     }
 }

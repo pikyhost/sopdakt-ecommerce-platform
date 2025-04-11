@@ -35,14 +35,14 @@
 
                 <!-- Content Section -->
                 <div class="w-full md:w-2/3 p-6 md:pl-6">
-                    <!-- Header Section -->
+                    <!-- Header -->
                     <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-6">
                         <div class="space-y-4">
                             <h1 class="text-2xl font-bold text-gray-900 dark:text-white leading-tight">
                                 {{ $product->name }}
                             </h1>
 
-                            <div class="flex flex-wrap items-center gap-3 mt-2 mb-8"> <!-- Increased gap and bottom margin -->
+                            <div class="flex flex-wrap items-center gap-3 mt-2 mb-8">
                                 @if($product->sku)
                                     <span class="text-xs font-medium text-gray-700 dark:text-primary-200 bg-gray-100 dark:bg-gray-900/80 px-3 py-1.5 rounded-md border border-gray-200 dark:border-gray-700">
                                 <span class="font-semibold">SKU:</span> {{ $product->sku }}
@@ -64,40 +64,40 @@
                             <span class="whitespace-nowrap">{{ $fromDate->format('M d, Y') }} – {{ $toDate->format('M d, Y') }}</span>
                         </div>
                     </div>
-                    <br>
 
-                    <!-- Stats Grid -->
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8"> <!-- Added top margin -->
-                        @php
-                            $stats = [
-                                ['title' => __('Total Ordered'), 'value' => number_format($totalOrderCount), 'color' => 'blue', 'icon' => 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z'],
-                                ['title' => __('Unique Sizes'), 'value' => count($sizeData), 'color' => 'emerald', 'icon' => 'M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3'],
-                                ['title' => __('Color Variants'), 'value' => count($colorData), 'color' => 'purple', 'icon' => 'M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01'],
-                                ['title' => __('Countries'), 'value' => count($countryData), 'color' => 'amber', 'icon' => 'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z'],
-                            ];
-                        @endphp
+                    <!-- Stats Row -->
+                    @php
+                        $stats = [
+                            ['title' => __('Total Ordered'), 'value' => number_format($totalOrderCount), 'color' => 'blue', 'icon' => 'M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z'],
+                            ['title' => __('Unique Sizes'), 'value' => count($sizeData), 'color' => 'emerald', 'icon' => 'M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3'],
+                            ['title' => __('Color Variants'), 'value' => count($colorData), 'color' => 'purple', 'icon' => 'M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01'],
+                            ['title' => __('Countries'), 'value' => count($countryData), 'color' => 'amber', 'icon' => 'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z'],
+                        ];
+                    @endphp
 
-
-                    @foreach($stats as $stat)
-                            <div class="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 hover:shadow-xs transition-all duration-200">
-                                <div class="flex justify-between items-start h-full">
-                                    <div class="pr-2">
-                                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                    <div class="grid grid-cols-1 gap-4 mt-8">
+                        @foreach($stats as $stat)
+                            <div class="flex items-center justify-between w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-6 py-4 shadow-sm hover:shadow-md transition duration-200">
+                                <!-- Icon -->
+                                <div class="flex items-center gap-4">
+                                    <div class="p-3 rounded-full bg-{{ $stat['color'] }}-100 dark:bg-{{ $stat['color'] }}-900/20 text-{{ $stat['color'] }}-600 dark:text-{{ $stat['color'] }}-400">
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $stat['icon'] }}" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400">
                                             {{ $stat['title'] }}
                                         </p>
-                                        <p class="text-xl font-semibold text-gray-800 dark:text-gray-100 leading-tight">
+                                        <p class="text-lg font-semibold text-gray-900 dark:text-white">
                                             {{ $stat['value'] }}
                                         </p>
-                                    </div>
-                                    <div class="p-2 rounded-lg bg-{{ $stat['color'] }}-50 dark:bg-{{ $stat['color'] }}-900/20 text-{{ $stat['color'] }}-600 dark:text-{{ $stat['color'] }}-400">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $stat['icon'] }}"></path>
-                                        </svg>
                                     </div>
                                 </div>
                             </div>
                         @endforeach
                     </div>
+
                 </div>
             </div>
         </x-filament::card>
@@ -314,17 +314,29 @@
         </x-filament::card>
 
         <!-- Geographical Distribution - Updated Table Text Styles -->
-        <!-- Geographical Distribution - Updated Table Text Styles -->
         <x-filament::card class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div class="p-6">
                 <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{{ __('Geographical Distribution') }}</h3>
-                    <span class="text-xs px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-200">
-                {{ count($countryData) }} {{ __('countries') }},
-                {{ count($governorateData) }} {{ __('governorates') }},
-                {{ count($cityData) }} {{ __('cities') }}
-            </span>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ __('Geographical Distribution') }}</h3>
+                    <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 shadow-sm ring-1 ring-primary-200 dark:ring-primary-800">
+    <span class="flex items-center gap-1">
+        <x-heroicon-o-globe-alt class="w-4 h-4" />
+        {{ count($countryData) }} {{ __('countries') }}
+    </span>
+    <span class="opacity-50">•</span>
+    <span class="flex items-center gap-1">
+        <x-heroicon-o-map class="w-4 h-4" />
+        {{ count($governorateData) }} {{ __('governorates') }}
+    </span>
+    <span class="opacity-50">•</span>
+    <span class="flex items-center gap-1">
+        <x-heroicon-o-map-pin class="w-4 h-4" />
+        {{ count($cityData) }} {{ __('cities') }}
+    </span>
+</span>
+
                 </div>
+                <hr class="border-gray-200 dark:border-gray-700 mb-6">
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <!-- Country Distribution -->
