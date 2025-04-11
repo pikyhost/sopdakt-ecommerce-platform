@@ -42,6 +42,14 @@ class OrdersRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('id')
             ->header(null)
+            ->headerActions([
+                \Filament\Actions\Action::make('back')
+                    ->label(__('Back to previous page'))
+                    ->icon('heroicon-m-arrow-left')
+                    ->color('gray')
+                    ->url(url()->previous())
+                    ->hidden(fn () => url()->previous() === url()->current()), // Optionally hide if same page
+            ])
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->copyable()

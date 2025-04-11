@@ -5,6 +5,7 @@ namespace App\Filament\Resources\CityResource\Pages;
 use App\Filament\Resources\CityResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
+use Illuminate\Contracts\Support\Htmlable;
 
 class ViewCity extends ViewRecord
 {
@@ -18,5 +19,10 @@ class ViewCity extends ViewRecord
             Actions\LocaleSwitcher::make(),
             Actions\EditAction::make()
         ];
+    }
+
+    public function getHeading(): string|Htmlable
+    {
+        return '';
     }
 }
