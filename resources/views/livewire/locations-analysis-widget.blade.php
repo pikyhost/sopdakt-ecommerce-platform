@@ -16,7 +16,6 @@
         <x-heroicon-o-map-pin class="w-4 h-4" /> {{ $cityData->count() }} {{ __('cities') }}
     </span>
 </span>
-
             </div>
 
             <hr class="border-gray-200 dark:border-gray-700 mb-6">

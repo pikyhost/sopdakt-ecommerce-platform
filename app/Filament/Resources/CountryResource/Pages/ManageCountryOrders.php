@@ -1,45 +1,34 @@
 <?php
 
-namespace App\Filament\Resources\CountryResource\RelationManagers;
+namespace App\Filament\Resources\CountryResource\Pages;
 
 use App\Enums\OrderStatus;
+use App\Filament\Resources\CountryResource;
 use Carbon\Carbon;
+use Filament\Actions;
+use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
-use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Forms\Form;
+use Filament\Resources\Pages\ManageRelatedRecords;
 use Filament\Support\Enums\IconPosition;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Contracts\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class OrdersRelationManager extends RelationManager
+class ManageCountryOrders extends ManageRelatedRecords
 {
+    protected static string $resource = CountryResource::class;
+
     protected static string $relationship = 'orders';
 
-    public ?array $tableFilters;
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static bool $isLazy = false;
-
-    public static function getTitle(Model $ownerRecord, string $pageClass): string
+    public static function getNavigationLabel(): string
     {
-        return '';
-    }
-
-    protected static function getModelLabel(): ?string
-    {
-        return '';
-    }
-
-    protected static function getPluralModelLabel(): ?string
-    {
-        return '';
-    }
-
-    protected static function getPluralRecordLabel(): ?string
-    {
-        return '';
+        return 'Orders';
     }
 
     public function table(Table $table): Table
@@ -53,7 +42,7 @@ class OrdersRelationManager extends RelationManager
                     ->color('primary')
                     ->label(__('Back to previous page'))
                     ->icon(function () {
-                       return app()->getLocale() == 'en' ? 'heroicon-m-arrow-right' : 'heroicon-m-arrow-left';
+                        return app()->getLocale() == 'en' ? 'heroicon-m-arrow-right' : 'heroicon-m-arrow-left';
                     })
                     ->iconPosition(IconPosition::After)
                     ->color('gray')
@@ -149,7 +138,7 @@ class OrdersRelationManager extends RelationManager
                             ->label(__('filters.created_until'))
                             ->placeholder(fn ($state): string => now()->format('M d, Y')),
                     ])
-                    ->query(function (Builder $query, array $data): Builder {
+                    ->query(function (\Illuminate\Contracts\Database\Eloquent\Builder $query, array $data): Builder {
                         return $query
                             ->when(
                                 $data['created_from'] ?? null,
