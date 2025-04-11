@@ -19,8 +19,7 @@
                     if (($period2['total'] ?? 0) != 0) {
                         $percentage = ($change / $period2['total']) * 100;
                     } elseif (($period1['total'] ?? 0) != 0) {
-                        // If previous period was 0 and current has value, show infinite growth
-                        $percentage = 100; // or any other value you want to represent "new" growth
+                        $percentage = 100;
                     }
 
                     $currency = \App\Models\Setting::getCurrency();
@@ -34,11 +33,11 @@
                     <div class="p-3 sm:p-4">
                         <div class="flex justify-between items-start">
                             <div>
-                                <p class="text-xs font-medium text-gray-500 dark:text-gray-300">Current Period</p>
+                                <p class="text-xs font-medium text-gray-500 dark:text-gray-300">{{ __('Current Period') }}</p>
                                 <p class="text-lg font-semibold text-gray-900 dark:text-white mt-1">
                                     {{ $currencyCode }} {{ isset($period1['total']) ? number_format($period1['total'], 2) : '0.00' }}
                                 </p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $period1['label'] ?? 'N/A' }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $period1['label'] ?? __('N/A') }}</p>
                             </div>
                             <div class="p-1.5 rounded-full bg-gray-100 dark:bg-gray-700/80">
                                 @if ($isPositive)
@@ -56,11 +55,11 @@
                     <div class="p-3 sm:p-4">
                         <div class="flex justify-between items-start">
                             <div>
-                                <p class="text-xs font-medium text-gray-500 dark:text-gray-300">Growth Rate</p>
+                                <p class="text-xs font-medium text-gray-500 dark:text-gray-300">{{ __('Growth Rate') }}</p>
                                 <p class="text-lg font-semibold {{ $isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }} mt-1">
                                     {{ $isPositive ? '+' : '' }}{{ number_format($percentage, 2) }}%
                                 </p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">vs previous period</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('vs previous period') }}</p>
                             </div>
                             <div class="p-1.5 rounded-full bg-gray-50 dark:bg-gray-700/80">
                                 <x-heroicon-o-chart-bar class="w-4 h-4 text-gray-600 dark:text-gray-300" />
@@ -74,11 +73,11 @@
                     <div class="p-3 sm:p-4">
                         <div class="flex justify-between items-start">
                             <div>
-                                <p class="text-xs font-medium text-gray-500 dark:text-gray-300">Previous Period</p>
+                                <p class="text-xs font-medium text-gray-500 dark:text-gray-300">{{ __('Previous Period') }}</p>
                                 <p class="text-lg font-semibold text-gray-900 dark:text-white mt-1">
                                     {{ $currencyCode }} {{ isset($period2['total']) ? number_format($period2['total'], 2) : '0.00' }}
                                 </p>
-                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $period2['label'] ?? 'N/A' }}</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $period2['label'] ?? __('N/A') }}</p>
                             </div>
                             <div class="p-1.5 rounded-full bg-gray-50 dark:bg-gray-700/80">
                                 <x-heroicon-o-clock class="w-4 h-4 text-gray-600 dark:text-gray-300" />
@@ -92,7 +91,7 @@
             <div wire:ignore class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="flex justify-between items-center px-4 py-3 border-b border-gray-200 dark:border-gray-600 bg-gray-50/80 dark:bg-gray-700/70 backdrop-blur-sm">
                     <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-100 tracking-tight">
-                        Sales ({{ $currencyCode }})
+                        {{ __('Sales') }} ({{ $currencyCode }})
                     </h3>
                 </div>
                 <div id="revenueComparisonChart" class="px-2 pt-2 pb-1 min-h-[350px]"></div>
@@ -116,6 +115,7 @@
                     const initChart = (data) => {
                         const currencyCode = '{{ $currencyCode }}';
                         const isDark = document.documentElement.classList.contains('dark');
+                        const isRTL = document.documentElement.dir === 'rtl';
 
                         const options = {
                             series: [
@@ -248,6 +248,7 @@
                             colors: isDark ? ['#60A5FA', '#34D399'] : ['#3B82F6', '#10B981'],
                             legend: {
                                 position: 'top',
+                                horizontalAlign: isRTL ? 'left' : 'right',
                                 labels: {
                                     colors: isDark ? '#E5E7EB' : '#111827',
                                     useSeriesColors: false

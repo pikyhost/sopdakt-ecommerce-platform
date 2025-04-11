@@ -13,6 +13,13 @@ return [
         'zoomin' => 'تكبير',
         'zoomout' => 'تصغير',
         'pan' => 'تحريك',
-        'reset' => 'إعادة تعيين'
+        'reset' => 'إعادة تعيين',
+        'Sales Comparison' => 'مقارنة المبيعات',
+        'Current Period' => 'الفترة الحالية',
+        'Growth Rate' => 'معدل النمو',
+        'Previous Period' => 'الفترة السابقة',
+        'vs previous period' => 'مقارنة بالفترة السابقة',
+        'Sales' => 'المبيعات',
+        'N/A' => 'غير متاح',
     ]
 ];

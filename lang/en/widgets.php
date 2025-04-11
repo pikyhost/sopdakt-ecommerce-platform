@@ -13,6 +13,14 @@ return [
         'zoomin' => 'Zoom In',
         'zoomout' => 'Zoom Out',
         'pan' => 'Pan',
-        'reset' => 'Reset Zoom'
+        'reset' => 'Reset Zoom',
+
+        'Sales Comparison' => 'Sales Comparison',
+        'Current Period' => 'Current Period',
+        'Growth Rate' => 'Growth Rate',
+        'Previous Period' => 'Previous Period',
+        'vs previous period' => 'vs previous period',
+        'Sales' => 'Sales',
+        'N/A' => 'N/A',
     ]
 ];
