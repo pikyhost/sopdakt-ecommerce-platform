@@ -8,6 +8,7 @@ use App\Livewire\Filters;
 use App\Livewire\LastOrders;
 use App\Livewire\LocationsAnalysisWidget;
 use App\Livewire\OrdersChart;
+use App\Livewire\SalesAnnualComparisonChart;
 use App\Livewire\SalesComparisonChart;
 use App\Livewire\UsersChart;
 use Filament\Actions\Action;
@@ -22,7 +23,7 @@ class Analysis extends Page
 
     protected static string $view = 'filament.pages.analysis';
 
-   
+
 
     public static function getNavigationLabel(): string
     {
@@ -52,6 +53,7 @@ class Analysis extends Page
             AnalysisPageStats::class,
             UsersChart::class,
             OrdersChart::class,
+            SalesAnnualComparisonChart::class,
             SalesComparisonChart::class,
             LocationsAnalysisWidget::class,
             TopProducts::class,

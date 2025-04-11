@@ -7,7 +7,6 @@ use Flowframe\Trend\Trend;
 use Flowframe\Trend\TrendValue;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Contracts\Support\Htmlable;
-use Livewire\Attributes\On;
 use Illuminate\Support\Carbon;
 
 class SalesComparisonChart extends ChartWidget
@@ -19,7 +18,7 @@ class SalesComparisonChart extends ChartWidget
 
     protected static ?string $pollingInterval = null;
     protected static bool $isLazy = false;
-    protected int | string | array $columnSpan = 'full';
+    protected int|string|array $columnSpan = 'full';
 
     public function mount(): void
     {
@@ -31,91 +30,75 @@ class SalesComparisonChart extends ChartWidget
 
     public function getHeading(): string|Htmlable|null
     {
-        return __('Sales Chart Comparison');
+        return __('Sales Comparison: Day vs Month');
     }
 
     protected function getData(): array
     {
-        // Ensure we have valid dates
-        $fromDate1 = $this->fromDate1 ?? now()->startOfMonth();
-        $toDate1 = $this->toDate1 ?? now()->endOfMonth();
-        $fromDate2 = $this->fromDate2 ?? now()->subMonth()->startOfMonth();
-        $toDate2 = $this->toDate2 ?? now()->subMonth()->endOfMonth();
+        $labels = range(1, 31); // Days of month
 
-        // Generate complete date ranges for both periods
-        $period1Dates = $this->generateDateRange($fromDate1, $toDate1);
-        $period2Dates = $this->generateDateRange($fromDate2, $toDate2);
+        // First period data
+        $data1 = $this->getSalesDataGroupedByDay($this->fromDate1, $this->toDate1);
+        $month1Label = $this->fromDate1->format('F');
 
-        // Get all unique dates for the chart labels
-        $allDates = $period1Dates->merge($period2Dates)
-            ->unique()
-            ->sort()
-            ->values();
-
-        // Get data for both periods
-        $data1 = $this->getPeriodData($fromDate1, $toDate1, $allDates);
-        $data2 = $this->getPeriodData($fromDate2, $toDate2, $allDates);
+        // Second period data
+        $data2 = $this->getSalesDataGroupedByDay($this->fromDate2, $this->toDate2);
+        $month2Label = $this->fromDate2->format('F');
 
         return [
             'datasets' => [
                 [
-                    'label' => __('Current Period') . ' (' . $fromDate1->format('M d') . ' - ' . $toDate1->format('M d') . ')',
-                    'data' => $data1,
-                    'borderColor' => 'rgba(75, 192, 192, 1)',
-                    'backgroundColor' => 'rgba(75, 192, 192, 0.2)',
+                    'label' => $month1Label,
+                    'data' => $this->fillMissingDays($data1),
+                    'borderColor' => 'rgba(54, 162, 235, 1)',
+                    'backgroundColor' => 'rgba(54, 162, 235, 0.2)',
+                    'tension' => 0.4,
                     'borderWidth' => 2,
-                    'tension' => 0.3,
                     'fill' => false,
                 ],
                 [
-                    'label' => __('Comparison Period') . ' (' . $fromDate2->format('M d') . ' - ' . $toDate2->format('M d') . ')',
-                    'data' => $data2,
+                    'label' => $month2Label,
+                    'data' => $this->fillMissingDays($data2),
                     'borderColor' => 'rgba(255, 99, 132, 1)',
                     'backgroundColor' => 'rgba(255, 99, 132, 0.2)',
+                    'tension' => 0.4,
                     'borderWidth' => 2,
-                    'tension' => 0.3,
                     'fill' => false,
                 ],
             ],
-            'labels' => $allDates->map(fn ($date) => $date->format('Y-m-d'))->toArray(),
+            'labels' => $labels,
         ];
     }
 
-    protected function generateDateRange(Carbon $startDate, Carbon $endDate)
+    protected function getSalesDataGroupedByDay(Carbon $start, Carbon $end): array
     {
-        $dates = collect();
-        $currentDate = $startDate->copy();
-
-        while ($currentDate <= $endDate) {
-            $dates->push($currentDate->copy());
-            $currentDate->addDay();
-        }
-
-        return $dates;
-    }
-
-    protected function getPeriodData(Carbon $startDate, Carbon $endDate, $allDates)
-    {
-        $trendData = Trend::model(Order::class)
-            ->between(start: $startDate, end: $endDate)
+        $trend = Trend::model(Order::class)
+            ->between(start: $start, end: $end)
             ->perDay()
             ->sum('total');
 
-        $dataByDate = $trendData->keyBy(fn (TrendValue $value) => Carbon::parse($value->date)->format('Y-m-d'));
+        $grouped = [];
 
-        return $allDates->map(function ($date) use ($dataByDate, $startDate, $endDate) {
-            $dateKey = $date->format('Y-m-d');
+        foreach ($trend as $value) {
+            $day = Carbon::parse($value->date)->day;
+            $grouped[$day] = $value->aggregate;
+        }
 
-            // Only show data within the period's date range
-            if ($date >= $startDate && $date <= $endDate) {
-                return $dataByDate[$dateKey]->aggregate ?? 0;
-            }
-
-            return null; // This will create a gap in the chart for dates outside the period
-        })->toArray();
+        return $grouped;
     }
 
-    #[On('updateFromDate1')]
+    protected function fillMissingDays(array $data): array
+    {
+        $filled = [];
+
+        for ($i = 1; $i <= 31; $i++) {
+            $filled[] = $data[$i] ?? null;
+        }
+
+        return $filled;
+    }
+
+    #[\Livewire\Attributes\On('updateFromDate1')]
     public function updateFromDate1(?string $from): void
     {
         if ($from) {
@@ -124,7 +107,7 @@ class SalesComparisonChart extends ChartWidget
         }
     }
 
-    #[On('updateToDate1')]
+    #[\Livewire\Attributes\On('updateToDate1')]
     public function updateToDate1(?string $to): void
     {
         if ($to) {
@@ -133,7 +116,7 @@ class SalesComparisonChart extends ChartWidget
         }
     }
 
-    #[On('updateFromDate2')]
+    #[\Livewire\Attributes\On('updateFromDate2')]
     public function updateFromDate2(?string $from): void
     {
         if ($from) {
@@ -142,7 +125,7 @@ class SalesComparisonChart extends ChartWidget
         }
     }
 
-    #[On('updateToDate2')]
+    #[\Livewire\Attributes\On('updateToDate2')]
     public function updateToDate2(?string $to): void
     {
         if ($to) {
