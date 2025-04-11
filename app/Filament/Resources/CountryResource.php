@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\CountryResource\RelationManagers\OrdersRelationManager;
 use Filament\Infolists\Infolist;
 use App\Filament\Resources\CountryResource\Pages\ManageCountries;
 use App\Filament\Resources\CountryResource\Pages\ViewCountry;
@@ -214,6 +215,13 @@ class CountryResource extends Resource
                 DeleteBulkAction::make(),
                 self::makeCostZeroBulkAction(),
             ]),
+        ];
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            OrdersRelationManager::class
         ];
     }
 

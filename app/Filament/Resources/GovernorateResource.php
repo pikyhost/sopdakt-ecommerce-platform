@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\GovernorateResource\Pages;
+use App\Filament\Resources\GovernorateResource\RelationManagers\OrdersRelationManager;
 use App\Models\Governorate;
 use App\Traits\HasMakeCostZeroAction;
 use Closure;
@@ -188,6 +189,13 @@ class GovernorateResource extends Resource
                             ->dateTime(),
                     ])->columns(2)
             ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            OrdersRelationManager::class
+        ];
     }
 
     public static function getPages(): array

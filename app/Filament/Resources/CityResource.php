@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\CityResource\Pages;
+use App\Filament\Resources\CountryResource\RelationManagers\OrdersRelationManager;
 use App\Models\City;
 use App\Traits\HasMakeCostZeroAction;
 use Closure;
@@ -187,6 +188,13 @@ class CityResource extends Resource
                             ->dateTime(),
                     ])->columns(2)
             ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            \App\Filament\Resources\CityResource\RelationManagers\OrdersRelationManager::class
+        ];
     }
 
     public static function getPages(): array
