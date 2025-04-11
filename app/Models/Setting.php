@@ -10,6 +10,7 @@ class Setting extends Model
     protected $fillable = [
         'site_name',
         'currency_id',
+        'country_id', // ✅ added
         'tax_percentage',
         'logo_en',
         'logo_ar',
@@ -98,6 +99,14 @@ class Setting extends Model
     }
 
     /**
+     * Country relationship.
+     */
+    public function country()
+    {
+        return $this->belongsTo(Country::class); // ✅ added
+    }
+
+    /**
      * Get the currency with its symbol.
      */
     public static function getCurrency(): ?object
@@ -148,12 +157,11 @@ class Setting extends Model
 
     public static function isShippingEnabled(): bool
     {
-        return (bool) self::getSetting('shipping_type_enabled'); // Ensure it's always boolean
+        return (bool) self::getSetting('shipping_type_enabled');
     }
 
     public static function isShippingLocationsEnabled(): bool
     {
-        return (bool) self::getSetting('shipping_locations_enabled'); // Ensure it's always boolean
+        return (bool) self::getSetting('shipping_locations_enabled');
     }
-
 }

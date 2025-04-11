@@ -3,11 +3,13 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\SettingResource\Pages;
+use App\Models\Country;
 use App\Models\Currency;
 use App\Models\Setting;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\FileUpload;
@@ -249,6 +251,11 @@ class SettingResource extends Resource
                             ->getOptionLabelFromRecordUsing(fn (Currency $record) => "{$record->name} ({$record->symbol})")
                             ->required()
                             ->helperText(__('Select the default currency for transactions.')),
+
+                        Select::make('country_id')
+                            ->required()
+                            ->label(__('Default Country'))
+                            ->options(Country::pluck('name', 'id')),
 
                         Forms\Components\Checkbox::make('shipping_type_enabled')
                             ->label(__('Enable Shipping Types'))

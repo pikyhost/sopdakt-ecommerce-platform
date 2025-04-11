@@ -34,9 +34,6 @@ return new class extends Migration
             $table->string('tiktok')->nullable();
             $table->boolean('shipping_type_enabled')->default(true);
             $table->boolean('shipping_locations_enabled')->default(true);
-
-            // Indexing for faster lookup
-            $table->index('currency_id');
         });
 
         // Insert default settings record
