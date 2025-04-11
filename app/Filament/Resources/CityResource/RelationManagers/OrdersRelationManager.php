@@ -2,12 +2,15 @@
 
 namespace App\Filament\Resources\CityResource\RelationManagers;
 
+use App\Enums\OrderStatus;
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Support\Enums\IconPosition;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -127,6 +130,47 @@ class OrdersRelationManager extends RelationManager
             ->actions([
                 Tables\Actions\ViewAction::make(),
             ])
+            ->filters([
+                SelectFilter::make('status')
+                    ->label(__('Status'))
+                    ->multiple()
+                    ->options(
+                        collect(OrderStatus::cases())
+                            ->mapWithKeys(fn ($status) => [$status->value => $status->getLabel()])
+                            ->toArray()
+                    ),
+                Tables\Filters\Filter::make('created_at')
+                    ->form([
+                        Forms\Components\DatePicker::make('created_from')
+                            ->label(__('filters.created_from'))
+                            ->placeholder(fn ($state): string => 'Dec 18, ' . now()->subYear()->format('Y')),
+                        Forms\Components\DatePicker::make('created_until')
+                            ->label(__('filters.created_until'))
+                            ->placeholder(fn ($state): string => now()->format('M d, Y')),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'] ?? null,
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'] ?? null,
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['created_from'] ?? null) {
+                            $indicators['created_from'] = __('filters.indicator_from', ['date' => Carbon::parse($data['created_from'])->toFormattedDateString()]);
+                        }
+                        if ($data['created_until'] ?? null) {
+                            $indicators['created_until'] = __('filters.indicator_until', ['date' => Carbon::parse($data['created_until'])->toFormattedDateString()]);
+                        }
+
+                        return $indicators;
+                    }),
+            ], Tables\Enums\FiltersLayout::Modal)
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),

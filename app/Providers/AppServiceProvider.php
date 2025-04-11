@@ -111,25 +111,4 @@ class AppServiceProvider extends ServiceProvider
 
         return is_string($state) && strlen($state) > $column->getCharacterLimit() ? $state : null;
     }
-
-    protected function configureDatePicker(): void
-    {
-        DatePicker::configureUsing(function (DatePicker $datePicker) {
-            $datePicker
-                ->displayFormat('d/m/Y')
-                ->suffixIcon('heroicon-m-calendar')
-                ->native(false);
-        });
-    }
-
-    protected function configureDateTimePicker(): void
-    {
-        DateTimePicker::configureUsing(function (DatePicker $datePicker) {
-            $datePicker
-                ->displayFormat('d/m/Y')
-                ->suffixIcon('heroicon-m-calendar')
-                ->native(false);
-        });
-    }
-
 }

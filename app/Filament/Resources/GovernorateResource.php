@@ -143,6 +143,7 @@ class GovernorateResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->label(__('updated_at')),
             ])
+            ->recordUrl(false)
             ->filters([
                 Tables\Filters\SelectFilter::make('country_id')
                     ->columnSpanFull()

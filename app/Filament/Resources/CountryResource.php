@@ -122,6 +122,7 @@ class CountryResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->recordUrl(false)
             ->columns(self::getTableColumns())
             ->actions(self::getTableActions())
             ->bulkActions(self::getTableBulkActions());

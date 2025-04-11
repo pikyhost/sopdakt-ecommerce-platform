@@ -117,6 +117,7 @@ class CityResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->recordUrl(false)
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
@@ -153,7 +154,6 @@ class CityResource extends Resource
                     ->label(__('edit')),
                 Tables\Actions\DeleteAction::make()
                     ->label(__('delete')),
-                Tables\Actions\ViewAction::make()
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
