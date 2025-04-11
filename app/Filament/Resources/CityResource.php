@@ -3,12 +3,16 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\CityResource\Pages;
+use App\Filament\Resources\CountryResource\Pages\ViewCountry;
 use App\Models\City;
 use App\Traits\HasMakeCostZeroAction;
 use Closure;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Infolists\Infolist;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -156,10 +160,40 @@ class CityResource extends Resource
             ]);
     }
 
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Section::make()
+                    ->schema([
+                        TextEntry::make('name')
+                            ->label(__('name')),
+
+                        TextEntry::make('governorate.name')
+                            ->label(__('governorate_name')),
+
+                        TextEntry::make('cost')
+                            ->label(__('shipping_cost.cost')),
+
+                        TextEntry::make('shipping_estimate_time')
+                            ->label(__('shipping_cost.shipping_estimate_time')),
+
+                        TextEntry::make('created_at')
+                            ->label(__('created_at'))
+                            ->dateTime(),
+
+                        TextEntry::make('updated_at')
+                            ->label(__('updated_at'))
+                            ->dateTime(),
+                    ]),
+            ]);
+    }
+
     public static function getPages(): array
     {
         return [
             'index' => Pages\ManageCities::route('/'),
+            'view'  => Pages\ViewCity::route('/{record}'),
         ];
     }
 }

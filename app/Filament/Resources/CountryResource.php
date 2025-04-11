@@ -7,6 +7,7 @@ use App\Filament\Resources\CountryResource\Pages\ViewCountry;
 use App\Models\Country;
 use App\Traits\HasMakeCostZeroAction;
 use Closure;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
@@ -167,30 +168,32 @@ class CountryResource extends Resource
     {
         return $infolist
             ->schema([
-                TextEntry::make('id')
-                    ->label(__('id'))
-                    ->weight(FontWeight::Bold),
+                Section::make()->schema([
+                    TextEntry::make('id')
+                        ->label(__('id'))
+                        ->weight(FontWeight::Bold),
 
-                TextEntry::make('name')
-                    ->label(__('name')),
+                    TextEntry::make('name')
+                        ->label(__('name')),
 
-                TextEntry::make('code')
-                    ->label(__('code'))
-                    ->badge(),
+                    TextEntry::make('code')
+                        ->label(__('code'))
+                        ->badge(),
 
-                TextEntry::make('cost')
-                    ->label(__('shipping_cost.cost')),
+                    TextEntry::make('cost')
+                        ->label(__('shipping_cost.cost')),
 
-                TextEntry::make('shipping_estimate_time')
-                    ->label(__('shipping_cost.shipping_estimate_time')),
+                    TextEntry::make('shipping_estimate_time')
+                        ->label(__('shipping_cost.shipping_estimate_time')),
 
-                TextEntry::make('created_at')
-                    ->label(__('category.created_at'))
-                    ->dateTime(),
+                    TextEntry::make('created_at')
+                        ->label(__('category.created_at'))
+                        ->dateTime(),
 
-                TextEntry::make('updated_at')
-                    ->label(__('category.updated_at'))
-                    ->dateTime(),
+                    TextEntry::make('updated_at')
+                        ->label(__('category.updated_at'))
+                        ->dateTime(),
+                ])
             ]);
     }
 

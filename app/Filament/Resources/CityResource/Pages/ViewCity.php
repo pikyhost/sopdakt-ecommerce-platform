@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Filament\Resources\CountryResource\Pages;
+namespace App\Filament\Resources\CityResource\Pages;
 
-use App\Filament\Resources\CountryResource;
+use App\Filament\Resources\CityResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 
-class ViewCountry extends ViewRecord
+class ViewCity extends ViewRecord
 {
     use ViewRecord\Concerns\Translatable;
 
-    protected static string $resource = CountryResource::class;
+    protected static string $resource = CityResource::class;
 
     protected function getHeaderActions(): array
     {
