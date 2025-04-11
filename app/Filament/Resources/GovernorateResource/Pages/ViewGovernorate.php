@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\GovernorateResource\Pages;
 
-use App\Filament\Resources\CityResource;
 use App\Filament\Resources\GovernorateResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
