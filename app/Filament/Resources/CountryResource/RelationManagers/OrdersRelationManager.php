@@ -2,14 +2,12 @@
 
 namespace App\Filament\Resources\CountryResource\RelationManagers;
 
-use Filament\Forms;
-use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Support\Enums\IconPosition;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class OrdersRelationManager extends RelationManager
 {
@@ -43,9 +41,12 @@ class OrdersRelationManager extends RelationManager
             ->recordTitleAttribute('id')
             ->header(null)
             ->headerActions([
-                \Filament\Actions\Action::make('back')
+                Action::make('back')
                     ->label(__('Back to previous page'))
-                    ->icon('heroicon-m-arrow-left')
+                    ->icon(function () {
+                       return app()->getLocale() == 'en' ? 'heroicon-m-arrow-right' : 'heroicon-m-arrow-left';
+                    })
+                    ->iconPosition(IconPosition::After)
                     ->color('gray')
                     ->url(url()->previous())
                     ->hidden(fn () => url()->previous() === url()->current()), // Optionally hide if same page
