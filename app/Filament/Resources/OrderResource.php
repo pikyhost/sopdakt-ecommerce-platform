@@ -586,7 +586,6 @@ class OrderResource extends Resource
             'create' => Pages\CreateOrder::route('/create'),
             'edit' => Pages\EditOrder::route('/{record}/edit'),
             'view' => Pages\ViewOrder::route('/{record}'),
-            'orders' => ManageCountryOrders::route('/{record}/orders')
         ];
     }
 

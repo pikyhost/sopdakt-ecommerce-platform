@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\CountryResource\Pages\ManageCountryOrders;
 use App\Filament\Resources\CountryResource\RelationManagers\OrdersRelationManager;
 use Filament\Infolists\Infolist;
 use App\Filament\Resources\CountryResource\Pages\ManageCountries;
@@ -16,7 +17,6 @@ use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
-use Filament\Support\Enums\FontFamily;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
@@ -174,18 +174,31 @@ class CountryResource extends Resource
         return $infolist
             ->schema([
                 Section::make()->schema([
+                    TextEntry::make('id')
+                        ->label(__('id'))
+                        ->weight(FontWeight::Bold),
+
                     TextEntry::make('name')
-                        ->formatStateUsing(function ($state) {
-                            return App::getLocale() === 'ar'
-                                ? "الطلبات الواردة من العملاء في $state معروضة أدناه."
-                                : "Orders received from customers in $state are listed below.";
-                        })
-                        ->hiddenLabel()
-                        ->fontFamily(FontFamily::Sans)
-                        ->size(TextEntry\TextEntrySize::Large)
-                        ->weight(FontWeight::ExtraBold)
-                        ->columnSpanFull(),
-                ])
+                        ->label(__('name')),
+
+                    TextEntry::make('code')
+                        ->label(__('code'))
+                        ->badge(),
+
+                    TextEntry::make('cost')
+                        ->label(__('shipping_cost.cost')),
+
+                    TextEntry::make('shipping_estimate_time')
+                        ->label(__('shipping_cost.shipping_estimate_time')),
+
+                    TextEntry::make('created_at')
+                        ->label(__('category.created_at'))
+                        ->dateTime(),
+
+                    TextEntry::make('updated_at')
+                        ->label(__('category.updated_at'))
+                        ->dateTime(),
+                ])->columns(2)
             ]);
     }
 
@@ -220,6 +233,7 @@ class CountryResource extends Resource
         return [
             'index' => ManageCountries::route('/'),
             'view'  => ViewCountry::route('/{record}'),
+            'orders' => ManageCountryOrders::route('/{record}/orders')
         ];
     }
 }

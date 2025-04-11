@@ -15,11 +15,8 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
-use Filament\Support\Enums\FontFamily;
-use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 
 class GovernorateResource extends Resource
@@ -172,17 +169,25 @@ class GovernorateResource extends Resource
             ->schema([
                 Section::make()->schema([
                     TextEntry::make('name')
-                        ->formatStateUsing(function ($state) {
-                            return App::getLocale() === 'ar'
-                                ? "الطلبات الواردة من العملاء في $state معروضة أدناه."
-                                : "Orders received from customers in $state are listed below.";
-                        })
-                        ->hiddenLabel()
-                        ->fontFamily(FontFamily::Sans)
-                        ->size(TextEntry\TextEntrySize::Large)
-                        ->weight(FontWeight::ExtraBold)
-                        ->columnSpanFull(),
-                ])
+                        ->label(__('name')),
+
+                    TextEntry::make('governorate.name')
+                        ->label(__('governorate_name')),
+
+                    TextEntry::make('cost')
+                        ->label(__('shipping_cost.cost')),
+
+                    TextEntry::make('shipping_estimate_time')
+                        ->label(__('shipping_cost.shipping_estimate_time')),
+
+                    TextEntry::make('created_at')
+                        ->label(__('created_at'))
+                        ->dateTime(),
+
+                    TextEntry::make('updated_at')
+                        ->label(__('updated_at'))
+                        ->dateTime(),
+                ])->columns(2)
             ]);
     }
 
@@ -198,6 +203,7 @@ class GovernorateResource extends Resource
         return [
             'index' => Pages\ManageGovernorates::route('/'),
             'view'  => Pages\ViewGovernorate::route('/{record}'),
+            'orders' => Pages\ManageGovernorateOrders::route('/{record}/orders')
         ];
     }
 }

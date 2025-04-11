@@ -20,9 +20,4 @@ class ViewCity extends ViewRecord
             Actions\EditAction::make()
         ];
     }
-
-    public function getHeading(): string|Htmlable
-    {
-        return '';
-    }
 }
