@@ -10,7 +10,6 @@ use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 
 class OrdersRelationManager extends RelationManager
 {
@@ -23,9 +22,8 @@ class OrdersRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->persistFiltersInSession()
             ->recordTitleAttribute('id')
-            ->header(__('Orders'))
+            ->heading(__('Orders'))
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->copyable()

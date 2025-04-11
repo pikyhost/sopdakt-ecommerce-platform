@@ -23,7 +23,7 @@ class OrdersRelationManager extends RelationManager
     {
         return $table
             ->recordTitleAttribute('id')
-            ->header(__('Orders'))
+            ->heading(__('Orders'))
             ->headerActions([
                 Action::make('back')
                     ->color('primary')
