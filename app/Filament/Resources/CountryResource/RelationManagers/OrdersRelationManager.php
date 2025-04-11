@@ -19,28 +19,29 @@ class OrdersRelationManager extends RelationManager
 
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
-        return __('orders.label');
+        return '';
     }
 
     protected static function getModelLabel(): ?string
     {
-        return __('orders.label');
+        return '';
     }
 
     protected static function getPluralModelLabel(): ?string
     {
-        return __('orders.label');
+        return '';
     }
 
     protected static function getPluralRecordLabel(): ?string
     {
-        return __('orders.label');
+        return '';
     }
 
     public function table(Table $table): Table
     {
         return $table
             ->recordTitleAttribute('id')
+            ->header(null)
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->copyable()

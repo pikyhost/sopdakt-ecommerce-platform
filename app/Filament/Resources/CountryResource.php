@@ -171,31 +171,11 @@ class CountryResource extends Resource
         return $infolist
             ->schema([
                 Section::make()->schema([
-                    TextEntry::make('id')
-                        ->label(__('id'))
-                        ->weight(FontWeight::Bold),
-
                     TextEntry::make('name')
-                        ->label(__('name')),
-
-                    TextEntry::make('code')
-                        ->label(__('code'))
-                        ->badge(),
-
-                    TextEntry::make('cost')
-                        ->label(__('shipping_cost.cost')),
-
-                    TextEntry::make('shipping_estimate_time')
-                        ->label(__('shipping_cost.shipping_estimate_time')),
-
-                    TextEntry::make('created_at')
-                        ->label(__('category.created_at'))
-                        ->dateTime(),
-
-                    TextEntry::make('updated_at')
-                        ->label(__('category.updated_at'))
-                        ->dateTime(),
-                ])->columns(2)
+                        ->hiddenLabel()
+                        ->weight(FontWeight::Bold)
+                        ->columnSpanFull(),
+                ])
             ]);
     }
 
