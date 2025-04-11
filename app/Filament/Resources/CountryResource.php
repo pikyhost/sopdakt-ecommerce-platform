@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Infolists\Infolist;
 use App\Filament\Resources\CountryResource\Pages\ManageCountries;
 use App\Filament\Resources\CountryResource\Pages\ViewCountry;
 use App\Models\Country;
@@ -193,7 +194,7 @@ class CountryResource extends Resource
                     TextEntry::make('updated_at')
                         ->label(__('category.updated_at'))
                         ->dateTime(),
-                ])
+                ])->columns(2)
             ]);
     }
 

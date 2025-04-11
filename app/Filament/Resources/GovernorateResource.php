@@ -186,7 +186,7 @@ class GovernorateResource extends Resource
                         TextEntry::make('updated_at')
                             ->label(__('updated_at'))
                             ->dateTime(),
-                    ]),
+                    ])->columns(2)
             ]);
     }
 
