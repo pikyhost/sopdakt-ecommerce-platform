@@ -38,6 +38,17 @@ class TopNoticeResource extends Resource
         return __('Top Notice');
     }
 
+
+    public static function getPluralLabel(): ?string
+    {
+        return __('Top Notice');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('Top Notice');
+    }
+
     public static function form(Form $form): Form
     {
         return $form
