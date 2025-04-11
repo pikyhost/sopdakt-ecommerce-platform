@@ -192,6 +192,7 @@
     "payment_method_id": "Payment Method",
     "coupon_id": "Coupon",
     "shipping_cost": "Shipping Cost",
+    "Orders": "Orders",
     "select_color": "Select Color",
     "choose_color": "-- Choose Color --",
     "orders_for_location": "These are the orders made by customers from :location.",

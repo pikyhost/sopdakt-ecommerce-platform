@@ -20,31 +20,11 @@ class OrdersRelationManager extends RelationManager
 
     protected static bool $isLazy = false;
 
-    public static function getTitle(Model $ownerRecord, string $pageClass): string
-    {
-        return '';
-    }
-
-    protected static function getModelLabel(): ?string
-    {
-        return '';
-    }
-
-    protected static function getPluralModelLabel(): ?string
-    {
-        return '';
-    }
-
-    protected static function getPluralRecordLabel(): ?string
-    {
-        return '';
-    }
-
     public function table(Table $table): Table
     {
         return $table
             ->recordTitleAttribute('id')
-            ->header(null)
+            ->header(__('Orders'))
             ->headerActions([
                 Action::make('back')
                     ->color('primary')
