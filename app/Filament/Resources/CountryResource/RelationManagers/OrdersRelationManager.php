@@ -42,6 +42,7 @@ class OrdersRelationManager extends RelationManager
             ->header(null)
             ->headerActions([
                 Action::make('back')
+                    ->color('primary')
                     ->label(__('Back to previous page'))
                     ->icon(function () {
                        return app()->getLocale() == 'en' ? 'heroicon-m-arrow-right' : 'heroicon-m-arrow-left';

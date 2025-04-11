@@ -5,7 +5,9 @@ namespace App\Filament\Resources\CityResource\RelationManagers;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Support\Enums\IconPosition;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -19,28 +21,41 @@ class OrdersRelationManager extends RelationManager
 
     public static function getTitle(Model $ownerRecord, string $pageClass): string
     {
-        return __('orders.label');
+        return '';
     }
 
     protected static function getModelLabel(): ?string
     {
-        return __('orders.label');
+        return '';
     }
 
     protected static function getPluralModelLabel(): ?string
     {
-        return __('orders.label');
+        return '';
     }
 
     protected static function getPluralRecordLabel(): ?string
     {
-        return __('orders.label');
+        return '';
     }
 
     public function table(Table $table): Table
     {
         return $table
             ->recordTitleAttribute('id')
+            ->header(null)
+            ->headerActions([
+                Action::make('back')
+                    ->color('primary')
+                    ->label(__('Back to previous page'))
+                    ->icon(function () {
+                        return app()->getLocale() == 'en' ? 'heroicon-m-arrow-right' : 'heroicon-m-arrow-left';
+                    })
+                    ->iconPosition(IconPosition::After)
+                    ->color('gray')
+                    ->url(url()->previous())
+                    ->hidden(fn () => url()->previous() === url()->current()), // Optionally hide if same page
+            ])
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->copyable()
