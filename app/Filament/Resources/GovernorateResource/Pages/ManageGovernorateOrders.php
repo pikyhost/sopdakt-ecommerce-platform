@@ -17,7 +17,6 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ManageGovernorateOrders extends ManageRelatedRecords
 {
@@ -56,7 +55,6 @@ class ManageGovernorateOrders extends ManageRelatedRecords
     public function table(Table $table): Table
     {
         return $table
-            ->persistFiltersInSession()
             ->recordTitleAttribute('id')
             ->header(null)
             ->headerActions([

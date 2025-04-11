@@ -52,7 +52,6 @@ class ManageCountryOrders extends ManageRelatedRecords
     public function table(Table $table): Table
     {
         return $table
-            ->persistFiltersInSession()
             ->recordTitleAttribute('id')
             ->header(null)
             ->headerActions([
