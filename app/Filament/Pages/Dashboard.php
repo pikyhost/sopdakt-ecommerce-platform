@@ -28,4 +28,9 @@ class Dashboard extends BaseDashboard
             TopCustomers::class,
         ];
     }
+
+    protected function shouldPersistTableFiltersInSession(): bool
+    {
+        return true;
+    }
 }

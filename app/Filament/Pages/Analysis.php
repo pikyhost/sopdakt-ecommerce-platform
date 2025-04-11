@@ -10,6 +10,7 @@ use App\Livewire\LocationsAnalysisWidget;
 use App\Livewire\OrdersChart;
 use App\Livewire\SalesComparisonChart;
 use App\Livewire\UsersChart;
+use Filament\Actions\Action;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
 
@@ -20,6 +21,8 @@ class Analysis extends Page
     protected static ?int $navigationSort = 2;
 
     protected static string $view = 'filament.pages.analysis';
+
+   
 
     public static function getNavigationLabel(): string
     {

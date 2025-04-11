@@ -10,6 +10,7 @@ use Filament\Resources\Pages\ManageRelatedRecords;
 use Filament\Support\Enums\IconPosition;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
@@ -122,8 +123,8 @@ class ManageCountryOrders extends ManageRelatedRecords
                     ->numeric()
                     ->placeholder('-')
                     ->sortable(),
-
                 Tables\Columns\TextColumn::make('total')
+                    ->summarize(Sum::make())
                     ->label(__('Total'))
                     ->numeric()
                     ->placeholder('-')
