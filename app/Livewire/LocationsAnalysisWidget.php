@@ -59,16 +59,19 @@ class LocationsAnalysisWidget extends Widget
     }
 
 
+    // In LocationsAnalysisWidget.php
+
     protected function getCountryDistribution(): Collection
     {
         return Order::query()
             ->join('countries as c', 'orders.country_id', '=', 'c.id')
             ->whereBetween('orders.created_at', [$this->fromDate, $this->toDate])
-            ->selectRaw('c.name as country, COUNT(orders.id) as total')
-            ->groupBy('orders.country_id', 'c.name')
+            ->selectRaw('c.id as country_id, c.name as country, COUNT(orders.id) as total')
+            ->groupBy('orders.country_id', 'c.id', 'c.name')
             ->orderByDesc('total')
             ->get()
             ->map(fn ($item) => [
+                'id' => $item->country_id,
                 'country' => json_decode($item->country, true) ?? ['en' => $item->country],
                 'total' => $item->total,
             ]);
@@ -79,11 +82,12 @@ class LocationsAnalysisWidget extends Widget
         return Order::query()
             ->join('governorates as g', 'orders.governorate_id', '=', 'g.id')
             ->whereBetween('orders.created_at', [$this->fromDate, $this->toDate])
-            ->selectRaw('g.name as governorate, COUNT(orders.id) as total')
-            ->groupBy('orders.governorate_id', 'g.name')
+            ->selectRaw('g.id as governorate_id, g.name as governorate, COUNT(orders.id) as total')
+            ->groupBy('orders.governorate_id', 'g.id', 'g.name')
             ->orderByDesc('total')
             ->get()
             ->map(fn ($item) => [
+                'id' => $item->governorate_id,
                 'governorate' => json_decode($item->governorate, true) ?? ['en' => $item->governorate],
                 'total' => $item->total,
             ]);
@@ -94,11 +98,12 @@ class LocationsAnalysisWidget extends Widget
         return Order::query()
             ->join('cities as c', 'orders.city_id', '=', 'c.id')
             ->whereBetween('orders.created_at', [$this->fromDate, $this->toDate])
-            ->selectRaw('c.name as city, COUNT(orders.id) as total')
-            ->groupBy('orders.city_id', 'c.name')
+            ->selectRaw('c.id as city_id, c.name as city, COUNT(orders.id) as total')
+            ->groupBy('orders.city_id', 'c.id', 'c.name')
             ->orderByDesc('total')
             ->get()
             ->map(fn ($item) => [
+                'id' => $item->city_id,
                 'city' => json_decode($item->city, true) ?? ['en' => $item->city],
                 'total' => $item->total,
             ]);

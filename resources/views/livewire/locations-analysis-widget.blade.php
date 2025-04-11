@@ -21,40 +21,51 @@
             <hr class="border-gray-200 dark:border-gray-700 mb-6">
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Country Table -->
+                <!-- Country Distribution -->
                 <div class="space-y-4">
-                    <h4 class="font-medium text-gray-900 dark:text-white">{{ __('By Country') }}</h4>
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-medium text-gray-900 dark:text-white">{{ __('By Country') }}</h4>
+                    </div>
                     <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm bg-white dark:bg-gray-800">
                         <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
-                                <th class="px-4 py-3 text-start text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-2/4">{{ __('Country') }}</th>
-                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/4">{{ __('Orders') }}</th>
-                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/4">{{ __('Share (%)') }}</th>
+                                <th class="px-4 py-3 text-start text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-2/4">
+                                    {{ __('Country') }}
+                                </th>
+                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/4">
+                                    {{ __('Orders') }}
+                                </th>
+                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/4">
+                                    {{ __('Share (%)') }}
+                                </th>
                             </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                             @forelse($countryData as $country)
                                 @php
                                     $countryTotal = max(1, $countryData->sum('total'));
-                                    $countryName = is_array($country['country']) ? ($country['country'][app()->getLocale()] ?? $country['country']['en']) : $country['country'];
-                                    $countryUrl = route('your.route.name', ['country' => $countryName]);
+                                    $countryName = is_array($country['country'])
+                                        ? ($country['country'][app()->getLocale()] ?? $country['country']['en'])
+                                        : $country['country'];
+                                    $countryUrl = route('filament.admin.resources.countries.orders', [
+                                        'record' => $country['id'],
+                                        'tableFilters[created_at][created_from]' => $this->fromDate->format('Y-m-d'),
+                                        'tableFilters[created_at][created_until]' => $this->toDate->format('Y-m-d'),
+                                    ]);
                                 @endphp
-                                <tr class="transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 group cursor-pointer">
-                                    <td colspan="3" class="p-0">
-                                        <a href="{{ $countryUrl }}" class="block contents">
-                                            <tr class="contents">
-                                                <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-start group-hover:text-primary-600 dark:group-hover:text-primary-400">
-                                                    {{ $countryName }}
-                                                </td>
-                                                <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-end group-hover:text-primary-600 dark:group-hover:text-primary-400">
-                                                    {{ number_format($country['total']) }}
-                                                </td>
-                                                <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-end group-hover:text-primary-600 dark:group-hover:text-primary-400">
-                                                    {{ round(($country['total'] / $countryTotal) * 100, 1) }}%
-                                                </td>
-                                            </tr>
-                                        </a>
+                                <tr
+                                    class="transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 group cursor-pointer"
+                                    onclick="window.location.href='{{ $countryUrl }}'"
+                                >
+                                    <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-start group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                                        {{ $countryName }}
+                                    </td>
+                                    <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-end group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                                        {{ number_format($country['total']) }}
+                                    </td>
+                                    <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-end group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                                        {{ round(($country['total'] / $countryTotal) * 100, 1) }}%
                                     </td>
                                 </tr>
                             @empty
@@ -69,40 +80,51 @@
                     </div>
                 </div>
 
-                <!-- Governorate Table -->
+                <!-- Governorate Distribution -->
                 <div class="space-y-4">
-                    <h4 class="font-medium text-gray-900 dark:text-white">{{ __('By Governorate') }}</h4>
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-medium text-gray-900 dark:text-white">{{ __('By Governorate') }}</h4>
+                    </div>
                     <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm bg-white dark:bg-gray-800">
                         <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
-                                <th class="px-4 py-3 text-start text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-2/4">{{ __('Governorate') }}</th>
-                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/4">{{ __('Orders') }}</th>
-                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/4">{{ __('Share (%)') }}</th>
+                                <th class="px-4 py-3 text-start text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-2/4">
+                                    {{ __('Governorate') }}
+                                </th>
+                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/4">
+                                    {{ __('Orders') }}
+                                </th>
+                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/4">
+                                    {{ __('Share (%)') }}
+                                </th>
                             </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                             @forelse($governorateData as $governorate)
                                 @php
                                     $governorateTotal = max(1, $governorateData->sum('total'));
-                                    $govName = is_array($governorate['governorate']) ? ($governorate['governorate'][app()->getLocale()] ?? $governorate['governorate']['en']) : $governorate['governorate'];
-                                    $governorateUrl = route('your.route.name', ['governorate' => $govName]);
+                                    $govName = is_array($governorate['governorate'])
+                                        ? ($governorate['governorate'][app()->getLocale()] ?? $governorate['governorate']['en'])
+                                        : $governorate['governorate'];
+                                    $governorateUrl = route('filament.admin.resources.governorates.orders', [
+                                        'record' => $governorate['id'],
+                                        'tableFilters[created_at][created_from]' => $this->fromDate->format('Y-m-d'),
+                                        'tableFilters[created_at][created_until]' => $this->toDate->format('Y-m-d'),
+                                    ]);
                                 @endphp
-                                <tr class="transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 group cursor-pointer">
-                                    <td colspan="3" class="p-0">
-                                        <a href="{{ $governorateUrl }}" class="block contents">
-                                            <tr class="contents">
-                                                <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-start group-hover:text-primary-600 dark:group-hover:text-primary-400">
-                                                    {{ $govName }}
-                                                </td>
-                                                <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-end group-hover:text-primary-600 dark:group-hover:text-primary-400">
-                                                    {{ number_format($governorate['total']) }}
-                                                </td>
-                                                <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-end group-hover:text-primary-600 dark:group-hover:text-primary-400">
-                                                    {{ round(($governorate['total'] / $governorateTotal) * 100, 1) }}%
-                                                </td>
-                                            </tr>
-                                        </a>
+                                <tr
+                                    class="transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 group cursor-pointer"
+                                    onclick="window.location.href='{{ $governorateUrl }}'"
+                                >
+                                    <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-start group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                                        {{ $govName }}
+                                    </td>
+                                    <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-end group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                                        {{ number_format($governorate['total']) }}
+                                    </td>
+                                    <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-end group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                                        {{ round(($governorate['total'] / $governorateTotal) * 100, 1) }}%
                                     </td>
                                 </tr>
                             @empty
@@ -117,40 +139,51 @@
                     </div>
                 </div>
 
-                <!-- City Table -->
+                <!-- City Distribution -->
                 <div class="space-y-4">
-                    <h4 class="font-medium text-gray-900 dark:text-white">{{ __('By City') }}</h4>
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-medium text-gray-900 dark:text-white">{{ __('By City') }}</h4>
+                    </div>
                     <div class="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm bg-white dark:bg-gray-800">
                         <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
-                                <th class="px-4 py-3 text-start text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-2/4">{{ __('City') }}</th>
-                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/4">{{ __('Orders') }}</th>
-                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/4">{{ __('Share (%)') }}</th>
+                                <th class="px-4 py-3 text-start text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-2/4">
+                                    {{ __('City') }}
+                                </th>
+                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/4">
+                                    {{ __('Orders') }}
+                                </th>
+                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/4">
+                                    {{ __('Share (%)') }}
+                                </th>
                             </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                             @forelse($cityData as $city)
                                 @php
                                     $cityTotal = max(1, $cityData->sum('total'));
-                                    $cityName = is_array($city['city']) ? ($city['city'][app()->getLocale()] ?? $city['city']['en']) : $city['city'];
-                                    $cityUrl = route('your.route.name', ['city' => $cityName]);
+                                    $cityName = is_array($city['city'])
+                                        ? ($city['city'][app()->getLocale()] ?? $city['city']['en'])
+                                        : $city['city'];
+                                    $cityUrl = route('filament.admin.resources.cities.orders', [
+                                        'record' => $city['id'],
+                                        'tableFilters[created_at][created_from]' => $this->fromDate->format('Y-m-d'),
+                                        'tableFilters[created_at][created_until]' => $this->toDate->format('Y-m-d'),
+                                    ]);
                                 @endphp
-                                <tr class="transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 group cursor-pointer">
-                                    <td colspan="3" class="p-0">
-                                        <a href="{{ $cityUrl }}" class="block contents">
-                                            <tr class="contents">
-                                                <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-start group-hover:text-primary-600 dark:group-hover:text-primary-400">
-                                                    {{ $cityName }}
-                                                </td>
-                                                <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-end group-hover:text-primary-600 dark:group-hover:text-primary-400">
-                                                    {{ number_format($city['total']) }}
-                                                </td>
-                                                <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-end group-hover:text-primary-600 dark:group-hover:text-primary-400">
-                                                    {{ round(($city['total'] / $cityTotal) * 100, 1) }}%
-                                                </td>
-                                            </tr>
-                                        </a>
+                                <tr
+                                    class="transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 group cursor-pointer"
+                                    onclick="window.location.href='{{ $cityUrl }}'"
+                                >
+                                    <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-start group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                                        {{ $cityName }}
+                                    </td>
+                                    <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-end group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                                        {{ number_format($city['total']) }}
+                                    </td>
+                                    <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-end group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                                        {{ round(($city['total'] / $cityTotal) * 100, 1) }}%
                                     </td>
                                 </tr>
                             @empty
