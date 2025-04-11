@@ -150,6 +150,7 @@ class CityResource extends Resource
                     ->label(__('edit')),
                 Tables\Actions\DeleteAction::make()
                     ->label(__('delete')),
+                Tables\Actions\ViewAction::make()
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

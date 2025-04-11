@@ -20,6 +20,7 @@ use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
@@ -200,8 +201,9 @@ class CountryResource extends Resource
     private static function getTableActions(): array
     {
         return [
-                EditAction::make()->color('primary'),
-                DeleteAction::make(),
+            EditAction::make()->color('primary'),
+            DeleteAction::make(),
+            ViewAction::make()
         ];
     }
 
