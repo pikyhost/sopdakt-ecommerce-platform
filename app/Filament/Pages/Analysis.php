@@ -4,14 +4,13 @@ namespace App\Filament\Pages;
 
 use App\Filament\Widgets\TopProducts;
 use App\Livewire\AnalysisPageStats;
+use App\Livewire\CustomComparisonWidget;
 use App\Livewire\Filters;
 use App\Livewire\LastOrders;
 use App\Livewire\LocationsAnalysisWidget;
 use App\Livewire\OrdersChart;
-use App\Livewire\SalesAnnualComparisonChart;
 use App\Livewire\SalesComparisonChart;
 use App\Livewire\UsersChart;
-use Filament\Actions\Action;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
 
@@ -22,7 +21,6 @@ class Analysis extends Page
     protected static ?int $navigationSort = 2;
 
     protected static string $view = 'filament.pages.analysis';
-
 
 
     public static function getNavigationLabel(): string
@@ -53,8 +51,8 @@ class Analysis extends Page
             AnalysisPageStats::class,
             UsersChart::class,
             OrdersChart::class,
-            SalesAnnualComparisonChart::class,
-            SalesComparisonChart::class,
+//            SalesComparisonChart::class,
+        CustomComparisonWidget::class,
             LocationsAnalysisWidget::class,
             TopProducts::class,
             LastOrders::class,
