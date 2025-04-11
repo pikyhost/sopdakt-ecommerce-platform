@@ -14,33 +14,37 @@ class Analysis extends BaseWidget
 {
     protected static ?string $pollingInterval = null;
     protected static bool $isLazy = false;
+
     public Carbon $fromDate;
     public Carbon $toDate;
 
-    #[On('updateFromDate')]
-    public function updateFromDate(string $from): void
+    public function mount(): void
     {
-        $this->fromDate = Carbon::make($from);
-        $this->updateChartData();
+        $this->fromDate = now()->subMonth();
+        $this->toDate = now();
     }
 
-    #[On('updateToDate')]
+    #[On('updateFromDateDashboard')]
+    public function updateFromDate(string $from): void
+    {
+        $this->fromDate = Carbon::parse($from)->startOfDay();
+        $this->dispatch('$refresh');
+    }
+
+    #[On('updateToDateDashboard')]
     public function updateToDate(string $to): void
     {
-        $this->toDate = Carbon::make($to);
-        $this->updateChartData();
-    }
-    public function goto(string $url): void
-    {
-        redirect()->to($url);
+        $this->toDate = Carbon::parse($to)->endOfDay();
+        $this->dispatch('$refresh');
     }
 
     protected function getStats(): array
     {
         $locale = App::getLocale();
 
-        $startDate = $this->fromDate ??= now()->subMonth();
-        $endDate = $this->toDate ??= now();
+        // Use the date properties instead of filters
+        $startDate = $this->fromDate;
+        $endDate = $this->toDate;
 
         // Stats calculations
         $totalProducts = Product::whereBetween('created_at', [$startDate, $endDate])->count();

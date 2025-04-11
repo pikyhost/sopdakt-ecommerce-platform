@@ -45,8 +45,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        $this->configureDatePicker();
-        $this->configureDateTimePicker();
+//        $this->configureDatePicker();
+//        $this->configureDateTimePicker();
         ProfileContactDetails::setSort(10);
 
         LanguageSwitch::configureUsing(function (LanguageSwitch $switch) {
