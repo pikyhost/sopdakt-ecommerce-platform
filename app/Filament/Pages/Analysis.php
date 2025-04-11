@@ -6,6 +6,7 @@ use App\Filament\Widgets\TopProducts;
 use App\Livewire\AnalysisPageStats;
 use App\Livewire\Filters;
 use App\Livewire\LastOrders;
+use App\Livewire\LocationsAnalysisWidget;
 use App\Livewire\OrdersChart;
 use App\Livewire\SalesComparisonChart;
 use App\Livewire\UsersChart;
@@ -49,6 +50,7 @@ class Analysis extends Page
             UsersChart::class,
             OrdersChart::class,
             SalesComparisonChart::class,
+            LocationsAnalysisWidget::class,
             TopProducts::class,
             LastOrders::class,
         ];
