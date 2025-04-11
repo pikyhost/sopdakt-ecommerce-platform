@@ -26,6 +26,16 @@ class PolicyResource extends Resource
         return __('policy.navigation_label');
     }
 
+    public static function getModelLabel(): string
+    {
+        return __('policy.navigation_label');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('policies');
+    }
+
     public static function getNavigationGroup(): ?string
     {
         return __('policy.navigation_group');
@@ -40,11 +50,9 @@ class PolicyResource extends Resource
                     ->schema([
                         MarkdownEditor::make('privacy_policy_en')
                             ->label(__('policy.privacy_policy_en'))
-                            ->required()
                             ->columnSpanFull(),
                         MarkdownEditor::make('privacy_policy_ar')
                             ->label(__('policy.privacy_policy_ar'))
-                            ->required()
                             ->columnSpanFull(),
                     ]),
                 Tab::make(__('policy.refund_policy'))
@@ -52,11 +60,9 @@ class PolicyResource extends Resource
                     ->schema([
                         MarkdownEditor::make('refund_policy_en')
                             ->label(__('policy.refund_policy_en'))
-                            ->required()
                             ->columnSpanFull(),
                         MarkdownEditor::make('refund_policy_ar')
                             ->label(__('policy.refund_policy_ar'))
-                            ->required()
                             ->columnSpanFull(),
                     ]),
                 Tab::make(__('policy.terms_of_service'))
@@ -64,11 +70,9 @@ class PolicyResource extends Resource
                     ->schema([
                         MarkdownEditor::make('terms_of_service_en')
                             ->label(__('policy.terms_of_service_en'))
-                            ->required()
                             ->columnSpanFull(),
                         MarkdownEditor::make('terms_of_service_ar')
                             ->label(__('policy.terms_of_service_ar'))
-                            ->required()
                             ->columnSpanFull(),
                     ]),
 
@@ -77,11 +81,9 @@ class PolicyResource extends Resource
                     ->schema([
                         MarkdownEditor::make('about_us_en')
                             ->label(__('policy.about_us_en'))
-                            ->required()
                             ->columnSpanFull(),
                         MarkdownEditor::make('about_us_ar')
                             ->label(__('policy.about_us_ar'))
-                            ->required()
                             ->columnSpanFull(),
                     ]),
 
@@ -90,11 +92,9 @@ class PolicyResource extends Resource
                     ->schema([
                         MarkdownEditor::make('contact_us_en')
                             ->label(__('policy.contact_us_en'))
-                            ->required()
                             ->columnSpanFull(),
                         MarkdownEditor::make('contact_us_ar')
                             ->label(__('policy.contact_us_ar'))
-                            ->required()
                             ->columnSpanFull(),
                     ]),
 

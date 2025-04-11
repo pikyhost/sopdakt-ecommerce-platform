@@ -83,7 +83,7 @@
 
     "env.MAIL_FROM_ADDRESS.label": "عنوان الإرسال",
     "env.MAIL_FROM_ADDRESS.helper": "عنوان البريد الإلكتروني الذي سيظهر كمرسل.",
-
+"policies": "السياسات",
     "env.MAIL_FROM_NAME.label": "اسم المرسل",
     "env.MAIL_FROM_NAME.helper": "الاسم الذي سيظهر في الرسائل المرسلة.",
     "My Env": "إعدادات السيرفر",

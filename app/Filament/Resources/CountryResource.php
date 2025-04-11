@@ -25,7 +25,6 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 
 class CountryResource extends Resource

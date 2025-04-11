@@ -5,7 +5,7 @@
                 <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ __('Geographical Distribution') }}</h3>
                 <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200 shadow-sm ring-1 ring-primary-200 dark:ring-primary-800">
                     <span class="flex items-center gap-1">
-                        <x-heroicon-o-globe-alt class="w-4 h-4" /> {{ $countryData->count() }} {{ __('countries') }}
+                        <x-heroicon-o-flag class="w-4 h-4" /> {{ $countryData->count() }} {{ __('countries') }}
                     </span>
                     <span class="opacity-50">•</span>
                     <span class="flex items-center gap-1">
