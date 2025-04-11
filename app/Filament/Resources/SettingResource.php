@@ -238,12 +238,10 @@ class SettingResource extends Resource
                     ->collapsed(true)
                     ->description(__('Manage general settings for your store.'))
                     ->schema([
-                        TextInput::make('tax_percentage')
-                            ->numeric()
-                            ->prefix("%")
-                            ->label(__('Tax Percentage'))
+                        Select::make('country_id')
                             ->required()
-                            ->helperText(__('Enter the applicable tax percentage for purchases.')),
+                            ->label(__('Default Country'))
+                            ->options(Country::pluck('name', 'id')),
 
                         Select::make('currency_id')
                             ->label(__('Currency'))
@@ -252,11 +250,13 @@ class SettingResource extends Resource
                             ->required()
                             ->helperText(__('Select the default currency for transactions.')),
 
-                        Select::make('country_id')
+                        TextInput::make('tax_percentage')
+                            ->numeric()
+                            ->prefix("%")
+                            ->label(__('Tax Percentage'))
                             ->required()
-                            ->label(__('Default Country'))
-                            ->options(Country::pluck('name', 'id')),
-
+                            ->helperText(__('Enter the applicable tax percentage for purchases.')),
+                        
                         Forms\Components\Checkbox::make('shipping_type_enabled')
                             ->columnSpanFull()
                             ->label(__('Enable Shipping Types'))

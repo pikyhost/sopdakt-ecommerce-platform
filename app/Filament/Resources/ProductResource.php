@@ -495,6 +495,9 @@ class ProductResource extends Resource
                                         name: 'countries',
                                         titleAttribute: 'name'
                                     )
+                                    ->default(function () {
+                                        return [Setting::getSetting('country_id')];
+                                    })
                                     ->searchable()
                                     ->columns(5)
                                     ->bulkToggleable()
