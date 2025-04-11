@@ -29,7 +29,9 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\ActionSize;
 use Filament\Support\Enums\FontWeight;
+use Filament\Support\Enums\IconPosition;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -79,6 +81,18 @@ class OrderResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([
+                Action::make('back')
+                    ->color('primary')
+                    ->label(__('Back to previous page'))
+                    ->icon(function () {
+                        return app()->getLocale() == 'en' ? 'heroicon-m-arrow-right' : 'heroicon-m-arrow-left';
+                    })
+                    ->iconPosition(IconPosition::After)
+                    ->color('gray')
+                    ->url(url()->previous())
+                    ->hidden(fn () => url()->previous() === url()->current()), // Optionally hide if same page
+            ])
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->copyable()

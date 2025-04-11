@@ -25,6 +25,7 @@ use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Pages\Page;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\ActionSize;
+use Filament\Support\Enums\IconPosition;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
@@ -196,6 +197,18 @@ class UserResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([
+                Action::make('back')
+                    ->color('primary')
+                    ->label(__('Back to previous page'))
+                    ->icon(function () {
+                        return app()->getLocale() == 'en' ? 'heroicon-m-arrow-right' : 'heroicon-m-arrow-left';
+                    })
+                    ->iconPosition(IconPosition::After)
+                    ->color('gray')
+                    ->url(url()->previous())
+                    ->hidden(fn () => url()->previous() === url()->current()), // Optionally hide if same page
+            ])
             ->columns([
                 ImageColumn::make('avatar_url')
                     ->label(__('Avatar'))
