@@ -4,12 +4,14 @@ namespace App\Filament\Resources\CountryResource\RelationManagers;
 
 use App\Enums\OrderStatus;
 use Carbon\Carbon;
+use Filament\Forms\Components\DatePicker;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Support\Enums\IconPosition;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class OrdersRelationManager extends RelationManager
@@ -137,10 +139,10 @@ class OrdersRelationManager extends RelationManager
                     ),
                 Tables\Filters\Filter::make('created_at')
                     ->form([
-                        Forms\Components\DatePicker::make('created_from')
+                        DatePicker::make('created_from')
                             ->label(__('filters.created_from'))
                             ->placeholder(fn ($state): string => 'Dec 18, ' . now()->subYear()->format('Y')),
-                        Forms\Components\DatePicker::make('created_until')
+                        DatePicker::make('created_until')
                             ->label(__('filters.created_until'))
                             ->placeholder(fn ($state): string => now()->format('M d, Y')),
                     ])
