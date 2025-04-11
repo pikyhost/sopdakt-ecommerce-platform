@@ -79,7 +79,7 @@ class Analysis extends BaseWidget
                 ->description($locale === 'ar' ? 'عدد المنتجات المُضافة في النطاق الزمني المحدد.' : 'Products added within selected time range.')
                 ->icon('heroicon-m-archive-box')
                 ->extraAttributes([
-                    'class' => 'dark:hover:bg-gray-800 hover:bg-gray-100 cursor-pointer transition-colors rounded-md',
+                    'class' => 'cursor-pointer transition-colors rounded-md hover:bg-gray-100 dark:hover:bg-gray-700',
                     'onclick' => "window.location.href = '{$productUrl}'",
                 ]),
 
@@ -91,7 +91,7 @@ class Analysis extends BaseWidget
                 ->description($locale === 'ar' ? 'عدد الطلبات في النطاق الزمني المحدد.' : 'Orders placed within selected time range.')
                 ->icon('heroicon-o-shopping-bag')
                 ->extraAttributes([
-                    'class' => 'dark:hover:bg-gray-800 hover:bg-gray-100 cursor-pointer transition-colors rounded-md',
+                    'class' => 'cursor-pointer transition-colors rounded-md hover:bg-gray-100 dark:hover:bg-gray-700',
                     'onclick' => "window.location.href = '{$ordersUrl}'",
                 ]),
 
@@ -103,7 +103,7 @@ class Analysis extends BaseWidget
                 ->description($locale === 'ar' ? 'إجمالي المبيعات في النطاق الزمني المحدد.' : 'Total sales in selected time range.')
                 ->icon('heroicon-m-banknotes')
                 ->extraAttributes([
-                    'class' => 'dark:hover:bg-gray-800 hover:bg-gray-100 cursor-pointer transition-colors rounded-md',
+                    'class' => 'cursor-pointer transition-colors rounded-md hover:bg-gray-100 dark:hover:bg-gray-700',
                     'onclick' => "window.location.href = '{$revenueUrl}'",
                 ]),
 
@@ -115,7 +115,7 @@ class Analysis extends BaseWidget
                 ->description($locale === 'ar' ? 'الطلبات التي لا تزال قيد المعالجة في الفترة المحددة.' : 'Orders still processing in selected time range.')
                 ->icon('heroicon-m-cog')
                 ->extraAttributes([
-                    'class' => 'dark:hover:bg-gray-800 hover:bg-gray-100 cursor-pointer transition-colors rounded-md',
+                    'class' => 'cursor-pointer transition-colors rounded-md hover:bg-gray-100 dark:hover:bg-gray-700',
                     'onclick' => "window.location.href = '{$processingUrl}'",
                 ]),
         ];
