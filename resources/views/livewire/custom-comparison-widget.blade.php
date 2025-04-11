@@ -115,7 +115,6 @@
                     const initChart = (data) => {
                         const currencyCode = '{{ $currencyCode }}';
                         const isDark = document.documentElement.classList.contains('dark');
-                        const isRTL = document.documentElement.dir === 'rtl';
 
                         const options = {
                             series: [
@@ -248,7 +247,6 @@
                             colors: isDark ? ['#60A5FA', '#34D399'] : ['#3B82F6', '#10B981'],
                             legend: {
                                 position: 'top',
-                                horizontalAlign: isRTL ? 'left' : 'right',
                                 labels: {
                                     colors: isDark ? '#E5E7EB' : '#111827',
                                     useSeriesColors: false
