@@ -194,6 +194,8 @@
     "shipping_cost": "Shipping Cost",
     "select_color": "Select Color",
     "choose_color": "-- Choose Color --",
+    "orders_from_location": "These are the orders made by customers from :state.",
+    "related_orders": "طلبات العملاء من هذا الموقع",
     "select_size": "Select Size",
     "choose_size": "-- Choose Size --",
     "special_offers": "Special Bundle Offers!",

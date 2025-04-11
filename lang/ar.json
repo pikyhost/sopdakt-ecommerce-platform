@@ -771,6 +771,8 @@
     "Meta Keywords": "كلمات الميتا المفتاحية",
     "Meta Robots": "ميتا روبوتس",
     "Additional Info": "معلومات إضافية",
+    "orders_from_location": "هذه الطلبات قام بها عملاء من :state.",
+    "related_orders": "Related Orders",
     "Log out": "تسجيل خروج",
     "Views": "المشاهدات",
     "Sales": "المبيعات",

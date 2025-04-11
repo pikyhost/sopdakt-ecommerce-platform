@@ -2,13 +2,20 @@
 
 namespace App\Filament\Resources\GovernorateResource\Pages;
 
+use App\Enums\OrderStatus;
 use App\Filament\Resources\GovernorateResource;
+use Carbon\Carbon;
 use Filament\Actions;
 use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Form;
 use Filament\Resources\Pages\ManageRelatedRecords;
+use Filament\Support\Enums\IconPosition;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -18,45 +25,166 @@ class ManageGovernorateOrders extends ManageRelatedRecords
 
     protected static string $relationship = 'orders';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
-    public static function getNavigationLabel(): string
+    public function getBreadcrumbs(): array
     {
-        return 'Orders';
+        return [];
     }
 
-    public function form(Form $form): Form
+    public function getTitle(): string|\Illuminate\Contracts\Support\Htmlable
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('id')
-                    ->required()
-                    ->maxLength(255),
-            ]);
+        $recordTitle = $this->getOwnerRecord()->name;
+        $recordTitle = $recordTitle instanceof Htmlable ? $recordTitle->toHtml() : $recordTitle;
+
+        return __('orders_for_location', ['location' => $recordTitle]);
+    }
+
+    public function getBreadcrumb(): string
+    {
+        return __('related_orders');
+    }
+
+    public function getContentTabLabel(): ?string
+    {
+        return __('related_orders');
+    }
+
+    public function getTableModelLabel(): ?string
+    {
+        return __('related_orders');
     }
 
     public function table(Table $table): Table
     {
         return $table
+            ->persistFiltersInSession()
             ->recordTitleAttribute('id')
-            ->columns([
-                Tables\Columns\TextColumn::make('id'),
-            ])
-            ->filters([
-                //
-            ])
+            ->header(null)
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
-                Tables\Actions\AssociateAction::make(),
+                Action::make('back')
+                    ->color('primary')
+                    ->label(__('Back to previous page'))
+                    ->icon(function () {
+                        return app()->getLocale() == 'en' ? 'heroicon-m-arrow-right' : 'heroicon-m-arrow-left';
+                    })
+                    ->iconPosition(IconPosition::After)
+                    ->color('gray')
+                    ->url(url()->previous())
+                    ->hidden(fn () => url()->previous() === url()->current()), // Optionally hide if same page
+            ])
+            ->columns([
+                Tables\Columns\TextColumn::make('id')
+                    ->copyable()
+                    ->formatStateUsing(fn($state) => '#' . $state)
+                    ->label(__('Number'))
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('status')
+                    ->label(__('Status'))
+                    ->badge()
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('shippingType.name')
+                    ->label(__('Shipping Type'))
+                    ->searchable()
+                    ->numeric()
+                    ->placeholder('-')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('paymentMethod.name')
+                    ->label(__('Payment Method'))
+                    ->searchable()
+                    ->numeric()
+                    ->placeholder('-')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('coupon.id')
+                    ->label(__('Coupon ID'))
+                    ->searchable()
+                    ->numeric()
+                    ->placeholder('-')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('shipping_cost')
+                    ->label(__('Shipping Cost'))
+                    ->numeric()
+                    ->placeholder('-')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('tax_percentage')
+                    ->label(__('Tax Percentage'))
+                    ->numeric()
+                    ->placeholder('-')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('tax_amount')
+                    ->label(__('Tax Amount'))
+                    ->numeric()
+                    ->placeholder('-')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('subtotal')
+                    ->label(__('Subtotal'))
+                    ->numeric()
+                    ->placeholder('-')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('total')
+                    ->label(__('Total'))
+                    ->numeric()
+                    ->placeholder('-')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('Created At'))
+                    ->dateTime()
+                    ->sortable(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DissociateAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\ViewAction::make(),
             ])
+            ->filters([
+                SelectFilter::make('status')
+                    ->label(__('Status'))
+                    ->multiple()
+                    ->options(
+                        collect(OrderStatus::cases())
+                            ->mapWithKeys(fn ($status) => [$status->value => $status->getLabel()])
+                            ->toArray()
+                    ),
+                Tables\Filters\Filter::make('created_at')
+                    ->form([
+                        DatePicker::make('created_from')
+                            ->label(__('filters.created_from'))
+                            ->placeholder(fn ($state): string => 'Dec 18, ' . now()->subYear()->format('Y')),
+                        DatePicker::make('created_until')
+                            ->label(__('filters.created_until'))
+                            ->placeholder(fn ($state): string => now()->format('M d, Y')),
+                    ])
+                    ->query(function (\Illuminate\Contracts\Database\Eloquent\Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['created_from'] ?? null,
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['created_until'] ?? null,
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+                        if ($data['created_from'] ?? null) {
+                            $indicators['created_from'] = __('filters.indicator_from', ['date' => Carbon::parse($data['created_from'])->toFormattedDateString()]);
+                        }
+                        if ($data['created_until'] ?? null) {
+                            $indicators['created_until'] = __('filters.indicator_until', ['date' => Carbon::parse($data['created_until'])->toFormattedDateString()]);
+                        }
+
+                        return $indicators;
+                    }),
+            ], Tables\Enums\FiltersLayout::Modal)
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DissociateBulkAction::make(),
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);

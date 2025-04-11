@@ -5,18 +5,15 @@ namespace App\Filament\Resources\CityResource\Pages;
 use App\Enums\OrderStatus;
 use App\Filament\Resources\CityResource;
 use Carbon\Carbon;
-use Filament\Actions;
-use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Form;
 use Filament\Resources\Pages\ManageRelatedRecords;
 use Filament\Support\Enums\IconPosition;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ManageCityOrders extends ManageRelatedRecords
 {
@@ -24,11 +21,32 @@ class ManageCityOrders extends ManageRelatedRecords
 
     protected static string $relationship = 'orders';
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
-    public static function getNavigationLabel(): string
+    public function getBreadcrumbs(): array
     {
-        return 'Orders';
+        return [];
+    }
+
+    public function getTitle(): string|\Illuminate\Contracts\Support\Htmlable
+    {
+        $recordTitle = $this->getOwnerRecord()->name;
+        $recordTitle = $recordTitle instanceof Htmlable ? $recordTitle->toHtml() : $recordTitle;
+
+        return __('orders_for_location', ['location' => $recordTitle]);
+    }
+
+    public function getBreadcrumb(): string
+    {
+        return __('related_orders');
+    }
+
+    public function getContentTabLabel(): ?string
+    {
+        return __('related_orders');
+    }
+
+    public function getTableModelLabel(): ?string
+    {
+        return __('related_orders');
     }
 
     public function table(Table $table): Table
