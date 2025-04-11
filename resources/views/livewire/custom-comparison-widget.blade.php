@@ -13,14 +13,18 @@
 
                 <x-filament::card>
                     <div class="p-4">
-                        <h3 class="text-lg font-medium text-gray-900">Period 1: {{ $period1['label'] }}</h3>
+                        <h3 class="text-lg font-medium text-gray-900">
+                            {{ __('widgets.comparison.period_label', ['number' => 1]) }}: {{ $period1['label'] }}
+                        </h3>
                         <p class="text-2xl font-bold mt-2">${{ number_format($period1['total'] / 100, 2) }}</p>
                     </div>
                 </x-filament::card>
 
                 <x-filament::card>
                     <div class="p-4">
-                        <h3 class="text-lg font-medium text-gray-900">Period 2: {{ $period2['label'] }}</h3>
+                        <h3 class="text-lg font-medium text-gray-900">
+                            {{ __('widgets.comparison.period_label', ['number' => 2]) }}: {{ $period2['label'] }}
+                        </h3>
                         <p class="text-2xl font-bold mt-2">${{ number_format($period2['total'] / 100, 2) }}</p>
                     </div>
                 </x-filament::card>
@@ -29,26 +33,26 @@
             <!-- Comparison Summary -->
             <x-filament::card>
                 <div class="p-4">
-                    <h3 class="text-lg font-medium text-gray-900">Comparison Summary</h3>
+                    <h3 class="text-lg font-medium text-gray-900">{{ __('widgets.comparison.summary_title') }}</h3>
                     <div class="mt-2">
                         @if($change >= 0)
                             <p class="text-green-600 font-bold">
                                 <span class="text-xl">+${{ number_format(abs($change) / 100, 2) }}</span>
                                 <span>(+{{ number_format(abs($percentage), 2) }}%)</span>
-                                increase compared to Period 2
+                                {{ __('widgets.comparison.increase_comparison') }}
                             </p>
                         @else
                             <p class="text-red-600 font-bold">
                                 <span class="text-xl">-${{ number_format(abs($change) / 100, 2) }}</span>
                                 <span>(-{{ number_format(abs($percentage), 2) }}%)</span>
-                                decrease compared to Period 2
+                                {{ __('widgets.comparison.decrease_comparison') }}
                             </p>
                         @endif
                     </div>
                 </div>
             </x-filament::card>
 
-            <!-- Chart -->
+            <!-- Spline Area Chart -->
             <div wire:ignore class="bg-white rounded-lg shadow p-4">
                 <div id="revenueComparisonChart"></div>
             </div>
@@ -58,87 +62,104 @@
             <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
             <script>
                 document.addEventListener('livewire:initialized', () => {
-                    const initChart = () => {
-                        const data = @json($this->getRevenueData());
+                    // Get translated strings for chart
+                    const chartTranslations = {
+                        revenue: "{{ __('widgets.comparison.chart_revenue') }}",
+                        period: (number) => `${number} {{ __('widgets.comparison.period') }}`,
+                        dateFormat: "{{ __('widgets.comparison.date_format') }}",
+                        currencySymbol: "{{ __('widgets.comparison.currency_symbol') }}"
+                    };
 
-                        // Prepare series data
-                        const period1Dates = data.period1.daily.map(item => item.date);
-                        const period2Dates = data.period2.daily.map(item => item.date);
+                    // Initialize chart variable
+                    let revenueComparisonChart;
 
-                        // Combine all unique dates
-                        const allDates = [...new Set([...period1Dates, ...period2Dates])].sort();
+                    // Function to format date strings to timestamps
+                    const formatSeriesData = (series) => {
+                        return series.map(item => ({
+                            x: new Date(item.x).getTime(),
+                            y: item.y
+                        }));
+                    };
 
-                        // Map data to consistent dates
-                        const period1Series = allDates.map(date => {
-                            const found = data.period1.daily.find(item => item.date === date);
-                            return found ? (found.revenue / 100) : 0;
-                        });
-
-                        const period2Series = allDates.map(date => {
-                            const found = data.period2.daily.find(item => item.date === date);
-                            return found ? (found.revenue / 100) : 0;
-                        });
-
+                    // Initialize chart
+                    const initChart = (data) => {
                         const options = {
                             series: [
                                 {
                                     name: data.period1.label,
-                                    data: period1Series
+                                    data: formatSeriesData(data.period1.daily)
                                 },
                                 {
                                     name: data.period2.label,
-                                    data: period2Series
+                                    data: formatSeriesData(data.period2.daily)
                                 }
                             ],
                             chart: {
-                                type: 'bar',
                                 height: 350,
-                                stacked: false,
+                                type: 'area',
                                 toolbar: {
-                                    show: true
+                                    show: true,
+                                    tools: {
+                                        zoom: chartTranslations.zoom,
+                                        zoomin: chartTranslations.zoomin,
+                                        zoomout: chartTranslations.zoomout,
+                                        pan: chartTranslations.pan,
+                                        reset: chartTranslations.reset
+                                    }
                                 },
-                                zoom: {
-                                    enabled: true
+                                animations: {
+                                    enabled: true,
+                                    easing: 'easeinout',
+                                    speed: 800,
+                                    animateGradually: {
+                                        enabled: true,
+                                        delay: 150
+                                    },
+                                    dynamicAnimation: {
+                                        enabled: true,
+                                        speed: 350
+                                    }
                                 }
-                            },
-                            plotOptions: {
-                                bar: {
-                                    horizontal: false,
-                                    borderRadius: 4,
-                                    columnWidth: '55%',
-                                },
                             },
                             dataLabels: {
                                 enabled: false
                             },
                             stroke: {
-                                show: true,
-                                width: 2,
-                                colors: ['transparent']
+                                curve: 'smooth',
+                                width: 2
+                            },
+                            fill: {
+                                type: 'gradient',
+                                gradient: {
+                                    shadeIntensity: 1,
+                                    opacityFrom: 0.7,
+                                    opacityTo: 0.3,
+                                    stops: [0, 90, 100]
+                                }
                             },
                             xaxis: {
-                                categories: allDates.map(date => new Date(date).toLocaleDateString()),
-                                title: {
-                                    text: 'Date'
+                                type: 'datetime',
+                                labels: {
+                                    format: chartTranslations.dateFormat
                                 }
                             },
                             yaxis: {
                                 title: {
-                                    text: 'Revenue ($)'
+                                    text: chartTranslations.revenue
                                 },
                                 labels: {
                                     formatter: function(value) {
-                                        return '$' + value.toFixed(2);
+                                        return chartTranslations.currencySymbol + value.toFixed(2);
                                     }
                                 }
                             },
-                            fill: {
-                                opacity: 1
-                            },
                             tooltip: {
+                                x: {
+                                    format: 'dd MMM yyyy'
+                                },
                                 y: {
                                     formatter: function(val) {
-                                        return "$" + val.toFixed(2);
+                                        return chartTranslations.currencySymbol + val.toFixed(2);
                                     }
                                 }
                             },
@@ -148,47 +169,40 @@
                             }
                         };
 
-                        const chart = new ApexCharts(document.querySelector("#revenueComparisonChart"), options);
-                        chart.render();
+                        // Destroy existing chart if it exists
+                        if (revenueComparisonChart) {
+                            revenueComparisonChart.destroy();
+                        }
 
-                        // Store chart instance for updates
-                        window.revenueComparisonChart = chart;
+                        // Create new chart
+                        revenueComparisonChart = new ApexCharts(
+                            document.querySelector("#revenueComparisonChart"),
+                            options
+                        );
+                        revenueComparisonChart.render();
                     };
 
-                    initChart();
+                    // Initial chart render with current data
+                    initChart(@json($this->getRevenueData()));
 
                     // Listen for update events
-                    Livewire.on('updateChart', () => {
-                        const data = @this.getRevenueData();
+                    Livewire.on('updateChart', (event) => {
+                        // Update chart with new data
+                        revenueComparisonChart.updateSeries([
+                            {
+                                name: event.data.period1.label,
+                                data: formatSeriesData(event.data.period1.daily)
+                            },
+                            {
+                                name: event.data.period2.label,
+                                data: formatSeriesData(event.data.period2.daily)
+                            }
+                        ]);
 
-                        // Prepare series data
-                        const period1Dates = data.period1.daily.map(item => item.date);
-                        const period2Dates = data.period2.daily.map(item => item.date);
-                        const allDates = [...new Set([...period1Dates, ...period2Dates])].sort();
-
-                        const period1Series = allDates.map(date => {
-                            const found = data.period1.daily.find(item => item.date === date);
-                            return found ? (found.revenue / 100) : 0;
-                        });
-
-                        const period2Series = allDates.map(date => {
-                            const found = data.period2.daily.find(item => item.date === date);
-                            return found ? (found.revenue / 100) : 0;
-                        });
-
-                        window.revenueComparisonChart.updateOptions({
-                            series: [
-                                {
-                                    name: data.period1.label,
-                                    data: period1Series
-                                },
-                                {
-                                    name: data.period2.label,
-                                    data: period2Series
-                                }
-                            ],
+                        // Also update x-axis if needed
+                        revenueComparisonChart.updateOptions({
                             xaxis: {
-                                categories: allDates.map(date => new Date(date).toLocaleDateString())
+                                type: 'datetime'
                             }
                         });
                     });

@@ -18,6 +18,7 @@ class CustomComparisonWidget extends Widget
     protected static ?string $pollingInterval = null;
     protected static bool $isLazy = false;
     protected static string $view = 'livewire.custom-comparison-widget';
+    protected int | string | array $columnSpan = 'full';
 
     public function mount(): void
     {
