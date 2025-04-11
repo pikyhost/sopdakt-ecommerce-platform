@@ -199,15 +199,13 @@ class UserResource extends Resource
         return $table
             ->headerActions([
                 Action::make('back')
-                    ->color('primary')
+                    ->extraAttributes(['onclick' => 'window.location.href = document.referrer'])
                     ->label(__('Back to previous page'))
-                    ->icon(function () {
-                        return app()->getLocale() == 'en' ? 'heroicon-m-arrow-right' : 'heroicon-m-arrow-left';
-                    })
+                    ->icon(app()->getLocale() == 'en' ? 'heroicon-m-arrow-right' : 'heroicon-m-arrow-left')
                     ->iconPosition(IconPosition::After)
                     ->color('gray')
                     ->url(url()->previous())
-                    ->hidden(fn () => url()->previous() === url()->current()), // Optionally hide if same page
+                    ->hidden(fn () => url()->previous() === url()->current()),
             ])
             ->columns([
                 ImageColumn::make('avatar_url')
