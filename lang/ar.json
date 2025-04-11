@@ -822,6 +822,7 @@
     "color.created_at": "تاريخ الإنشاء",
     "color.updated_at": "تاريخ التحديث",
     "currency": "العملة المالية",
+    "Currency": "العملة المالية",
     "currencies": "العملات المالية",
     "Stock Management": "إدارة المحزون",
     "Back to previous page": "العودة إلى الصفحة السابقة",

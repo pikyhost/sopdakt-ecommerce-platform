@@ -41,9 +41,9 @@
                             </div>
                             <div class="p-1.5 rounded-full bg-gray-100 dark:bg-gray-700/80">
                                 @if ($isPositive)
-                                    <x-heroicon-o-arrow-trending-up class="w-4 h-4 text-gray-600 dark:text-blue-400" />
+                                    <x-heroicon-o-arrow-trending-up class="w-4 h-4 text-gray-600 dark:bg-gray-700/80" />
                                 @else
-                                    <x-heroicon-o-arrow-trending-down class="w-4 h-4 text-gray-600 dark:text-red-400" />
+                                    <x-heroicon-o-arrow-trending-down class="w-4 h-4 text-gray-600 dark:bg-gray-700/80" />
                                 @endif
                             </div>
                         </div>
@@ -62,8 +62,9 @@
                                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ __('vs previous period') }}</p>
                             </div>
                             <div class="p-1.5 rounded-full bg-gray-50 dark:bg-gray-700/80">
-                                <x-heroicon-o-chart-bar class="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                                <x-heroicon-o-chart-bar class="w-4 h-4 text-gray-600 dark:bg-gray-700/80" />
                             </div>
+
                         </div>
                     </div>
                 </x-filament::card>
@@ -80,8 +81,9 @@
                                 <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $period2['label'] ?? __('N/A') }}</p>
                             </div>
                             <div class="p-1.5 rounded-full bg-gray-50 dark:bg-gray-700/80">
-                                <x-heroicon-o-clock class="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                                <x-heroicon-o-clock class="w-4 h-4 text-gray-600 dark:bg-gray-700/80" />
                             </div>
+
                         </div>
                     </div>
                 </x-filament::card>
@@ -91,7 +93,7 @@
             <div wire:ignore class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="flex justify-between items-center px-4 py-3 border-b border-gray-200 dark:border-gray-600 bg-gray-50/80 dark:bg-gray-700/70 backdrop-blur-sm">
                     <h3 class="text-sm font-semibold text-gray-800 dark:text-gray-100 tracking-tight">
-                        {{ __('Sales') }} ({{ $currencyCode }})
+                        {{ __('Currency') }} ({{ $currencyCode }})
                     </h3>
                 </div>
                 <div id="revenueComparisonChart" class="px-2 pt-2 pb-1 min-h-[350px]"></div>
