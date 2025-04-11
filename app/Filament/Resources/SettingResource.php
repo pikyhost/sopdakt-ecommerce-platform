@@ -267,7 +267,7 @@ class SettingResource extends Resource
                             ->columnSpanFull()
                             ->label(__('Enable Shipping Locations'))
                             ->default(true)
-                            ->helperText(__('Enable or disable shipping Locations selection on checkout.')),
+                            ->helperText(__('Enable or disable shipping locations selection on checkout.')),
                     ])->columns(3),
             ]);
     }
