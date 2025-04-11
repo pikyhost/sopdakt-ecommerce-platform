@@ -62,9 +62,13 @@ class Analysis extends BaseWidget
 
         $ordersUrl = "/admin/orders?tableFilters[created_at][created_from]={$encodedFrom}&tableFilters[created_at][created_until]={$encodedUntil}";
 
-        $revenueUrl = $productUrl;
+        $revenueUrl = $ordersUrl;
 
-        $processingUrl = "/admin/orders?tableFilters[status][values][0]=pending&tableFilters[status][values][1]=preparing&tableFilters[status][values][2]=shipping";
+        $processingUrl = "/admin/orders?tableFilters[status][values][0]=pending"
+            . "&tableFilters[status][values][1]=preparing"
+            . "&tableFilters[status][values][2]=shipping"
+            . "&tableFilters[created_at][created_from]={$encodedFrom}"
+            . "&tableFilters[created_at][created_until]={$encodedUntil}";
 
         return [
             Stat::make(
