@@ -26,11 +26,6 @@ class ManageUserOrders extends ManageRelatedRecords
 
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
 
-    public function getBreadcrumbs(): array
-    {
-        return __('orders');
-    }
-
     public function getTitle(): string|\Illuminate\Contracts\Support\Htmlable
     {
         $recordTitle = $this->getOwnerRecord()->name;
@@ -42,11 +37,6 @@ class ManageUserOrders extends ManageRelatedRecords
     public static function getNavigationLabel(): string
     {
         return __('User Orders');
-    }
-
-    public function getBreadcrumb(): string
-    {
-        return __('orders');
     }
 
     public function table(Table $table): Table
