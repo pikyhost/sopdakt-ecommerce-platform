@@ -108,7 +108,7 @@ class AdminPanelProvider extends PanelProvider
                 '*/admin/categories/*/edit',
                 '*/admin/products/create',
                 '*/admin/categories/create',
-                '/*/admin/analysis',
+                '*/admin/analysis',
             ])
             ->unsavedChangesAlerts()
             ->plugins([
