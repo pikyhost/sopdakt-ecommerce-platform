@@ -8,7 +8,10 @@
     "about_us.tabs.accordion": "Accordion",
     "about_us.tabs.team": "Team Members",
     "about_us.tabs.testimonial": "Testimonial",
-
+    "CTA Text": "CTA Text",
+    "Enter call-to-action text": "Enter call-to-action text",
+    "CTA Link": "CTA URL",
+    "Enter call-to-action URL": "Enter call-to-action URL",
     "about_us.fields.header_title": "Header Title",
     "about_us.fields.about_title": "About Section Title",
     "about_us.fields.team_title": "Team Section Title",

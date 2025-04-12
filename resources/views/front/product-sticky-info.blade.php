@@ -259,59 +259,64 @@
         </div>
     </div><!-- End .product-single-container -->
 
-    <div class="product-single-tabs">
+    <div class="product-single-tabs custom-product-single-tabs bg-gray mb-4">
         <div class="container">
             <!-- Navigation Tabs -->
-            <ul class="nav nav-tabs" role="tablist" style="border-bottom: 2px solid #ddd;">
+            <ul class="nav nav-tabs" role="tablist">
                 <li class="nav-item">
                     <a class="nav-link active" id="product-tab-desc" data-toggle="tab" href="#product-desc-content" role="tab"
-                       style="color: red; font-weight: bold; padding: 12px 20px; background: royalblue; border-radius: 5px 5px 0 0;">
-                        Description
-                    </a>
+                       aria-controls="product-desc-content" aria-selected="true">Description</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="product-tab-size" data-toggle="tab" href="#product-size-content" role="tab"
-                       style="color: #333; font-weight: bold; padding: 12px 20px; background:royalblue; border-radius: 5px 5px 0 0;">
-                        Size Guide
-                    </a>
+                       aria-controls="product-size-content" aria-selected="true">Size Guide</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="product-tab-reviews" data-toggle="tab" href="#product-reviews-content" role="tab"
-                       style="color: #333; font-weight: bold; padding: 12px 20px; background: royalblue; border-radius: 5px 5px 0 0;">
-                        Reviews
+                       aria-controls="product-reviews-content" aria-selected="false">
+                        Reviews @if($product->reviews_count) ({{ $product->reviews_count }}) @endif
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" id="product-tab-tags" data-toggle="tab" href="#product-tags-content" role="tab"
-                       style="color: #333; font-weight: bold; padding: 12px 20px; background: royalblue; border-radius: 5px 5px 0 0;">
-                        Custom Tab
-                    </a>
+                       aria-controls="product-tags-content" aria-selected="false">Custom Tab</a>
                 </li>
             </ul>
+
             <!-- Tab Content -->
             <div class="tab-content">
                 <!-- Description Tab -->
-                <div class="tab-pane fade show active" id="product-desc-content" role="tabpanel">
+                <div class="tab-pane fade show active" id="product-desc-content" role="tabpanel"
+                     aria-labelledby="product-tab-desc">
                     <div class="product-desc-content">
                         <p>{{ $product->description }}</p>
-                    </div>
-                </div>
+                    </div><!-- End .product-desc-content -->
+                </div><!-- End .tab-pane -->
 
                 <!-- Size Guide Tab -->
-                <div class="tab-pane fade text-center" id="product-size-content" role="tabpanel">
-                    <img src="{{ $product->getProductSizeImageUrl() ?? asset('assets/images/products/default-size.png') }}"
-                         alt="Size Guide" class="img-fluid rounded-lg shadow-md">
-                </div>
+                <div class="tab-pane fade" id="product-size-content" role="tabpanel"
+                     aria-labelledby="product-tab-size">
+                    <div class="product-size-content">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <img src="{{ $product->getProductSizeImageUrl() ?? asset('assets/images/products/default-size.png') }}"
+                                     alt="Size Guide" class="img-fluid">
+                            </div><!-- End .col-md-4 -->
+                        </div><!-- End .row -->
+                    </div><!-- End .product-size-content -->
+                </div><!-- End .tab-pane -->
 
                 <!-- Reviews Tab -->
-                <div class="tab-pane fade" id="product-reviews-content" role="tabpanel">
+                <div class="tab-pane fade" id="product-reviews-content" role="tabpanel"
+                     aria-labelledby="product-tab-reviews">
                     <div class="product-reviews-content">
                         @livewire('product-reviews', ['product' => $product])
-                    </div>
-                </div>
+                    </div><!-- End .product-reviews-content -->
+                </div><!-- End .tab-pane -->
 
                 <!-- Custom Tab -->
-                <div class="tab-pane fade" id="product-tags-content" role="tabpanel">
+                <div class="tab-pane fade" id="product-tags-content" role="tabpanel"
+                     aria-labelledby="product-tab-tags">
                     <h4>Product Features and Attributes</h4>
 
                     @if (!empty($customAttributes))
@@ -345,10 +350,10 @@
                             @endforeach
                         </div>
                     @endif
-                </div>
-            </div>
+                </div><!-- End .tab-pane -->
+            </div><!-- End .tab-content -->
         </div>
-    </div>
+    </div><!-- End .product-single-tabs -->
 
     <div class="container">
         <div class="products-section pt-0">

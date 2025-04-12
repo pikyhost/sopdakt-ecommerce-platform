@@ -14,55 +14,49 @@
         <div class="page-header page-header-bg text-left"
              style="background: 50%/cover #D4E1EA url('{{ asset('assets/images/demoes/demo12/page-header-bg.jpg') }}');">
             <div class="container">
-                <h1>{{ $about->header_title ?? __('WHO WE ARE') }}</h1>
-            </div>
-        </div>
+                <h1>{{ $about->header_title ?? 'WHO WE ARE' }}</h1>
+            </div><!-- End .container -->
+        </div><!-- End .page-header -->
 
         <nav aria-label="breadcrumb" class="breadcrumb-nav">
             <div class="container">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item">
-                        <a href="{{ url('/') }}">{{ $about->breadcrumb_home ?? __('Home') }}</a>
-                    </li>
-                    <li class="breadcrumb-item active" aria-current="page">
-                        {{ $about->breadcrumb_current ?? __('About Us') }}
-                    </li>
+                    <li class="breadcrumb-item"><a href="{{ url('/') }}">{{ $about->breadcrumb_home ?? 'Home' }}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ $about->breadcrumb_current ?? 'About Us' }}</li>
                 </ol>
-            </div>
+            </div><!-- End .container -->
         </nav>
 
         <div class="container">
             <div class="history-section mt-4 pb-2 mb-6">
                 <div class="row justify-content-center">
                     <div class="col-md-4">
-                        <h2 class="about-title font4">{{ $about->about_title ?? __('ABOUT US') }}</h2>
-                        <p class="text-bg">{{ $about->about_description_1 }}</p>
-                        <p>{{ $about->about_description_2 }}</p>
+                        <h2 class="about-title font4">{{ $about->about_title ?? 'ABOUT US' }}</h2>
+                        <p class="text-bg">
+                            {{ $about->about_description_1 ?? 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. has been the industry\'s standard dummy' }}
+                        </p>
+                        <p>{{ $about->about_description_2 ?? 'long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using "Content here, content here", making it look like readable English. Many desktop publishing packages and web page.' }}</p>
                     </div>
                     <div class="col-md-4">
                         <figure>
                             <img class="m-auto" src="{{ $about->about_image ? Storage::url($about->about_image) : asset('assets/images/demoes/demo12/about/history.jpg') }}"
-                                 width="307" height="371" alt="about image" />
+                                 width="307" height="371" alt="history image" />
                         </figure>
                     </div>
                     <div class="col-md-4">
                         <div class="accordion-section" id="accordion">
                             @for($i = 1; $i <= 4; $i++)
-                                @php
-                                    $title = $about->{'accordion_title_'.$i} ?? __('Section ') . $i;
-                                    $content = $about->{'accordion_content_'.$i} ?? __('Content for section ') . $i;
-                                @endphp
                                 <div class="card card-accordion">
-                                    <a class="card-header {{ $i > 1 ? 'collapsed' : '' }}"
-                                       data-toggle="collapse"
-                                       data-target="#collapse{{ $i }}"
+                                    <a class="card-header {{ $i > 1 ? 'collapsed' : '' }}" href="#"
+                                       data-toggle="collapse" data-target="#collapse{{ $i }}"
                                        aria-expanded="{{ $i === 1 ? 'true' : 'false' }}"
-                                       aria-controls="collapse{{ $i }}"
-                                       href="#">
-                                        {{ $title }}
+                                       aria-controls="collapse{{ $i }}">
+                                        {{ $about->{'accordion_title_'.$i} ?? ($i === 1 ? 'Company History' : ($i === 2 ? 'Our Vision' : ($i === 3 ? 'Our Mission' : 'Funcfacts'))) }}
                                     </a>
-                                    <div id="collapse{{ $i }}" class="collapse {{ $i === 1 ? 'show' : '' }}" data-parent="#accordion">
-                                        <p>{{ $content }}</p>
+
+                                    <div id="collapse{{ $i }}" class="collapse {{ $i === 1 ? 'show' : '' }}"
+                                         data-parent="#accordion">
+                                        <p>{{ $about->{'accordion_content_'.$i} ?? 'leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop.' }}</p>
                                     </div>
                                 </div>
                             @endfor
@@ -72,238 +66,80 @@
             </div>
         </div>
 
-
-        {{-- Team Section --}}
         @if($about->team_members)
-            <div class="team-section py-5 bg-light" dir="{{ app()->isLocale('ar') ? 'rtl' : 'ltr' }}">
-                <div class="container">
-                    <h2 class="bout-title font4 text-center mb-5">{{ $about->team_title ?? 'OUR TEAM' }}</h2>
+            <div class="team-section">
+                <div class="container text-center">
+                    <h2 class="about-title text-left font4">{{ $about->team_title ?? 'ABOUT US' }}</h2>
 
                     <div class="row justify-content-center">
-                        @foreach($about->team_members as $memberRaw)
-                            @php
-                                $member = is_array($memberRaw) ? $memberRaw : (array) $memberRaw;
-                            @endphp
+                        @php
+                            $staticTeamMembers = [
+                                ['name' => 'John Doe', 'image' => 'assets/images/demoes/demo10/team/team2.jpg'],
+                                ['name' => 'Jessica Doe', 'image' => 'assets/images/demoes/demo10/team/team1.jpg'],
+                                ['name' => 'Rick Edward Doe', 'image' => 'assets/images/demoes/demo10/team/team3.jpg'],
+                                ['name' => 'Melinda Wolosky', 'image' => 'assets/images/demoes/demo10/team/team4.jpg']
+                            ];
 
-                            <div class="col-md-3 col-6 mb-4">
-                                <div class="team-info">
-                                    <figure class="position-relative overflow-hidden">
-                                        <img src="{{ isset($member['image']) ? Storage::url($member['image']) : asset('assets/images/demoes/demo10/team/team1.jpg') }}"
-                                             class="w-100 team-img-style"
-                                             width="270"
-                                             height="319"
-                                             alt="{{ $member['name'] ?? 'Team Member' }}"
-                                             data-zoom-image="{{ isset($member['image']) ? Storage::url($member['image']) : asset('assets/images/demoes/demo10/team/team1.jpg') }}">
+                            $teamMembersToShow = count($about->team_members) > 0 ? $about->team_members : $staticTeamMembers;
+                        @endphp
 
-                                        <span class="prod-full-screen"
-                                              onclick="showLightbox('{{ isset($member['image']) ? Storage::url($member['image']) : asset('assets/images/demoes/demo10/team/team1.jpg') }}', '{{ $member['name'] ?? 'Team Member' }}')">
-                    <i class="fas fa-search-plus"></i>
-                </span>
+                        @foreach($teamMembersToShow as $index => $member)
+                            <div class="col-md-3 col-6">
+                                <div class="team-info mb-3">
+                                    <figure>
+                                        <a href="#">
+                                            <img src="{{ isset($member['image']) ? Storage::url($member['image']) : asset($staticTeamMembers[$index]['image'] ?? 'assets/images/demoes/demo10/team/team1.jpg') }}"
+                                                 data-zoom-image="{{ isset($member['image']) ? Storage::url($member['image']) : asset($staticTeamMembers[$index]['image'] ?? 'assets/images/demoes/demo10/team/team1.jpg') }}"
+                                                 class="w-100" width="270" height="319" alt="Team" />
+                                        </a>
+
+                                        <span class="prod-full-screen">
+                                            <i class="fas fa-search"></i>
+                                        </span>
                                     </figure>
 
-                                    <h5 class="team-name text-center mb-0">{{ $member['name'] ?? 'Team Member' }}</h5>
-                                    @if(isset($member['position']))
-                                        <p class="text-muted text-center">{{ $member['position'] }}</p>
-                                    @endif
+                                    <h5 class="team-name text-center mb-0">{{ $member['name'] ?? $staticTeamMembers[$index]['name'] }}</h5>
                                 </div>
-                            </div>
+                            </div><!-- End .col-lg-4 -->
                         @endforeach
+                    </div><!-- End .row -->
 
-                    </div>
-
-                    <div class="text-center mt-4">
-                        <a class="custom-join-btn" href="#">{{ __('Join Our Team') }}</a>
-                    </div>
+                    <a class="btn font4" href="#">{{ $about->team_button_text ?? 'JOIN OUR TEAM' }}</a>
                 </div>
             </div>
-
-            {{-- Lightbox --}}
-            <div id="lightbox" class="lightbox" onclick="hideLightbox()">
-                <span class="close-btn" onclick="event.stopPropagation(); hideLightbox()">&times;</span>
-                <img class="lightbox-content" id="lightbox-img">
-                <div class="lightbox-caption" id="lightbox-caption"></div>
-            </div>
-
-            <style>
-                /* Base styles */
-                .team-info {
-                    transition: all 0.3s ease;
-                    padding: 15px;
-                    border-radius: 8px;
-                }
-
-                .team-info:hover {
-                    transform: translateY(-5px);
-                    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-                }
-
-                .team-img-style {
-                    width: 100%;
-                    height: 320px;
-                    object-fit: cover;
-                    border-radius: 8px;
-                    transition: transform 0.3s;
-                    cursor: pointer;
-                }
-
-                .team-info:hover .team-img-style {
-                    transform: scale(1.03);
-                }
-
-                .prod-full-screen {
-                    position: absolute;
-                    top: 15px;
-                    right: 15px;
-                    background-color: rgba(0, 0, 0, 0.5);
-                    color: white;
-                    padding: 8px 10px;
-                    border-radius: 50%;
-                    font-size: 1rem;
-                    cursor: pointer;
-                    transition: all 0.3s;
-                    z-index: 2;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    width: 36px;
-                    height: 36px;
-                }
-
-                .prod-full-screen:hover {
-                    background-color: rgba(0, 0, 0, 0.8);
-                    transform: scale(1.1);
-                }
-
-                .team-name {
-                    margin-top: 15px;
-                    font-weight: 600;
-                    color: #333;
-                }
-
-                /* Lightbox styling */
-                .lightbox {
-                    display: none;
-                    position: fixed;
-                    z-index: 9999;
-                    left: 0;
-                    top: 0;
-                    width: 100%;
-                    height: 100%;
-                    background-color: rgba(0, 0, 0, 0.9);
-                    text-align: center;
-                    padding-top: 50px;
-                }
-
-                .lightbox-content {
-                    max-width: 90%;
-                    max-height: 80vh;
-                    margin: 0 auto;
-                    display: block;
-                    animation: fadeIn 0.3s;
-                }
-
-                @keyframes fadeIn {
-                    from {opacity: 0;}
-                    to {opacity: 1;}
-                }
-
-                .close-btn {
-                    position: absolute;
-                    top: 20px;
-                    right: 30px;
-                    color: white;
-                    font-size: 40px;
-                    font-weight: bold;
-                    cursor: pointer;
-                    transition: 0.3s;
-                }
-
-                .close-btn:hover {
-                    color: #ccc;
-                }
-
-                .lightbox-caption {
-                    color: white;
-                    padding: 15px;
-                    font-size: 1.2rem;
-                    text-align: center;
-                }
-
-                /* RTL specific styles */
-                [dir="rtl"] .prod-full-screen {
-                    right: auto;
-                    left: 15px;
-                }
-
-                [dir="rtl"] .close-btn {
-                    right: auto;
-                    left: 30px;
-                }
-
-                /* Button styles */
-                .custom-join-btn {
-                    background-color: #4a4a4a;
-                    color: white !important;
-                    padding: 10px 25px;
-                    font-weight: bold;
-                    text-transform: uppercase;
-                    border: none;
-                    text-align: center;
-                    display: inline-block;
-                }
-
-                .custom-join-btn:hover {
-                    background-color: #4a4a4a;
-                    text-decoration: none;
-                }
-            </style>
         @endif
 
-        {{-- Testimonial Section --}}
-        @if($about->testimonial_content)
-            <div class="testimonials-section py-5 bg-white">
+        @if($about->testimonial_content || true)
+            <div class="testimonials-section">
                 <div class="container">
-                    <h2 class="about-title font4 text-center mb-5">{{ $about->testimonial_title ?? __('TESTIMONIALS') }}</h2>
-                    <div class="row justify-content-center">
-                        <div class="col-md-8">
-                            <div class="testimonial text-center px-4">
-                                <span class="display-3 text-primary">“</span>
-                                <p class="mb-4 text-muted" style="font-size: 1.2rem;">
-                                    {{ $about->testimonial_content }}
-                                </p>
-                                <span class="display-3 text-primary">”</span>
+                    <h2 class="about-title font4 text-center">{{ $about->testimonial_title ?? 'TESTIMONIALS' }}</h2>
 
-                                <div class="testimonial-owner d-flex flex-column align-items-center mt-4">
-                                    <img src="{{ $about->testimonial_image ? Storage::url($about->testimonial_image) : asset('assets/images/demoes/demo10/team/team1.jpg') }}"
-                                         alt="Testimonial"
-                                         class="testimonial-img-style mb-3" />
+                    <div class="row">
+                        <div class="col-md-12 offset-xl-3 col-xl-6 offset-lg-2 col-lg-8">
+                            <div class="testimonial">
+                                <blockquote style="color:#5e6065">
+                                    <p>{{ $about->testimonial_content ?? 'Long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using "Content here, content here"' }}</p>
+                                </blockquote>
 
-                                    <h5 class="testimonial-title mb-1">{{ $about->testimonial_name }}</h5>
-                                    <span class="text-muted">{{ $about->testimonial_role }}</span>
-                                </div>
-                            </div>
+                                <div class="testimonial-owner justify-content-center text-center flex-column">
+                                    <figure>
+                                        <img src="{{ $about->testimonial_image ? Storage::url($about->testimonial_image) : asset('assets/images/demoes/demo12/clients/client1.jpg') }}" alt="client">
+                                    </figure>
+
+                                    <div>
+                                        <h5 class="testimonial-title">{{ $about->testimonial_name ?? 'John Doe' }}</h5>
+                                        <span>{{ $about->testimonial_role ?? 'Porto Founder' }}</span>
+                                    </div>
+                                </div><!-- End .testimonial-owner -->
+                            </div><!-- End .testimonial -->
                         </div>
                     </div>
-                </div>
-
-                <style>
-                    .testimonial-img-style {
-                        width: 100px;
-                        height: 100px;
-                        object-fit: cover;
-                        border-radius: 50%;
-                        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-                        border: 3px solid #eaeaea;
-                    }
-
-                    @media (max-width: 576px) {
-                        .testimonial-img-style {
-                            width: 80px;
-                            height: 80px;
-                        }
-                    }
-                </style>
-            </div>
+                </div><!-- End .container -->
+            </div><!-- End .testimonials-section -->
         @endif
     </div>
 @endsection
+
+@push('styles')
+    <link rel="stylesheet" href="assets/css/demo12.min.css">
+@endpush

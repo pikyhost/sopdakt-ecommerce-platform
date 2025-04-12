@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Models\AboutUs;
 use Filament\Forms;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
@@ -127,6 +128,14 @@ class AboutUsResource extends Resource
 
                         Forms\Components\Tabs\Tab::make(__('about_us.tabs.team'))
                             ->schema([
+                                TextInput::make('cta_text')
+                                    ->label(__('CTA Text'))
+                                    ->maxLength(255),
+
+                                TextInput::make('cta_url')
+                                    ->label(__('CTA Link'))
+                                    ->url()
+                                    ->maxLength(255),
                                 Forms\Components\Repeater::make('team_members')
                                     ->label(__('about_us.tabs.team'))
                                     ->schema([

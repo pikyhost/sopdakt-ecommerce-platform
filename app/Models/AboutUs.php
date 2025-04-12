@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use Spatie\Translatable\HasTranslations;
 
 class AboutUs extends Model
@@ -41,6 +42,7 @@ class AboutUs extends Model
         'testimonial_role',
         'meta_title',
         'meta_description',
+        'cta_text',
     ];
 
     public function getTeamMembersAttribute($value)
