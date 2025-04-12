@@ -77,10 +77,14 @@
         @if($about->team_members)
             <div class="team-section py-5 bg-light" dir="{{ app()->isLocale('ar') ? 'rtl' : 'ltr' }}">
                 <div class="container">
-                    <h2 class="about-title {{ app()->isLocale('ar') ? 'text-end' : 'text-start' }} font4 mb-4">{{ $about->team_title ?? 'OUR TEAM' }}</h2>
+                    <h2 class="bout-title font4 text-center mb-5">{{ $about->team_title ?? 'OUR TEAM' }}</h2>
 
                     <div class="row justify-content-center">
-                        @foreach($about->team_members as $member)
+                        @foreach($about->team_members as $memberRaw)
+                            @php
+                                $member = is_array($memberRaw) ? $memberRaw : (array) $memberRaw;
+                            @endphp
+
                             <div class="col-md-3 col-6 mb-4">
                                 <div class="team-info">
                                     <figure class="position-relative overflow-hidden">
@@ -93,8 +97,8 @@
 
                                         <span class="prod-full-screen"
                                               onclick="showLightbox('{{ isset($member['image']) ? Storage::url($member['image']) : asset('assets/images/demoes/demo10/team/team1.jpg') }}', '{{ $member['name'] ?? 'Team Member' }}')">
-                                    <i class="fas fa-search-plus"></i>
-                                </span>
+                    <i class="fas fa-search-plus"></i>
+                </span>
                                     </figure>
 
                                     <h5 class="team-name text-center mb-0">{{ $member['name'] ?? 'Team Member' }}</h5>
@@ -104,6 +108,7 @@
                                 </div>
                             </div>
                         @endforeach
+
                     </div>
 
                     <div class="text-center mt-4">
