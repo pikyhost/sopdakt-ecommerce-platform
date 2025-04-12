@@ -3,8 +3,10 @@
 namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
+use Filament\Facades\Filament;
+use Filament\Notifications\Auth\VerifyEmail;
 use Filament\Resources\Pages\CreateRecord;
-use Illuminate\Auth\Events\Registered;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 class CreateUser extends CreateRecord
 {
@@ -15,19 +17,16 @@ class CreateUser extends CreateRecord
         return $this->getResource()::getUrl('view', ['record' => $this->record]);
     }
 
-    protected function getHeaderActions(): array
-    {
-        return [];
-    }
-
     protected function afterCreate(): void
     {
-        parent::afterCreate();
+        /** @var MustVerifyEmail $user */
+        $user = $this->record;
 
-        // Ensure the user implements MustVerifyEmail
-        if ($this->record instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !$this->record->hasVerifiedEmail()) {
-            // Trigger Laravel's default email verification notification
-            event(new Registered($this->record));
+        if ($user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail()) {
+            $notification = new VerifyEmail();
+            $notification->url = Filament::getVerifyEmailUrl($user);
+
+            $user->notify($notification);
         }
     }
 }
