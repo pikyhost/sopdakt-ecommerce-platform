@@ -187,7 +187,7 @@ class UserResource extends Resource
                 ->dehydrated(false),
 
             Forms\Components\Checkbox::make('email_verified_at')
-                ->label('Verified')
+                ->label(__('Verified'))
                 ->default(now()),
 
         ])
@@ -266,7 +266,11 @@ class UserResource extends Resource
 
                 Tables\Columns\IconColumn::make('is_active')
                     ->boolean()
-                    ->label(__("Is Active?")),
+                    ->label(__("Active")),
+
+                Tables\Columns\IconColumn::make('email_verified_at')
+                    ->boolean()
+                    ->label(__("Verified")),
 
                 TextColumn::make('created_at')
                     ->label(__('created_at'))
