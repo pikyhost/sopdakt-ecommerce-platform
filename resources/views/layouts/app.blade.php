@@ -14,6 +14,7 @@
 
     // Get site name
     $siteName = $siteSettings["site_name"] ?? ($locale === 'ar' ? 'لا يوجد شعار بعد' : 'No Logo Yet');
+
     $socialLinks = \App\Models\Setting::getSocialMediaLinks();
 
     // Ensure correct icon class mappings
@@ -25,28 +26,25 @@
         'snapchat'  => 'fa-brands fa-snapchat',
         'tiktok'    => 'fa-brands fa-tiktok',
     ];
+
     $user = auth()->user();
     $isGuest = auth()->guest();
     $isClient = $user && $user->hasRole('client'); // Assuming Spatie Laravel Permissions
 @endphp
-
     <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
     <title>@yield('title', 'Default Title')</title>
 
-    <meta name="keywords" content="HTML5 Template" />
-    <meta name="description" content="{{ $siteName }} - Bootstrap eCommerce Template">
+    <meta name="keywords" content="HTML5 Template">
+    <meta name="description" content="X - Bootstrap eCommerce Template">
     <meta name="author" content="SW-THEMES">
-
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ $favicon }}">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-F5CFYBRQ0F"></script>
@@ -57,34 +55,41 @@
         gtag('config', 'G-F5CFYBRQ0F');
     </script>
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ $favicon }}">
+
+
     <!-- Ensure correct asset loading for dynamic routes -->
     <base href="{{ url('/') }}/">
 
     <script>
         WebFontConfig = {
-            google: {
-                families: ['Open+Sans:300,400,600,700,800', 'Poppins:200,300,400,500,600,700,800', 'Oswald:300,400,500,600,700,800']
-            }
+            google: { families: ['Open+Sans:300,400,600,700,800', 'Poppins:300,400,500,600,700', 'Shadows+Into+Light:400'] }
         };
-        (function(d) {
-            var wf = d.createElement('script'),
-                s = d.scripts[0];
-            wf.src = 'assets/js/webfont.js';
+        (function (d) {
+            var wf = d.createElement('script'), s = d.scripts[0];
+            wf.src = "{{ asset('assets/js/webfont.js') }}";
             wf.async = true;
             s.parentNode.insertBefore(wf, s);
         })(document);
     </script>
 
     <!-- Plugins CSS File -->
-    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
 
     <!-- Main CSS File -->
-    <link rel="stylesheet" href="assets/css/demo18.min.css">
-    <link rel="stylesheet" type="text/css" href="assets/vendor/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('assets/css/style.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendor/fontawesome-free/css/all.min.css') }}">
+
+    <!-- Ensure Bootstrap JS loads properly -->
+    <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}" defer></script>
+    {{-- Page-specific styles --}}
+    @stack('styles')
     @livewireStyles
 </head>
 
 <body>
+
 <div class="page-wrapper">
     @php
         $topNotices = App\Models\TopNotice::where('is_active', true)->get();
@@ -410,457 +415,925 @@
         </style>
     @endif
 
-    <header class="header header-transparent">
-        <div class="header-middle sticky-header">
-            <div class="container-fluid">
-                <div class="header-left">
-                    <button class="mobile-menu-toggler text-white mr-2" type="button">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    <style>
-                        .website-name {
-                            font-size: 26px;
-                            font-weight: bold;
-                            font-family: 'Poppins', sans-serif;
-                            text-transform: uppercase;
-                            letter-spacing: 1.2px;
-                            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
-                            background: linear-gradient(45deg, #1877F2, #1DA1F2, #E4405F);
-                            -webkit-background-clip: text;
-                            -webkit-text-fill-color: transparent;
-                            display: block;
-                            width: 100%;
-                            white-space: normal; /* Allows text to wrap instead of cutting */
-                            overflow: visible; /* Ensures full visibility */
-                            word-break: break-word; /* Ensures long names break properly */
-                        }
-                    </style>
+    <header  class="header">
+        <style>
+            /* Base Styles */
+            .header {
+                font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+                position: relative;
+                z-index: 999;
+            }
 
-                    @if($logo)
-                        <a href="{{ route('homepage') }}" class="logo">
-                            <div class="logo-wrapper">
-                                <img src="{{ $logo }}" alt="Site Logo" class="site-logo">
+            /* Header Top Section - Top Right Elements */
+            .header-top {
+                font-size: 0.85rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+                background-color: #222;
+                color: white;
+            }
+            .header-top-container {
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+                padding: 8px 0;
+            }
+            .header-top-right {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+            }
+            .header-top-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .header-top-separator {
+                width: 1px;
+                height: 20px;
+                background-color: rgba(255,255,255,0.3);
+            }
+
+            /* Language Selector */
+            .language-selector {
+                position: relative;
+            }
+            .language-selector-toggle {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                cursor: pointer;
+            }
+            .language-dropdown {
+                position: absolute;
+                top: 100%;
+                right: 0;
+                min-width: 160px;
+                background: white;
+                border-radius: 4px;
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+                display: none;
+                z-index: 1000;
+            }
+            .language-selector:hover .language-dropdown {
+                display: block;
+                animation: fadeIn 0.2s ease;
+            }
+            .language-option {
+                padding: 8px 16px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                color: #333;
+                text-decoration: none;
+            }
+            .language-option:hover {
+                background-color: #f8f9fa;
+            }
+            .language-option.active {
+                color: #007bff;
+            }
+
+            /* Social Icons */
+            .social-icons {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+            .social-icon {
+                color: white;
+                font-size: 16px;
+                transition: all 0.2s ease;
+            }
+            .social-icon:hover {
+                transform: translateY(-2px);
+                opacity: 0.8;
+            }
+
+            /* Header Middle Section - Search and Icons */
+            .header-middle {
+                background: white;
+                padding: 15px 0;
+                border-bottom: 1px solid #eee;
+            }
+            .header-middle-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            .logo img {
+                max-height: 50px;
+            }
+            .header-middle-right {
+                display: flex;
+                align-items: center;
+                gap: 25px;
+            }
+            .header-search {
+                width: 400px;
+            }
+            .header-icons {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+            }
+            .header-icon {
+                font-size: 22px;
+                color: #333;
+                position: relative;
+                transition: all 0.2s ease;
+            }
+            .header-icon:hover {
+                color: #007bff;
+            }
+            .icon-badge {
+                position: absolute;
+                top: -5px;
+                right: -8px;
+                background: #007bff;
+                color: white;
+                border-radius: 50%;
+                width: 18px;
+                height: 18px;
+                font-size: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .header-contact {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .contact-icon {
+                background: #007bff;
+                color: white;
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .contact-text {
+                display: flex;
+                flex-direction: column;
+            }
+            .contact-label {
+                font-size: 12px;
+                color: #777;
+            }
+            .contact-number {
+                font-weight: 600;
+                color: #333;
+            }
+
+            /* Header Navigation */
+            .header-nav {
+                background: #007bff;
+                padding: 0;
+            }
+            .nav-menu {
+                display: flex;
+                justify-content: flex-end;
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
+            .nav-item {
+                position: relative;
+            }
+            .nav-link {
+                color: white;
+                padding: 15px 20px;
+                display: block;
+                font-weight: 600;
+                text-decoration: none;
+                position: relative;
+            }
+            .nav-link:after {
+                content: '';
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                width: 0;
+                height: 3px;
+                background-color: white;
+                transition: all 0.3s ease;
+            }
+            .nav-item:hover .nav-link:after {
+                width: 100%;
+            }
+
+            /* Dropdown Menus */
+            .dropdown-menu {
+                position: absolute;
+                top: 100%;
+                right: 0;
+                background: white;
+                min-width: 220px;
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+                display: none;
+                z-index: 1000;
+            }
+            .nav-item:hover .dropdown-menu {
+                display: block;
+                animation: fadeIn 0.2s ease;
+            }
+            .dropdown-link {
+                padding: 10px 20px;
+                display: block;
+                color: #333;
+                text-decoration: none;
+                transition: all 0.2s ease;
+            }
+            .dropdown-link:hover {
+                background: #f8f9fa;
+                color: #007bff;
+            }
+
+            /* Megamenu */
+            .megamenu {
+                position: absolute;
+                top: 100%;
+                right: 0;
+                width: 900px;
+                background: white;
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+                display: none;
+                z-index: 1000;
+                padding: 20px;
+            }
+            .nav-item:hover .megamenu {
+                display: flex;
+                animation: fadeIn 0.2s ease;
+            }
+            .megamenu-column {
+                flex: 1;
+                padding: 0 15px;
+            }
+            .megamenu-title {
+                font-size: 16px;
+                font-weight: 700;
+                margin-bottom: 15px;
+                padding-bottom: 10px;
+                border-bottom: 1px solid #eee;
+            }
+            .megamenu-banner {
+                position: relative;
+                height: 100%;
+                min-height: 250px;
+                background-size: cover;
+                background-position: center;
+                border-radius: 4px;
+                overflow: hidden;
+            }
+            .banner-content {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                padding: 20px;
+                background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+                color: white;
+            }
+            .banner-tag {
+                position: absolute;
+                top: 15px;
+                left: 15px;
+                background: #dc3545;
+                color: white;
+                padding: 3px 10px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+
+            /* Animations */
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+
+            /* Responsive Adjustments */
+            @media (max-width: 1200px) {
+                .header-search {
+                    width: 300px;
+                }
+                .megamenu {
+                    width: 800px;
+                }
+            }
+            @media (max-width: 992px) {
+                .header-middle-container {
+                    flex-wrap: wrap;
+                }
+                .header-search {
+                    order: 3;
+                    width: 100%;
+                    margin-top: 15px;
+                }
+                .megamenu {
+                    width: 600px;
+                }
+            }
+            @media (max-width: 768px) {
+                .header-top-item {
+                    display: none;
+                }
+                .header-top-item.social-icons {
+                    display: flex;
+                }
+                .header-contact {
+                    display: none;
+                }
+                .megamenu {
+                    width: 100%;
+                    right: 0;
+                    left: 0;
+                }
+            }
+
+            .header-top-container {
+                background: #111; /* Deep black background */
+                border-bottom: 1px solid #222; /* Soft separator */
+            }
+
+            .top-message {
+                color: #f1f1f1;
+                font-size: 14px;
+            }
+
+            .header-dropdown {
+                position: relative;
+                cursor: pointer;
+            }
+
+            .header-dropdown .header-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                min-width: 160px;
+                background: rgba(30, 30, 30, 0.95); /* Dark semi-transparent dropdown */
+                border-radius: 6px;
+                padding: 8px 0;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+                z-index: 999;
+            }
+
+            .header-dropdown:hover .header-menu {
+                display: block;
+            }
+
+            .header-menu ul {
+                margin: 0;
+                padding: 0;
+            }
+
+            .header-menu li {
+                list-style: none;
+                padding: 10px 15px;
+            }
+
+            .header-menu a {
+                text-decoration: none;
+                color: #ddd;
+                font-size: 14px;
+                display: flex;
+                align-items: center;
+            }
+
+            .header-menu a:hover {
+                background: #222;
+                color: dodgerblue;
+            }
+
+            .social-icons {
+                display: flex;
+            }
+
+            .social-icon {
+                width: 36px;
+                height: 36px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                background: #222; /* Dark background for icons */
+                color: #bbb;
+                transition: all 0.3s ease;
+                font-size: 16px;
+            }
+
+            .social-icon:hover {
+                background: #007bff;
+                color: #fff;
+            }
+
+            .header-top-container {
+                background: #111; /* Deep black background */
+                border-bottom: 1px solid #222; /* Soft separator */
+            }
+
+            .top-message {
+                color: #fff; /* White text for contrast */
+                font-size: 14px;
+            }
+
+            .header-dropdown {
+                position: relative;
+                cursor: pointer;
+            }
+
+            .header-dropdown .header-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                min-width: 160px;
+                background: #222; /* Dark semi-transparent dropdown */
+                border-radius: 6px;
+                padding: 8px 0;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+                z-index: 999;
+            }
+
+            .header-dropdown:hover .header-menu {
+                display: block;
+            }
+
+            .header-menu ul {
+                margin: 0;
+                padding: 0;
+            }
+
+            .header-menu li {
+                list-style: none;
+                padding: 10px 15px;
+            }
+
+            .header-menu a {
+                text-decoration: none;
+                color: #ddd; /* Light gray for readability */
+                font-size: 14px;
+                display: flex;
+                align-items: center;
+            }
+
+            .social-icons {
+                display: flex;
+            }
+
+            .social-icon {
+                width: 36px;
+                height: 36px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                background: #222; /* Dark background for icons */
+                color: #bbb; /* Light gray color */
+                transition: all 0.3s ease;
+                font-size: 16px;
+            }
+
+            .social-icon:hover {
+                background: #007bff; /* Blue hover effect */
+                color: #fff;
+            }
+
+        </style>
+        <!-- Header Top Section - Social/Language at Top Right -->
+        <div class="header-top">
+            <div class="container">
+                <div class="header-top-container py-2">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-3">
+                            <!-- Language Selector -->
+                            <div class="header-dropdown dropdown">
+                                <a href="#" class="language-toggle d-flex align-items-center dropdown-toggle" id="languageDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="flag-{{ app()->getLocale() === 'ar' ? 'eg' : 'us' }} flag mr-2"></i>
+                                    <span class="font-weight-bold">{{ app()->getLocale() === 'ar' ? 'العربية' : 'English' }}</span>
+                                </a>
+
+                                <div class="dropdown-menu" aria-labelledby="languageDropdown">
+                                    <a href="{{ LaravelLocalization::getLocalizedURL('en', null, [], true) }}" class="dropdown-item d-flex align-items-center">
+                                        <i class="flag-us flag mr-2"></i> English
+                                        @if (app()->getLocale() === 'en')
+                                            <i class="fas fa-check ml-auto text-success"></i>
+                                        @endif
+                                    </a>
+                                    <a href="{{ LaravelLocalization::getLocalizedURL('ar', null, [], true) }}" class="dropdown-item d-flex align-items-center">
+                                        <i class="flag-eg flag mr-2"></i> العربية
+                                        @if (app()->getLocale() === 'ar')
+                                            <i class="fas fa-check ml-auto text-success"></i>
+                                        @endif
+                                    </a>
+                                </div>
                             </div>
-                        </a>
-                    @else
-                        <div class="site-name-wrapper">
-                            <p class="website-name">{{ $siteName ?: __('No Logo Available') }}</p>
+                            <!-- Add this script to enable hover dropdown behavior -->
+                            <script>
+                                document.addEventListener("DOMContentLoaded", function () {
+                                    var dropdown = document.querySelector('.header-dropdown');
+
+                                    dropdown.addEventListener('mouseenter', function () {
+                                        this.classList.add('show');
+                                        this.querySelector('.dropdown-menu').classList.add('show');
+                                    });
+
+                                    dropdown.addEventListener('mouseleave', function () {
+                                        this.classList.remove('show');
+                                        this.querySelector('.dropdown-menu').classList.remove('show');
+                                    });
+                                });
+                            </script>
+
+                            <!-- Social Media Icons -->
+                            <div class="social-icons d-flex gap-2">
+                                @php
+                                    $socialLinks = \App\Models\Setting::getSocialMediaLinks();
+                                    $iconClasses = [
+                                        'facebook'  => 'fab fa-facebook-f',
+                                        'youtube'   => 'fab fa-youtube',
+                                        'instagram' => 'fab fa-instagram',
+                                        'x'         => 'fab fa-x-twitter',
+                                        'snapchat'  => 'fab fa-snapchat-ghost',
+                                        'tiktok'    => 'fab fa-tiktok',
+                                    ];
+                                @endphp
+                                @foreach($socialLinks as $platform => $url)
+                                    @if(!empty($url) && isset($iconClasses[$platform]))
+                                        <a href="{{ $url }}" class="social-icon d-flex align-items-center justify-content-center" target="_blank" rel="noopener noreferrer">
+                                            <i class="{{ $iconClasses[$platform] }}"></i>
+                                        </a>
+                                    @endif
+                                @endforeach
+                            </div>
                         </div>
-                    @endif
-                </div>
-                <!-- End .header-left -->
-
-                <div class="header-center justify-content-between">
-                    <nav class="main-nav w-100">
-                        <ul class="menu">
-                            <li class="active">
-                                <a href="{{ url('/') }}">Home</a>
-                            </li>
-                            <li>
-                                <a href="{{ url('/categories') }}">Categories</a>
-                                <div class="megamenu megamenu-fixed-width megamenu-3cols">
-                                    <div class="row">
-                                        <div class="col-lg-4">
-                                            <a href="{{ url('/categories') }}" class="nolink">Categories Pages</a>
-                                            <ul class="submenu">
-                                                @foreach (\App\Models\Category::latest()->take(18)->get() as $category)
-                                                    <li>
-                                                        <a href="{{ route('category.products',  $category->slug) }}">{{ $category->name }}</a>
-                                                    </li>
-                                                @endforeach
-                                            </ul>
-                                        </div>
-
-                                        <!-- Dynamic Menu Banner -->
-                                        @php
-                                            $banner = \App\Models\Banner::where('type', 'category')->first();
-                                            $locale = app()->getLocale();
-                                        @endphp
-
-                                        @if($banner)
-                                            <div class="col-lg-4 p-0">
-                                                <div class="menu-banner menu-banner-2">
-                                                    <figure>
-                                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($banner->image) }}"
-                                                             alt="Menu banner"
-                                                             class="product-promo"
-                                                             width="380" height="790">
-                                                    </figure>
-                                                    <div class="banner-content">
-                                                        <h4>
-                                                            <span class="">{{ $banner->getTranslation('subtitle', $locale) }}</span><br />
-                                                            <b class="">{{ $banner->getTranslation('discount', $locale) }}</b>
-                                                        </h4>
-                                                    </div>
-                                                    <a href="{{ $banner->button_url }}" class="btn btn-sm btn-dark">
-                                                        {{ $banner->getTranslation('button_text', $locale) }}
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-                            </li>
-
-                            <li>
-                                <a href="{{ url('products') }}">Products</a>
-                                <div class="megamenu megamenu-fixed-width">
-                                    <div class="row">
-                                        <div class="col-lg-4">
-                                            <a href="{{ url('products') }}" class="nolink">Products Pages</a>
-                                            <ul class="submenu">
-                                                @foreach (\App\Models\Product::latest()->take(18)->get() as $product)
-                                                    <li>
-                                                        <a href="{{ route('product.show', $product->slug) }}">{{ $product->name }}</a>
-                                                    </li>
-                                                @endforeach
-                                            </ul>
-                                        </div>
-
-                                        <!-- Dynamic Menu Banner -->
-                                        @php
-                                            $banner = \App\Models\Banner::where('type', 'product')->first();
-                                            $locale = app()->getLocale();
-                                        @endphp
-
-                                        @if($banner)
-                                            <div class="col-lg-4 p-0">
-                                                <div class="menu-banner menu-banner-2">
-                                                    <figure>
-                                                        <img src="{{ \Illuminate\Support\Facades\Storage::url($banner->image) }}"
-                                                             alt="Menu banner"
-                                                             class="product-promo"
-                                                             width="380" height="790">
-                                                    </figure>
-                                                    <div class="banner-content">
-                                                        <h4>
-                                                            <span class="">{{ $banner->getTranslation('subtitle', $locale) }}</span><br />
-                                                            <b class="">{{ $banner->getTranslation('discount', $locale) }}</b>
-                                                        </h4>
-                                                    </div>
-                                                    <a href="{{ $banner->button_url }}" class="btn btn-sm btn-dark">
-                                                        {{ $banner->getTranslation('button_text', $locale) }}
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-                            </li>
-
-                            <li class="d-none d-xl-block">
-                                <a href="#">Pages</a>
-                                <ul>
-                                    <li><a href="{{ route('wishlist') }}">Wishlist</a></li>
-                                    <li><a href="{{ url('/cart') }}">Shopping Cart</a></li>
-                                    <li><a href="{{ url('/checkout') }}">Checkout</a></li>
-                                    <li>
-                                        <a href="{{ $isGuest ? url('/client/login') : ($isClient ? url('/client') : url('/admin')) }}">
-                                            {{ $isGuest ? 'Login' : 'Dashboard' }}
-                                        </a>
-                                    </li>
-                                    <li><a href="{{ url('/about-us') }}">About Us</a></li>
-                                    <li><a href="{{url('/blogs')}}">Blogs</a></li>
-                                    <li><a href="{{ route('privacy.policy') }}">Privacy Policy</a></li>
-                                    <li><a href="{{ route('refund.policy') }}">Refund Policy</a></li>
-                                    <li><a href="{{ route('terms.of.service') }}">Terms of Service</a></li>
-                                    <li><a href="{{ route('contact.us') }}">Contact Us</a></li>
-                                </ul>
-                            </li>
-
-                            <li><a href="{{ url('/blogs') }}">Blogs</a></li>
-                        </ul>
-                    </nav>
-                </div>
-                <!-- End .header-center -->
-
-                <div class="header-right justify-content-end">
-                    <div class="header-dropdowns">
-                        <!-- End .header-dropown -->
-
-                        <div class="header-dropdown">
-                            <a href="#">
-                                <i class="flag-{{ app()->getLocale() === 'ar' ? 'eg' : 'us' }} flag"></i>
-                                {{ app()->getLocale() === 'ar' ? 'العربية' : 'English' }}
-                            </a>
-                            <div class="header-menu">
-                                <ul>
-                                    <li>
-                                        <a href="{{ LaravelLocalization::getLocalizedURL('en', null, [], true) }}">
-                                            <i class="flag-us flag mr-2"></i> English
-                                            @if (app()->getLocale() === 'en')
-                                                <i class="fas fa-check text-sm ml-1"></i>
-                                            @endif
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href="{{ LaravelLocalization::getLocalizedURL('ar', null, [], true) }}">
-                                            <i class="flag-eg flag mr-2"></i> العربية
-                                            @if (app()->getLocale() === 'ar')
-                                                <i class="fas fa-check text-sm ml-1"></i>
-                                            @endif
-                                        </a>
-                                    </li>
-                                </ul>
-                            </div><!-- End .header-menu -->
-                        </div><!-- End .header-dropdown -->
-
-                        <!-- End .header-dropown -->
                     </div>
-                    <!-- End .header-dropdowns -->
-
-                    <a href="{{ url('/client/login') }}" class="header-icon" title="login"><i class="icon-user-2"></i></a>
-
-                    <a href="{{route('wishlist') }}" class="header-icon" title="Wishlist"><i class="icon-wishlist-2">
-                        </i></a>
-
-                    @livewire('global-search')
-                    <!-- End .header-search -->
-
-                    <div class="dropdown cart-dropdown">
-                        @livewire('cart.cart-icon')
-                    </div><!-- End .dropdown -->
-                    <!-- End .dropdown -->
                 </div>
-                <!-- End .header-right -->
             </div>
-            <!-- End .container-fluid -->
+            <!-- Header Middle Section - Logo, Search, Icons -->
+            <div class="header-middle">
+                <div class="container">
+                    <div class="header-middle-container">
+                        <!-- Logo (Left) -->
+                        <div class="logo">
+                            @if($logo)
+                                <a href="{{ route('homepage') }}">
+                                    <img src="{{ $logo }}" alt="{{ $siteName ?: config('app.name') }}" class="site-logo">
+                                </a>
+                            @else
+                                <h1 class="website-name">{{ $siteName ?: config('app.name') }}</h1>
+                            @endif
+                        </div>
+
+                        <!-- Right Section (Search, Contact, Icons) -->
+                        <div class="header-middle-right" style="display: flex; justify-content: flex-end;">
+                            <!-- Search Bar -->
+                            <div class="header-search">
+                                @livewire('light-global-search')
+                            </div>
+
+                            <!-- Contact Info -->
+                            <div class="header-contact d-none d-lg-flex">
+                                <div class="contact-icon">
+                                    <i class="fas fa-phone-alt"></i>
+                                </div>
+                                <div class="contact-text">
+                                    <span class="contact-label">{{ __('Call us now') }}</span>
+                                    <a href="tel:{{ \App\Models\Setting::getContactDetails()['phone'] }}" class="contact-number">
+                                        {{ \App\Models\Setting::getContactDetails()['phone'] }}
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Icons -->
+                            <div class="header-icons">
+                                <a href="{{ url('/client/login') }}" class="header-icon" title="Login">
+                                    <i class="icon-user-2"></i>
+                                </a>
+                                <a href="{{ route('wishlist') }}" class="header-icon" title="Wishlist">
+                                    <i class="icon-wishlist-2"></i>
+                                    <span class="icon-badge">0</span>
+                                </a>
+                                <div class="dropdown cart-dropdown">
+                                    @livewire('cart.cart-icon')
+                                </div><!-- End .dropdown -->
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <nav class="navbar navbar-expand-lg navbar-dark py-3" style="background-color: #000;">
+                <div class="container">
+                    <div class="d-flex align-items-center">
+                        <a class="navbar-brand me-5 {{ request()->is(app()->getLocale()) ? 'active' : '' }}"
+                           href="{{ route('homepage') }}" style="font-size: 1.4rem;">Home</a>
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse" id="navbarNav">
+                            <ul class="navbar-nav">
+                                <li class="nav-item mx-3">
+                                    <a class="nav-link {{ request()->is(app()->getLocale().'/category*') ? 'active' : '' }}"
+                                       href="{{ url('categories') }}" style="font-size: 1.4rem;">Categories</a>
+                                </li>
+                                <li class="nav-item mx-3">
+                                    <a class="nav-link {{ request()->is(app()->getLocale().'/products*') ? 'active' : '' }}"
+                                       href="{{ url('products') }}" style="font-size: 1.4rem;">Products</a>
+                                </li>
+                                <li class="nav-item mx-3">
+                                    <a class="nav-link {{ request()->is(app()->getLocale().'/blogs*') ? 'active' : '' }}"
+                                       href="{{ url('blogs') }}" style="font-size: 1.4rem;">Blogs</a>
+                                </li>
+                                <li class="nav-item mx-3">
+                                    <a class="nav-link {{ request()->is(app()->getLocale().'/contact-us') ? 'active' : '' }}"
+                                       href="{{ url('contact-us') }}" style="font-size: 1.4rem;">Contact</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <style>
+                .navbar {
+                    background-color: #000 !important;
+                }
+
+                .navbar-brand,
+                .navbar-nav .nav-link {
+                    color: #fff !important;
+                    font-size: 1.4rem; /* Increased from 1.1rem */
+                    font-weight: 500;
+                    padding: 0.75rem 0; /* Increased padding */
+                    position: relative;
+                    transition: all 0.3s ease;
+                    letter-spacing: 0.5px; /* Slightly more spacing between letters */
+                }
+
+                /* Active state styles */
+                .navbar-brand.active,
+                .navbar-nav .nav-link.active {
+                    color: #fff !important;
+                    font-weight: 600;
+                }
+
+                /* Underline effect for active item - made slightly thicker */
+                .navbar-brand.active::after,
+                .navbar-nav .nav-link.active::after {
+                    content: '';
+                    position: absolute;
+                    bottom: 0.5rem; /* Adjusted position */
+                    left: 0;
+                    width: 100%;
+                    height: 3px; /* Increased from 2px */
+                    background-color: #fff;
+                    transform: scaleX(1);
+                    transition: transform 0.3s ease;
+                }
+
+                /* Hover effect */
+                .navbar-brand:hover,
+                .navbar-nav .nav-link:hover {
+                    opacity: 0.8;
+                    transform: translateY(-2px); /* Added slight lift effect */
+                }
+
+                /* Mobile view adjustments */
+                @media (max-width: 991.98px) {
+                    .navbar {
+                        padding: 1rem 0; /* More padding on mobile */
+                    }
+                    .navbar-collapse {
+                        margin-top: 1.5rem; /* Increased spacing */
+                    }
+                    .navbar-nav {
+                        flex-direction: column;
+                    }
+                    .nav-item {
+                        margin-bottom: 1.25rem; /* More space between items */
+                    }
+                    .navbar-brand,
+                    .navbar-nav .nav-link {
+                        font-size: 1.3rem; /* Slightly smaller on mobile */
+                        padding: 0.5rem 0;
+                    }
+                }
+            </style>
+
         </div>
-        <!-- End .header-middle -->
     </header>
-    <!-- End .header -->
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu-container">
+        <div class="mobile-menu-wrapper">
+            <span class="mobile-menu-close"><i class="fas fa-times"></i></span>
+            <nav class="mobile-nav">
+                <ul class="mobile-menu">
+                    <li class="active"><a href="/">Home</a></li>
+                    <li>
+                        <a href="{{ url('categories') }}">Categories</a>
+                    </li>
+                    <li>
+                        <a href="{{ url('products') }}">Products</a>
+                    </li>
+                    <li>
+                        <a href="#">Pages</a>
+                        <ul>
+                            <li><a href="{{ route('wishlist') }}">Wishlist</a></li>
+                            <li><a href="{{ url('cart') }}">Shopping Cart</a></li>
+                            <li><a href="{{ url('checkout') }}">Checkout</a></li>
+                            <li>
+                                <a href="{{ $isGuest ? url('/client/login') : ($isClient ? url('/client') : url('/admin')) }}">
+                                    {{ $isGuest ? 'Login' : 'Dashboard' }}
+                                </a>
+                            </li>                            <li><a href="{{ url('about-us') }}">About Us</a></li>
+                            <li>
+                                <a href="{{ url('blogs') }}">Blogs</a>
+                            </li>
+                            <li><a href="{{ url('contact-us') }}">Contact Us</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="{{ url('blogs') }}">Blogs</a></li>
+                    <li><a href="{{ url('contact-us') }}">Contact Us</a></li>
+                </ul>
+            </nav>
+
+            <div class="social-icons p-4 text-center">
+                @foreach($socialLinks as $platform => $url)
+                    @if(!empty($url) && isset($iconClasses[$platform]))
+                        <a href="{{ $url }}" class="social-icon mx-2" target="_blank" rel="noopener noreferrer">
+                            <i class="{{ $iconClasses[$platform] }} fa-lg"></i>
+                        </a>
+                    @endif
+                @endforeach
+            </div>
+        </div>
+    </div>
 
     <main class="{{ $mainClass ?? 'main' }}">
         @yield('content')
     </main>
 
-    <footer class="footer font2">
-        <div class="container-fluid">
-            <div class="footer-top top-border d-flex align-items-center justify-content-between flex-wrap">
-                <div class="footer-left widget-newsletter d-md-flex align-items-center">
-                    <div class="widget-newsletter-info">
-                        <h5 class="widget-newsletter-title text-white text-uppercase ls-0 mb-0">subscribe newsletter
-                        </h5>
-                        <p class="widget-newsletter-content mb-0">Get all the latest information on Events, Sales and Offers.</p>
-                    </div>
-                    <form id="subscriptionForm">
-                        <div class="footer-submit-wrapper d-flex">
-                            <input type="email" id="emailInput" class="form-control" placeholder="Email address..." size="40" required>
-                            <button type="submit" class="btn btn-dark btn-sm">Subscribe</button>
-                        </div>
-                    </form>
-
-                    <script>
-                        document.getElementById('subscriptionForm').addEventListener('submit', function(event) {
-                            event.preventDefault(); // Prevent default form submission
-                            let email = document.getElementById('emailInput').value.trim();
-                            if (email) {
-                                window.location.href = `/client/register?email=` + encodeURIComponent(email);
-                            }
-                        });
-                    </script>
-                </div>
-                <div class="footer-right">
-                    <div class="social-icons">
-                        @foreach($socialLinks as $platform => $url)
-                            @if(!empty($url) && isset($iconClasses[$platform]))
-                                <a href="{{ $url }}" class="social-icon" target="_blank">
-                                    <i class="{{ $iconClasses[$platform] }}"></i>
-                                </a>
-                            @endif
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-            <div class="footer-middle">
+    <footer class="footer bg-dark">
+        <div class="footer-middle">
+            <div class="container">
                 <div class="row">
-                    <div class="col-lg-3">
-                        <div class="site-name-wrapper">
-                            <p class="website-name">{{ $siteName ?: __('No Logo Available') }}</p>
-                        </div>
-
-                        <p class="footer-desc">Lorem ipsum dolor sit amet, consectetur adipis.</p>
-
-                        <div class="ls-0 footer-question">
-                            <h6 class="mb-0 text-white">QUESTIONS?</h6>
-                            <h3 class="mb-3 text-white">
-                                <a href="tel:{{ \App\Models\Setting::getContactDetails()['phone'] }}">
-                                    {{ \App\Models\Setting::getContactDetails()['phone'] }}
-                                </a>
-                            </h3>
-                        </div>
-                    </div>
-                    <!-- End .col-lg-3 -->
-
-                    <div class="col-lg-3">
+                    <div class="col-lg-3 col-sm-6">
                         <div class="widget">
-                            <h4 class="widget-title">Account</h4>
-
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <ul class="links">
-                                        <li><a href="demo18-about.html">About us</a></li>
-                                        <li><a href="demo18-contact.html">Contact us</a></li>
-                                        <li><a href="dashboard.html">My Account</a></li>
-                                        <li><a href="#">Payment Methods</a></li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-6">
-                                    <ul class="links">
-                                        <li><a href="order.html">Order history</a></li>
-                                        <li><a href="#">Advanced search</a></li>
-                                        <li><a href="login.html">Login</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- End .widget -->
-                    </div>
-                    <!-- End .col-lg-3 -->
-
-                    <div class="col-lg-3">
-                        <div class="widget">
-                            <h4 class="widget-title">About</h4>
-
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <ul class="links">
-                                        <li><a href="demo18-about.html">About {{ $siteName }}</a></li>
-                                        <li><a href="#">Our Guarantees</a></li>
-                                        <li><a href="#">Terms And Conditions</a></li>
-                                        <li><a href="#">Privacy Policy</a></li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-6">
-                                    <ul class="links">
-                                        <li><a href="#">Return Policy</a></li>
-                                        <li><a href="#">Intellectual Property Claims</a></li>
-                                        <li><a href="#">Site Map</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- End .widget -->
-                    </div>
-                    <!-- End .col-lg-3 -->
-
-                    <div class="col-lg-3">
-                        <div class="widget text-lg-right">
-                            <h4 class="widget-title">Features</h4>
-
-                            <ul class="links">
-                                <li><a href="#">Powerful Admin Panel</a></li>
-                                <li><a href="#">Mobile &amp; Retina Optimized</a></li>
-                                <li><a href="#">Super Fast HTML Template</a></li>
+                            <h4 class="widget-title">Contact Info</h4>
+                            <ul class="contact-info">
+                                <li>
+                                    <span class="contact-info-label">Address:</span>123 Street Name, City, England
+                                </li>
+                                <li>
+                                    <span class="contact-info-label">Phone:</span><a href="tel:">(123)
+                                        456-7890</a>
+                                </li>
+                                <li>
+                                    <span class="contact-info-label">Email:</span> <a
+                                        href="mailto:mail@example.com">mail@example.com</a>
+                                </li>
+                                <li>
+                                    <span class="contact-info-label">Working Days/Hours:</span>
+                                    Mon - Sun / 9:00 AM - 8:00 PM
+                                </li>
                             </ul>
-                        </div>
-                        <!-- End .widget -->
-                    </div>
-                    <!-- End .col-lg-3 -->
-                </div>
-                <!-- End .row -->
-            </div>
+                            <div class="social-icons">
+                                @foreach($socialLinks as $platform => $url)
+                                    @if(!empty($url) && isset($iconClasses[$platform]))
+                                        <a href="{{ $url }}" class="social-icon" target="_blank">
+                                            <i class="{{ $iconClasses[$platform] }}"></i>
+                                        </a>
+                                    @endif
+                                @endforeach
+                            </div>
+                        </div><!-- End .widget -->
+                    </div><!-- End .col-lg-3 -->
+
+                    <div class="col-lg-3 col-sm-6">
+                        <div class="widget">
+                            <h4 class="widget-title">Popular Tags</h4>
+
+                            <div class="tagcloud">
+                                <a href="#">Bag</a>
+                            </div>
+                        </div><!-- End .widget -->
+                    </div><!-- End .col-lg-3 -->
+
+                    <div class="col-lg-3 col-sm-6">
+                        <div class="widget widget-newsletter">
+                            <h4 class="widget-title">Subscribe newsletter</h4>
+                            <p>Get all the latest information on events, sales and offers. Sign up for newsletter:
+                            </p>
+                            <form action="#" class="mb-0">
+                                <input type="email" class="form-control m-b-3" placeholder="Email address">
+
+                                <input type="submit" class="btn btn-primary shadow-none" value="Subscribe">
+                            </form>
+                        </div><!-- End .widget -->
+                    </div><!-- End .col-lg-3 -->
+                </div><!-- End .row -->
+            </div><!-- End .container -->
+        </div><!-- End .footer-middle -->
+
+        <div class="container">
             <div class="footer-bottom">
-                <p class="footer-copyright text-lg-center mb-0">&copy; {{ $siteName }} . 2025. All Rights Reserved
-                </p>
-            </div>
-            <!-- End .footer-bottom -->
-        </div>
-        <!-- End .container-fluid -->
-    </footer>
-    <!-- End .footer -->
-</div>
-<!-- End .page-wrapper -->
+                <div class="container d-sm-flex align-items-center">
+                    <div class="footer-left">
+                        <span class="footer-copyright">© {{ $siteName }}. 2025. All Rights Reserved</span>
+                    </div>
 
-<div class="loading-overlay">
-    <div class="bounce-loader">
-        <div class="bounce1"></div>
-        <div class="bounce2"></div>
-        <div class="bounce3"></div>
-    </div>
-</div>
+                    <div class="footer-right ml-auto mt-1 mt-sm-0">
+                        <div class="payment-icons">
+								<span class="payment-icon visa"
+                                      style="background-image: url(assets/images/payments/payment-visa.svg)"></span>
+                            <span class="payment-icon paypal"
+                                  style="background-image: url(assets/images/payments/payment-paypal.svg)"></span>
+                            <span class="payment-icon stripe"
+                                  style="background-image: url(assets/images/payments/payment-stripe.png)"></span>
+                            <span class="payment-icon verisign"
+                                  style="background-image:  url(assets/images/payments/payment-verisign.svg)"></span>
+                        </div>
+                    </div>
+                </div>
+            </div><!-- End .footer-bottom -->
+        </div><!-- End .container -->
+    </footer><!-- End .footer -->
+</div><!-- End .page-wrapper -->
 
-<div class="mobile-menu-overlay"></div>
-<!-- End .mobil-menu-overlay -->
+<div class="mobile-menu-overlay"></div><!-- End .mobil-menu-overlay -->
 
 <div class="mobile-menu-container">
     <div class="mobile-menu-wrapper">
         <span class="mobile-menu-close"><i class="fa fa-times"></i></span>
-        <nav class="mobile-nav">
+        <nav class="mobile-nav">$
             <ul class="mobile-menu">
-                <li><a href="{{ url('/') }}">Home</a></li>
-
-                <!-- Categories -->
+                <li><a href="/">Home</a></li>
                 <li>
-                    <a href="{{ url('/categories') }}">Categories</a>
-                    <ul>
-                        @foreach (\App\Models\Category::latest()->take(18)->get() as $category)
-                            <li>
-                                <a href="{{ route('category.products', $category->slug) }}">{{ $category->name }}</a>
-                            </li>
-                        @endforeach
-                    </ul>
+                    <a href="{{ url('categories') }}">Categories</a>
                 </li>
-
-                <!-- Products -->
                 <li>
-                    <a href="{{ url('/products') }}">Products</a>
-                    <ul>
-                        @foreach (\App\Models\Product::latest()->take(18)->get() as $product)
-                            <li>
-                                <a href="{{ route('product.show', $product->slug) }}">{{ $product->name }}</a>
-                            </li>
-                        @endforeach
-                    </ul>
+                    <a href="{{ url('products') }}">Products</a>
                 </li>
-
-                <!-- Pages -->
                 <li>
-                    <a href="#">Pages</a>
                     <ul>
-                        <li><a href="{{ route('wishlist') }}">Wishlist</a></li>
-                        <li><a href="{{ url('/cart') }}">Shopping Cart</a></li>
-                        <li><a href="{{ url('/checkout') }}">Checkout</a></li>
+                        <li>
+                            <a href="{{ route('wishlist') }}">Wishlist</a>
+                        </li>
+                        <li>
+                            <a href="{{ url('cart') }}">Shopping Cart</a>
+                        </li>
+                        <li>
+                            <a href="{{ url('checkout') }}">Checkout</a>
+                        </li>
                         <li>
                             <a href="{{ $isGuest ? url('/client/login') : ($isClient ? url('/client') : url('/admin')) }}">
                                 {{ $isGuest ? 'Login' : 'Dashboard' }}
                             </a>
                         </li>
-                        <li><a href="{{ url('/about-us') }}">About Us</a></li>
-                        <li><a href="{{ url('/blogs') }}">Blog</a></li>
-                        @if($isGuest)
-                            <li><a href="{{ url('/client/login') }}">Login</a></li>
-                        @elseif(!$isClient)
-                            <li><a href="{{ url('/admin/login') }}">Login</a></li>
-                        @endif                        <li><a href="{{ route('privacy.policy') }}">Privacy Policy</a></li>
-                        <li><a href="{{ route('refund.policy') }}">Refund Policy</a></li>
-                        <li><a href="{{ route('terms.of.service') }}">Terms of Service</a></li>
-                        <li><a href="{{ route('contact.us') }}">Contact Us</a></li>
+                        <li>
+                            <a href="{{ url('client/login') }}">Login</a>
+                        </li>
+                        <li>
+                            <a href="{{ url('client/password-reset/reset') }}">Forgot Password</a>
+                        </li>
                     </ul>
                 </li>
-
-                <!-- Blog -->
-                <li><a href="{{ url('/blogs') }}">Blog</a></li>
+                <li><a href="{{ url('blogs') }}">Blogs</a></li>
+                </li>
             </ul>
 
-            <ul class="mobile-menu mt-2">
+
+            <ul class="mobile-menu">
+                @php
+                    $user = auth()->user();
+                    $isClient = $user && $user->hasRole('client'); // Check if user has 'client' role
+                    $dashboardUrl = $isClient ? 'client' : 'admin';
+                @endphp
                 <li>
-                    <a href="{{ url($isClient ? 'client/my-profile' : 'admin/my-profile') }}">
-                        My Account
+                    <a href="{{ url($user ? "$dashboardUrl/my-profile" : "$dashboardUrl/login") }}" class="login-link">
+                        {{ $user ? 'My Account' : 'Log In' }}
                     </a>
                 </li>
-                <li><a href="{{ route('contact.us') }}">Contact Us</a></li>
+                <li><a href="{{ url('contact-us') }}">Contact Us</a></li>
+                <li><a href="{{ url('blogs') }}">Blogs</a></li>
                 <li><a href="{{ route('wishlist') }}">My Wishlist</a></li>
                 <li><a href="{{ url('cart') }}">Cart</a></li>
-                @if($isGuest)
-                    <li><a href="{{ url('/client/login') }}">Login</a></li>
-                @elseif(!$isClient)
-                    <li><a href="{{ url('/admin/login') }}">Login</a></li>
-                @endif                <li><a href="{{ url('client/password-reset/request') }}">Forgot Password</a></li>
             </ul>
-        </nav>
+        </nav><!-- End .mobile-nav -->
 
-        <!-- Social Icons -->
+        <form class="search-wrapper mb-2" action="#">
+            <input type="text" class="form-control mb-0" placeholder="Search..." required />
+            <button class="btn icon-search text-white bg-transparent p-0" type="submit"></button>
+        </form>
+
         <div class="social-icons">
             @foreach($socialLinks as $platform => $url)
                 @if(!empty($url) && isset($iconClasses[$platform]))
@@ -870,18 +1343,17 @@
                 @endif
             @endforeach
         </div>
-    </div>
-</div>
-<!-- End .mobile-menu-container -->
+    </div><!-- End .mobile-menu-wrapper -->
+</div><!-- End .mobile-menu-container -->
 
 <div class="sticky-navbar">
     <div class="sticky-info">
-        <a href="{{ url('/') }}">
+        <a href="/">
             <i class="icon-home"></i>Home
         </a>
     </div>
     <div class="sticky-info">
-        <a href="{{ url('/categories') }}" class="">
+        <a href="{{ url('/categoires') }}" class="">
             <i class="icon-bars"></i>Categories
         </a>
     </div>
@@ -891,8 +1363,8 @@
         </a>
     </div>
     <div class="sticky-info">
-        <a href="{{ url($isClient ? 'client/my-profile' : 'admin/my-profile') }}" class="">
-            <i class="icon-user-2"></i> Account
+        <a href="{{ url('client/my-profile') }}" class="">
+            <i class="icon-user-2"></i>Account
         </a>
     </div>
     <div class="sticky-info">
@@ -910,10 +1382,11 @@
 <script src="assets/js/jquery.min.js"></script>
 <script src="assets/js/bootstrap.bundle.min.js"></script>
 <script src="assets/js/plugins.min.js"></script>
-<script src="assets/js/jquery.appear.min.js"></script>
 
 <!-- Main JS File -->
 <script src="assets/js/main.min.js"></script>
 @livewireScripts
 </body>
+
 </html>
+

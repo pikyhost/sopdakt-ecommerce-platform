@@ -36,6 +36,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
     Route::view('/categories', 'pages.categories')->name('categories');
 
     Route::view('test-about-us', 'front.front_about');
+    Route::view('test-front', 'front.test-front');
 
     Route::get('landing-page/{slug}', [LandingPageController::class, 'show'])->name('landing-page.show-by-slug');
     Route::get('/products/{slug}', [ProductController::class, 'show'])->name('product.show');
