@@ -57,8 +57,8 @@
                             </div>
                         </div>
 
-                        <div class="flex items-center text-sm text-gray-600 dark:text-primary-200 bg-gray-50 dark:bg-gray-900/80 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700">
-                            <svg class="w-4 h-4 mr-3 text-gray-500 dark:text-primary-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="flex items-center gap-x-3 rtl:flex-row-reverse rtl:gap-x-2 text-sm text-gray-600 dark:text-primary-200 bg-gray-50 dark:bg-gray-900/80 px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700">
+                            <svg class="w-4 h-4 text-gray-500 dark:text-primary-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                             </svg>
                             <span class="whitespace-nowrap">{{ $fromDate->format('M d, Y') }} – {{ $toDate->format('M d, Y') }}</span>
@@ -77,10 +77,19 @@
 
                     <div class="grid grid-cols-1 gap-4 mt-8">
                         @foreach($stats as $stat)
+                            @php
+                                $isDarkModeOverride = in_array($stat['title'], [__('Total Ordered'), __('Countries')]);
+                            @endphp
+
                             <div class="flex items-center justify-between w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-6 py-4 shadow-sm hover:shadow-md transition duration-200">
                                 <!-- Icon -->
                                 <div class="flex items-center gap-4">
-                                    <div class="p-3 rounded-full bg-{{ $stat['color'] }}-100 dark:bg-{{ $stat['color'] }}-900/20 text-{{ $stat['color'] }}-600 dark:text-{{ $stat['color'] }}-400">
+                                    <div class="p-3 rounded-full
+                    bg-{{ $stat['color'] }}-100
+                    text-{{ $stat['color'] }}-600
+                    {{ $isDarkModeOverride
+                        ? 'dark:bg-white/10 dark:text-white'
+                        : 'dark:bg-' . $stat['color'] . '-900/20 dark:text-' . $stat['color'] . '-400' }}">
                                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $stat['icon'] }}" />
                                         </svg>
@@ -97,6 +106,7 @@
                             </div>
                         @endforeach
                     </div>
+
 
                 </div>
             </div>
@@ -701,7 +711,7 @@
                                 ...commonOptions.plugins.tooltip,
                                 callbacks: {
                                     label: function(context) {
-                                        return `Quantity: ${context.raw.toLocaleString()}`;
+                                        return `@lang('Quantity'): ${context.raw.toLocaleString()}`;
                                     }
                                 }
                             },
@@ -737,7 +747,7 @@
                                 ...commonOptions.plugins.tooltip,
                                 callbacks: {
                                     label: function(context) {
-                                        return `Quantity: ${context.raw.toLocaleString()}`;
+                                        return `@lang('Quantity'): ${context.raw.toLocaleString()}`;
                                     }
                                 }
                             },

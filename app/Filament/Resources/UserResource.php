@@ -186,6 +186,10 @@ class UserResource extends Resource
                 ->same('password')
                 ->dehydrated(false),
 
+            Forms\Components\Checkbox::make('email_verified_at')
+                ->label('Verified')
+                ->default(now()),
+
         ])
             ->columns(2)
             ->columnSpan([

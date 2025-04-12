@@ -9,7 +9,6 @@ use App\Livewire\Filters;
 use App\Livewire\LastOrders;
 use App\Livewire\LocationsAnalysisWidget;
 use App\Livewire\OrdersChart;
-use App\Livewire\SalesComparisonChart;
 use App\Livewire\UsersChart;
 use Filament\Pages\Page;
 use Illuminate\Contracts\Support\Htmlable;
@@ -51,8 +50,7 @@ class Analysis extends Page
             AnalysisPageStats::class,
             UsersChart::class,
             OrdersChart::class,
-//            SalesComparisonChart::class,
-        CustomComparisonWidget::class,
+            CustomComparisonWidget::class,
             LocationsAnalysisWidget::class,
             TopProducts::class,
             LastOrders::class,
