@@ -73,24 +73,24 @@
                     <h2 class="about-title text-left font4">{{ $about->team_title ?? 'OUR TEAM' }}</h2>
 
                     <div class="row justify-content-center">
-                        @foreach(json_decode($about->team_members, true) as $member)
+                        @foreach($about->team_members as $member)
                             <div class="col-md-3 col-6">
                                 <div class="team-info mb-3">
                                     <figure>
                                         <a href="#">
-                                            <img src="{{ $member['image'] ?? 'assets/images/demoes/demo10/team/team1.jpg' }}"
-                                                 data-zoom-image="{{ $member['image'] ?? 'assets/images/demoes/demo10/team/team1.jpg' }}"
+                                            <img src="{{ asset($member['image'] ?? 'assets/images/demoes/demo10/team/team1.jpg') }}"
+                                                 data-zoom-image="{{ asset($member['image'] ?? 'assets/images/demoes/demo10/team/team1.jpg') }}"
                                                  class="w-100" width="270" height="319" alt="Team" />
                                         </a>
 
                                         <span class="prod-full-screen">
-                                            <i class="fas fa-search"></i>
-                                        </span>
+                    <i class="fas fa-search"></i>
+                </span>
                                     </figure>
 
                                     <h5 class="team-name text-center mb-0">{{ $member['name'] ?? 'Team Member' }}</h5>
                                 </div>
-                            </div><!-- End .col-lg-4 -->
+                            </div>
                         @endforeach
                     </div><!-- End .row -->
 

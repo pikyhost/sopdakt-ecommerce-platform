@@ -46,6 +46,7 @@ class AboutUsResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Tabs::make('AboutUsContent')
+                    ->columnSpanFull()
                     ->tabs([
                         Forms\Components\Tabs\Tab::make(__('about_us.tabs.header'))
                             ->schema([
@@ -117,6 +118,7 @@ class AboutUsResource extends Resource
                         Forms\Components\Tabs\Tab::make(__('about_us.tabs.team'))
                             ->schema([
                                 Forms\Components\Repeater::make('team_members')
+                                    ->label(__('about_us.tabs.team'))
                                     ->schema([
                                         Forms\Components\TextInput::make('name')
                                             ->label(__('about_us.fields.team_member_name'))
