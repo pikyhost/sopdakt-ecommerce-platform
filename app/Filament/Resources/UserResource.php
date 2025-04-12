@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Enums\UserRole;
 use App\Filament\Resources\ProductResource\RelationManagers\BundlesRelationManager;
 use App\Filament\Resources\UserResource\Pages;
+use App\Filament\Resources\UserResource\Pages\ManageUserOrders;
 use App\Filament\Resources\UserResource\RelationManagers\OrdersRelationManager;
 use App\Models\User;
 use App\Traits\HasCreatedAtFilter;
@@ -103,6 +104,7 @@ class UserResource extends Resource
         return $page->generateNavigationItems([
             Pages\ViewUser::class,
             Pages\EditUser::class,
+            ManageUserOrders::class
         ]);
     }
 
@@ -505,6 +507,7 @@ class UserResource extends Resource
             'create' => Pages\CreateUser::route('/create'),
             'edit' => Pages\EditUser::route('/{record}/edit'),
             'view' => Pages\ViewUser::route('/{record}'),
+            'orders' => ManageUserOrders::route('/{record}/orders'),
         ];
     }
 
