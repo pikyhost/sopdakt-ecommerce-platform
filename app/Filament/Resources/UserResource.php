@@ -9,6 +9,8 @@ use App\Filament\Resources\UserResource\RelationManagers\OrdersRelationManager;
 use App\Models\User;
 use App\Traits\HasCreatedAtFilter;
 use App\Traits\HasTimestampSection;
+use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Set;
 use Filament\Events\Auth\Registered;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
@@ -185,11 +187,15 @@ class UserResource extends Resource
                 ->requiredWith('password')
                 ->same('password')
                 ->dehydrated(false),
-
-            Forms\Components\Checkbox::make('email_verified_at')
+            Checkbox::make('email_verified_at')
                 ->label(__('Verified'))
-                ->default(now()),
-
+                ->afterStateHydrated(function (Checkbox $component, $state) {
+                    $component->state(!is_null($state));
+                })
+                ->dehydrated(fn ($state) => (bool) $state) // Only send data if checked
+                ->afterStateUpdated(function (Set $set, $state) {
+                    $set('email_verified_at', $state ? now() : null);
+                })
         ])
             ->columns(2)
             ->columnSpan([
@@ -268,8 +274,8 @@ class UserResource extends Resource
                     ->boolean()
                     ->label(__("Active")),
 
-                Tables\Columns\IconColumn::make('email_verified_at')
-                    ->boolean()
+                Tables\Columns\TextColumn::make('email_verified_at')
+                    ->placeholder(__('No verified yet'))
                     ->label(__("Verified")),
 
                 TextColumn::make('created_at')
