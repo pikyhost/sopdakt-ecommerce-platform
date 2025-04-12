@@ -124,11 +124,9 @@ class OrdersRelationManager extends RelationManager
                 Tables\Filters\Filter::make('created_at')
                     ->form([
                         DatePicker::make('created_from')
-                            ->label(__('filters.created_from'))
-                            ->placeholder(fn ($state): string => 'Dec 18, ' . now()->subYear()->format('Y')),
+                            ->label(__('filters.created_from')),
                         DatePicker::make('created_until')
-                            ->label(__('filters.created_until'))
-                            ->placeholder(fn ($state): string => now()->format('M d, Y')),
+                            ->label(__('filters.created_until')),
                     ])
                     ->query(function (\Illuminate\Contracts\Database\Eloquent\Builder $query, array $data): Builder {
                         return $query

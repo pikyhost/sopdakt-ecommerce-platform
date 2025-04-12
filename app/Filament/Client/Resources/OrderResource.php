@@ -19,6 +19,7 @@ use App\Models\ShippingCost;
 use App\Models\ShippingType;
 use Carbon\Carbon;
 use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -32,6 +33,7 @@ use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -168,16 +170,22 @@ class OrderResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                SelectFilter::make('status')
+                    ->label(__('Status'))
+                    ->multiple()
+                    ->options(
+                        collect(OrderStatus::cases())
+                            ->mapWithKeys(fn ($status) => [$status->value => $status->getLabel()])
+                            ->toArray()
+                    ),
                 Tables\Filters\Filter::make('created_at')
                     ->form([
-                        Forms\Components\DatePicker::make('created_from')
-                            ->label(__('filters.created_from'))
-                            ->placeholder(fn ($state): string => 'Dec 18, ' . now()->subYear()->format('Y')),
-                        Forms\Components\DatePicker::make('created_until')
-                            ->label(__('filters.created_until'))
-                            ->placeholder(fn ($state): string => now()->format('M d, Y')),
+                        DatePicker::make('created_from')
+                            ->label(__('filters.created_from')),
+                        DatePicker::make('created_until')
+                            ->label(__('filters.created_until')),
                     ])
-                    ->query(function (Builder $query, array $data): Builder {
+                    ->query(function (\Illuminate\Contracts\Database\Eloquent\Builder $query, array $data): Builder {
                         return $query
                             ->when(
                                 $data['created_from'] ?? null,
