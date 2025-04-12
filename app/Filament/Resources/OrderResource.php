@@ -83,7 +83,6 @@ class OrderResource extends Resource
         return $table
             ->headerActions([
                 Action::make('back')
-                    ->extraAttributes(['onclick' => 'window.location.href = document.referrer'])
                     ->label(__('Back to previous page'))
                     ->icon(app()->getLocale() == 'en' ? 'heroicon-m-arrow-right' : 'heroicon-m-arrow-left')
                     ->iconPosition(IconPosition::After)
