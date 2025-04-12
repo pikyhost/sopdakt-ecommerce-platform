@@ -41,6 +41,16 @@ class AboutUsResource extends Resource
         return __('about_us.navigation_group');
     }
 
+    public static function getPluralModelLabel(): string
+    {
+        return __('about_us.model_label');
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return __('about_us.model_label');
+    }
+
     public static function form(Form $form): Form
     {
         return $form
