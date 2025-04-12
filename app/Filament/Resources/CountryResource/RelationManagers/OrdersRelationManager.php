@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\CountryResource\RelationManagers;
 
 use App\Enums\OrderStatus;
+use App\Models\Order;
 use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -93,7 +94,11 @@ class OrdersRelationManager extends RelationManager
                     ->sortable(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
+                Tables\Actions\Action::make('open')
+                    ->color('gray')
+                    ->icon('heroicon-o-shopping-bag')
+                    ->label(__('Open'))
+                    ->url(fn (Order $record): string => url('/admin/orders/'.$record->id)),
             ])
             ->filters([
                 SelectFilter::make('status')

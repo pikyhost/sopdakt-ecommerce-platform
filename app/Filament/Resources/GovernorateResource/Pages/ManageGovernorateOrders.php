@@ -4,6 +4,7 @@ namespace App\Filament\Resources\GovernorateResource\Pages;
 
 use App\Enums\OrderStatus;
 use App\Filament\Resources\GovernorateResource;
+use App\Models\Order;
 use Carbon\Carbon;
 use Filament\Actions;
 use Filament\Forms;
@@ -140,7 +141,11 @@ class ManageGovernorateOrders extends ManageRelatedRecords
                     ->sortable(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
+                Tables\Actions\Action::make('open')
+                    ->color('gray')
+                    ->icon('heroicon-o-shopping-bag')
+                    ->label(__('Open'))
+                    ->url(fn (Order $record): string => url('/admin/orders/'.$record->id)),
             ])
             ->filters([
                 SelectFilter::make('status')

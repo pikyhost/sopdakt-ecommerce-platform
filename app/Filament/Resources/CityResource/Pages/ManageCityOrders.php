@@ -4,6 +4,7 @@ namespace App\Filament\Resources\CityResource\Pages;
 
 use App\Enums\OrderStatus;
 use App\Filament\Resources\CityResource;
+use App\Models\Order;
 use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
 use Filament\Resources\Pages\ManageRelatedRecords;
@@ -137,7 +138,11 @@ class ManageCityOrders extends ManageRelatedRecords
                     ->sortable(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
+                Tables\Actions\Action::make('open')
+                    ->color('gray')
+                    ->icon('heroicon-o-shopping-bag')
+                    ->label(__('Open'))
+                    ->url(fn (Order $record): string => url('/admin/orders/'.$record->id)),
             ])
             ->filters([
                 SelectFilter::make('status')
