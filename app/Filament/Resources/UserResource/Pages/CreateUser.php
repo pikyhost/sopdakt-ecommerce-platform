@@ -17,13 +17,17 @@ class CreateUser extends CreateRecord
 
     protected function getHeaderActions(): array
     {
-        return [
-        ];
+        return [];
     }
 
     protected function afterCreate(): void
     {
-        // Fire the 'Registered' event so Laravel sends the email verification notification
-        event(new Registered($this->record));
+        parent::afterCreate();
+
+        // Ensure the user implements MustVerifyEmail
+        if ($this->record instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !$this->record->hasVerifiedEmail()) {
+            // Trigger Laravel's default email verification notification
+            event(new Registered($this->record));
+        }
     }
 }
