@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('about_us', function (Blueprint $table) {
-            $table->string('cta_text')->nullable()->after('id'); // replace 'column_name' with the column you want it after
-            $table->string('cta_url')->nullable()->after('cta_text');
+            $table->string('cta_text')->nullable();
+            $table->string('cta_url')->nullable();
         });
     }
 

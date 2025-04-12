@@ -16,6 +16,7 @@ class AboutUs extends Model
 
     protected $casts = [
         'team_members' => 'array',
+        'testimonial_image' => 'string',
     ];
 
     public $translatable = [

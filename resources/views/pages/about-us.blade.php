@@ -104,7 +104,9 @@
                         @endforeach
                     </div><!-- End .row -->
 
-                    <a class="btn font4" href="#">{{ $about->team_button_text ?? 'JOIN OUR TEAM' }}</a>
+                    @if($about?->cta_text && $about?->cta_url)
+                        <a class="btn font4" href="{{ $about->cta_url }}">{{ $about->cta_text }}</a>
+                    @endif
                 </div>
             </div>
         @endif

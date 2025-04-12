@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Models\AboutUs;
 use Filament\Forms;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Concerns\Translatable;
@@ -164,10 +165,13 @@ class AboutUsResource extends Resource
                                 Forms\Components\TextInput::make('testimonial_role')
                                     ->label(__('about_us.fields.testimonial_role')),
 
-                                Forms\Components\FileUpload::make('testimonial_image')
-                                    ->label(__('about_us.fields.testimonial_image'))
+                                FileUpload::make('testimonial_image')
+                                    ->label('Testimonial Image')
                                     ->image()
-                                    ->directory('testimonials'),
+                                    ->directory('clients')
+                                    ->preserveFilenames()
+                                    ->multiple(false) // ensure this!
+                                    ->maxFiles(1),
                             ]),
                     ])
             ]);

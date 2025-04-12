@@ -39,6 +39,9 @@ return new class extends Migration {
             // Team Members (consider separate table if complex team management needed)
             $table->json('team_members')->nullable();
 
+            $table->string('cta_text')->nullable();
+            $table->string('cta_url')->nullable();
+
             // Testimonials (consider separate table if multiple testimonials needed)
             $table->text('testimonial_content')->nullable();
             $table->string('testimonial_name')->nullable();
