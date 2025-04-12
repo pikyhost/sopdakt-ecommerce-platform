@@ -4,6 +4,7 @@ namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Enums\OrderStatus;
 use App\Filament\Resources\CountryResource;
+use App\Filament\Resources\UserResource;
 use App\Models\Order;
 use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
@@ -19,7 +20,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ManageUserOrders extends ManageRelatedRecords
 {
-    protected static string $resource = CountryResource::class;
+    protected static string $resource = UserResource::class;
 
     protected static string $relationship = 'orders';
 
@@ -35,7 +36,12 @@ class ManageUserOrders extends ManageRelatedRecords
         $recordTitle = $this->getOwnerRecord()->name;
         $recordTitle = $recordTitle instanceof Htmlable ? $recordTitle->toHtml() : $recordTitle;
 
-        return __('View user orders');
+        return __('Manage user orders');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('User Orders');
     }
 
     public function getBreadcrumb(): string
