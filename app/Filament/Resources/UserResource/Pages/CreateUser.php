@@ -4,7 +4,7 @@ namespace App\Filament\Resources\UserResource\Pages;
 
 use App\Filament\Resources\UserResource;
 use Filament\Resources\Pages\CreateRecord;
-use Filament\Actions;
+use Illuminate\Auth\Events\Registered;
 
 class CreateUser extends CreateRecord
 {
@@ -19,5 +19,11 @@ class CreateUser extends CreateRecord
     {
         return [
         ];
+    }
+
+    protected function afterCreate(): void
+    {
+        // Fire the 'Registered' event so Laravel sends the email verification notification
+        event(new Registered($this->record));
     }
 }
