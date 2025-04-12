@@ -79,6 +79,6 @@ class AboutUs extends Model
     // Mutator for team members to ensure proper JSON
     public function setTeamMembersAttribute($value)
     {
-        $this->attributes['team_members'] = json_encode($value);
+        $this->attributes['team_members'] = is_array($value) ? json_encode($value) : $value;
     }
 }

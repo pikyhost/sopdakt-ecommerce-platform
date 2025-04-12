@@ -129,28 +129,31 @@ class AboutUsResource extends Resource
 
                         Forms\Components\Tabs\Tab::make(__('about_us.tabs.team'))
                             ->schema([
-                                TextInput::make('cta_text')
+                                Forms\Components\TextInput::make('cta_text')
                                     ->label(__('CTA Text'))
                                     ->maxLength(255),
 
-                                TextInput::make('cta_url')
+                                Forms\Components\TextInput::make('cta_url')
                                     ->label(__('CTA Link'))
                                     ->url()
                                     ->maxLength(255),
+
                                 Forms\Components\Repeater::make('team_members')
                                     ->label(__('about_us.tabs.team'))
                                     ->schema([
                                         Forms\Components\TextInput::make('name')
                                             ->label(__('about_us.fields.team_member_name'))
                                             ->required(),
+
                                         Forms\Components\FileUpload::make('image')
                                             ->label(__('about_us.fields.team_member_image'))
                                             ->image()
-                                            ->directory('team-members')
-                                            ->required(),
+                                            ->required()
+                                            ->columnSpanFull(),
                                     ])
                                     ->columns(2)
-                                    ->itemLabel(fn (array $state): ?string => $state['name'] ?? null),
+                                    ->itemLabel(fn (array $state): ?string => $state['name'] ?? null)
+                                    ->default([]), // Default empty array
                             ]),
 
                         Forms\Components\Tabs\Tab::make(__('about_us.tabs.testimonial'))
@@ -165,17 +168,18 @@ class AboutUsResource extends Resource
                                 Forms\Components\TextInput::make('testimonial_role')
                                     ->label(__('about_us.fields.testimonial_role')),
 
-                                FileUpload::make('testimonial_image')
+                                Forms\Components\FileUpload::make('testimonial_image')
                                     ->label('Testimonial Image')
                                     ->image()
                                     ->directory('clients')
                                     ->preserveFilenames()
-                                    ->multiple(false) // ensure this!
+                                    ->multiple(false) // ✅ ensure single upload
                                     ->maxFiles(1),
                             ]),
                     ])
             ]);
     }
+
 
     public static function table(Table $table): Table
     {
