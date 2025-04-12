@@ -14,7 +14,7 @@ class AboutUs extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'team_members' => 'array', // Automatically cast JSON to array
+        'team_members' => 'array',
     ];
 
     public $translatable = [

@@ -70,17 +70,18 @@ return new class extends Migration {
             'accordion_content_3' => 'To deliver quality products...',
             'accordion_title_4' => 'Fun Facts',
             'accordion_content_4' => 'We’ve served over 1M users...',
-            'team_members' => json_encode([
+            'team_members' => [
                 ['name' => 'John Doe', 'image' => 'team/team1.jpg'],
                 ['name' => 'Jessica Doe', 'image' => 'team/team2.jpg'],
                 ['name' => 'Rick Edward', 'image' => 'team/team3.jpg'],
                 ['name' => 'Melinda Wolosky', 'image' => 'team/team4.jpg'],
-            ]),
+            ],
             'testimonial_content' => 'Long established fact...',
             'testimonial_name' => 'John Doe',
             'testimonial_role' => 'Porto Founder',
             'testimonial_image' => 'clients/client1.jpg',
         ]);
+
     }
 
     public function down(): void {

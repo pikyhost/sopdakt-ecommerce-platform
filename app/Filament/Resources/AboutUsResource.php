@@ -16,70 +16,86 @@ class AboutUsResource extends Resource
 
     protected static ?string $model = AboutUs::class;
 
+    protected static ?string $slug = 'about-us';
+
     protected static ?string $navigationIcon = 'heroicon-o-information-circle';
 
-    protected static ?string $navigationLabel = 'About Us Page';
+    protected static ?string $navigationLabel = 'about_us.navigation_label';
 
-    protected static ?string $modelLabel = 'About Us Content';
+    protected static ?string $modelLabel = 'about_us.model_label';
 
-    protected static ?string $navigationGroup = 'Content Management';
+    protected static ?string $navigationGroup = 'about_us.navigation_group';
+
+    public static function getNavigationLabel(): string
+    {
+        return __('about_us.navigation_label');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('about_us.model_label');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('about_us.navigation_group');
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\Tabs::make('AboutUsContent')
-                    ->columnSpanFull()
                     ->tabs([
-                        Forms\Components\Tabs\Tab::make('Header & Titles')
+                        Forms\Components\Tabs\Tab::make(__('about_us.tabs.header'))
                             ->schema([
                                 Forms\Components\TextInput::make('header_title')
-                                    ->label('Header Title')
+                                    ->label(__('about_us.fields.header_title'))
                                     ->required(),
 
                                 Forms\Components\TextInput::make('about_title')
-                                    ->label('About Section Title')
+                                    ->label(__('about_us.fields.about_title'))
                                     ->required(),
 
                                 Forms\Components\TextInput::make('team_title')
-                                    ->label('Team Section Title'),
+                                    ->label(__('about_us.fields.team_title')),
 
                                 Forms\Components\TextInput::make('testimonial_title')
-                                    ->label('Testimonial Section Title'),
+                                    ->label(__('about_us.fields.testimonial_title')),
 
                                 Forms\Components\TextInput::make('breadcrumb_home')
-                                    ->label('Breadcrumb Home Text'),
+                                    ->label(__('about_us.fields.breadcrumb_home')),
 
                                 Forms\Components\TextInput::make('breadcrumb_current')
-                                    ->label('Breadcrumb Current Page Text'),
+                                    ->label(__('about_us.fields.breadcrumb_current')),
                             ]),
 
-                        Forms\Components\Tabs\Tab::make('About Content')
+                        Forms\Components\Tabs\Tab::make(__('about_us.tabs.about'))
                             ->schema([
                                 Forms\Components\FileUpload::make('about_image')
-                                    ->label('About Image')
+                                    ->label(__('about_us.fields.about_image'))
                                     ->image()
                                     ->directory('about-us'),
 
                                 Forms\Components\Textarea::make('about_description_1')
-                                    ->label('First Description')
+                                    ->label(__('about_us.fields.about_description_1'))
                                     ->rows(3),
 
                                 Forms\Components\Textarea::make('about_description_2')
-                                    ->label('Second Description')
+                                    ->label(__('about_us.fields.about_description_2'))
                                     ->rows(3),
                             ]),
 
-                        Forms\Components\Tabs\Tab::make('Accordion')
+                        Forms\Components\Tabs\Tab::make(__('about_us.tabs.accordion'))
                             ->schema([
                                 Forms\Components\Repeater::make('accordion_items')
                                     ->label('')
                                     ->schema([
                                         Forms\Components\TextInput::make('title')
-                                            ->label('Title')
+                                            ->label(__('about_us.fields.accordion_title'))
                                             ->required(),
                                         Forms\Components\Textarea::make('content')
-                                            ->label('Content')
+                                            ->label(__('about_us.fields.accordion_content'))
                                             ->rows(3)
                                             ->required(),
                                     ])
@@ -87,27 +103,26 @@ class AboutUsResource extends Resource
                                     ->hidden(),
 
                                 ...collect(range(1, 4))->map(function ($i) {
-                                    return Forms\Components\Section::make('Accordion Item '.$i)
+                                    return Forms\Components\Section::make(__('about_us.accordion_section', ['number' => $i]))
                                         ->schema([
                                             Forms\Components\TextInput::make('accordion_title_'.$i)
-                                                ->label('Title'),
+                                                ->label(__('about_us.fields.accordion_title')),
                                             Forms\Components\Textarea::make('accordion_content_'.$i)
-                                                ->label('Content')
+                                                ->label(__('about_us.fields.accordion_content'))
                                                 ->rows(3),
                                         ])->collapsible();
                                 })->toArray()
                             ]),
 
-                        Forms\Components\Tabs\Tab::make('Team Members')
+                        Forms\Components\Tabs\Tab::make(__('about_us.tabs.team'))
                             ->schema([
                                 Forms\Components\Repeater::make('team_members')
-                                    ->label('')
                                     ->schema([
                                         Forms\Components\TextInput::make('name')
-                                            ->label('Member Name')
+                                            ->label(__('about_us.fields.team_member_name'))
                                             ->required(),
                                         Forms\Components\FileUpload::make('image')
-                                            ->label('Member Photo')
+                                            ->label(__('about_us.fields.team_member_image'))
                                             ->image()
                                             ->directory('team-members')
                                             ->required(),
@@ -116,20 +131,20 @@ class AboutUsResource extends Resource
                                     ->itemLabel(fn (array $state): ?string => $state['name'] ?? null),
                             ]),
 
-                        Forms\Components\Tabs\Tab::make('Testimonial')
+                        Forms\Components\Tabs\Tab::make(__('about_us.tabs.testimonial'))
                             ->schema([
                                 Forms\Components\Textarea::make('testimonial_content')
-                                    ->label('Testimonial Text')
+                                    ->label(__('about_us.fields.testimonial_content'))
                                     ->rows(3),
 
                                 Forms\Components\TextInput::make('testimonial_name')
-                                    ->label('Client Name'),
+                                    ->label(__('about_us.fields.testimonial_name')),
 
                                 Forms\Components\TextInput::make('testimonial_role')
-                                    ->label('Client Role/Position'),
+                                    ->label(__('about_us.fields.testimonial_role')),
 
                                 Forms\Components\FileUpload::make('testimonial_image')
-                                    ->label('Client Photo')
+                                    ->label(__('about_us.fields.testimonial_image'))
                                     ->image()
                                     ->directory('testimonials'),
                             ]),
@@ -142,15 +157,15 @@ class AboutUsResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('header_title')
-                    ->label('Header Title')
+                    ->label(__('about_us.fields.header_title'))
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('about_title')
-                    ->label('About Title')
+                    ->label(__('about_us.fields.about_title'))
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Last Updated')
+                    ->label(__('about_us.fields.updated_at'))
                     ->dateTime(),
             ])
             ->actions([
