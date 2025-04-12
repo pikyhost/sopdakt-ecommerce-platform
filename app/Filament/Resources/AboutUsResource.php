@@ -39,7 +39,7 @@ class AboutUsResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('about_us.navigation_group');
+        return __('Pages Settings Management');
     }
 
     public static function getPluralModelLabel(): string
