@@ -5,12 +5,15 @@ namespace App\Filament\Resources;
 use App\Models\AboutUs;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 
 class AboutUsResource extends Resource
 {
+    use Translatable;
+
     protected static ?string $model = AboutUs::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-information-circle';
@@ -26,6 +29,7 @@ class AboutUsResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Tabs::make('AboutUsContent')
+                    ->columnSpanFull()
                     ->tabs([
                         Forms\Components\Tabs\Tab::make('Header & Titles')
                             ->schema([
