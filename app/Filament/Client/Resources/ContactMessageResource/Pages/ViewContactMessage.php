@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\ContactMessageResource\Pages;
+namespace App\Filament\Client\Resources\ContactMessageResource\Pages;
 
 use App\Filament\Resources\ContactMessageResource;
 use Filament\Actions;
