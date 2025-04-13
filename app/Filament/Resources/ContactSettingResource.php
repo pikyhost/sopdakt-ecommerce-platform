@@ -14,11 +14,11 @@ class ContactSettingResource extends Resource
 {
     protected static ?string $model = ContactSetting::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-cog';
+    protected static ?string $navigationIcon = 'heroicon-o-chat-bubble-left-right';
 
     public static function getNavigationGroup(): ?string
     {
-        return __('navigation.Groups.settings');
+        return __('Settings Management');
     }
 
     public static function getNavigationLabel(): string
