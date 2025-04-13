@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ContactMessageResource\Pages;
+use App\Helpers\GeneralHelper;
 use App\Models\ContactMessage;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -14,7 +15,7 @@ class ContactMessageResource extends Resource
 {
     protected static ?string $model = ContactMessage::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-mail';
+    protected static ?string $navigationIcon = 'heroicon-o-cog';
 
     public static function form(Form $form): Form
     {
@@ -33,6 +34,18 @@ class ContactMessageResource extends Resource
                     ->required(),
                 Forms\Components\TextInput::make('ip_address')
                     ->maxLength(45),
+
+                Forms\Components\Placeholder::make('sender_country')
+                    ->label('Sender Country')
+                    ->content(function () {
+                        $countryId = GeneralHelper::getCountryId();
+                        $countryName = \App\Models\Country::find($countryId)?->name;
+
+                        return $countryName
+                            ? __('This sender is from') . ' ' . $countryName
+                            : __('Country could not be determined.');
+                    }),
+
             ]);
     }
 

@@ -12,6 +12,7 @@ class ContactForm extends Component
     public $email;
     public $subject;
     public $message;
+    public $successMessage = null;
 
     protected $rules = [
         'name' => 'required|min:3',
@@ -35,11 +36,8 @@ class ContactForm extends Component
         // Reset form fields
         $this->reset(['name', 'email', 'subject', 'message']);
 
-        // Show success notification
-        Notification::make()
-            ->title('Message Sent Successfully')
-            ->success()
-            ->send();
+        // Set success message
+        $this->successMessage = __('Your message has been sent successfully!');
 
         // You can also add email notification here if needed
     }

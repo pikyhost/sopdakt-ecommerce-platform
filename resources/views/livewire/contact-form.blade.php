@@ -1,4 +1,11 @@
 <div>
+    @if ($successMessage)
+        <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4 border-0" role="alert">
+            <i class="fa fa-check-circle me-2"></i> {{ $successMessage }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    
     <form wire:submit.prevent="submit">
         <div class="row">
             <div class="col-lg-6">
