@@ -10,7 +10,7 @@ class Setting extends Model
     protected $fillable = [
         'site_name',
         'currency_id',
-        'country_id', // ✅ added
+        'country_id',
         'tax_percentage',
         'logo_en',
         'logo_ar',

@@ -5,6 +5,7 @@
 namespace App\Notifications;
 
 use App\Models\ContactMessage;
+use App\Models\Setting;
 use App\Models\User;
 use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
@@ -48,6 +49,13 @@ class ContactMessageNotifier
                         ->markAsRead(),
                 ])
                 ->sendToDatabase(auth()->user());
+        }
+
+        $adminEmail = Setting::first()?->email;
+
+        if ($adminEmail) {
+            \Illuminate\Support\Facades\Notification::route('mail', $adminEmail)
+                ->notify(new ContactMessageMailNotification($message));
         }
     }
 }
