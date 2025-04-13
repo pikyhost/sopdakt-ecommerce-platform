@@ -2,9 +2,11 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
 use App\Models\ContactMessage;
+use App\Models\User;
+use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
+use Livewire\Component;
 
 class ContactForm extends Component
 {
@@ -21,11 +23,20 @@ class ContactForm extends Component
         'message' => 'required|string|min:10',
     ];
 
+    public function mount()
+    {
+        if (auth()->check()) {
+            $this->name = auth()->user()->name;
+            $this->email = auth()->user()->email;
+        }
+    }
+
     public function submit()
     {
         $this->validate();
 
-        ContactMessage::create([
+        // Save message
+        $message = ContactMessage::create([
             'name' => $this->name,
             'email' => $this->email,
             'subject' => $this->subject,
@@ -33,13 +44,39 @@ class ContactForm extends Component
             'ip_address' => request()->ip(),
         ]);
 
-        // Reset form fields
         $this->reset(['name', 'email', 'subject', 'message']);
+        $this->successMessage = __('contact.success_message');
 
-        // Set success message
-        $this->successMessage = __('Your message has been sent successfully!');
+        // Get admin and super admin users
+        $adminUsers = User::role(['admin', 'super_admin'])->get();
 
-        // Send notification filament database here
+        // Admin notification
+        Notification::make()
+            ->title(__('contact_message_notification.admin.title'))
+            ->success()
+            ->body(__('contact_message_notification.admin.body', ['name' => $message->name]))
+            ->actions([
+                Action::make('view')
+                    ->label(__('contact_message_notification.admin.view_button'))
+                    ->url(route('filament.admin.resources.contact-messages.view', ['record' => $message->id]))
+                    ->markAsRead(),
+            ])
+            ->sendToDatabase($adminUsers);
+
+        // User notification (only if authenticated)
+        if (auth()->check()) {
+            Notification::make()
+                ->title(__('contact_message_notification.user.title'))
+                ->success()
+                ->body(__('contact_message_notification.user.body'))
+                ->actions([
+                    Action::make('view')
+                        ->label(__('contact_message_notification.user.view_button'))
+                        ->url(route('client.contact-messages.show', ['id' => $message->id]))
+                        ->markAsRead(),
+                ])
+                ->sendToDatabase(auth()->user());
+        }
     }
 
     public function render()

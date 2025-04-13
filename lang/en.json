@@ -1,4 +1,11 @@
 {
+    "contact.success_message": "Your message has been sent successfully.",
+    "contact_message_notification.admin.title": "New Contact Message",
+    "contact_message_notification.admin.body": ":name has submitted a new contact message.",
+    "contact_message_notification.admin.view_button": "View in Panel",
+    "contact_message_notification.user.title": "Message Sent",
+    "contact_message_notification.user.body": "Your message has been sent to the administrators. You can track it below.",
+    "contact_message_notification.user.view_button": "View My Message",
     "navigation.Groups.settings": "Settings",
     "navigation.Labels.contact_settings": "Contact Settings",
 

@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Client\Resources;
 
-use App\Enums\UserRole;
 use App\Filament\Resources\ContactMessageResource\Pages;
 use App\Helpers\GeneralHelper;
 use App\Models\ContactMessage;
@@ -19,11 +18,6 @@ class ContactMessageResource extends Resource
     protected static ?string $model = ContactMessage::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-envelope-open';
-
-    public static function getNavigationGroup(): ?string
-    {
-        return __('navigation.Groups.communication');
-    }
 
     public static function getNavigationLabel(): string
     {
@@ -55,10 +49,16 @@ class ContactMessageResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
+                    ->default(function () {
+                        return auth()->user()->name;
+                    })
                     ->label(__('fields.name'))
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('email')
+                    ->default(function () {
+                        return auth()->user()->email;
+                    })
                     ->label(__('fields.email'))
                     ->email()
                     ->required()
@@ -69,19 +69,6 @@ class ContactMessageResource extends Resource
                 Forms\Components\Textarea::make('message')
                     ->label(__('fields.message'))
                     ->required(),
-                Forms\Components\TextInput::make('ip_address')
-                    ->label(__('fields.ip_address'))
-                    ->maxLength(45),
-                Forms\Components\Placeholder::make('sender_country')
-                    ->label(__('fields.sender_country'))
-                    ->content(function () {
-                        $countryId = GeneralHelper::getCountryId();
-                        $countryName = \App\Models\Country::find($countryId)?->name;
-
-                        return $countryName
-                            ? __('messages.sender_from') . ' ' . $countryName
-                            : __('messages.country_unknown');
-                    }),
             ]);
     }
 
@@ -139,6 +126,10 @@ class ContactMessageResource extends Resource
             ]);
     }
 
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()->where('user_id', auth()->id());
+    }
 
     public static function getPages(): array
     {
