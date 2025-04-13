@@ -2,7 +2,7 @@
     "contact.success_message": "تم إرسال رسالتك بنجاح.",
     "contact_message_notification.admin.title": "رسالة تواصل جديدة",
     "contact_message_notification.admin.body": "قام :name بإرسال رسالة تواصل جديدة.",
-    "contact_message_notification.admin.view_button": "عرض في لوحة التحكم",
+    "contact_message_notification.admin.view_button": "عرض",
     "contact_message_notification.user.title": "تم إرسال الرسالة",
     "contact_message_notification.user.body": "تم إرسال رسالتك إلى الإدارة. يمكنك تتبعها من الرابط التالي.",
     "contact_message_notification.user.view_button": "عرض رسالتي",
@@ -16,7 +16,7 @@
 
     "fields.key": "المفتاح",
     "fields.value": "القيمة",
-    ,
+
     "navigation.Groups.communication": "الاتصالات",
     "navigation.Labels.contact_messages": "رسائل التواصل",
 

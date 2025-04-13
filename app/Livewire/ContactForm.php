@@ -4,9 +4,9 @@ namespace App\Livewire;
 
 use App\Models\ContactMessage;
 use App\Models\User;
-use Filament\Notifications\Actions\Action;
-use Filament\Notifications\Notification;
 use Livewire\Component;
+use Filament\Notifications\Notification;
+use Filament\Notifications\Actions\Action;
 
 class ContactForm extends Component
 {
@@ -35,7 +35,6 @@ class ContactForm extends Component
     {
         $this->validate();
 
-        // Save message
         $message = ContactMessage::create([
             'name' => $this->name,
             'email' => $this->email,
@@ -47,10 +46,15 @@ class ContactForm extends Component
         $this->reset(['name', 'email', 'subject', 'message']);
         $this->successMessage = __('contact.success_message');
 
-        // Get admin and super admin users
         $adminUsers = User::role(['admin', 'super_admin'])->get();
 
-        // Admin notification
+        // Determine if sender is admin or super admin
+        $isAdminSender = auth()->check() && auth()->user()->hasAnyRole(['admin', 'super_admin']);
+
+// Get all admins and super admins
+        $adminUsers = User::role(['admin', 'super_admin'])->get();
+
+// Send notification to admins (always)
         Notification::make()
             ->title(__('contact_message_notification.admin.title'))
             ->success()
@@ -63,8 +67,8 @@ class ContactForm extends Component
             ])
             ->sendToDatabase($adminUsers);
 
-        // User notification (only if authenticated)
-        if (auth()->check()) {
+// If the sender is a client (not admin), notify them too
+        if (auth()->check() && ! $isAdminSender) {
             Notification::make()
                 ->title(__('contact_message_notification.user.title'))
                 ->success()
@@ -72,7 +76,7 @@ class ContactForm extends Component
                 ->actions([
                     Action::make('view')
                         ->label(__('contact_message_notification.user.view_button'))
-                        ->url(route('client.contact-messages.show', ['id' => $message->id]))
+                        ->url(route('filament.client.resources.contact-messages.view', ['record' => $message->id]))
                         ->markAsRead(),
                 ])
                 ->sendToDatabase(auth()->user());
