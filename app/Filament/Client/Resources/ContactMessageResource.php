@@ -12,6 +12,7 @@ use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 
 class ContactMessageResource extends Resource
 {
@@ -54,6 +55,17 @@ class ContactMessageResource extends Resource
                     ->label(__('fields.name'))
                     ->required()
                     ->maxLength(255),
+
+                PhoneInput::make('phone')
+                    ->default(fn() => auth()->user()->phone)
+                    ->enableIpLookup(true) // Enable IP-based country detection
+                    ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
+                    ->required()
+                    ->rules([
+                        'max:20', // Match database column limit
+                        'unique:users,phone', // Ensure uniqueness in the `users` table
+                    ])
+                    ->label(__('Phone Number')),
                 Forms\Components\TextInput::make('email')
                     ->default(fn() => auth()->user()->email)
                     ->columnSpanFull()

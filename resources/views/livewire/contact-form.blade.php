@@ -16,6 +16,12 @@
                 </div><!-- End .form-group -->
 
                 <div class="form-group required-field">
+                    <label for="contact-name">{{ __('Phone') }}</label>
+                    <input type="text" class="form-control" id="contact-name" wire:model="phone" required>
+                    @error('phone') <span class="text-danger">{{ $message }}</span> @enderror
+                </div><!-- End .form-group -->
+
+                <div class="form-group required-field">
                     <label for="contact-email">{{ __('Email') }}</label>
                     <input type="email" class="form-control" id="contact-email" wire:model="email" required>
                     @error('email') <span class="text-danger">{{ $message }}</span> @enderror

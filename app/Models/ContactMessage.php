@@ -18,6 +18,7 @@ class ContactMessage extends Model
         'user_id',
         'name',
         'email',
+        'phone',
         'subject',
         'message',
         'ip_address',
