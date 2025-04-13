@@ -141,8 +141,8 @@
                                     </figure>
 
                                     <div>
-                                        <h5 class="testimonial-title">{{ $about->testimonial_name ?? 'John Doe' }}</h5>
-                                        <span>{{ $about->testimonial_role ?? 'Porto Founder' }}</span>
+                                        <h5 class="testimonial-title">{{ $about->testimonial_name ?? 'Ahmed Mohsen' }}</h5>
+                                        <span>{{ $about->testimonial_role ?? 'Role X' }}</span>
                                     </div>
                                 </div><!-- End .testimonial-owner -->
                             </div><!-- End .testimonial -->

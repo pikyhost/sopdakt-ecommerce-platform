@@ -75,29 +75,6 @@ class PolicyResource extends Resource
                             ->label(__('policy.terms_of_service_ar'))
                             ->columnSpanFull(),
                     ]),
-
-                Tab::make(__('policy.about_us'))
-                    ->columnSpanFull()
-                    ->schema([
-                        MarkdownEditor::make('about_us_en')
-                            ->label(__('policy.about_us_en'))
-                            ->columnSpanFull(),
-                        MarkdownEditor::make('about_us_ar')
-                            ->label(__('policy.about_us_ar'))
-                            ->columnSpanFull(),
-                    ]),
-
-                Tab::make(__('policy.contact_us'))
-                    ->columnSpanFull()
-                    ->schema([
-                        MarkdownEditor::make('contact_us_en')
-                            ->label(__('policy.contact_us_en'))
-                            ->columnSpanFull(),
-                        MarkdownEditor::make('contact_us_ar')
-                            ->label(__('policy.contact_us_ar'))
-                            ->columnSpanFull(),
-                    ]),
-
             ]),
         ])->columns(1);
     }
@@ -128,23 +105,7 @@ class PolicyResource extends Resource
 
                 TextColumn::make('terms_of_service_ar')
                     ->label(__('policy.terms_of_service_ar'))
-                    ->limit(50),
-
-                TextColumn::make('about_us_en')
-                    ->label(__('policy.about_us_en'))
-                    ->limit(50),
-
-                TextColumn::make('about_us_ar')
-                    ->label(__('policy.about_us_ar'))
-                    ->limit(50),
-
-                TextColumn::make('contact_us_en')
-                    ->label(__('policy.contact_us_en'))
-                    ->limit(50),
-
-                TextColumn::make('contact_us_ar')
-                    ->label(__('policy.contact_us_ar'))
-                    ->limit(50),
+                    ->limit(50)
             ])
             ->actions([
                EditAction::make(),

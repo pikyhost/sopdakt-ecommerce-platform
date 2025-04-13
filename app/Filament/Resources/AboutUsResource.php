@@ -126,7 +126,7 @@ class AboutUsResource extends Resource
                                 })->toArray()
                             ]),
 
-                        Forms\Components\Tabs\Tab::make(__('Team'))
+                        Forms\Components\Tabs\Tab::make(__('about_us.tabs.team'))
                             ->schema([
                                 Forms\Components\Section::make([
                                     Forms\Components\TextInput::make('cta_text')

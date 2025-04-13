@@ -38,6 +38,7 @@ return new class extends Migration {
 
             // Team Members (consider separate table if complex team management needed)
             $table->json('team_members')->nullable();
+            $table->json('team_members_ar')->nullable();
 
             $table->string('cta_text')->nullable();
             $table->string('cta_url')->nullable();
@@ -57,34 +58,90 @@ return new class extends Migration {
         });
 
         AboutUs::updateOrCreate(['id' => 1], [
-            'about_title' => 'About Us',
-            'team_title' => 'Team',
-            'testimonial_title' => 'Testimonials',
-            'header_title' => 'Who we are',
-            'breadcrumb_home' => 'Home',
-            'breadcrumb_current' => 'About Us',
-            'about_description_1' => 'We are a forward-thinking company...',
-            'about_description_2' => 'Our goal is to innovate and lead...',
-            'accordion_title_1' => 'Company History',
-            'accordion_content_1' => 'We started in 2005 with a mission...',
-            'accordion_title_2' => 'Our Vision',
-            'accordion_content_2' => 'To be the best in class...',
-            'accordion_title_3' => 'Our Mission',
-            'accordion_content_3' => 'To deliver quality products...',
-            'accordion_title_4' => 'Fun Facts',
-            'accordion_content_4' => 'We’ve served over 1M users...',
+            // Translatable fields
+            'about_title' => [
+                'en' => 'About Us',
+                'ar' => 'من نحن',
+            ],
+            'team_title' => [
+                'en' => 'Team',
+                'ar' => 'الفريق',
+            ],
+            'testimonial_title' => [
+                'en' => 'Testimonials',
+                'ar' => 'الشهادات',
+            ],
+            'header_title' => [
+                'en' => 'Who we are',
+                'ar' => 'من نحن',
+            ],
+            'breadcrumb_home' => [
+                'en' => 'Home',
+                'ar' => 'الرئيسية',
+            ],
+            'breadcrumb_current' => [
+                'en' => 'About Us',
+                'ar' => 'من نحن',
+            ],
+            'about_description_1' => [
+                'en' => 'We are a forward-thinking company...',
+                'ar' => 'نحن شركة متقدمة التفكير...',
+            ],
+            'about_description_2' => [
+                'en' => 'Our goal is to innovate and lead...',
+                'ar' => 'هدفنا هو الابتكار والريادة...',
+            ],
+            'accordion_title_1' => [
+                'en' => 'Company History',
+                'ar' => 'تاريخ الشركة',
+            ],
+            'accordion_content_1' => [
+                'en' => 'We started in 2005 with a mission...',
+                'ar' => 'بدأنا في عام 2005 مع مهمة...',
+            ],
+            'accordion_title_2' => [
+                'en' => 'Our Vision',
+                'ar' => 'رؤيتنا',
+            ],
+            'accordion_content_2' => [
+                'en' => 'To be the best in class...',
+                'ar' => 'لنكون الأفضل في فئتنا...',
+            ],
+            'accordion_title_3' => [
+                'en' => 'Our Mission',
+                'ar' => 'مهمتنا',
+            ],
+            'accordion_content_3' => [
+                'en' => 'To deliver quality products...',
+                'ar' => 'لتقديم منتجات عالية الجودة...',
+            ],
+            'accordion_title_4' => [
+                'en' => 'Fun Facts',
+                'ar' => 'حقائق ممتعة',
+            ],
+            'accordion_content_4' => [
+                'en' => 'We’ve served over 1M users...',
+                'ar' => 'لقد خدمنا أكثر من مليون مستخدم...',
+            ],
+
+            // Non-translatable fields
             'team_members' => [
                 ['name' => 'John Doe', 'image' => 'team/team1.jpg'],
                 ['name' => 'Jessica Doe', 'image' => 'team/team2.jpg'],
                 ['name' => 'Rick Edward', 'image' => 'team/team3.jpg'],
                 ['name' => 'Melinda Wolosky', 'image' => 'team/team4.jpg'],
             ],
+            'team_members_ar' => [
+                ['name' => 'جون دو', 'image' => 'team/team1.jpg'],
+                ['name' => 'جيسيكا دو', 'image' => 'team/team2.jpg'],
+                ['name' => 'ريك إدوارد', 'image' => 'team/team3.jpg'],
+                ['name' => 'ميليندا وولوسكي', 'image' => 'team/team4.jpg'],
+            ],
             'testimonial_content' => 'Long established fact...',
             'testimonial_name' => 'John Doe',
             'testimonial_role' => 'Porto Founder',
             'testimonial_image' => 'clients/client1.jpg',
         ]);
-
     }
 
     public function down(): void {
