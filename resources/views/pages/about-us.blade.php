@@ -122,7 +122,7 @@
                 </div>
             </div>
         @endif
-        
+
     @if($about->testimonial_content || true)
             <div class="testimonials-section">
                 <div class="container">
