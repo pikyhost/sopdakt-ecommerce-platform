@@ -4,8 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Models\AboutUs;
 use Filament\Forms;
-use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\TextInput;
+
 use Filament\Forms\Form;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
@@ -139,22 +138,19 @@ class AboutUsResource extends Resource
                                     ->maxLength(255),
 
                                 Forms\Components\Repeater::make('team_members')
-                                    ->label(__('about_us.tabs.team'))
+                                    ->label('')
                                     ->schema([
                                         Forms\Components\TextInput::make('name')
-                                            ->label(__('about_us.fields.team_member_name'))
+                                            ->label('Member Name')
                                             ->required(),
-
                                         Forms\Components\FileUpload::make('image')
-                                            ->label(__('about_us.fields.team_member_image'))
+                                            ->label('Member Photo')
                                             ->image()
-                                            ->required()
-                                            ->columnSpanFull(),
+                                            ->required(),
                                     ])
                                     ->columns(2)
-                                    ->itemLabel(fn (array $state): ?string => $state['name'] ?? null)
-                                    ->default([]), // Default empty array
-                            ]),
+                                    ->itemLabel(fn (array $state): ?string => $state['name'] ?? null),
+                            ]) ->columns(2),
 
                         Forms\Components\Tabs\Tab::make(__('about_us.tabs.testimonial'))
                             ->schema([
@@ -173,7 +169,6 @@ class AboutUsResource extends Resource
                                     ->image()
                                     ->directory('clients')
                                     ->preserveFilenames()
-                                    ->multiple(false) // ✅ ensure single upload
                                     ->maxFiles(1),
                             ]),
                     ])

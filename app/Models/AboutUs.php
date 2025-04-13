@@ -16,7 +16,6 @@ class AboutUs extends Model
 
     protected $casts = [
         'team_members' => 'array',
-        'testimonial_image' => 'string',
     ];
 
     public $translatable = [
@@ -46,39 +45,39 @@ class AboutUs extends Model
         'cta_text',
     ];
 
-    public function getTeamMembersAttribute($value)
-    {
-        $localeValue = $this->getTranslations('team_members')[app()->getLocale()] ?? [];
+//    public function getTeamMembersAttribute($value)
+//    {
+//        $localeValue = $this->getTranslations('team_members')[app()->getLocale()] ?? [];
+//
+//        // Decode if it's a JSON string
+//        if (is_string($localeValue)) {
+//            $decoded = json_decode($localeValue, true);
+//        } else {
+//            $decoded = $localeValue;
+//        }
+//
+//        if (!is_array($decoded)) {
+//            return [];
+//        }
+//
+//        // If it's already a list (like in Arabic)
+//        if (array_is_list($decoded)) {
+//            return $decoded;
+//        }
+//
+//        // If it's an associative object (like English version), convert to list
+//        return collect($decoded)->map(function ($member) {
+//            return [
+//                'name' => $member['name'] ?? '',
+//                'image' => is_array($member['image']) ? Arr::first($member['image']) : $member['image'],
+//                'position' => $member['position'] ?? null,
+//            ];
+//        })->values()->toArray();
+//    }
 
-        // Decode if it's a JSON string
-        if (is_string($localeValue)) {
-            $decoded = json_decode($localeValue, true);
-        } else {
-            $decoded = $localeValue;
-        }
-
-        if (!is_array($decoded)) {
-            return [];
-        }
-
-        // If it's already a list (like in Arabic)
-        if (array_is_list($decoded)) {
-            return $decoded;
-        }
-
-        // If it's an associative object (like English version), convert to list
-        return collect($decoded)->map(function ($member) {
-            return [
-                'name' => $member['name'] ?? '',
-                'image' => is_array($member['image']) ? Arr::first($member['image']) : $member['image'],
-                'position' => $member['position'] ?? null,
-            ];
-        })->values()->toArray();
-    }
-
-    // Mutator for team members to ensure proper JSON
-    public function setTeamMembersAttribute($value)
-    {
-        $this->attributes['team_members'] = is_array($value) ? json_encode($value) : $value;
-    }
+//    // Mutator for team members to ensure proper JSON
+//    public function setTeamMembersAttribute($value)
+//    {
+//        $this->attributes['team_members'] = is_array($value) ? json_encode($value) : $value;
+//    }
 }
