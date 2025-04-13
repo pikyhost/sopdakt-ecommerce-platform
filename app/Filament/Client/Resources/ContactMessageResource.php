@@ -3,7 +3,6 @@
 namespace App\Filament\Client\Resources;
 
 use App\Filament\Resources\ContactMessageResource\Pages;
-use App\Helpers\GeneralHelper;
 use App\Models\ContactMessage;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -48,6 +47,10 @@ class ContactMessageResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\Hidden::make('user_id')->default(function (){
+                    return auth()->id();
+                }),
+                
                 Forms\Components\TextInput::make('name')
                     ->default(function () {
                         return auth()->user()->name;
@@ -108,20 +111,6 @@ class ContactMessageResource extends Resource
 
                     Components\TextEntry::make('message')
                         ->label(__('fields.message')),
-
-                    Components\TextEntry::make('ip_address')
-                        ->label(__('fields.ip_address')),
-
-                    Components\TextEntry::make('sender_country')
-                        ->label(__('fields.sender_country'))
-                        ->state(function ($record) {
-                            $countryId = GeneralHelper::getCountryId(); // or from $record if stored
-                            $countryName = \App\Models\Country::find($countryId)?->name;
-
-                            return $countryName
-                                ? __('messages.sender_from') . ' ' . $countryName
-                                : __('messages.country_unknown');
-                        }),
                 ])
             ]);
     }

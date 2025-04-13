@@ -54,6 +54,9 @@ class ContactMessageResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\Hidden::make('user_id')->default(function (){
+                    return auth()->id();
+                }),
                 Forms\Components\TextInput::make('name')
                     ->label(__('fields.name'))
                     ->required()
@@ -108,6 +111,7 @@ class ContactMessageResource extends Resource
     public static function infolist(Infolist $infolist): Infolist
     {
         return $infolist
+            ->columns(2)
             ->schema([
                 Components\Section::make([
                     Components\TextEntry::make('name')
@@ -115,13 +119,6 @@ class ContactMessageResource extends Resource
 
                     Components\TextEntry::make('email')
                         ->label(__('fields.email')),
-
-                    Components\TextEntry::make('subject')
-                        ->label(__('fields.subject')),
-
-                    Components\TextEntry::make('message')
-                        ->label(__('fields.message')),
-
                     Components\TextEntry::make('ip_address')
                         ->label(__('fields.ip_address')),
 
@@ -135,6 +132,14 @@ class ContactMessageResource extends Resource
                                 ? __('messages.sender_from') . ' ' . $countryName
                                 : __('messages.country_unknown');
                         }),
+
+                    Components\TextEntry::make('subject')
+                        ->columnSpanFull()
+                        ->label(__('fields.subject')),
+
+                    Components\TextEntry::make('message')
+                        ->columnSpanFull()
+                        ->label(__('fields.message')),
                 ])
             ]);
     }

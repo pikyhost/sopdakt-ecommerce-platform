@@ -15,6 +15,7 @@ class ContactMessage extends Model
      * @var array
      */
     protected $fillable = [
+        'user_id',
         'name',
         'email',
         'subject',
@@ -41,6 +42,12 @@ class ContactMessage extends Model
     {
         return 'contact_messages';
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
 
     /**
      * Scope a query to filter by search term.
