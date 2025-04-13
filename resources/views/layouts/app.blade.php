@@ -1055,6 +1055,10 @@
                                     <a class="nav-link {{ request()->is(app()->getLocale().'/contact-us') ? 'active' : '' }}"
                                        href="{{ url('contact-us') }}" style="font-size: 1.4rem;">Contact</a>
                                 </li>
+                                <li class="nav-item mx-3">
+                                    <a class="nav-link {{ request()->is(app()->getLocale().'/about-us') ? 'active' : '' }}"
+                                       href="{{ url('about-us') }}" style="font-size: 1.4rem;">About US</a>
+                                </li>
                             </ul>
                         </div>
                     </div>
