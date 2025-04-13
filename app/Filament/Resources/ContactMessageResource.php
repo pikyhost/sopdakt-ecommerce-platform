@@ -120,11 +120,11 @@ class ContactMessageResource extends Resource
                     ->schema([
                         Components\TextEntry::make('user.name')
                             ->badge()
-                            ->color('success')
-                            ->url(function ($record) {
-                                return url('/admin/users/'.$record->user_id);
-                            })
-                            ->label(__('From Account')),
+                            ->label(__('From Account'))
+                            ->url(function (ContactMessage $record) {
+                                return UserResource::getUrl('view', ['record' => $record->user_id]);
+                            }, true)
+                            ->visible(fn ($record) => $record->user_id),
 
                         Components\TextEntry::make('name')
                             ->label(__('fields.name')),
