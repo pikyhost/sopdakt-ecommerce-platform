@@ -119,7 +119,6 @@ class ContactMessageResource extends Resource
                 Components\Section::make()
                     ->schema([
                         Components\TextEntry::make('user.name')
-                            ->inlineLabel()
                             ->url(function ($record) {
                                 return url('/admin/users/'.$record->user_id);
                             })
@@ -129,20 +128,15 @@ class ContactMessageResource extends Resource
                             ->label(__('fields.name')),
 
                         PhoneEntry::make('phone')
-                            ->inlineLabel()
-                            ->inlineLabel()
                             ->label(__('Phone number')),
 
                         Components\TextEntry::make('email')
-                            ->inlineLabel()
                             ->label(__('fields.email')),
 
                         Components\TextEntry::make('ip_address')
-                            ->inlineLabel()
                             ->label(__('fields.ip_address')),
 
                         Components\TextEntry::make('sender_country')
-                            ->inlineLabel()
                             ->label(__('fields.sender_country'))
                             ->state(function ($record) {
                                 $countryId = GeneralHelper::getCountryId(); // or from $record if stored
@@ -152,8 +146,7 @@ class ContactMessageResource extends Resource
                                     ? __('messages.sender_from') . ' ' . $countryName
                                     : __('messages.country_unknown');
                             }),
-                    ])
-                    ->columns(2)
+                    ])->columns(2)
                     ->heading(__('Sender Information')),
 
                 Components\Section::make()
