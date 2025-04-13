@@ -2,7 +2,8 @@
 
 namespace App\Filament\Client\Resources;
 
-use App\Filament\Resources\ContactMessageResource\Pages;
+use App\Filament\Client\Resources\ContactMessageResource\Pages\ManageContactMessages;
+use App\Filament\Client\Resources\ContactMessageResource\Pages\ViewContactMessage;
 use App\Models\ContactMessage;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -123,8 +124,8 @@ class ContactMessageResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ManageContactMessages::route('/'),
-            'view' => Pages\ViewContactMessage::route('/{record}'),
+            'index' => ManageContactMessages::route('/'),
+            'view' => ViewContactMessage::route('/{record}'),
         ];
     }
 }
