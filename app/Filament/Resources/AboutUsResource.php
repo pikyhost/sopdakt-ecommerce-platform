@@ -130,29 +130,29 @@ class AboutUsResource extends Resource
                             ->schema([
                                 Forms\Components\Section::make([
                                     Forms\Components\TextInput::make('cta_text')
-                                        ->label('CTA Text')
+                                        ->label(__('CTA Text'))
                                         ->maxLength(255),
 
                                     Forms\Components\TextInput::make('cta_url')
-                                        ->label('CTA Link')
+                                        ->label(__('CTA Link'))
                                         ->url()
                                         ->maxLength(255),
                                 ])
                                     ->columns(2)
-                                    ->description('Add the text and link for the Call To Action (CTA) section.'),
+                                    ->description(__('Add the text and link for the Call To Action (CTA) section.')),
 
-                                Forms\Components\Section::make('Team Members (English)')
-                                    ->description('Add team members in English. Each member should have a name and an image.')
+                                Forms\Components\Section::make(__('Team Members (English)'))
+                                    ->description(__('Add team members in English. Each member should have a name and an image.'))
                                     ->schema([
                                         Forms\Components\Repeater::make('team_members')
                                             ->label('') // Label omitted for clarity
                                             ->schema([
                                                 Forms\Components\TextInput::make('name')
-                                                    ->label('Name')
+                                                    ->label(__('Name'))
                                                     ->required(),
 
                                                 Forms\Components\FileUpload::make('image')
-                                                    ->label('Image')
+                                                    ->label(__('Image'))
                                                     ->image()
                                                     ->required(),
                                             ])
@@ -160,19 +160,18 @@ class AboutUsResource extends Resource
                                             ->itemLabel(fn (array $state): ?string => $state['name'] ?? null),
                                     ]),
 
-                                Forms\Components\Section::make('Team Members (Arabic)')
-                                    ->description('Add team members in Arabic. Structure should mirror the English team, but use Arabic names.')
+                                Forms\Components\Section::make(__('Team Members (Arabic)'))
+                                    ->description(__('Add team members in Arabic. Structure should mirror the English team, but use Arabic names.'))
                                     ->schema([
                                         Forms\Components\Repeater::make('team_members_ar')
                                             ->label('') // Label omitted for clarity
                                             ->schema([
                                                 Forms\Components\TextInput::make('name')
-                                                    ->label('الاسم')
+                                                    ->label(__('Name')) // Kept in Arabic as per your original
                                                     ->required(),
 
                                                 Forms\Components\FileUpload::make('image')
-                                                    ->label('الصورة')
-                                                    ->image()
+                                                    ->label(__('Image'))                                                    ->image()
                                                     ->required(),
                                             ])
                                             ->columns(2)
