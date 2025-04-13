@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
+use Ysfkaya\FilamentPhoneInput\Infolists\PhoneEntry;
 
 class ContactMessageResource extends Resource
 {
@@ -57,6 +58,7 @@ class ContactMessageResource extends Resource
                     ->maxLength(255),
 
                 PhoneInput::make('phone')
+                    ->columnSpanFull()
                     ->default(fn() => auth()->user()->phone)
                     ->enableIpLookup(true) // Enable IP-based country detection
                     ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
@@ -111,6 +113,9 @@ class ContactMessageResource extends Resource
                 Components\Section::make([
                     Components\TextEntry::make('name')
                         ->label(__('fields.name')),
+
+                    PhoneEntry::make('phone')
+                        ->label(__('Phone number')),
 
                     Components\TextEntry::make('email')
                         ->label(__('fields.email')),
