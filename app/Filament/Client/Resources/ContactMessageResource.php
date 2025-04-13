@@ -50,7 +50,7 @@ class ContactMessageResource extends Resource
                 Forms\Components\Hidden::make('user_id')->default(function (){
                     return auth()->id();
                 }),
-                
+
                 Forms\Components\TextInput::make('name')
                     ->default(function () {
                         return auth()->user()->name;
