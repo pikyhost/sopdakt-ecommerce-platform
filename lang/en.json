@@ -10,6 +10,21 @@
     "navigation.Labels.contact_settings": "Contact Settings",
     "Landing Page Settings": "Landing Page Settings",
 
+    "ContactMessage.Subject": "New Contact Message",
+    "ContactMessage.Greeting": "Hello!",
+    "ContactMessage.Intro": "A new contact message has been submitted:",
+    "ContactMessage.Name": "**Name:**",
+    "ContactMessage.Email": "**Email:**",
+    "ContactMessage.Phone": "**Phone:**",
+    "ContactMessage.SubjectLabel": "**Subject:**",
+    "ContactMessage.Message": "**Message:**",
+    "ContactMessage.IP": "IP Address:",
+    "ContactMessage.NotAvailable": "N/A",
+
+    "Country.FromPrefix": "From Country:",
+    "Country.SenderFrom": "Sender from",
+    "Country.Unknown": "Unknown country",
+
     "models.contact_setting.singular": "Contact Setting",
     "models.contact_setting.plural": "Contact Settings",
     "models.contact_setting.label": "Setting",

@@ -13,6 +13,21 @@
     "Message Details": "تفاصيل الرسالة",
     "From Account": "من حساب",
 
+    "ContactMessage.Subject": "رسالة تواصل جديدة",
+    "ContactMessage.Greeting": "مرحباً!",
+    "ContactMessage.Intro": "تم إرسال رسالة تواصل جديدة:",
+    "ContactMessage.Name": "**الاسم:**",
+    "ContactMessage.Email": "**البريد الإلكتروني:**",
+    "ContactMessage.Phone": "**رقم الهاتف:**",
+    "ContactMessage.SubjectLabel": "**الموضوع:**",
+    "ContactMessage.Message": "**الرسالة:**",
+    "ContactMessage.IP": "عنوان IP:",
+    "ContactMessage.NotAvailable": "غير متوفر",
+
+    "Country.FromPrefix": "من الدولة:",
+    "Country.SenderFrom": "مرسل من",
+    "Country.Unknown": "دولة غير معروفة",
+
     "models.contact_setting.singular": "إعداد تواصل",
     "models.contact_setting.plural": "إعدادات التواصل",
     "models.contact_setting.label": "إعداد",

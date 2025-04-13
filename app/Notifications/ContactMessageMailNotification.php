@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Helpers\GeneralHelper;
 use App\Models\ContactMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -23,15 +24,16 @@ class ContactMessageMailNotification extends Notification
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('New Contact Message')
-            ->greeting('Hello!')
-            ->line('A new contact message has been submitted:')
-            ->line('**Name:** ' . $this->message->name)
-            ->line('**Email:** ' . $this->message->email)
-            ->line('**Phone:** ' . $this->message->phone)
-            ->line('**Subject:** ' . ($this->message->subject ?? 'N/A'))
-            ->line('**Message:**')
+            ->subject(__('ContactMessage.Subject'))
+            ->greeting(__('ContactMessage.Greeting'))
+            ->line(__('ContactMessage.Intro'))
+            ->line(__('ContactMessage.Name') . ' ' . $this->message->name)
+            ->line(__('ContactMessage.Email') . ' ' . $this->message->email)
+            ->line(__('ContactMessage.Phone') . ' ' . $this->message->phone)
+            ->line(__('ContactMessage.SubjectLabel') . ' ' . ($this->message->subject ?? __('ContactMessage.NotAvailable')))
+            ->line(__('ContactMessage.Message'))
             ->line($this->message->message)
-            ->line('IP Address: ' . $this->message->ip_address);
+            ->line(__('ContactMessage.IP') . ' ' . $this->message->ip_address)
+            ->line(__('Country.FromPrefix') . ' ' . GeneralHelper::getSenderCountryText());
     }
 }

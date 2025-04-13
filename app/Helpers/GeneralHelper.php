@@ -28,6 +28,17 @@ class GeneralHelper
         return self::$countryId;
     }
 
+    public static function getSenderCountryText(): string
+    {
+        $countryId = self::getCountryId();
+        $countryName = \App\Models\Country::find($countryId)?->name;
+
+        return $countryName
+            ? __('messages.sender_from') . ' ' . $countryName
+            : __('messages.country_unknown');
+    }
+
+
     private static function getCurrencyCode(?int $currencyId = null): string
     {
         $currencyId ??= Cache::rememberForever('default_currency_id', fn () => Setting::getSetting('currency_id'));
