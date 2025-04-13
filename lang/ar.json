@@ -11,6 +11,7 @@
     "Sender Information": "معلومات المرسل",
     "Landing Page Settings": "إعدادات صفحة اللاندنج",
     "Message Details": "تفاصيل الرسالة",
+    "From Account": "من حساب",
 
     "models.contact_setting.singular": "إعداد تواصل",
     "models.contact_setting.plural": "إعدادات التواصل",

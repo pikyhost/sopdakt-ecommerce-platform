@@ -119,6 +119,8 @@ class ContactMessageResource extends Resource
                 Components\Section::make()
                     ->schema([
                         Components\TextEntry::make('user.name')
+                            ->badge()
+                            ->color('success')
                             ->url(function ($record) {
                                 return url('/admin/users/'.$record->user_id);
                             })
