@@ -66,52 +66,64 @@
             </div>
         </div>
 
-        @if($about->team_members)
+        @if ($about->team_members || $about->team_members_ar)
+            @php
+                $locale = app()->getLocale();
+
+                $team = $locale === 'ar' ? $about->team_members_ar : $about->team_members;
+
+                $staticTeamMembers = [
+                    ['name' => 'John Doe', 'image' => 'assets/images/demoes/demo10/team/team2.jpg'],
+                    ['name' => 'Jessica Doe', 'image' => 'assets/images/demoes/demo10/team/team1.jpg'],
+                    ['name' => 'Rick Edward Doe', 'image' => 'assets/images/demoes/demo10/team/team3.jpg'],
+                    ['name' => 'Melinda Wolosky', 'image' => 'assets/images/demoes/demo10/team/team4.jpg'],
+                ];
+
+                $teamMembersToShow = is_array($team) && count($team) > 0 ? $team : $staticTeamMembers;
+            @endphp
+
             <div class="team-section">
                 <div class="container text-center">
-                    <h2 class="about-title text-left font4">{{ $about->team_title ?? 'ABOUT US' }}</h2>
+                    <h2 class="about-title text-left font4">{{ $about->team_title ?? 'Our Team' }}</h2>
 
                     <div class="row justify-content-center">
-                        @php
-                            $staticTeamMembers = [
-                                ['name' => 'John Doe', 'image' => 'assets/images/demoes/demo10/team/team2.jpg'],
-                                ['name' => 'Jessica Doe', 'image' => 'assets/images/demoes/demo10/team/team1.jpg'],
-                                ['name' => 'Rick Edward Doe', 'image' => 'assets/images/demoes/demo10/team/team3.jpg'],
-                                ['name' => 'Melinda Wolosky', 'image' => 'assets/images/demoes/demo10/team/team4.jpg']
-                            ];
+                        @foreach ($teamMembersToShow as $index => $member)
+                            @php
+                                $name = $member['name'] ?? $staticTeamMembers[$index]['name'];
+                                $imagePath = $member['image'] ?? $staticTeamMembers[$index]['image'];
+                                $imageUrl = Str::startsWith($imagePath, 'http') || Str::startsWith($imagePath, 'assets/')
+                                    ? asset($imagePath)
+                                    : Storage::url($imagePath);
+                            @endphp
 
-                            $teamMembersToShow = count($about->team_members) > 0 ? $about->team_members : $staticTeamMembers;
-                        @endphp
-
-                        @foreach($teamMembersToShow as $index => $member)
                             <div class="col-md-3 col-6">
                                 <div class="team-info mb-3">
                                     <figure>
                                         <a href="#">
-                                            <img src="{{ isset($member['image']) ? Storage::url($member['image']) : asset($staticTeamMembers[$index]['image'] ?? 'assets/images/demoes/demo10/team/team1.jpg') }}"
-                                                 data-zoom-image="{{ isset($member['image']) ? Storage::url($member['image']) : asset($staticTeamMembers[$index]['image'] ?? 'assets/images/demoes/demo10/team/team1.jpg') }}"
+                                            <img src="{{ $imageUrl }}"
+                                                 data-zoom-image="{{ $imageUrl }}"
                                                  class="w-100" width="270" height="319" alt="Team" />
                                         </a>
 
                                         <span class="prod-full-screen">
-                                            <i class="fas fa-search"></i>
-                                        </span>
+                                    <i class="fas fa-search"></i>
+                                </span>
                                     </figure>
 
-                                    <h5 class="team-name text-center mb-0">{{ $member['name'] ?? $staticTeamMembers[$index]['name'] }}</h5>
+                                    <h5 class="team-name text-center mb-0">{{ $name }}</h5>
                                 </div>
-                            </div><!-- End .col-lg-4 -->
+                            </div>
                         @endforeach
-                    </div><!-- End .row -->
+                    </div>
 
-                    @if($about?->cta_text && $about?->cta_url)
+                    @if ($about?->cta_text && $about?->cta_url)
                         <a class="btn font4" href="{{ $about->cta_url }}">{{ $about->cta_text }}</a>
                     @endif
                 </div>
             </div>
         @endif
-
-        @if($about->testimonial_content || true)
+        
+    @if($about->testimonial_content || true)
             <div class="testimonials-section">
                 <div class="container">
                     <h2 class="about-title font4 text-center">{{ $about->testimonial_title ?? 'TESTIMONIALS' }}</h2>

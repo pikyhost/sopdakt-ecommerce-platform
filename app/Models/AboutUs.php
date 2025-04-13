@@ -15,7 +15,8 @@ class AboutUs extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'team_members' => 'array',
+        'team_members' => 'array', // English default
+        'team_members_ar' => 'array', // Add it at new migration
     ];
 
     public $translatable = [
@@ -36,7 +37,6 @@ class AboutUs extends Model
         'accordion_content_3',
         'accordion_title_4',
         'accordion_content_4',
-        'team_members', // Each name in the array will be translatable
         'testimonial_content',
         'testimonial_name',
         'testimonial_role',
@@ -44,40 +44,4 @@ class AboutUs extends Model
         'meta_description',
         'cta_text',
     ];
-
-//    public function getTeamMembersAttribute($value)
-//    {
-//        $localeValue = $this->getTranslations('team_members')[app()->getLocale()] ?? [];
-//
-//        // Decode if it's a JSON string
-//        if (is_string($localeValue)) {
-//            $decoded = json_decode($localeValue, true);
-//        } else {
-//            $decoded = $localeValue;
-//        }
-//
-//        if (!is_array($decoded)) {
-//            return [];
-//        }
-//
-//        // If it's already a list (like in Arabic)
-//        if (array_is_list($decoded)) {
-//            return $decoded;
-//        }
-//
-//        // If it's an associative object (like English version), convert to list
-//        return collect($decoded)->map(function ($member) {
-//            return [
-//                'name' => $member['name'] ?? '',
-//                'image' => is_array($member['image']) ? Arr::first($member['image']) : $member['image'],
-//                'position' => $member['position'] ?? null,
-//            ];
-//        })->values()->toArray();
-//    }
-
-//    // Mutator for team members to ensure proper JSON
-//    public function setTeamMembersAttribute($value)
-//    {
-//        $this->attributes['team_members'] = is_array($value) ? json_encode($value) : $value;
-//    }
 }

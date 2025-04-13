@@ -1,4 +1,8 @@
 {
+    "Team": "الفريق",
+    "CTA Text": "نص الدعوة للعمل",
+    "CTA Link": "رابط الدعوة للعمل",
+    "Name": "الاسم",
     "about_us.navigation_label": "من نحن",
     "about_us.model_label": "محتوى من نحن",
     "about_us.navigation_group": "إدارة المحتوى",
@@ -9,9 +13,7 @@
     "about_us.tabs.team": "فريق العمل",
     "about_us.tabs.testimonial": "آراء العملاء",
 
-    "CTA Text": "نص الحث على الإجراء",
     "Enter call-to-action text": "أدخل نص الحث على الإجراء",
-    "CTA Link": "رابط الحث على الإجراء",
     "Enter call-to-action URL": "أدخل رابط الحث على الإجراء",
 
     "about_us.fields.header_title": "عنوان الصفحة الرئيسي",
@@ -532,7 +534,6 @@
             "your_rating": "تقييمك"
         }
     },
-    "product": "المنتج",
     "Select Product": "اختر اسم المنتج",
     "Select User": "اختر اسم المستخدم",
     "User Name": "اسم المستحدم",
@@ -930,7 +931,6 @@
     "Countries Management" : "إدارة قائمة الدول",
     "Shipping & Countries" : "الشحن والبلدان",
     "ID": "المعرف",
-    "Name": "الاسم",
     "Email address": "عنوان البريد الإلكتروني",
     "profile.phone": "رقم الهاتف",
     "profile.address": "العنوان",

@@ -126,31 +126,59 @@ class AboutUsResource extends Resource
                                 })->toArray()
                             ]),
 
-                        Forms\Components\Tabs\Tab::make(__('about_us.tabs.team'))
+                        Forms\Components\Tabs\Tab::make(__('Team'))
                             ->schema([
-                                Forms\Components\TextInput::make('cta_text')
-                                    ->label(__('CTA Text'))
-                                    ->maxLength(255),
+                                Forms\Components\Section::make([
+                                    Forms\Components\TextInput::make('cta_text')
+                                        ->label('CTA Text')
+                                        ->maxLength(255),
 
-                                Forms\Components\TextInput::make('cta_url')
-                                    ->label(__('CTA Link'))
-                                    ->url()
-                                    ->maxLength(255),
-
-                                Forms\Components\Repeater::make('team_members')
-                                    ->label('')
-                                    ->schema([
-                                        Forms\Components\TextInput::make('name')
-                                            ->label('Member Name')
-                                            ->required(),
-                                        Forms\Components\FileUpload::make('image')
-                                            ->label('Member Photo')
-                                            ->image()
-                                            ->required(),
-                                    ])
+                                    Forms\Components\TextInput::make('cta_url')
+                                        ->label('CTA Link')
+                                        ->url()
+                                        ->maxLength(255),
+                                ])
                                     ->columns(2)
-                                    ->itemLabel(fn (array $state): ?string => $state['name'] ?? null),
-                            ]) ->columns(2),
+                                    ->description('Add the text and link for the Call To Action (CTA) section.'),
+
+                                Forms\Components\Section::make('Team Members (English)')
+                                    ->description('Add team members in English. Each member should have a name and an image.')
+                                    ->schema([
+                                        Forms\Components\Repeater::make('team_members')
+                                            ->label('') // Label omitted for clarity
+                                            ->schema([
+                                                Forms\Components\TextInput::make('name')
+                                                    ->label('Name')
+                                                    ->required(),
+
+                                                Forms\Components\FileUpload::make('image')
+                                                    ->label('Image')
+                                                    ->image()
+                                                    ->required(),
+                                            ])
+                                            ->columns(2)
+                                            ->itemLabel(fn (array $state): ?string => $state['name'] ?? null),
+                                    ]),
+
+                                Forms\Components\Section::make('Team Members (Arabic)')
+                                    ->description('Add team members in Arabic. Structure should mirror the English team, but use Arabic names.')
+                                    ->schema([
+                                        Forms\Components\Repeater::make('team_members_ar')
+                                            ->label('') // Label omitted for clarity
+                                            ->schema([
+                                                Forms\Components\TextInput::make('name')
+                                                    ->label('الاسم')
+                                                    ->required(),
+
+                                                Forms\Components\FileUpload::make('image')
+                                                    ->label('الصورة')
+                                                    ->image()
+                                                    ->required(),
+                                            ])
+                                            ->columns(2)
+                                            ->itemLabel(fn (array $state): ?string => $state['name'] ?? null),
+                                    ]),
+                            ]),
 
                         Forms\Components\Tabs\Tab::make(__('about_us.tabs.testimonial'))
                             ->schema([
