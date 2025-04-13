@@ -4,7 +4,7 @@
     "contact_message_notification.admin.body": "قام :name بإرسال رسالة تواصل جديدة.",
     "contact_message_notification.admin.view_button": "عرض",
     "contact_message_notification.user.title": "تم إرسال الرسالة",
-    "contact_message_notification.user.body": "تم إرسال رسالتك إلى الإدارة. يمكنك تتبعها من الرابط التالي.",
+    "contact_message_notification.user.body": "تم إرسال رسالتك إلى الإدارة. يمكنك رؤيتها من الرابط التالي.",
     "contact_message_notification.user.view_button": "عرض رسالتي",
     "navigation.Groups.settings": "الإعدادات",
     "navigation.Labels.contact_settings": "إعدادات التواصل",
