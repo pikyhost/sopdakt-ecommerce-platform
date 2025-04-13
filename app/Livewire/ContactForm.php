@@ -39,7 +39,7 @@ class ContactForm extends Component
         // Set success message
         $this->successMessage = __('Your message has been sent successfully!');
 
-        // You can also add email notification here if needed
+        // Send notification filament database here
     }
 
     public function render()

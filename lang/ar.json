@@ -1,4 +1,34 @@
 {
+    "navigation.Groups.settings": "الإعدادات",
+    "navigation.Labels.contact_settings": "إعدادات التواصل",
+
+    "models.contact_setting.singular": "إعداد تواصل",
+    "models.contact_setting.plural": "إعدادات التواصل",
+    "models.contact_setting.label": "إعداد",
+    "models.contact_setting.plural_model": "الإعدادات",
+
+    "fields.key": "المفتاح",
+    "fields.value": "القيمة",
+    ,
+    "navigation.Groups.communication": "الاتصالات",
+    "navigation.Labels.contact_messages": "رسائل التواصل",
+
+    "models.contact_message.singular": "رسالة تواصل",
+    "models.contact_message.plural": "رسائل التواصل",
+    "models.contact_message.label": "الرسالة",
+    "models.contact_message.plural_model": "الرسائل",
+
+    "fields.name": "الاسم",
+    "fields.email": "البريد الإلكتروني",
+    "fields.subject": "الموضوع",
+    "fields.message": "الرسالة",
+    "fields.ip_address": "عنوان IP",
+    "fields.sender_country": "بلد المرسل",
+
+    "messages.sender_from": "هذا المرسل من",
+    "messages.country_unknown": "تعذر تحديد البلد.",
+
+    "actions.view": "عرض",
     "Team": "الفريق",
     "CTA Text": "نص CTA",
     "CTA Link": "رابط CTA",

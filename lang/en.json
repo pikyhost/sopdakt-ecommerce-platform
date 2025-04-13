@@ -1,4 +1,34 @@
 {
+    "navigation.Groups.settings": "Settings",
+    "navigation.Labels.contact_settings": "Contact Settings",
+
+    "models.contact_setting.singular": "Contact Setting",
+    "models.contact_setting.plural": "Contact Settings",
+    "models.contact_setting.label": "Setting",
+    "models.contact_setting.plural_model": "Settings",
+
+    "fields.key": "Key",
+    "fields.value": "Value",
+
+    "navigation.Groups.communication": "Communication",
+    "navigation.Labels.contact_messages": "Contact Messages",
+
+    "models.contact_message.singular": "Contact Message",
+    "models.contact_message.plural": "Contact Messages",
+    "models.contact_message.label": "Message",
+    "models.contact_message.plural_model": "Messages",
+
+    "fields.name": "Name",
+    "fields.email": "Email",
+    "fields.subject": "Subject",
+    "fields.message": "Message",
+    "fields.ip_address": "IP Address",
+    "fields.sender_country": "Sender Country",
+
+    "messages.sender_from": "This sender is from",
+    "messages.country_unknown": "Country could not be determined.",
+
+    "actions.view": "View",
     "CTA Text": "CTA Text",
     "CTA Link": "CTA Link",
     "Add the text and link for the Call To Action (CTA) section.": "Add the text and link for the Call To Action (CTA) section.",

@@ -5,7 +5,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
-    
+
     <form wire:submit.prevent="submit">
         <div class="row">
             <div class="col-lg-6">
