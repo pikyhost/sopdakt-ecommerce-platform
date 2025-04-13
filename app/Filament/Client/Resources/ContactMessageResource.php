@@ -65,7 +65,6 @@ class ContactMessageResource extends Resource
                     ->required()
                     ->rules([
                         'max:20', // Match database column limit
-                        'unique:users,phone', // Ensure uniqueness in the `users` table
                     ])
                     ->label(__('Phone Number')),
                 Forms\Components\TextInput::make('email')
