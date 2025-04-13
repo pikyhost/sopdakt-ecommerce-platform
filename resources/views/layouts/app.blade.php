@@ -1040,7 +1040,7 @@
                         <div class="collapse navbar-collapse" id="navbarNav">
                             <ul class="navbar-nav">
                                 <li class="nav-item mx-3">
-                                    <a class="nav-link {{ request()->is(app()->getLocale().'/category*') ? 'active' : '' }}"
+                                    <a class="nav-link {{ request()->is(app()->getLocale().'/categories*') ? 'active' : '' }}"
                                        href="{{ url('categories') }}" style="font-size: 1.4rem;">Categories</a>
                                 </li>
                                 <li class="nav-item mx-3">
@@ -1050,10 +1050,6 @@
                                 <li class="nav-item mx-3">
                                     <a class="nav-link {{ request()->is(app()->getLocale().'/blogs*') ? 'active' : '' }}"
                                        href="{{ url('blogs') }}" style="font-size: 1.4rem;">Blogs</a>
-                                </li>
-                                <li class="nav-item mx-3">
-                                    <a class="nav-link {{ request()->is(app()->getLocale().'/about-us') ? 'active' : '' }}"
-                                       href="{{ url('about-us') }}" style="font-size: 1.4rem;">About US</a>
                                 </li>
                                 <li class="nav-item mx-3">
                                     <a class="nav-link {{ request()->is(app()->getLocale().'/contact-us') ? 'active' : '' }}"
