@@ -7,7 +7,7 @@
     "Add team members in English. Each member should have a name and an image.": "أضف أعضاء الفريق باللغة الإنجليزية. يجب أن يحتوي كل عضو على اسم وصورة.",
     "Name": "الاسم",
     "Team Members (Arabic)": "أعضاء الفريق (العربية)",
-    "Add team members in Arabic. Structure should mirror the English team, but use Arabic names.": "أضف أعضاء الفريق باللغة العربية. يجب أن يتطابق الهيكل مع الفريق الإنجليزي، ولكن استخدم الأسماء العربية.",
+    "Add team members in Arabic. Structure should mirror the English team, but use Arabic names.": "أضف أعضاء الفريق باللغة العربية. يجب أن يتطابق الهيكل مع الفريق باللغة الإنجليزية، ولكن استخدم الأسماء العربية.",
     "about_us.navigation_label": "من نحن",
     "about_us.model_label": "محتوى من نحن",
     "about_us.navigation_group": "إدارة المحتوى",

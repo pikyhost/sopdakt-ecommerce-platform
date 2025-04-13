@@ -5,7 +5,7 @@
     "Team Members (English)": "Team Members (English)",
     "Add team members in English. Each member should have a name and an image.": "Add team members in English. Each member should have a name and an image.",
     "Team Members (Arabic)": "Team Members (Arabic)",
-    "Add team members in Arabic. Structure should mirror the English team, but use Arabic names.": "Add team members in Arabic. Structure should mirror the English team, but use Arabic nam",
+    "Add team members in Arabic. Structure should mirror the English team, but use Arabic names.": "Add team members in Arabic. Structure should mirror the team members in English",
     "about_us.navigation_label": "About Us",
     "about_us.model_label": "About Us Content",
     "about_us.navigation_group": "Content Management",
