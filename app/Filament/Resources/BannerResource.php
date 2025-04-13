@@ -45,6 +45,16 @@ class BannerResource extends Resource
         return __('Menu Banners');
     }
 
+    public static function getPluralModelLabel(): string
+    {
+        return __('Menu Banners');
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return __('Menu Banners');
+    }
+
     public static function form(Forms\Form $form): Forms\Form
     {
         return $form

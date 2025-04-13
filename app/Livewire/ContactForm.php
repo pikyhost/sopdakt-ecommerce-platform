@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\ContactMessage;
 use App\Models\User;
+use App\Notifications\ContactMessageNotifier;
 use Illuminate\Support\Facades\App;
 use Livewire\Component;
 use Filament\Notifications\Notification;
@@ -42,54 +43,13 @@ class ContactForm extends Component
             'subject' => $this->subject,
             'message' => $this->message,
             'ip_address' => request()->ip(),
-            'user_id' => auth()->id(), // add this line
+            'user_id' => auth()->id(),
         ]);
-
 
         $this->reset(['name', 'email', 'subject', 'message']);
         $this->successMessage = __('contact.success_message');
 
-        $adminUsers = User::role(['admin', 'super_admin'])->get();
-
-        // Determine if sender is admin or super admin
-        $isAdminSender = auth()->check() && auth()->user()->hasAnyRole(['admin', 'super_admin']);
-
-// Get all admins and super admins
-        $adminUsers = User::role(['admin', 'super_admin'])->get();
-
-// Send notification to each admin with their preferred locale
-        foreach ($adminUsers as $admin) {
-            App::setLocale($admin->locale ?? config('app.locale')); // Fallback to default locale
-
-            Notification::make()
-                ->title(__('contact_message_notification.admin.title'))
-                ->success()
-                ->body(__('contact_message_notification.admin.body', ['name' => $message->name]))
-                ->actions([
-                    Action::make('view')
-                        ->label(__('contact_message_notification.admin.view_button'))
-                        ->url(route('filament.admin.resources.contact-messages.view', ['record' => $message->id]))
-                        ->markAsRead(),
-                ])
-                ->sendToDatabase($admin);
-        }
-
-// If the sender is a client (not admin), notify them too
-        if (auth()->check() && ! $isAdminSender) {
-            App::setLocale(auth()->user()->locale ?? config('app.locale'));
-
-            Notification::make()
-                ->title(__('contact_message_notification.user.title'))
-                ->success()
-                ->body(__('contact_message_notification.user.body'))
-                ->actions([
-                    Action::make('view')
-                        ->label(__('contact_message_notification.user.view_button'))
-                        ->url(route('filament.client.resources.contact-messages.view', ['record' => $message->id]))
-                        ->markAsRead(),
-                ])
-                ->sendToDatabase(auth()->user());
-        }
+        ContactMessageNotifier::notify($message);
     }
 
     public function render()

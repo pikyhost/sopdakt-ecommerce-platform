@@ -54,37 +54,27 @@ class ContactMessageResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Hidden::make('user_id')->default(function (){
-                    return auth()->id();
-                }),
                 Forms\Components\TextInput::make('name')
+                    ->default(fn() => auth()->user()->name)
+                    ->columnSpanFull()
                     ->label(__('fields.name'))
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('email')
+                    ->default(fn() => auth()->user()->email)
+                    ->columnSpanFull()
                     ->label(__('fields.email'))
                     ->email()
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('subject')
+                    ->columnSpanFull()
                     ->label(__('fields.subject'))
                     ->maxLength(255),
                 Forms\Components\Textarea::make('message')
                     ->label(__('fields.message'))
+                    ->columnSpanFull()
                     ->required(),
-                Forms\Components\TextInput::make('ip_address')
-                    ->label(__('fields.ip_address'))
-                    ->maxLength(45),
-                Forms\Components\Placeholder::make('sender_country')
-                    ->label(__('fields.sender_country'))
-                    ->content(function () {
-                        $countryId = GeneralHelper::getCountryId();
-                        $countryName = \App\Models\Country::find($countryId)?->name;
-
-                        return $countryName
-                            ? __('messages.sender_from') . ' ' . $countryName
-                            : __('messages.country_unknown');
-                    }),
             ]);
     }
 
@@ -140,7 +130,7 @@ class ContactMessageResource extends Resource
                     Components\TextEntry::make('message')
                         ->columnSpanFull()
                         ->label(__('fields.message')),
-                ])
+                ])   ->columns(2)
             ]);
     }
 

@@ -48,30 +48,26 @@ class ContactMessageResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Hidden::make('user_id')->default(function (){
-                    return auth()->id();
-                }),
-
                 Forms\Components\TextInput::make('name')
-                    ->default(function () {
-                        return auth()->user()->name;
-                    })
+                    ->default(fn() => auth()->user()->name)
+                    ->columnSpanFull()
                     ->label(__('fields.name'))
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('email')
-                    ->default(function () {
-                        return auth()->user()->email;
-                    })
+                    ->default(fn() => auth()->user()->email)
+                    ->columnSpanFull()
                     ->label(__('fields.email'))
                     ->email()
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('subject')
+                    ->columnSpanFull()
                     ->label(__('fields.subject'))
                     ->maxLength(255),
                 Forms\Components\Textarea::make('message')
                     ->label(__('fields.message'))
+                    ->columnSpanFull()
                     ->required(),
             ]);
     }
