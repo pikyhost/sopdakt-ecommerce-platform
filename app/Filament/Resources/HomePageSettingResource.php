@@ -40,6 +40,19 @@ class HomePageSettingResource extends Resource
         return __('Home page settings');
     }
 
+    public static function getPluralModelLabel(): string
+    {
+        return __('Home page settings');
+    }
+
+    /**
+     * @return string|null
+     */
+    public static function getPluralLabel(): ?string
+    {
+        return __('Home page settings');
+    }
+
     public static function getLabel(): string
     {
         return __('Home page settings');

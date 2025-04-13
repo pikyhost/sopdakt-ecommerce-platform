@@ -8,6 +8,7 @@
     "contact_message_notification.user.view_button": "View My Message",
     "navigation.Groups.settings": "Settings",
     "navigation.Labels.contact_settings": "Contact Settings",
+    "Landing Page Settings": "Landing Page Settings",
 
     "models.contact_setting.singular": "Contact Setting",
     "models.contact_setting.plural": "Contact Settings",

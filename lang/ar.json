@@ -8,6 +8,7 @@
     "contact_message_notification.user.view_button": "عرض رسالتي",
     "navigation.Groups.settings": "الإعدادات",
     "navigation.Labels.contact_settings": "إعدادات التواصل",
+    "Landing Page Settings": "إعدادات صفحة اللاندنج",
 
     "models.contact_setting.singular": "إعداد تواصل",
     "models.contact_setting.plural": "إعدادات التواصل",

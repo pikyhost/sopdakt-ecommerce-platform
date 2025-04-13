@@ -30,7 +30,7 @@ class LandingPageSettingResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return __('landing_page_order.settings.landing_page_settings');
+        return __('Landing Page Settings');
     }
 
     public static function getModelLabel(): string
