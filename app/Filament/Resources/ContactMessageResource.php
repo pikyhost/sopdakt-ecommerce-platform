@@ -116,37 +116,58 @@ class ContactMessageResource extends Resource
         return $infolist
             ->columns(2)
             ->schema([
-                Components\Section::make([
-                    Components\TextEntry::make('name')
-                        ->label(__('fields.name')),
+                Components\Section::make()
+                    ->schema([
+                        Components\TextEntry::make('user.name')
+                            ->inlineLabel()
+                            ->url(function ($record) {
+                                return url('/admin/users/'.$record->user_id);
+                            })
+                            ->label(__('From Account')),
 
-                    PhoneEntry::make('phone')
-                        ->label(__('Phone number')),
+                        Components\TextEntry::make('name')
+                            ->label(__('fields.name')),
 
-                    Components\TextEntry::make('email')
-                        ->label(__('fields.email')),
-                    Components\TextEntry::make('ip_address')
-                        ->label(__('fields.ip_address')),
+                        PhoneEntry::make('phone')
+                            ->inlineLabel()
+                            ->inlineLabel()
+                            ->label(__('Phone number')),
 
-                    Components\TextEntry::make('sender_country')
-                        ->label(__('fields.sender_country'))
-                        ->state(function ($record) {
-                            $countryId = GeneralHelper::getCountryId(); // or from $record if stored
-                            $countryName = \App\Models\Country::find($countryId)?->name;
+                        Components\TextEntry::make('email')
+                            ->inlineLabel()
+                            ->label(__('fields.email')),
 
-                            return $countryName
-                                ? __('messages.sender_from') . ' ' . $countryName
-                                : __('messages.country_unknown');
-                        }),
+                        Components\TextEntry::make('ip_address')
+                            ->inlineLabel()
+                            ->label(__('fields.ip_address')),
 
-                    Components\TextEntry::make('subject')
-                        ->columnSpanFull()
-                        ->label(__('fields.subject')),
+                        Components\TextEntry::make('sender_country')
+                            ->inlineLabel()
+                            ->label(__('fields.sender_country'))
+                            ->state(function ($record) {
+                                $countryId = GeneralHelper::getCountryId(); // or from $record if stored
+                                $countryName = \App\Models\Country::find($countryId)?->name;
 
-                    Components\TextEntry::make('message')
-                        ->columnSpanFull()
-                        ->label(__('fields.message')),
-                ])   ->columns(2)
+                                return $countryName
+                                    ? __('messages.sender_from') . ' ' . $countryName
+                                    : __('messages.country_unknown');
+                            }),
+                    ])
+                    ->columns(2)
+                    ->heading(__('Sender Information')),
+
+                Components\Section::make()
+                    ->schema([
+                        Components\TextEntry::make('subject')
+                            ->label(__('fields.subject'))
+                            ->columnSpanFull(),
+
+                        Components\TextEntry::make('message')
+                            ->label(__('fields.message'))
+                            ->columnSpanFull(),
+                    ])
+                    ->heading(__('Message Details'))
+                    ->columns(2),
             ]);
     }
 
