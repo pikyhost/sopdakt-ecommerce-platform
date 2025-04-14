@@ -81,6 +81,13 @@
                 <li>
                     <h2 class="step-title">Billing details</h2>
 
+                    @if ($errors->has('auth'))
+                        <div class="text-red-500 mb-4">
+                            {!! $errors->first('auth') !!}
+                        </div>
+                    @endif
+
+
                     <form wire:submit.prevent="save">
                         <div class="form-group">
                             <label>Name</label><abbr class="required" title="required">*</abbr></label>

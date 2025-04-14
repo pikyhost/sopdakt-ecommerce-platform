@@ -16,6 +16,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
@@ -51,9 +52,10 @@ class Checkout extends Component
             'phone' => [
                 'required',
                 'string',
-                'min:8',
+                'min:10',
                 function ($attribute, $value, $fail) {
-                    $normalized = $this->normalizePhone($value);
+                    $normalized = \App\Helpers\GeneralHelper::normalizePhone($value);
+
                     if (\App\Helpers\GeneralHelper::isPhoneBlocked($normalized)) {
                         $fail(__('validation.blocked_phone', ['link' => route('contact.us')]));
                     }
@@ -62,11 +64,13 @@ class Checkout extends Component
             'second_phone' => [
                 'required',
                 'string',
-                'min:8',
+                'min:10',
                 function ($attribute, $value, $fail) {
-                    $normalized = $this->normalizePhone($value);
+                    $normalized = \App\Helpers\GeneralHelper::normalizePhone($value);
+
                     if (\App\Helpers\GeneralHelper::isPhoneBlocked($normalized)) {
-                        $fail(__('validation.blocked_phone', ['link' => route('contact.us')]));}
+                        $fail(__('validation.blocked_phone', ['link' => route('contact.us')]));
+                    }
                 },
             ],
             'notes' => 'nullable|string',
@@ -74,45 +78,6 @@ class Checkout extends Component
         ];
     }
 
-    protected function normalizePhone(string $phone): string
-    {
-        $countryCode = strtoupper($this->getUserCountryCode());
-        $digits = preg_replace('/\D+/', '', $phone); // Remove spaces, dashes, etc.
-
-        return match ($countryCode) {
-            'EG' => $this->formatWithCountryCode($digits, '20', 11),
-            'SA' => $this->formatWithCountryCode($digits, '966', 9),
-            'AE' => $this->formatWithCountryCode($digits, '971', 9),
-            'GB' => $this->formatWithCountryCode($digits, '44', 10),
-            default => '+' . $digits,
-        };
-    }
-
-    protected function formatWithCountryCode(string $digits, string $countryCode, int $localLength): string
-    {
-        if (Str::startsWith($digits, $countryCode)) {
-            return '+' . $digits;
-        }
-
-        if (Str::startsWith($digits, '00' . $countryCode)) {
-            return '+' . substr($digits, 2);
-        }
-
-        if (Str::startsWith($digits, '0') && strlen($digits) === $localLength) {
-            return '+' . $countryCode . substr($digits, 1);
-        }
-
-        return '+' . $countryCode . $digits;
-    }
-
-    protected function getUserCountryCode(): string
-    {
-        try {
-            return geoip(request()->ip())['country_code2'] ?? 'US';
-        } catch (\Exception $e) {
-            return 'US';
-        }
-    }
 
 
     public function mount()
@@ -311,6 +276,16 @@ class Checkout extends Component
 
     public function placeOrder()
     {
+        if (Auth::check() && !Auth::user()->is_active) {
+            $contactUrl = route('contact.us');
+
+            $this->addError('auth', __('Your account is not active. Please <a href=":url" class="underline text-blue-500 hover:text-blue-700">contact support</a>.', [
+                'url' => $contactUrl,
+            ]));
+
+            return;
+        }
+
         $this->validate();
 
         DB::beginTransaction();

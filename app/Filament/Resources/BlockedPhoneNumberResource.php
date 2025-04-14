@@ -45,16 +45,12 @@ class BlockedPhoneNumberResource extends Resource
     {
         return $form
             ->schema([
-//                PhoneInput::make('phone_number')
-//                    ->columnSpanFull()
-//                    ->enableIpLookup(true) // Enable IP-based country detection
-//                    ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
-//                    ->label(__('blocked_phones.phone_number'))
-//                    ->separateDialCode(true) // Shows flag and +20 separately
-//                    ->required()
-//                    ->unique(ignoreRecord: true),
-                Forms\Components\TextInput::make('phone_number')
+                PhoneInput::make('phone_number')
                     ->columnSpanFull()
+                    ->enableIpLookup(true) // Enable IP-based country detection
+                    ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
+                    ->label(__('blocked_phones.phone_number'))
+                    ->separateDialCode(true) // Shows flag and +20 separately
                     ->required()
                     ->unique(ignoreRecord: true),
 

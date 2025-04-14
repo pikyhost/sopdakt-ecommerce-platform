@@ -285,6 +285,21 @@ class GeneralHelper
         return BlockedPhoneNumber::where('phone_number', $phone)->exists();
     }
 
+    public static function normalizePhone(string $phone): string
+    {
+        // Remove leading "+" or "00"
+        $phone = ltrim($phone, '+');
+        $phone = preg_replace('/^00/', '', $phone);
+
+        // Convert local Egyptian number to international (assuming Egypt example here)
+        if (preg_match('/^01[0-9]{8}$/', $phone)) {
+            return '20' . substr($phone, 1);
+        }
+
+        return $phone;
+    }
+
+
     // at production
 //    public static function getCountryId(): ?int
 //    {
