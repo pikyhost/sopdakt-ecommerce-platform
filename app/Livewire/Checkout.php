@@ -57,7 +57,7 @@ class Checkout extends Component
                     $normalized = \App\Helpers\GeneralHelper::normalizePhone($value);
 
                     if (\App\Helpers\GeneralHelper::isPhoneBlocked($normalized)) {
-                        $fail(__('validation.blocked_phone', ['link' => route('contact.us')]));
+                        $fail(__('This phone number is not allowed.'));
                     }
                 },
             ],
