@@ -5,7 +5,6 @@ namespace App\Filament\Resources\CityResource\Pages;
 use App\Filament\Resources\CityResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
-use Illuminate\Contracts\Support\Htmlable;
 
 class ViewCity extends ViewRecord
 {
