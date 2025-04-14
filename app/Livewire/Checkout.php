@@ -22,7 +22,6 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Cart;
 use App\Models\CartItem;
 use Spatie\Permission\Models\Role;
-use Illuminate\Support\Str;
 
 class Checkout extends Component
 {
@@ -52,25 +51,22 @@ class Checkout extends Component
             'phone' => [
                 'required',
                 'string',
-                'min:7', // Allow short international formats
+                'min:8',
                 function ($attribute, $value, $fail) {
-                    $normalized = $this->normalizePhoneNumber($value);
+                    $normalized = $this->normalizePhone($value);
                     if (\App\Helpers\GeneralHelper::isPhoneBlocked($normalized)) {
-                        $fail(__('This phone number is not allowed.'));
+                        $fail(__('validation.blocked_phone', ['link' => route('contact.us')]));
                     }
                 },
             ],
             'second_phone' => [
-                'nullable',
+                'required',
                 'string',
-                'min:7',
+                'min:8',
                 function ($attribute, $value, $fail) {
-                    if (!$value) return;
-
-                    $normalized = $this->normalizePhoneNumber($value);
+                    $normalized = $this->normalizePhone($value);
                     if (\App\Helpers\GeneralHelper::isPhoneBlocked($normalized)) {
-                        $fail(__('This phone number is not allowed.'));
-                    }
+                        $fail(__('validation.blocked_phone', ['link' => route('contact.us')]));}
                 },
             ],
             'notes' => 'nullable|string',
@@ -78,25 +74,44 @@ class Checkout extends Component
         ];
     }
 
-    protected function normalizePhoneNumber($value)
+    protected function normalizePhone(string $phone): string
     {
-        $value = preg_replace('/[^0-9+]/', '', $value); // remove spaces/dashes etc.
+        $countryCode = strtoupper($this->getUserCountryCode());
+        $digits = preg_replace('/\D+/', '', $phone); // Remove spaces, dashes, etc.
 
-        if (Str::startsWith($value, '+')) {
-            return $value;
+        return match ($countryCode) {
+            'EG' => $this->formatWithCountryCode($digits, '20', 11),
+            'SA' => $this->formatWithCountryCode($digits, '966', 9),
+            'AE' => $this->formatWithCountryCode($digits, '971', 9),
+            'GB' => $this->formatWithCountryCode($digits, '44', 10),
+            default => '+' . $digits,
+        };
+    }
+
+    protected function formatWithCountryCode(string $digits, string $countryCode, int $localLength): string
+    {
+        if (Str::startsWith($digits, $countryCode)) {
+            return '+' . $digits;
         }
 
-        if (Str::startsWith($value, '00')) {
-            return '+' . substr($value, 2);
+        if (Str::startsWith($digits, '00' . $countryCode)) {
+            return '+' . substr($digits, 2);
         }
 
-        if (Str::startsWith($value, '0')) {
-            // Egypt default (you can customize this part or make it dynamic if needed)
-            return '+2' . substr($value, 1);
+        if (Str::startsWith($digits, '0') && strlen($digits) === $localLength) {
+            return '+' . $countryCode . substr($digits, 1);
         }
 
-        // Maybe already has country code but no plus
-        return '+' . $value;
+        return '+' . $countryCode . $digits;
+    }
+
+    protected function getUserCountryCode(): string
+    {
+        try {
+            return geoip(request()->ip())['country_code2'] ?? 'US';
+        } catch (\Exception $e) {
+            return 'US';
+        }
     }
 
 

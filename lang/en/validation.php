@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'blocked_phone' => 'This phone number is not allowed. If you believe this is a mistake or you haven’t done anything wrong, please contact the admin via our support page: :link',
     'accepted'             => 'The :attribute field must be accepted.',
     'accepted_if'          => 'The :attribute field must be accepted when :other is :value.',
     'active_url'           => 'The :attribute field must be a valid URL.',
