@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Color;
 use App\Models\ProductColor;
 use App\Models\ProductColorSize;
+use App\Models\Setting;
 use App\Models\Size;
 use Livewire\Component;
 use App\Models\Cart;
@@ -148,6 +149,7 @@ class AddToCart extends Component
                 'quantity' => $this->quantity,
                 'price_per_unit' => (float) $product->discount_price_for_current_country,
                 'subtotal' => $this->quantity * (float) $product->discount_price_for_current_country,
+                'currency_id' => optional(Setting::getCurrency())->id, // safe null handling
             ]);
         }
 

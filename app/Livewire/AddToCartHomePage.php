@@ -8,6 +8,7 @@ use App\Models\Color;
 use App\Models\Product;
 use App\Models\ProductColor;
 use App\Models\ProductColorSize;
+use App\Models\Setting;
 use App\Models\Size;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
@@ -131,6 +132,7 @@ class AddToCartHomePage extends Component
                 'quantity' => $this->quantity,
                 'price_per_unit' => $pricePerUnit, // Ensure it's a float
                 'subtotal' => $this->quantity * $pricePerUnit,
+                'currency_id' => optional(Setting::getCurrency())->id, // safe null handling
             ]);
         }
 
