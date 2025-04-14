@@ -6,6 +6,7 @@ use App\Filament\Resources\BlockedPhoneNumberResource\Pages;
 use App\Models\BlockedPhoneNumber;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -13,9 +14,11 @@ use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 
 class BlockedPhoneNumberResource extends Resource
 {
+    use Translatable;
+
     protected static ?string $model = BlockedPhoneNumber::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-ban';
+    protected static ?string $navigationIcon = 'heroicon-o-no-symbol';
 
     public static function getNavigationLabel(): string
     {
@@ -41,14 +44,17 @@ class BlockedPhoneNumberResource extends Resource
     {
         return $form
             ->schema([
-                PhoneInput::make('phone_number')
-                    ->label(__('blocked_phones.phone_number'))
-                    ->required()
-                    ->unique(ignoreRecord: true),
+                Forms\Components\Section::make()->columns(1)->schema([
+                    PhoneInput::make('phone_number')
+                        ->enableIpLookup(true) // Enable IP-based country detection
+                        ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
+                        ->label(__('blocked_phones.phone_number'))
+                        ->required()
+                        ->unique(ignoreRecord: true),
 
-                Forms\Components\Textarea::make('note')
-                    ->label(__('blocked_phones.note'))
-                    ->rows(3),
+                    Forms\Components\Textarea::make('reason')
+                        ->label(__('Reason')),
+                ])
             ]);
     }
 
@@ -60,7 +66,7 @@ class BlockedPhoneNumberResource extends Resource
                     ->label(__('blocked_phones.phone_number'))
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('note')
+                Tables\Columns\TextColumn::make('reason')
                     ->label(__('blocked_phones.note'))
                     ->limit(50)
                     ->wrap(),
@@ -81,9 +87,7 @@ class BlockedPhoneNumberResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListBlockedPhoneNumbers::route('/'),
-            'create' => Pages\CreateBlockedPhoneNumber::route('/create'),
-            'edit' => Pages\EditBlockedPhoneNumber::route('/{record}/edit'),
+            'index' => Pages\ManageBlockedPhoneNumbers::route('/'),
         ];
     }
 }

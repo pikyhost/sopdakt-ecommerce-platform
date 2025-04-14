@@ -79,11 +79,11 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::FOOTER,
                 fn() => view('footer')
-            )
+            )->navigationGroups($this->getNavigationGroups())
             ->sidebarCollapsibleOnDesktop()
-            ->navigation(function (NavigationBuilder $builder): NavigationBuilder {
-                return $builder->groups($this->getCustomNavigationGroups());
-            })
+//            ->navigation(function (NavigationBuilder $builder): NavigationBuilder {
+//                return $builder->groups($this->getCustomNavigationGroups());
+//            })
             ->renderHook('head.end', function () {
                 return view('filament.scripts.navigation-reset');
             })

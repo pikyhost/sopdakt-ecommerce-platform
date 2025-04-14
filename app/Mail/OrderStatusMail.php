@@ -23,7 +23,7 @@ class OrderStatusMail extends Mailable
         $this->order = $order->load(['items.product', 'paymentMethod']);
         $this->status = $status;
     }
-    
+
 
     public function build()
     {

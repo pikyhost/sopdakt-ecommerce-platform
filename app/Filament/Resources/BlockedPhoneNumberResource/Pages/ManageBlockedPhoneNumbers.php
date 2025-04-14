@@ -4,16 +4,19 @@ namespace App\Filament\Resources\BlockedPhoneNumberResource\Pages;
 
 use App\Filament\Resources\BlockedPhoneNumberResource;
 use Filament\Actions;
-use Filament\Resources\Pages\EditRecord;
+use Filament\Resources\Pages\ManageRecords;
 
-class EditBlockedPhoneNumber extends EditRecord
+class ManageBlockedPhoneNumbers extends ManageRecords
 {
+    use ManageRecords\Concerns\Translatable;
+
     protected static string $resource = BlockedPhoneNumberResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\CreateAction::make(),
+            Actions\LocaleSwitcher::make(),
         ];
     }
 }
