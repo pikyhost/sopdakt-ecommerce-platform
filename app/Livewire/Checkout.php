@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Cart;
 use App\Models\CartItem;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Str;
 
 class Checkout extends Component
 {
@@ -51,20 +52,22 @@ class Checkout extends Component
             'phone' => [
                 'required',
                 'string',
-                'min:11',
+                'min:7', // Allow short international formats
                 function ($attribute, $value, $fail) {
-                    $normalized = preg_replace('/[^0-9+]/', '', $value);
+                    $normalized = $this->normalizePhoneNumber($value);
                     if (\App\Helpers\GeneralHelper::isPhoneBlocked($normalized)) {
                         $fail(__('This phone number is not allowed.'));
                     }
                 },
             ],
             'second_phone' => [
-                'required',
+                'nullable',
                 'string',
-                'min:11',
+                'min:7',
                 function ($attribute, $value, $fail) {
-                    $normalized = preg_replace('/[^0-9+]/', '', $value);
+                    if (!$value) return;
+
+                    $normalized = $this->normalizePhoneNumber($value);
                     if (\App\Helpers\GeneralHelper::isPhoneBlocked($normalized)) {
                         $fail(__('This phone number is not allowed.'));
                     }
@@ -74,6 +77,28 @@ class Checkout extends Component
             'password' => 'nullable|min:6|required_if:create_account,true',
         ];
     }
+
+    protected function normalizePhoneNumber($value)
+    {
+        $value = preg_replace('/[^0-9+]/', '', $value); // remove spaces/dashes etc.
+
+        if (Str::startsWith($value, '+')) {
+            return $value;
+        }
+
+        if (Str::startsWith($value, '00')) {
+            return '+' . substr($value, 2);
+        }
+
+        if (Str::startsWith($value, '0')) {
+            // Egypt default (you can customize this part or make it dynamic if needed)
+            return '+2' . substr($value, 1);
+        }
+
+        // Maybe already has country code but no plus
+        return '+' . $value;
+    }
+
 
     public function mount()
     {

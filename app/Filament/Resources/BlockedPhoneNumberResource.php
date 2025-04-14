@@ -50,6 +50,7 @@ class BlockedPhoneNumberResource extends Resource
                     ->enableIpLookup(true) // Enable IP-based country detection
                     ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
                     ->label(__('blocked_phones.phone_number'))
+                    ->separateDialCode(true) // Shows flag and +20 separately
                     ->required()
                     ->unique(ignoreRecord: true),
 
