@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 
@@ -44,17 +45,17 @@ class BlockedPhoneNumberResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make()->columns(1)->schema([
-                    PhoneInput::make('phone_number')
-                        ->enableIpLookup(true) // Enable IP-based country detection
-                        ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
-                        ->label(__('blocked_phones.phone_number'))
-                        ->required()
-                        ->unique(ignoreRecord: true),
+                PhoneInput::make('phone_number')
+                    ->columnSpanFull()
+                    ->enableIpLookup(true) // Enable IP-based country detection
+                    ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
+                    ->label(__('blocked_phones.phone_number'))
+                    ->required()
+                    ->unique(ignoreRecord: true),
 
-                    Forms\Components\Textarea::make('reason')
-                        ->label(__('Reason')),
-                ])
+                Forms\Components\Textarea::make('reason')
+                    ->columnSpanFull()
+                    ->label(__('Reason')),
             ]);
     }
 
@@ -68,12 +69,20 @@ class BlockedPhoneNumberResource extends Resource
 
                 Tables\Columns\TextColumn::make('reason')
                     ->label(__('blocked_phones.note'))
-                    ->limit(50)
-                    ->wrap(),
+                    ->limit(30)
+                    ->tooltip(function (TextColumn $column): ?string {
+                        $state = $column->getState();
+
+                        if (strlen($state) <= $column->getCharacterLimit()) {
+                            return null;
+                        }
+                        return $state;
+                    })
+                    ->searchable()
+                    ->placeholder('-'),
 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label(__('blocked_phones.created_at'))
-                    ->dateTime('Y-m-d H:i'),
+                    ->label(__('blocked_phones.created_at')),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
