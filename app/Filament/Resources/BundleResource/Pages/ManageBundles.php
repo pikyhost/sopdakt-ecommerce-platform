@@ -12,6 +12,7 @@ class ManageBundles extends ManageRecords
 
     protected static string $resource = BundleResource::class;
 
+
     protected function getHeaderActions(): array
     {
         return [

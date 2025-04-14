@@ -142,7 +142,7 @@ class UserResource extends Resource
                 ->unique(ignoreRecord: true)
                 ->afterStateUpdated(function ($state, $livewire) {
                     if ($livewire->record && $livewire->record->email !== $state) {
-                        event(new Registered($livewire->record)); // Send email verification
+                        event(new Registered($livewire->record));
                     }
                 }),
 
