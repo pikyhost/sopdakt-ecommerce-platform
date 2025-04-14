@@ -1,4 +1,10 @@
 {
+    "blocked_phones.navigation_label": "Blocked Phone Numbers",
+    "blocked_phones.single": "Blocked Phone Number",
+    "blocked_phones.plural": "Blocked Phone Numbers",
+    "blocked_phones.phone_number": "Phone Number",
+    "blocked_phones.note": "Note",
+    "blocked_phones.created_at": "Created At",
     "contact.success_message": "Your message has been sent successfully.",
     "contact_message_notification.admin.title": "New Contact Message",
     "contact_message_notification.admin.body": ":name has submitted a new contact message.",

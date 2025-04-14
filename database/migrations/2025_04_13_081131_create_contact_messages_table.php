@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->string('name');
             $table->string('email');
+            $table->string('phone');
             $table->string('subject')->nullable();
             $table->text('message');
             $table->string('ip_address', 45);

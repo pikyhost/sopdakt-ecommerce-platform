@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Models\BlockedPhoneNumber;
 use App\Models\Bundle;
 use App\Models\BundleSpecialPrice;
 use App\Models\Country;
@@ -277,6 +278,11 @@ class GeneralHelper
     {
         $ip = request()->ip();
         return geoip($ip)['country_code2'] ?? 'US';
+    }
+
+    public static function isPhoneBlocked(string $phone): bool
+    {
+        return BlockedPhoneNumber::where('phone_number', $phone)->exists();
     }
 
     // at production

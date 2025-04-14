@@ -42,8 +42,7 @@ return new class extends Migration
             'logo_en'     => 'assets/images/clients/client1.png',
             'logo_ar'     => 'assets/images/clients/client1.png',
             'favicon'  => 'assets/images/clients/client1.png',
-            'site_name_en' => 'My E-Commerce',
-            'site_name_ar' => 'متجري الإلكتروني',
+            'site_name' => 'My E-Commerce',
             'currency_id' => null, // You can update this with a default currency ID if needed
             'created_at'  => now(),
             'updated_at'  => now(),

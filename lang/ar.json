@@ -1,4 +1,10 @@
 {
+    "blocked_phones.navigation_label": "الأرقام المحظورة",
+    "blocked_phones.single": "رقم محظور",
+    "blocked_phones.plural": "الأرقام المحظورة",
+    "blocked_phones.phone_number": "رقم الهاتف",
+    "blocked_phones.note": "ملاحظة",
+    "blocked_phones.created_at": "تاريخ الإضافة",
     "contact.success_message": "تم إرسال رسالتك بنجاح.",
     "contact_message_notification.admin.title": "رسالة تواصل جديدة",
     "contact_message_notification.admin.body": "قام :name بإرسال رسالة تواصل جديدة.",

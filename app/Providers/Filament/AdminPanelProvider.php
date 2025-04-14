@@ -2,13 +2,22 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Analysis;
+use App\Filament\Resources\ContactResource;
+use App\Filament\Resources\HomePageSettingResource;
+use App\Filament\Resources\InventoryResource;
+use App\Filament\Resources\OrderResource;
+use App\Filament\Resources\PaymentMethodResource;
+use App\Filament\Resources\ProductRatingResource;
+use App\Filament\Resources\ProductResource;
+use App\Filament\Resources\SettingResource;
+use App\Filament\Resources\ShippingCostResource;
+use Filament\Navigation\NavigationBuilder;
+use Filament\Navigation\NavigationGroup;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\ProductAnalysis;
-use App\Filament\Widgets\Filters;
-use App\Filament\Widgets\HomePageRedirect;
 use App\Livewire\ProfileContactDetails;
 use App\Models\Setting;
-use App\Support\NavigationGroupManager;
 use CharrafiMed\GlobalSearchModal\GlobalSearchModalPlugin;
 use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
@@ -16,14 +25,11 @@ use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\MenuItem;
-use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\SpatieLaravelTranslatablePlugin;
 use Filament\Support\Colors\Color;
 use Filament\View\PanelsRenderHook;
-use Filament\Widgets;
-use GeoSot\FilamentEnvEditor\FilamentEnvEditorPlugin;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -75,7 +81,9 @@ class AdminPanelProvider extends PanelProvider
                 fn() => view('footer')
             )
             ->sidebarCollapsibleOnDesktop()
-            ->navigationGroups($this->getNavigationGroups())
+            ->navigation(function (NavigationBuilder $builder): NavigationBuilder {
+                return $builder->groups($this->getCustomNavigationGroups());
+            })
             ->renderHook('head.end', function () {
                 return view('filament.scripts.navigation-reset');
             })
@@ -266,5 +274,80 @@ class AdminPanelProvider extends PanelProvider
         }
 
         return $navigationItems;
+    }
+
+    private function getCustomNavigationGroups(): array
+    {
+        $groups = [
+            'analysis' => [
+                'label' => __('Analysis'),
+                'items' => [
+                   Analysis::getNavigationItems()
+                ],
+            ],
+            'products' => [
+                'label' => __('Products Management'),
+                'items' => [
+                     ProductResource::getNavigationItems(),
+                ],
+            ],
+            'inventory' => [
+                'label' => __('Inventory Management'),
+                'items' => [
+                     InventoryResource::getNavigationItems(),
+                ],
+            ],
+            'orders' => [
+                'label' => __('Orders'),
+                'items' => [
+                     OrderResource::getNavigationItems(),
+                ],
+            ],
+            'orders-contacts' => [
+                'label' => __('Orders & Contacts'),
+                'items' => [
+                     ContactResource::getNavigationItems(),
+                ],
+            ],
+            'payments' => [
+                'label' => __('Payment Management'),
+                'items' => [
+                   PaymentMethodResource::getNavigationItems()
+                ],
+            ],
+            'shipping' => [
+                'label' => __('Shipping Management'),
+                'items' => [
+                     ShippingCostResource::getNavigationItems(),
+                ],
+            ],
+            'user-experience' => [
+                'label' => __('user_experience'),
+                'items' => [
+                   ProductRatingResource::getNavigationItems()
+                ],
+            ],
+            'settings' => [
+                'label' => __('Settings Management'),
+                'items' => [
+                     SettingResource::getNavigationItems(),
+                ],
+            ],
+            'pages-settings' => [
+                'label' => __('Pages Settings Management'),
+                'items' => [
+                   HomePageSettingResource::getNavigationItems()
+                ],
+            ],
+        ];
+
+        $navigationGroups = [];
+
+        foreach ($groups as $group) {
+            $navigationGroups[] = NavigationGroup::make($group['label'])
+                ->items(array_merge(...$group['items']));
+        }
+
+        return $navigationGroups;
     }
 }

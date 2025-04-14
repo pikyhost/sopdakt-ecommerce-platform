@@ -5,7 +5,6 @@ namespace App\Filament\Client\Pages\Auth;
 use App\Enums\UserRole;
 use App\Helpers\GeneralHelper;
 use Filament\Forms\Components\Checkbox;
-use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\TextInput;
@@ -13,6 +12,7 @@ use Filament\Pages\Auth\Register as BaseRegister;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 
 class ClientRegister extends BaseRegister
@@ -115,7 +115,16 @@ class ClientRegister extends BaseRegister
 
     protected function handleRegistration(array $data): \Illuminate\Database\Eloquent\Model
     {
-        // Call the parent registration logic
+        // Normalize the phone number (remove spaces, dashes, etc.)
+        $normalizedPhone = preg_replace('/[^0-9+]/', '', $data['phone']);
+
+        if (GeneralHelper::isPhoneBlocked($normalizedPhone)) {
+            throw ValidationException::withMessages([
+                'data.phone' => __('This phone number is blocked from registering.'),
+            ]);
+        }
+
+        // Proceed with registration
         $user = parent::handleRegistration($data);
 
         $user->assignRole(UserRole::Client->value);
