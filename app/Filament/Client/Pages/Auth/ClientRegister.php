@@ -120,7 +120,7 @@ class ClientRegister extends BaseRegister
 
         if (GeneralHelper::isPhoneBlocked($normalizedPhone)) {
             throw ValidationException::withMessages([
-                'data.phone' => __('This phone number is blocked from registering.'),
+                'data.phone' => __('This phone number is not allowed to create an account'),
             ]);
         }
 

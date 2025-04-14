@@ -23,39 +23,45 @@ class ClientLogin extends BasePage
 
         $data = $this->form->getState();
 
-        $identifier = $data['phone'];
-
-        // Normalize phone (e.g., remove spaces, dashes, etc.)
-        $normalized = preg_replace('/[^0-9+]/', '', $identifier);
-
-        if (GeneralHelper::isPhoneBlocked($normalized)) {
-            throw ValidationException::withMessages([
-                'data.email' => __('This phone number is blocked from logging in.'),
-            ]);
-        }
-
-        // Proceed with login
+        // Attempt login
         if (! Filament::auth()->attempt($this->getCredentialsFromFormData($data), $data['remember'] ?? false)) {
             $this->throwFailureValidationException();
         }
 
         $user = Filament::auth()->user();
 
-        if (
-            ($user instanceof FilamentUser) &&
-            (! $user->canAccessPanel(Filament::getCurrentPanel()))
-        ) {
+        // Check if user can access the panel
+        if (($user instanceof FilamentUser) && ! $user->canAccessPanel(Filament::getCurrentPanel())) {
             Filament::auth()->logout();
             $this->throwFailureValidationException();
-        } elseif (!$user->is_active) {
+        }
+
+        // Check if user is inactive
+        if (! $user->is_active) {
             Filament::auth()->logout();
             throw ValidationException::withMessages([
-                'data.email' => __('Your account is blocked now.'),
+                'data.email' => __('Your account is currently blocked.'),
             ]);
+        }
+
+        // Normalize and check both phone numbers
+        $phones = [
+            preg_replace('/[^0-9+]/', '', $user->phone ?? ''),
+            preg_replace('/[^0-9+]/', '', $user->second_phone ?? ''),
+        ];
+
+        foreach ($phones as $phone) {
+            if ($phone && GeneralHelper::isPhoneBlocked($phone)) {
+                Filament::auth()->logout();
+                throw ValidationException::withMessages([
+                    'data.email' => __('You cannot log in using this phone number.'),
+                ]);
+            }
         }
 
         session()->regenerate();
 
         return app(LoginResponse::class);
     }
+
 }

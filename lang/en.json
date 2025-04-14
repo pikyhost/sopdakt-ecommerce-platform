@@ -6,6 +6,7 @@
     "blocked_phones.note": "Note",
     "blocked_phones.created_at": "Created At",
     "contact.success_message": "Your message has been sent successfully.",
+    "This phone number is not allowed.": "This phone number is blocked and cannot be used.",
     "contact_message_notification.admin.title": "New Contact Message",
     "contact_message_notification.admin.body": ":name has submitted a new contact message.",
     "contact_message_notification.admin.view_button": "View",

@@ -46,10 +46,30 @@ class Checkout extends Component
                 'required',
                 'email',
                 'max:255',
-                Rule::unique('users', 'email')->ignore(Auth::id()), // Correct validation
+                Rule::unique('users', 'email')->ignore(Auth::id()),
             ],
-            'phone' => 'required|string|min:11',
-            'second_phone' => 'required|string|min:11',
+            'phone' => [
+                'required',
+                'string',
+                'min:11',
+                function ($attribute, $value, $fail) {
+                    $normalized = preg_replace('/[^0-9+]/', '', $value);
+                    if (\App\Helpers\GeneralHelper::isPhoneBlocked($normalized)) {
+                        $fail(__('This phone number is not allowed.'));
+                    }
+                },
+            ],
+            'second_phone' => [
+                'required',
+                'string',
+                'min:11',
+                function ($attribute, $value, $fail) {
+                    $normalized = preg_replace('/[^0-9+]/', '', $value);
+                    if (\App\Helpers\GeneralHelper::isPhoneBlocked($normalized)) {
+                        $fail(__('This phone number is not allowed.'));
+                    }
+                },
+            ],
             'notes' => 'nullable|string',
             'password' => 'nullable|min:6|required_if:create_account,true',
         ];
