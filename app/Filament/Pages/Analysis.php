@@ -8,6 +8,7 @@ use App\Livewire\CustomComparisonWidget;
 use App\Livewire\Filters;
 use App\Livewire\LastOrders;
 use App\Livewire\LocationsAnalysisWidget;
+use App\Livewire\MostAndLeastLocationsOrders;
 use App\Livewire\OrdersChart;
 use App\Livewire\UsersChart;
 use Filament\Pages\Page;
@@ -51,6 +52,7 @@ class Analysis extends Page
             UsersChart::class,
             OrdersChart::class,
             CustomComparisonWidget::class,
+            MostAndLeastLocationsOrders::class,
             LocationsAnalysisWidget::class,
             TopProducts::class,
             LastOrders::class,

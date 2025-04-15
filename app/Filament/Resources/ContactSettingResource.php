@@ -51,12 +51,14 @@ class ContactSettingResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('key')
+                    ->columnSpanFull()
                     ->label(__('fields.key'))
                     ->required()
                     ->maxLength(255)
                     ->unique(ignoreRecord: true),
 
                 Forms\Components\Textarea::make('value')
+                    ->columnSpanFull()
                     ->label(__('fields.value'))
                     ->required(),
             ]);

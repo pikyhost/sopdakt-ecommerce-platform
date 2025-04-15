@@ -5,96 +5,123 @@ namespace App\Livewire;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\Governorate;
-use App\Models\Order;
-use Filament\Forms\Components\Select;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class MostAndLeastLocationsOrders extends BaseWidget
 {
+    protected static ?string $pollingInterval = null;
+    protected static bool $isLazy = false;
+    protected int | string | array $columnSpan = 'full';
+
     public function table(Table $table): Table
     {
         return $table
-            ->query(
-                fn () => Order::query()
-                    ->selectRaw('
-                        COALESCE(countries.name, governorates.name, cities.name) as location_name,
-                        COUNT(orders.id) as orders_count
-                    ')
-                    ->leftJoin('countries', 'orders.country_id', '=', 'countries.id')
-                    ->leftJoin('governorates', 'orders.governorate_id', '=', 'governorates.id')
-                    ->leftJoin('cities', 'orders.city_id', '=', 'cities.id')
-                    ->groupBy('location_name')
-            )
-            ->modifyQueryUsing(function (Builder $query, $livewire) {
-                $filtersCount = !empty($livewire->tableFilters) && collect($livewire->tableFilters)->pluck('value')->filter()->isNotEmpty();
-
-                $query->when(!$filtersCount, fn ($query) => $query->whereRaw('1 = 0'));
+            ->query(function () {
+                return Country::query()->whereRaw('1 = 0');
             })
-            ->emptyStateHeading('Please search or filter records.')
-            ->emptyStateDescription('Current search did not return any results. Please try again.')
             ->columns([
-                TextColumn::make('location_name')
-                    ->label('Location'),
+                TextColumn::make('type')
+                    ->label('Ranking Type')
+                    ->formatStateUsing(fn ($state) => ucfirst(str_replace('_', ' ', $state))),
+
+                TextColumn::make('name')
+                    ->label('Location Name')
+                    ->searchable(),
+
                 TextColumn::make('orders_count')
                     ->label('Orders Count')
+                    ->numeric()
                     ->sortable()
-                    ->alignRight(),
+                    ->alignEnd(),
             ])
-            ->filters([
-                Filter::make('location_filter')
-                    ->label('Location Orders Ranking')
-                    ->form([
-                        Select::make('type')
-                            ->options([
-                                'most_countries' => 'Most Countries',
-                                'least_countries' => 'Least Countries',
-                                'most_governorates' => 'Most Governorates',
-                                'least_governorates' => 'Least Governorates',
-                                'most_cities' => 'Most Cities',
-                                'least_cities' => 'Least Cities',
-                            ])
-                            ->required()
-                            ->native(false),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        $type = $data['type'] ?? null;
+            ->paginated(false)
+            ->heading('Location Orders Ranking')
+            ->description('Top and bottom 10 locations by order count')
+            ->emptyStateHeading('No orders data available')
+            ->emptyStateDescription('Once orders are placed, rankings will appear here');
+    }
 
-                        if (! $type) {
-                            return $query;
-                        }
+    protected function getTableQuery(): ?Builder
+    {
+        return null; // We override this to provide our own data
+    }
 
-                        $order = str_contains($type, 'most') ? 'desc' : 'asc';
+    public function getTableRecords(): \Illuminate\Contracts\Pagination\CursorPaginator|\Illuminate\Contracts\Pagination\Paginator|\Illuminate\Database\Eloquent\Collection
+    {
+        return collect()
+            // Most Countries
+            ->merge($this->getRankedData(
+                Country::withCount('orders')
+                    ->having('orders_count', '>', 0)
+                    ->orderByDesc('orders_count')
+                    ->limit(10)
+                    ->get(),
+                'most_countries'
+            ))
 
-                        return $query
-                            ->selectRaw(match (true) {
-                                str_contains($type, 'countries') => 'countries.name as location_name, COUNT(orders.id) as orders_count',
-                                str_contains($type, 'governorates') => 'governorates.name as location_name, COUNT(orders.id) as orders_count',
-                                str_contains($type, 'cities') => 'cities.name as location_name, COUNT(orders.id) as orders_count',
-                            })
-                            ->when(str_contains($type, 'countries'), fn ($q) => $q->join('countries', 'orders.country_id', '=', 'countries.id'))
-                            ->when(str_contains($type, 'governorates'), fn ($q) => $q->join('governorates', 'orders.governorate_id', '=', 'governorates.id'))
-                            ->when(str_contains($type, 'cities'), fn ($q) => $q->join('cities', 'orders.city_id', '=', 'cities.id'))
-                            ->groupBy('location_name')
-                            ->orderBy('orders_count', $order);
-                    })
-                    ->indicateUsing(function (array $data): ?string {
-                        return match ($data['type'] ?? null) {
-                            'most_countries' => 'Most Countries by Orders',
-                            'least_countries' => 'Least Countries by Orders',
-                            'most_governorates' => 'Most Governorates by Orders',
-                            'least_governorates' => 'Least Governorates by Orders',
-                            'most_cities' => 'Most Cities by Orders',
-                            'least_cities' => 'Least Cities by Orders',
-                            default => null,
-                        };
-                    }),
-            ]);
+            // Least Countries
+            ->merge($this->getRankedData(
+                Country::withCount('orders')
+                    ->having('orders_count', '>', 0)
+                    ->orderBy('orders_count')
+                    ->limit(10)
+                    ->get(),
+                'least_countries'
+            ))
+
+            // Most Governorates
+            ->merge($this->getRankedData(
+                Governorate::withCount('orders')
+                    ->having('orders_count', '>', 0)
+                    ->orderByDesc('orders_count')
+                    ->limit(10)
+                    ->get(),
+                'most_governorates'
+            ))
+
+            // Least Governorates
+            ->merge($this->getRankedData(
+                Governorate::withCount('orders')
+                    ->having('orders_count', '>', 0)
+                    ->orderBy('orders_count')
+                    ->limit(10)
+                    ->get(),
+                'least_governorates'
+            ))
+
+            // Most Cities
+            ->merge($this->getRankedData(
+                City::withCount('orders')
+                    ->having('orders_count', '>', 0)
+                    ->orderByDesc('orders_count')
+                    ->limit(10)
+                    ->get(),
+                'most_cities'
+            ))
+
+            // Least Cities
+            ->merge($this->getRankedData(
+                City::withCount('orders')
+                    ->having('orders_count', '>', 0)
+                    ->orderBy('orders_count')
+                    ->limit(10)
+                    ->get(),
+                'least_cities'
+            ));
+    }
+
+    protected function getRankedData($locations, string $type): Collection
+    {
+        return $locations->map(function ($location) use ($type) {
+            return (object) [
+                'type' => $type,
+                'name' => $location->name,
+                'orders_count' => $location->orders_count,
+            ];
+        });
     }
 }
