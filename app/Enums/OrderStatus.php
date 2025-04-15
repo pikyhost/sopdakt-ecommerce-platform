@@ -22,6 +22,7 @@ enum OrderStatus: string implements HasColor, HasIcon, HasLabel
             self::Pending   => __('Pending'),
             self::Preparing => __('Preparing'),
             self::Shipping  => __('Shipping'),
+            // confirmed
             self::Delayed   => __('Delayed'),
             self::Refund    => __('Refund'),
             self::Cancelled => __('Cancelled'),

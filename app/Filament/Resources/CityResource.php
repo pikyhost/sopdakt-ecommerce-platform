@@ -103,7 +103,7 @@ class CityResource extends Resource
                     ->label(__('governorate_name')),
 
                 Forms\Components\TextInput::make('cost')
-                    ->label(__('shipping_cost.cost'))
+                    ->label(__('Shipping Cost'))
                     ->required()
                     ->numeric()
                     ->default(0),
@@ -127,11 +127,11 @@ class CityResource extends Resource
                     ->searchable()
                     ->label(__('governorate_name')),
                 Tables\Columns\TextColumn::make('cost')
-                    ->label(__('shipping_cost.cost'))
+                    ->label(__('Shipping Cost'))
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('shipping_estimate_time')
-                    ->label(__('shipping_cost.shipping_estimate_time'))
+                    ->label(__('Shipping Cost'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -181,7 +181,7 @@ class CityResource extends Resource
                             ->label(__('governorate_name')),
 
                         TextEntry::make('cost')
-                            ->label(__('shipping_cost.cost')),
+                            ->label(__('Shipping Cost')),
 
                         TextEntry::make('shipping_estimate_time')
                             ->label(__('shipping_cost.shipping_estimate_time')),

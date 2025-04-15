@@ -106,7 +106,7 @@ class CountryResource extends Resource
                 ->maxLength(255),
 
             TextInput::make('cost')
-                ->label(__('shipping_cost.cost'))
+                ->label(__('Shipping Cost'))
                 ->required()
                 ->numeric()
                 ->default(0),
@@ -149,7 +149,7 @@ class CountryResource extends Resource
                 ->sortable(),
 
             TextColumn::make('cost')
-                ->label(__('shipping_cost.cost'))
+                ->label(__('Shipping Cost'))
                 ->sortable(),
 
             TextColumn::make('shipping_estimate_time')
@@ -185,7 +185,7 @@ class CountryResource extends Resource
                         ->badge(),
 
                     TextEntry::make('cost')
-                        ->label(__('shipping_cost.cost')),
+                        ->label(__('Shipping Cost')),
 
                     TextEntry::make('shipping_estimate_time')
                         ->label(__('shipping_cost.shipping_estimate_time')),

@@ -19,6 +19,11 @@ use App\Http\Controllers\{CartController,
 use Spatie\Analytics\Facades\Analytics;
 use Spatie\Analytics\Period;
 
+// This route catches everything except `admin/*` and `client/*`
+//Route::get('{any}', function () {
+//    abort(404);
+//})->where('any', '^(?!admin|client).*$');
+
 Route::middleware('signed')
     ->get('invitation/{invitation}/accept', AcceptInvitation::class)
     ->name('invitation.accept');
