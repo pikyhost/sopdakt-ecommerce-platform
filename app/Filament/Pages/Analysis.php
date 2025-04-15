@@ -8,7 +8,6 @@ use App\Livewire\CustomComparisonWidget;
 use App\Livewire\Filters;
 use App\Livewire\LastOrders;
 use App\Livewire\LocationsAnalysisWidget;
-use App\Livewire\MostAndLeastLocationsOrders;
 use App\Livewire\OrdersChart;
 use App\Livewire\UsersChart;
 use Filament\Pages\Page;
@@ -48,13 +47,13 @@ class Analysis extends Page
     protected function getFooterWidgets(): array
     {
         return [
-//            AnalysisPageStats::class,
-//            UsersChart::class,
-//            OrdersChart::class,
-//            CustomComparisonWidget::class,
-//            LocationsAnalysisWidget::class,
-//            TopProducts::class,
-//            LastOrders::class,
+            AnalysisPageStats::class,
+            UsersChart::class,
+            OrdersChart::class,
+            CustomComparisonWidget::class,
+            LocationsAnalysisWidget::class,
+            TopProducts::class,
+            LastOrders::class,
         ];
     }
 }

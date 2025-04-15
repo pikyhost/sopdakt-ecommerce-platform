@@ -8,7 +8,6 @@ use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\On;
 use App\Enums\OrderStatus;
 
@@ -90,25 +89,14 @@ class AnalysisPageStats extends BaseWidget
         $leastFrequentGovernorate = $governorateStats->where('order_count', '>', 0)->last();
 
         // Get most and least frequent cities
-        // Replace your current cityStats query with this:
         $cityStats = Order::whereBetween('created_at', [$startDate, $endDate])
-            ->whereNotNull('city_id')
-            ->with(['city'])
+            ->with('city')
             ->selectRaw('city_id, count(*) as order_count')
             ->groupBy('city_id')
             ->orderBy('order_count', 'desc')
             ->get()
-            ->each(function($item) {
-                // Debug output - remove this after testing
-                if (!$item->city) {
-                    Log::warning('Missing city for order', [
-                        'city_id' => $item->city_id,
-                        'order_count' => $item->order_count
-                    ]);
-                }
-            })
             ->filter(function($order) {
-                return $order->city !== null && $order->city->name !== null;
+                return $order->city_id !== null;
             });
 
         $mostFrequentCity = $cityStats->first();
@@ -194,7 +182,7 @@ class AnalysisPageStats extends BaseWidget
             $leastCountryUrl = $leastFrequentCountry->country_id ? "/admin/countries/{$leastFrequentCountry->country_id}" : null;
 
             $stats[] = Stat::make($locale === 'ar' ? 'الدولة الأكثر طلباً' : 'Most Orders Country',
-                $mostFrequentCountry->country?->name ?? 'N/A')
+                $mostFrequentCountry->country?->name ?? ($locale === 'ar' ? 'غير معروف' : 'Unknown'))
                 ->color('success')
                 ->description($locale === 'ar' ?
                     "عدد الطلبات: {$mostFrequentCountry->order_count}" :
@@ -205,7 +193,7 @@ class AnalysisPageStats extends BaseWidget
                 ->extraAttributes($extraAttributes);
 
             $stats[] = Stat::make($locale === 'ar' ? 'الدولة الأقل طلباً' : 'Least Orders Country',
-                $leastFrequentCountry->country?->name ?? 'N/A')
+                $leastFrequentCountry->country?->name ?? ($locale === 'ar' ? 'غير معروف' : 'Unknown'))
                 ->color('warning')
                 ->description($locale === 'ar' ?
                     "عدد الطلبات: {$leastFrequentCountry->order_count}" :
@@ -221,7 +209,7 @@ class AnalysisPageStats extends BaseWidget
             $leastGovernorateUrl = $leastFrequentGovernorate->governorate_id ? "/admin/governorates/{$leastFrequentGovernorate->governorate_id}" : null;
 
             $stats[] = Stat::make($locale === 'ar' ? 'المحافظة الأكثر طلباً' : 'Most Orders Governorate',
-                $mostFrequentGovernorate->governorate?->name ?? 'N/A')
+                $mostFrequentGovernorate->governorate?->name ?? ($locale === 'ar' ? 'غير معروف' : 'Unknown'))
                 ->color('success')
                 ->description($locale === 'ar' ?
                     "عدد الطلبات: {$mostFrequentGovernorate->order_count}" :
@@ -232,7 +220,7 @@ class AnalysisPageStats extends BaseWidget
                 ->extraAttributes($extraAttributes);
 
             $stats[] = Stat::make($locale === 'ar' ? 'المحافظة الأقل طلباً' : 'Least Orders Governorate',
-                $leastFrequentGovernorate->governorate?->name ?? 'N/A')
+                $leastFrequentGovernorate->governorate?->name ?? ($locale === 'ar' ? 'غير معروف' : 'Unknown'))
                 ->color('warning')
                 ->description($locale === 'ar' ?
                     "عدد الطلبات: {$leastFrequentGovernorate->order_count}" :
@@ -248,7 +236,7 @@ class AnalysisPageStats extends BaseWidget
             $leastCityUrl = $leastFrequentCity->city_id ? "/admin/cities/{$leastFrequentCity->city_id}" : null;
 
             $stats[] = Stat::make($locale === 'ar' ? 'المدينة الأكثر طلباً' : 'Most Orders City',
-                $mostFrequentCity->city?->name ?? 'N/A')
+                $mostFrequentCity->city?->name ?? ($locale === 'ar' ? 'غير معروف' : 'Unknown'))
                 ->color('success')
                 ->description($locale === 'ar' ?
                     "عدد الطلبات: {$mostFrequentCity->order_count}" :
