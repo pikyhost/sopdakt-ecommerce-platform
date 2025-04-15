@@ -8,6 +8,7 @@ use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\On;
 use App\Enums\OrderStatus;
 
@@ -89,12 +90,26 @@ class AnalysisPageStats extends BaseWidget
         $leastFrequentGovernorate = $governorateStats->where('order_count', '>', 0)->last();
 
         // Get most and least frequent cities
+        // Replace your current cityStats query with this:
         $cityStats = Order::whereBetween('created_at', [$startDate, $endDate])
-            ->with('city')
+            ->whereNotNull('city_id')
+            ->with(['city'])
             ->selectRaw('city_id, count(*) as order_count')
             ->groupBy('city_id')
             ->orderBy('order_count', 'desc')
-            ->get();
+            ->get()
+            ->each(function($item) {
+                // Debug output - remove this after testing
+                if (!$item->city) {
+                    Log::warning('Missing city for order', [
+                        'city_id' => $item->city_id,
+                        'order_count' => $item->order_count
+                    ]);
+                }
+            })
+            ->filter(function($order) {
+                return $order->city !== null && $order->city->name !== null;
+            });
 
         $mostFrequentCity = $cityStats->first();
         $leastFrequentCity = $cityStats->where('order_count', '>', 0)->last();
@@ -244,7 +259,7 @@ class AnalysisPageStats extends BaseWidget
                 ->extraAttributes($extraAttributes);
 
             $stats[] = Stat::make($locale === 'ar' ? 'المدينة الأقل طلباً' : 'Least Orders City',
-                $leastFrequentCity->city?->name ?? 'N/A')
+                $leastFrequentCity->city?->name ?? ($locale === 'ar' ? 'غير معروف' : 'Unknown'))
                 ->color('warning')
                 ->description($locale === 'ar' ?
                     "عدد الطلبات: {$leastFrequentCity->order_count}" :

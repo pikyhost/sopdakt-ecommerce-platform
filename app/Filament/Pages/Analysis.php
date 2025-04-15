@@ -48,14 +48,13 @@ class Analysis extends Page
     protected function getFooterWidgets(): array
     {
         return [
-            AnalysisPageStats::class,
-            UsersChart::class,
-            OrdersChart::class,
-            CustomComparisonWidget::class,
-            MostAndLeastLocationsOrders::class,
-            LocationsAnalysisWidget::class,
-            TopProducts::class,
-            LastOrders::class,
+//            AnalysisPageStats::class,
+//            UsersChart::class,
+//            OrdersChart::class,
+//            CustomComparisonWidget::class,
+//            LocationsAnalysisWidget::class,
+//            TopProducts::class,
+//            LastOrders::class,
         ];
     }
 }

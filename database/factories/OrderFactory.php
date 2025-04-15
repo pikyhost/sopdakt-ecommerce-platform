@@ -57,7 +57,6 @@ class OrderFactory extends Factory
             'notes' => $this->faker->optional()->sentence(),
             'tracking_number' => $this->faker->optional()->uuid(),
             'shipping_status' => $this->faker->optional()->word(),
-            'shipping_response' => $this->faker->optional()->json(),
         ];
     }
 }
