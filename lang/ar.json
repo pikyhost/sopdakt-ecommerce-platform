@@ -6,6 +6,7 @@
     "This phone number is not allowed.": "رقم الهاتف هذا محظور ولا يمكن استخدامه.",
     "blocked_phones.note": "ملاحظة",
     "blocked_phones.created_at": "تاريخ الإضافة",
+    "Back": "رجوع",
     "This phone number is not allowed to create an account": "لا يسمح باستخدام هذا الرقم الهاتفي لإنشاء حساب",
     "contact.success_message": "تم إرسال رسالتك بنجاح.",
     "contact_message_notification.admin.title": "رسالة تواصل جديدة",
