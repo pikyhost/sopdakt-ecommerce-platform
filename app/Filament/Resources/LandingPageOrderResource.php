@@ -29,7 +29,7 @@ class LandingPageOrderResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return __('landing_page_order.landing_page_orders');
+        return __('Landing Page Orders');
     }
 
     public static function getModelLabel(): string

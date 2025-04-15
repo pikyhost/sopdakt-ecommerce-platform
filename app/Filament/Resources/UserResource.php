@@ -512,12 +512,20 @@ class UserResource extends Resource
         ];
     }
 
-    public static function getRelations(): array
+    public static function getEloquentQuery(): Builder
     {
-        return [
-          //  OrdersRelationManager::class
-        ];
+        $query = parent::getEloquentQuery();
+
+        // Only super_admins can see super_admins
+        if (!auth()->user()->hasRole('super_admin')) {
+            $query->whereDoesntHave('roles', function($q) {
+                $q->where('name', 'super_admin');
+            });
+        }
+
+        return $query;
     }
+
 
     protected static function getTooltip(TextColumn $column): ?string
     {

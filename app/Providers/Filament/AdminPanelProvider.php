@@ -3,15 +3,43 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Analysis;
+use App\Filament\Pages\MyGoogleAnalyticsPage;
+use App\Filament\Pages\SavedProducts;
+use App\Filament\Pages\ServerEnvEditor;
+use App\Filament\Resources\AboutUsResource;
+use App\Filament\Resources\AttributeResource;
+use App\Filament\Resources\BannerResource;
+use App\Filament\Resources\BlockedPhoneNumberResource;
+use App\Filament\Resources\BundleResource;
+use App\Filament\Resources\CategoryResource;
+use App\Filament\Resources\CityResource;
+use App\Filament\Resources\ColorResource;
 use App\Filament\Resources\ContactResource;
+use App\Filament\Resources\ContactSettingResource;
+use App\Filament\Resources\CountryGroupResource;
+use App\Filament\Resources\CountryResource;
+use App\Filament\Resources\CurrencyResource;
+use App\Filament\Resources\GovernorateResource;
 use App\Filament\Resources\HomePageSettingResource;
 use App\Filament\Resources\InventoryResource;
+use App\Filament\Resources\LabelResource;
+use App\Filament\Resources\LandingPageOrderResource;
+use App\Filament\Resources\LandingPageResource;
+use App\Filament\Resources\LandingPageSettingResource;
 use App\Filament\Resources\OrderResource;
 use App\Filament\Resources\PaymentMethodResource;
+use App\Filament\Resources\PolicyResource;
 use App\Filament\Resources\ProductRatingResource;
 use App\Filament\Resources\ProductResource;
+use App\Filament\Resources\RoleResource;
 use App\Filament\Resources\SettingResource;
 use App\Filament\Resources\ShippingCostResource;
+use App\Filament\Resources\ShippingTypeResource;
+use App\Filament\Resources\ShippingZoneResource;
+use App\Filament\Resources\SizeResource;
+use App\Filament\Resources\TopNoticeResource;
+use App\Filament\Resources\TransactionResource;
+use App\Filament\Resources\UserResource;
 use Filament\Navigation\NavigationBuilder;
 use Filament\Navigation\NavigationGroup;
 use App\Filament\Pages\Dashboard;
@@ -38,7 +66,9 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Jeffgreco13\FilamentBreezy\BreezyCore;
+use Jeffgreco13\FilamentBreezy\Pages\MyProfilePage;
 use SolutionForest\FilamentSimpleLightBox\SimpleLightBoxPlugin;
+use Z3d0X\FilamentLogger\Resources\ActivityResource;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -79,11 +109,15 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(
                 PanelsRenderHook::FOOTER,
                 fn() => view('footer')
-            )->navigationGroups($this->getNavigationGroups())
+            )
             ->sidebarCollapsibleOnDesktop()
-//            ->navigation(function (NavigationBuilder $builder): NavigationBuilder {
-//                return $builder->groups($this->getCustomNavigationGroups());
-//            })
+            ->navigation(function (NavigationBuilder $builder): NavigationBuilder {
+                return $builder->items([
+                    ...Dashboard::getNavigationItems(),
+                    ...MyProfilePage::getNavigationItems(),
+                    ...BlockedPhoneNumberResource::getNavigationItems(),
+                ])->groups($this->getCustomNavigationGroups());
+            })
             ->renderHook('head.end', function () {
                 return view('filament.scripts.navigation-reset');
             })
@@ -120,76 +154,6 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->unsavedChangesAlerts()
             ->plugins([
-//                FilamentEnvEditorPlugin::make()
-//                    ->hideKeys(
-//                        'APP_ENV',
-//                        'APP_MAINTENANCE_STORE',
-//                        'APP_KEY',
-//                        'APP_DEBUG',
-//                        'APP_TIMEZONE',
-//                        'APP_URL',
-//                        'APP_LOCALE',
-//                        'APP_FALLBACK_LOCALE',
-//                        'APP_FAKER_LOCALE',
-//                        'APP_MAINTENANCE_DRIVER',
-//                        'PHP_CLI_SERVER_WORKERS',
-//                        'BCRYPT_ROUNDS',
-//                        'LOG_CHANNEL',
-//                        'LOG_STACK',
-//                        'LOG_DEPRECATIONS_CHANNEL',
-//                        'LOG_LEVEL',
-//
-//                        // Database Settings
-//                        'DB_CONNECTION',
-//                        'DB_HOST',
-//                        'DB_PORT',
-//                        'DB_DATABASE',
-//                        'DB_USERNAME',
-//                        'DB_PASSWORD',
-//
-//                        // Session & Caching
-//                        'SESSION_DRIVER',
-//                        'SESSION_LIFETIME',
-//                        'SESSION_ENCRYPT',
-//                        'SESSION_PATH',
-//                        'SESSION_DOMAIN',
-//                        'CACHE_STORE',
-//                        'CACHE_PREFIX',
-//                        'MEMCACHED_HOST',
-//                        'REDIS_CLIENT',
-//                        'REDIS_HOST',
-//                        'REDIS_PASSWORD',
-//                        'REDIS_PORT',
-//
-//                        // Broadcast & Queue
-//                        'BROADCAST_CONNECTION',
-//                        'FILESYSTEM_DISK',
-//                        'QUEUE_CONNECTION',
-//
-//                        // AWS Storage
-//                        'AWS_ACCESS_KEY_ID',
-//                        'AWS_SECRET_ACCESS_KEY',
-//                        'AWS_DEFAULT_REGION',
-//                        'AWS_BUCKET',
-//                        'AWS_USE_PATH_STYLE_ENDPOINT',
-//
-//                        // Vite & GeoIP
-//                        'VITE_APP_NAME',
-//                        'GEOIP_IPGEOLOCATION_KEY',
-//                        'GEOIP_SERVICE',
-//
-//                        // JT Express API
-//                        'JT_EXPRESS_BASE_URL',
-//                        'JT_EXPRESS_API_ACCOUNT',
-//                        'JT_EXPRESS_PRIVATE_KEY',
-//                        'JT_EXPRESS_CUSTOMER_CODE',
-//                        'JT_EXPRESS_PASSWORD'
-//                    )
-//                    ->navigationGroup(__('Settings Management'))
-//                    ->navigationLabel(__('My Env'))
-//                    ->navigationIcon('heroicon-o-wrench-screwdriver')
-//                    ->navigationSort(1)
-//                    ->slug('env-editor'),
                 \BezhanSalleh\FilamentGoogleAnalytics\FilamentGoogleAnalyticsPlugin::make(),
                 \BezhanSalleh\FilamentShield\FilamentShieldPlugin::make(),
                 SimpleLightBoxPlugin::make(),
@@ -209,104 +173,42 @@ class AdminPanelProvider extends PanelProvider
             ->renderHook(PanelsRenderHook::SIDEBAR_NAV_START, fn () => view('navigation-filter'));
     }
 
-    private function getNavigationGroups(): array
-    {
-        // Define groups in EXACT order with their translations
-        $groups = [
-            'analysis' => [
-                'label' => __('Analysis'),
-                'collapsed' => true,
-            ],
-            'products' => [
-                'label' => __('Products Management'),
-                'collapsed' => true,
-            ],
-            'inventory' => [
-                'label' => __('Inventory Management'),
-                'collapsed' => true,
-            ],
-            'orders' => [
-                'label' => __('Orders'),
-                'collapsed' => true,
-            ],
-            'orders-contacts' => [
-                'label' => __('Orders & Contacts'),
-                'collapsed' => true,
-            ],
-            'payments' => [
-                'label' => __('Payment Management'),
-                'collapsed' => true,
-            ],
-            'shipping' => [
-                'label' => __('Shipping Management'),
-                'collapsed' => true,
-            ],
-            'user-experience' => [
-                'label' => __('user_experience'),
-                'collapsed' => true,
-            ],
-            'settings' => [
-                'label' => __('Settings Management'),
-                'collapsed' => true,
-            ],
-            'pages-settings' => [
-                'label' => __('Pages Settings Management'),
-                'collapsed' => true,
-            ],
-        ];
-
-        $currentRoute = request()->route()?->getName();
-        $activeGroupKey = null;
-
-        // Find active group
-        foreach (array_keys($groups) as $groupKey) {
-            if ($currentRoute && str_contains($currentRoute, $groupKey)) {
-                $activeGroupKey = $groupKey;
-                break;
-            }
-        }
-
-        // Build navigation items in EXACT defined order
-        $navigationItems = [];
-        foreach ($groups as $groupKey => $group) {
-            $navigationItems[] = NavigationGroup::make($group['label'])
-                ->collapsed($activeGroupKey ? $groupKey !== $activeGroupKey : $group['collapsed']);
-        }
-
-        return $navigationItems;
-    }
-
     private function getCustomNavigationGroups(): array
     {
         $groups = [
             'analysis' => [
                 'label' => __('Analysis'),
                 'items' => [
-                   Analysis::getNavigationItems()
+                   Analysis::getNavigationItems(),
+                    MyGoogleAnalyticsPage::getNavigationItems(),
                 ],
             ],
             'products' => [
                 'label' => __('Products Management'),
                 'items' => [
+                    LandingPageResource::getNavigationItems(),
                      ProductResource::getNavigationItems(),
+                    LabelResource::getNavigationItems(),
+                    BundleResource::getNavigationItems(),
+                    AttributeResource::getNavigationItems(),
+                    ColorResource::getNavigationItems(),
+                    SizeResource::getNavigationItems(),
+                    CategoryResource::getNavigationItems()
                 ],
             ],
             'inventory' => [
-                'label' => __('Inventory Management'),
+                'label' => __('Stock Management'),
                 'items' => [
                      InventoryResource::getNavigationItems(),
-                ],
-            ],
-            'orders' => [
-                'label' => __('Orders'),
-                'items' => [
-                     OrderResource::getNavigationItems(),
+                    TransactionResource::getNavigationItems(),
                 ],
             ],
             'orders-contacts' => [
-                'label' => __('Orders & Contacts'),
+                'label' => __('landing_page_order.orders_contacts'),
                 'items' => [
-                     ContactResource::getNavigationItems(),
+                    LandingPageOrderResource::getNavigationItems(),
+                    OrderResource::getNavigationItems(),
+                    ContactResource::getNavigationItems()
                 ],
             ],
             'payments' => [
@@ -318,25 +220,44 @@ class AdminPanelProvider extends PanelProvider
             'shipping' => [
                 'label' => __('Shipping Management'),
                 'items' => [
-                     ShippingCostResource::getNavigationItems(),
+                    CityResource::getNavigationItems(),
+                    GovernorateResource::getNavigationItems(),
+                    ShippingZoneResource::getNavigationItems(),
+                    CountryResource::getNavigationItems(),
+                    CountryGroupResource::getNavigationItems(),
+                    ShippingTypeResource::getNavigationItems(),
+                    ShippingCostResource::getNavigationItems(),
                 ],
             ],
             'user-experience' => [
                 'label' => __('user_experience'),
                 'items' => [
+                    SavedProducts::getNavigationItems(),
                    ProductRatingResource::getNavigationItems()
                 ],
             ],
             'settings' => [
                 'label' => __('Settings Management'),
                 'items' => [
-                     SettingResource::getNavigationItems(),
+                    ServerEnvEditor::getNavigationItems(),
+                    ContactSettingResource::getNavigationItems(),
+                    ActivityResource::getNavigationItems(),
+                    LandingPageSettingResource::getNavigationItems(),
+                    SettingResource::getNavigationItems(),
+                    CurrencyResource::getNavigationItems(),
+                    UserResource::getNavigationItems(),
+                    RoleResource::getNavigationItems(),
+
                 ],
             ],
             'pages-settings' => [
                 'label' => __('Pages Settings Management'),
                 'items' => [
-                   HomePageSettingResource::getNavigationItems()
+                    AboutUsResource::getNavigationItems(),
+                    TopNoticeResource::getNavigationItems(),
+                    BannerResource::getNavigationItems(),
+                    HomePageSettingResource::getNavigationItems(),
+                    PolicyResource::getNavigationItems(),
                 ],
             ],
         ];

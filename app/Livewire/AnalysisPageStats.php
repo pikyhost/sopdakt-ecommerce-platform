@@ -88,19 +88,34 @@ class AnalysisPageStats extends BaseWidget
         $mostFrequentGovernorate = $governorateStats->first();
         $leastFrequentGovernorate = $governorateStats->where('order_count', '>', 0)->last();
 
-        // Get most and least frequent cities
+// Get most and least frequent cities with tie-breaker for most recent order
         $cityStats = Order::whereBetween('created_at', [$startDate, $endDate])
             ->with('city')
-            ->selectRaw('city_id, count(*) as order_count')
+            ->selectRaw('city_id, count(*) as order_count, MAX(created_at) as last_order_date')
             ->groupBy('city_id')
             ->orderBy('order_count', 'desc')
+            ->orderBy('last_order_date', 'asc') // For most frequent, use oldest last order
             ->get()
             ->filter(function($order) {
                 return $order->city_id !== null;
             });
 
         $mostFrequentCity = $cityStats->first();
-        $leastFrequentCity = $cityStats->where('order_count', '>', 0)->last();
+
+// For least frequent, we want the one with newest last order among those with lowest count
+        $cityStatsForLeast = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->with('city')
+            ->selectRaw('city_id, count(*) as order_count, MAX(created_at) as last_order_date')
+            ->groupBy('city_id')
+            ->having('order_count', '>', 0)
+            ->orderBy('order_count', 'asc')
+            ->orderBy('last_order_date', 'desc') // For least frequent, use newest last order
+            ->get()
+            ->filter(function($order) {
+                return $order->city_id !== null;
+            });
+
+        $leastFrequentCity = $cityStatsForLeast->first();
 
         $totalLosses = $cancelledOrders + $refundedOrders;
         $winLossRatio = $totalLosses > 0 ? round($completedOrders / $totalLosses, 2) : 'N/A';
