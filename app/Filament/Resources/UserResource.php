@@ -147,6 +147,7 @@ class UserResource extends Resource
                 }),
 
             PhoneInput::make('phone')
+                ->separateDialCode(true) // Shows flag and +20 separately
                 ->enableIpLookup(true) // Enable IP-based country detection
                 ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
                 ->required()

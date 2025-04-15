@@ -129,11 +129,6 @@ class GovernorateResource extends Resource
                 Tables\Columns\TextColumn::make('shipping_estimate_time')
                     ->label(__('shipping_cost.shipping_estimate_time'))
                     ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->label(__('created_at')),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()

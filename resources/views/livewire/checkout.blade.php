@@ -106,7 +106,6 @@
                         <div class="form-group">
                             <label>Secondary Phone (optional)</label>
                             <input type="tel" class="form-control" wire:model.defer="second_phone"/>
-                            @error('second_phone') <span class="text-danger">{{ $message }}</span> @enderror
                             @if ($errors->has('second_phone'))
                                 <span class="text-danger">{!! $errors->first('second_phone') !!}</span>
                             @endif

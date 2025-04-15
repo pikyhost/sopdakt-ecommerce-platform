@@ -76,7 +76,6 @@ class Checkout extends Component
                             $fail(__('validation.blocked_phone', [
                                 'link' => '<a href="' . route('contact.us') . '" target="_blank">our support page</a>'
                             ]));
-
                             break;
                         }
                     }

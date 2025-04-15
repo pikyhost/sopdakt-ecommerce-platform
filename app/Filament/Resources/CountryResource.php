@@ -190,10 +190,6 @@ class CountryResource extends Resource
                     TextEntry::make('shipping_estimate_time')
                         ->label(__('shipping_cost.shipping_estimate_time')),
 
-                    TextEntry::make('created_at')
-                        ->label(__('category.created_at'))
-                        ->dateTime(),
-
                     TextEntry::make('updated_at')
                         ->label(__('category.updated_at'))
                         ->dateTime(),

@@ -2,6 +2,10 @@
 
 namespace App\Filament\Resources;
 
+use Filament\Forms\Components\Select;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\Indicator;
+use Illuminate\Database\Eloquent\Builder;
 use App\Enums\OrderStatus;
 use App\Filament\Resources\OrderResource\Pages;
 use App\Mail\OrderStatusMail;
@@ -19,7 +23,6 @@ use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Wizard;
 use Filament\Forms\Components\Wizard\Step;
@@ -36,7 +39,6 @@ use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Mail;
 
 class OrderResource extends Resource
@@ -221,6 +223,79 @@ class OrderResource extends Resource
                             ->mapWithKeys(fn ($status) => [$status->value => $status->getLabel()])
                             ->toArray()
                     ),
+
+             Filter::make('location')
+                 ->form([
+                     Select::make('country_ids')
+                         ->label('Countries')
+                         ->multiple()
+                         ->live()
+                         ->options(fn () => Country::pluck('name', 'id')),
+
+                     Select::make('governorate_ids')
+                         ->label('Governorates')
+                         ->multiple()
+                         ->live()
+                         ->searchable()
+                         ->options(function (callable $get) {
+                             $countryIds = $get('country_ids');
+
+                             if (!is_array($countryIds) || empty($countryIds)) {
+                                 return [];
+                             }
+
+                             return Governorate::whereIn('country_id', $countryIds)
+                                 ->pluck('name', 'id');
+                         }),
+
+                     Select::make('city_ids')
+                         ->label('Cities')
+                         ->multiple()
+                         ->searchable()
+                         ->options(function (callable $get) {
+                             $governorateIds = $get('governorate_ids');
+
+                             if (!is_array($governorateIds) || empty($governorateIds)) {
+                                 return [];
+                             }
+
+                             return City::whereIn('governorate_id', $governorateIds)
+                                 ->pluck('name', 'id');
+                         }),
+                 ])
+                 ->query(function (Builder $query, array $data): Builder {
+                     return $query
+                         ->when(filled($data['country_ids'] ?? null), function (Builder $q) use ($data) {
+                             $q->whereIn('country_id', $data['country_ids']);
+                         })
+                         ->when(filled($data['governorate_ids'] ?? null), function (Builder $q) use ($data) {
+                             $q->whereIn('governorate_id', $data['governorate_ids']);
+                         })
+                         ->when(filled($data['city_ids'] ?? null), function (Builder $q) use ($data) {
+                             $q->whereIn('city_id', $data['city_ids']);
+                         });
+                 })
+                 ->indicateUsing(function (array $data) {
+                     $indicators = [];
+
+                     if (!empty($data['country_ids'])) {
+                         $countries = Country::whereIn('id', $data['country_ids'])->pluck('name')->implode(', ');
+                         $indicators[] = Indicator::make("Countries: $countries")->removeField('country_ids');
+                     }
+
+                     if (!empty($data['governorate_ids'])) {
+                         $governorates = Governorate::whereIn('id', $data['governorate_ids'])->pluck('name')->implode(', ');
+                         $indicators[] = Indicator::make("Governorates: $governorates")->removeField('governorate_ids');
+                     }
+
+                     if (!empty($data['city_ids'])) {
+                         $cities = City::whereIn('id', $data['city_ids'])->pluck('name')->implode(', ');
+                         $indicators[] = Indicator::make("Cities: $cities")->removeField('city_ids');
+                     }
+
+                     return $indicators;
+                 }),
+
                 Tables\Filters\Filter::make('created_at')
                     ->form([
                         DatePicker::make('created_from')
