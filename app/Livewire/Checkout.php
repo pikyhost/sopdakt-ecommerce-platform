@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Enums\OrderStatus;
 use App\Enums\UserRole;
+use App\Helpers\GeneralHelper;
 use App\Mail\GuestInvitationMail;
 use App\Mail\OrderStatusMail;
 use App\Models\Contact;
@@ -14,6 +15,7 @@ use App\Models\OrderItem;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
@@ -54,10 +56,13 @@ class Checkout extends Component
                 'string',
                 'min:10',
                 function ($attribute, $value, $fail) {
-                    $normalized = \App\Helpers\GeneralHelper::normalizePhone($value);
-
-                    if (\App\Helpers\GeneralHelper::isPhoneBlocked($normalized)) {
-                        $fail(__('This phone number is not allowed.'));
+                    foreach ($this->generatePhoneVariations($value) as $variation) {
+                        if (GeneralHelper::isPhoneBlocked($variation)) {
+                            $fail(__('validation.blocked_phone', [
+                                'link' => '<a href="' . route('contact.us') . '" target="_blank">our support page</a>'
+                            ]));
+                            break;
+                        }
                     }
                 },
             ],
@@ -66,16 +71,41 @@ class Checkout extends Component
                 'string',
                 'min:10',
                 function ($attribute, $value, $fail) {
-                    $normalized = \App\Helpers\GeneralHelper::normalizePhone($value);
-
-                    if (\App\Helpers\GeneralHelper::isPhoneBlocked($normalized)) {
-                        $fail(__('validation.blocked_phone', ['link' => route('contact.us')]));
+                    foreach ($this->generatePhoneVariations($value) as $variation) {
+                        if (GeneralHelper::isPhoneBlocked($variation)) {
+                            $fail(__('validation.blocked_phone', [
+                                'link' => '<a href="' . route('contact.us') . '" target="_blank">our support page</a>'
+                            ]));
+                            break;
+                        }
                     }
                 },
             ],
             'notes' => 'nullable|string',
             'password' => 'nullable|min:6|required_if:create_account,true',
         ];
+    }
+
+    protected function generatePhoneVariations(string $input): array
+    {
+        $digits = preg_replace('/\D/', '', $input); // Remove non-digits
+
+        if (str_starts_with($digits, '0')) {
+            $local = $digits;
+            $withoutZero = substr($digits, 1);
+        } elseif (str_starts_with($digits, '20')) {
+            $local = '0' . substr($digits, 2);
+            $withoutZero = substr($digits, 2);
+        } else {
+            $local = '0' . $digits;
+            $withoutZero = $digits;
+        }
+
+        return array_unique([
+            $local,                        // 01025263865
+            '20' . $withoutZero,          // 201025263865
+            '+20' . $withoutZero,         // +201025263865
+        ]);
     }
 
 

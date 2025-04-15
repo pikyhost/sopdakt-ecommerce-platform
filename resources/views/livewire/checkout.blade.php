@@ -98,13 +98,18 @@
                         <div class="form-group">
                             <label>Phone <abbr class="required" title="required">*</abbr></label>
                             <input type="tel" class="form-control" wire:model.defer="phone" required />
-                            @error('phone') <span class="text-danger">{{ $message }}</span> @enderror
+                            @if ($errors->has('phone'))
+                                <span class="text-danger">{!! $errors->first('phone') !!}</span>
+                            @endif
                         </div>
 
                         <div class="form-group">
                             <label>Secondary Phone (optional)</label>
                             <input type="tel" class="form-control" wire:model.defer="second_phone"/>
                             @error('second_phone') <span class="text-danger">{{ $message }}</span> @enderror
+                            @if ($errors->has('second_phone'))
+                                <span class="text-danger">{!! $errors->first('second_phone') !!}</span>
+                            @endif
                         </div>
 
                         <div class="form-group">
