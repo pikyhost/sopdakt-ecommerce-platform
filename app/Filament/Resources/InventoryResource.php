@@ -154,6 +154,7 @@ class InventoryResource extends Resource
                                 ->label(__('Product Name')),
 
                             TextEntry::make('product.sku')
+                                ->copyable()
                                 ->weight(FontWeight::Bold)
                                 ->label(__('SKU')),
                         ]),
@@ -177,9 +178,11 @@ class InventoryResource extends Resource
                 Section::make(__('Product Availability (Colors, Sizes and Quantities)'))
                     ->schema([
                         RepeatableEntry::make('product.productColors')
+                            ->grid(2)
                         ->hiddenLabel()
                             ->schema([
                                 ColorEntry::make('color.code')
+                                    ->helperText(fn($record) => $record->color->name ?? '')
                                     ->hiddenLabel(),
 
                                 RepeatableEntry::make('productColorSizes')

@@ -7,6 +7,8 @@
     "blocked_phones.note": "ملاحظة",
     "blocked_phones.created_at": "تاريخ الإضافة",
     "Color and size information": "معلومات الألوان و المقاسات",
+    "Product Availability (Colors, Sizes and Quantities)": "توفر المنتج (الألوان والأحجام والكميات)",
+
     "Product Information": "معلومات المنتج",
     "Back": "رجوع",
     "Total Quantity": "الكمية الإجمالية",
@@ -408,7 +410,7 @@
     "Not Available": "غير متاح",
     "Coupon ID": "معرّف الكوبون",
     "Tax Percentage": "نسبة الضريبة",
-    "Created At": "تاريخ الإنشاء",
+    "Created At": "تاريخ الإضافة",
     "Created From": "من تاريخ",
     "Created Until": "إلى تاريخ",
     "Order from": "الطلب من",
