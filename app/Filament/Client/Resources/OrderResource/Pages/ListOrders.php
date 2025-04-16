@@ -3,6 +3,8 @@
 namespace App\Filament\Client\Resources\OrderResource\Pages;
 
 use App\Filament\Client\Resources\OrderResource;
+use App\Models\Order;
+use App\Notifications\ProductStockNotifier;
 use Filament\Actions;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
@@ -14,7 +16,10 @@ class ListOrders extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->after(function (Order $record) {
+                    ProductStockNotifier::notify($record);
+                }),
         ];
     }
 

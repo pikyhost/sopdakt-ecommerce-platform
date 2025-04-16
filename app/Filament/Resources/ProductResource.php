@@ -144,10 +144,17 @@ class ProductResource extends Resource
                                                 ->sum('quantity');
 
                                             if ((int) $value !== (int) $sumOfVariants) {
-                                                $fail(__('The total quantity must equal the sum of all variant quantities. You entered :value, but the sum is :sum.', [
-                                                    'value' => $value,
-                                                    'sum' => $sumOfVariants,
-                                                ]));
+                                                if (app()->getLocale() == 'ar') {
+                                                    $fail(__('يجب أن تتطابق الكمية الإجمالية مع مجموع كميات خيارات المنتج. تم إدخال :value بينما المجموع هو :sum.', [
+                                                        'value' => $value,
+                                                        'sum' => $sumOfVariants,
+                                                    ]));
+                                                } else {
+                                                    $fail(__('The total quantity must equal the sum of all variant quantities. You entered :value, but the sum is :sum.', [
+                                                        'value' => $value,
+                                                        'sum' => $sumOfVariants,
+                                                    ]));
+                                                }
                                             }
                                         };
                                     }),

@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
-            $table->unsignedTinyInteger('tax_percentage')->default(0); // todo: I added this now
+            $table->unsignedTinyInteger('tax_percentage')->default(0);
             $table->string('site_name')->nullable();
             $table->foreignId('currency_id')->nullable()->constrained('currencies')->onDelete('cascade');
             $table->string('logo_en')->nullable();

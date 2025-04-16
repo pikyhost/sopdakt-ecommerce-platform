@@ -257,6 +257,12 @@ class SettingResource extends Resource
                             ->required()
                             ->helperText(__('Enter the applicable tax percentage for purchases')),
 
+                        TextInput::make('minimum_stock_level')
+                            ->numeric()
+                            ->label(__('Minimum Stock Level'))
+                            ->required()
+                            ->helperText(__('Alert when product quantity is equal or below this value')),
+
                         Forms\Components\Checkbox::make('shipping_type_enabled')
                             ->columnSpanFull()
                             ->label(__('Enable Shipping Types'))

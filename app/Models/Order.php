@@ -21,7 +21,7 @@ class Order extends Model
 
     protected static function booted()
     {
-        // ❌ Prevent duplicate order creation
+        // ✅ Prevent duplicate orders within 2 minutes
         static::creating(function (Order $order) {
             $query = Order::query()
                 ->where('created_at', '>=', now()->subMinutes(2));
@@ -33,82 +33,113 @@ class Order extends Model
             }
 
             if ($query->exists()) {
-                return false; // silently stop creation
+                return false;
             }
         });
 
-        // ✅ Handle stock deduction after creation
+        // ✅ Decrement stock after order created
         static::created(function (Order $order) {
-            foreach ($order->items as $item) {
-                if ($item->product_id) {
-                    $product = Product::find($item->product_id);
-
-                    if ($product) {
-                        $product->decrement('quantity', $item->quantity);
-                        $product->inventory()->decrement('quantity', $item->quantity);
-
-                        Transaction::create([
-                            'product_id' => $item->product_id,
-                            'type'       => TransactionType::SALE,
-                            'quantity'   => $item->quantity,
-                            'notes'      => "Sale of {$item->quantity} units for Order #{$order->id}",
-                        ]);
-                    }
-                }
-            }
+            $order->syncInventoryOnCreate();
         });
 
-        // ✅ Restore stock on order deletion
+        // ✅ Restore stock if order deleted
         static::deleting(function (Order $order) {
-            foreach ($order->items as $item) {
-                if ($item->product_id) {
-                    $product = Product::find($item->product_id);
-
-                    if ($product) {
-                        $product->increment('quantity', $item->quantity);
-                        $product->inventory()->increment('quantity', $item->quantity);
-
-                        Transaction::create([
-                            'product_id' => $item->product_id,
-                            'type'       => TransactionType::RESTOCK,
-                            'quantity'   => $item->quantity,
-                            'notes'      => "Restock of {$item->quantity} units due to order #{$order->id} deletion.",
-                        ]);
-                    }
-                }
-            }
+            $order->restoreInventory();
         });
     }
 
     public function setStatusAttribute($value)
     {
-        // Restore stock on cancellation or refund
-        if (in_array($this->status, ['pending', 'preparing', 'shipping']) &&
+        $oldStatus = $this->status;
+        $this->attributes['status'] = $value;
+
+        // Restore if order cancelled or refunded from in-progress status
+        if (in_array($oldStatus, ['pending', 'preparing', 'shipping']) &&
             in_array($value, ['cancelled', 'refund'])) {
+            $this->restoreInventory();
+        }
 
-            foreach ($this->items as $item) {
-                if ($item->product_id) {
-                    $product = Product::find($item->product_id);
+        // Deduct if status is moved to preparing/shipping and was previously refund/cancelled
+        if (in_array($oldStatus, ['cancelled', 'refund']) &&
+            in_array($value, ['pending', 'preparing', 'shipping'])) {
+            $this->syncInventoryOnCreate(); // re-deduct inventory
+        }
+    }
 
-                    if ($product) {
-                        $product->increment('quantity', $item->quantity);
-                        $product->inventory()->increment('quantity', $item->quantity);
+    public function syncInventoryOnCreate()
+    {
+        foreach ($this->items as $item) {
+            if ($item->product_id) {
+                $product = Product::find($item->product_id);
 
-                        Transaction::create([
-                            'product_id' => $item->product_id,
-                            'type'       => TransactionType::RESTOCK,
-                            'quantity'   => $item->quantity,
-                            'notes'      => "Restock of {$item->quantity} units due to order #{$this->id} cancellation.",
-                        ]);
+                if ($product) {
+                    $product->decrement('quantity', $item->quantity);
+
+                    // Decrement variant quantity
+                    $variant = $product->productColors()
+                        ->where('color_id', $item->color_id)
+                        ->first()
+                        ?->productColorSizes()
+                        ->where('size_id', $item->size_id)
+                        ->first();
+
+                    if ($variant) {
+                        $variant->decrement('quantity', $item->quantity);
                     }
+
+                    $product->inventory()?->decrement('quantity', $item->quantity);
+
+                    Transaction::create([
+                        'product_id' => $item->product_id,
+                        'type'       => TransactionType::SALE,
+                        'quantity'   => $item->quantity,
+                        'notes'      => "Sale of {$item->quantity} units for Order #{$this->id}",
+                    ]);
                 }
             }
         }
+    }
 
-        $this->attributes['status'] = $value;
+    public function restoreInventory()
+    {
+        foreach ($this->items as $item) {
+            if ($item->product_id) {
+                $product = Product::find($item->product_id);
+
+                if ($product) {
+                    $product->increment('quantity', $item->quantity);
+
+                    // Restore variant quantity
+                    $variant = $product->productColors()
+                        ->where('color_id', $item->color_id)
+                        ->first()
+                        ?->productColorSizes()
+                        ->where('size_id', $item->size_id)
+                        ->first();
+
+                    if ($variant) {
+                        $variant->increment('quantity', $item->quantity);
+                    }
+
+                    $product->inventory()?->increment('quantity', $item->quantity);
+
+                    Transaction::create([
+                        'product_id' => $item->product_id,
+                        'type'       => TransactionType::RESTOCK,
+                        'quantity'   => $item->quantity,
+                        'notes'      => "Restock of {$item->quantity} units due to Order #{$this->id} status change.",
+                    ]);
+                }
+            }
+        }
     }
 
     // Relationships
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
 
     public function user(): BelongsTo
     {
@@ -133,11 +164,6 @@ class Order extends Model
     public function coupon(): BelongsTo
     {
         return $this->belongsTo(Coupon::class);
-    }
-
-    public function items(): HasMany
-    {
-        return $this->hasMany(OrderItem::class);
     }
 
     public function country(): BelongsTo
