@@ -166,9 +166,6 @@ class GovernorateResource extends Resource
                     TextEntry::make('name')
                         ->label(__('name')),
 
-                    TextEntry::make('governorate.name')
-                        ->label(__('governorate_name')),
-
                     TextEntry::make('cost')
                         ->label(__('Shipping Cost')),
 

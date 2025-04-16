@@ -56,7 +56,7 @@
                                 @endphp
                                 <tr
                                     class="transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 group cursor-pointer"
-                                    onclick="window.location.href='{{ $countryUrl }}'"
+                                    onclick="window.open('{{ $countryUrl }}', '_blank')"
                                 >
                                     <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-start group-hover:text-primary-600 dark:group-hover:text-primary-400">
                                         {{ $countryName }}
@@ -115,7 +115,7 @@
                                 @endphp
                                 <tr
                                     class="transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 group cursor-pointer"
-                                    onclick="window.location.href='{{ $governorateUrl }}'"
+                                    onclick="window.open('{{ $governorateUrl }}', '_blank')"
                                 >
                                     <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-start group-hover:text-primary-600 dark:group-hover:text-primary-400">
                                         {{ $govName }}
@@ -174,7 +174,7 @@
                                 @endphp
                                 <tr
                                     class="transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 group cursor-pointer"
-                                    onclick="window.location.href='{{ $cityUrl }}'"
+                                    onclick="window.open('{{ $cityUrl }}', '_blank')"
                                 >
                                     <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-start group-hover:text-primary-600 dark:group-hover:text-primary-400">
                                         {{ $cityName }}

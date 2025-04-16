@@ -54,6 +54,7 @@ class AnalysisPageStats extends BaseWidget
         $encodedUntil = urlencode($endDate->toDateString());
 
         $base = "/admin/orders?tableFilters[created_at][created_from]={$encodedFrom}&tableFilters[created_at][created_until]={$encodedUntil}";
+        $completedBase = $base . "&tableFilters[status][values][0]=completed";
 
         $usersURL = "/admin/users?tableFilters[created_at][clause]=between&tableFilters[created_at][from]={$encodedFrom}&tableFilters[created_at][until]={$encodedUntil}&tableFilters[created_at][period]=days";
 
@@ -66,7 +67,7 @@ class AnalysisPageStats extends BaseWidget
         $refundedOrders = Order::whereBetween('created_at', [$startDate, $endDate])->where('status', OrderStatus::Refund)->count();
         $uniqueCustomers = Order::whereBetween('created_at', [$startDate, $endDate])->distinct('user_id')->count('user_id');
 
-        // Get most and least frequent countries
+        // Get most and least frequent countries (all orders)
         $countryStats = Order::whereBetween('created_at', [$startDate, $endDate])
             ->with('country')
             ->selectRaw('country_id, count(*) as order_count')
@@ -77,7 +78,7 @@ class AnalysisPageStats extends BaseWidget
         $mostFrequentCountry = $countryStats->first();
         $leastFrequentCountry = $countryStats->where('order_count', '>', 0)->last();
 
-        // Get most and least frequent governorates
+        // Get most and least frequent governorates (all orders)
         $governorateStats = Order::whereBetween('created_at', [$startDate, $endDate])
             ->with('governorate')
             ->selectRaw('governorate_id, count(*) as order_count')
@@ -88,13 +89,13 @@ class AnalysisPageStats extends BaseWidget
         $mostFrequentGovernorate = $governorateStats->first();
         $leastFrequentGovernorate = $governorateStats->where('order_count', '>', 0)->last();
 
-// Get most and least frequent cities with tie-breaker for most recent order
+        // Get most and least frequent cities (all orders)
         $cityStats = Order::whereBetween('created_at', [$startDate, $endDate])
             ->with('city')
             ->selectRaw('city_id, count(*) as order_count, MAX(created_at) as last_order_date')
             ->groupBy('city_id')
             ->orderBy('order_count', 'desc')
-            ->orderBy('last_order_date', 'asc') // For most frequent, use oldest last order
+            ->orderBy('last_order_date', 'asc')
             ->get()
             ->filter(function($order) {
                 return $order->city_id !== null;
@@ -102,20 +103,73 @@ class AnalysisPageStats extends BaseWidget
 
         $mostFrequentCity = $cityStats->first();
 
-// For least frequent, we want the one with newest last order among those with lowest count
         $cityStatsForLeast = Order::whereBetween('created_at', [$startDate, $endDate])
             ->with('city')
             ->selectRaw('city_id, count(*) as order_count, MAX(created_at) as last_order_date')
             ->groupBy('city_id')
             ->having('order_count', '>', 0)
             ->orderBy('order_count', 'asc')
-            ->orderBy('last_order_date', 'desc') // For least frequent, use newest last order
+            ->orderBy('last_order_date', 'desc')
             ->get()
             ->filter(function($order) {
                 return $order->city_id !== null;
             });
 
         $leastFrequentCity = $cityStatsForLeast->first();
+
+        // Get most and least frequent countries (completed orders only)
+        $completedCountryStats = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', OrderStatus::Completed)
+            ->with('country')
+            ->selectRaw('country_id, count(*) as order_count')
+            ->groupBy('country_id')
+            ->orderBy('order_count', 'desc')
+            ->get();
+
+        $mostFrequentCompletedCountry = $completedCountryStats->first();
+        $leastFrequentCompletedCountry = $completedCountryStats->where('order_count', '>', 0)->last();
+
+        // Get most and least frequent governorates (completed orders only)
+        $completedGovernorateStats = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', OrderStatus::Completed)
+            ->with('governorate')
+            ->selectRaw('governorate_id, count(*) as order_count')
+            ->groupBy('governorate_id')
+            ->orderBy('order_count', 'desc')
+            ->get();
+
+        $mostFrequentCompletedGovernorate = $completedGovernorateStats->first();
+        $leastFrequentCompletedGovernorate = $completedGovernorateStats->where('order_count', '>', 0)->last();
+
+        // Get most and least frequent cities (completed orders only)
+        $completedCityStats = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', OrderStatus::Completed)
+            ->with('city')
+            ->selectRaw('city_id, count(*) as order_count, MAX(created_at) as last_order_date')
+            ->groupBy('city_id')
+            ->orderBy('order_count', 'desc')
+            ->orderBy('last_order_date', 'asc')
+            ->get()
+            ->filter(function($order) {
+                return $order->city_id !== null;
+            });
+
+        $mostFrequentCompletedCity = $completedCityStats->first();
+
+        $completedCityStatsForLeast = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', OrderStatus::Completed)
+            ->with('city')
+            ->selectRaw('city_id, count(*) as order_count, MAX(created_at) as last_order_date')
+            ->groupBy('city_id')
+            ->having('order_count', '>', 0)
+            ->orderBy('order_count', 'asc')
+            ->orderBy('last_order_date', 'desc')
+            ->get()
+            ->filter(function($order) {
+                return $order->city_id !== null;
+            });
+
+        $leastFrequentCompletedCity = $completedCityStatsForLeast->first();
 
         $totalLosses = $cancelledOrders + $refundedOrders;
         $winLossRatio = $totalLosses > 0 ? round($completedOrders / $totalLosses, 2) : 'N/A';
@@ -191,7 +245,7 @@ class AnalysisPageStats extends BaseWidget
                 ->extraAttributes($extraAttributes),
         ];
 
-        // Add location-based stats if there are orders with location data
+        // Add location-based stats if there are orders with location data (all orders)
         if ($mostFrequentCountry) {
             $mostCountryUrl = $mostFrequentCountry->country_id ? "/admin/countries/{$mostFrequentCountry->country_id}" : null;
             $leastCountryUrl = $leastFrequentCountry->country_id ? "/admin/countries/{$leastFrequentCountry->country_id}" : null;
@@ -269,6 +323,103 @@ class AnalysisPageStats extends BaseWidget
                     "Orders: {$leastFrequentCity->order_count}")
                 ->icon('heroicon-m-building-office')
                 ->url($leastCityUrl)
+                ->openUrlInNewTab()
+                ->extraAttributes($extraAttributes);
+        }
+
+// Add location-based stats for completed orders only
+        if ($mostFrequentCompletedCountry) {
+            $mostCompletedCountryUrl = $mostFrequentCompletedCountry->country_id ?
+                "/admin/orders?tableFilters[location][country_ids][0]={$mostFrequentCompletedCountry->country_id}&tableFilters[status][values][0]=completed&tableFilters[created_at][created_from]={$encodedFrom}&tableFilters[created_at][created_until]={$encodedUntil}" :
+                null;
+
+            $leastCompletedCountryUrl = $leastFrequentCompletedCountry->country_id ?
+                "/admin/orders?tableFilters[location][country_ids][0]={$leastFrequentCompletedCountry->country_id}&tableFilters[status][values][0]=completed&tableFilters[created_at][created_from]={$encodedFrom}&tableFilters[created_at][created_until]={$encodedUntil}" :
+                null;
+
+            $stats[] = Stat::make($locale === 'ar' ? 'الدولة الأكثر طلباً (مكتملة)' : 'Most Completed Orders Country',
+                $mostFrequentCompletedCountry->country?->name ?? ($locale === 'ar' ? 'غير معروف' : 'Unknown'))
+                ->color('success')
+                ->description($locale === 'ar' ?
+                    "عدد الطلبات المكتملة: {$mostFrequentCompletedCountry->order_count}" :
+                    "Completed orders: {$mostFrequentCompletedCountry->order_count}")
+                ->icon('heroicon-m-globe-alt')
+                ->url($mostCompletedCountryUrl)
+                ->openUrlInNewTab()
+                ->extraAttributes($extraAttributes);
+
+            $stats[] = Stat::make($locale === 'ar' ? 'الدولة الأقل طلباً (مكتملة)' : 'Least Completed Orders Country',
+                $leastFrequentCompletedCountry->country?->name ?? ($locale === 'ar' ? 'غير معروف' : 'Unknown'))
+                ->color('warning')
+                ->description($locale === 'ar' ?
+                    "عدد الطلبات المكتملة: {$leastFrequentCompletedCountry->order_count}" :
+                    "Completed orders: {$leastFrequentCompletedCountry->order_count}")
+                ->icon('heroicon-m-globe-alt')
+                ->url($leastCompletedCountryUrl)
+                ->openUrlInNewTab()
+                ->extraAttributes($extraAttributes);
+        }
+
+        if ($mostFrequentCompletedGovernorate) {
+            $mostCompletedGovernorateUrl = $mostFrequentCompletedGovernorate->governorate_id ?
+                "/admin/orders?tableFilters[location][governorate_ids][0]={$mostFrequentCompletedGovernorate->governorate_id}&tableFilters[status][values][0]=completed&tableFilters[created_at][created_from]={$encodedFrom}&tableFilters[created_at][created_until]={$encodedUntil}" :
+                null;
+
+            $leastCompletedGovernorateUrl = $leastFrequentCompletedGovernorate->governorate_id ?
+                "/admin/orders?tableFilters[location][governorate_ids][0]={$leastFrequentCompletedGovernorate->governorate_id}&tableFilters[status][values][0]=completed&tableFilters[created_at][created_from]={$encodedFrom}&tableFilters[created_at][created_until]={$encodedUntil}" :
+                null;
+
+            $stats[] = Stat::make($locale === 'ar' ? 'المحافظة الأكثر طلباً (مكتملة)' : 'Most Completed Orders Governorate',
+                $mostFrequentCompletedGovernorate->governorate?->name ?? ($locale === 'ar' ? 'غير معروف' : 'Unknown'))
+                ->color('success')
+                ->description($locale === 'ar' ?
+                    "عدد الطلبات المكتملة: {$mostFrequentCompletedGovernorate->order_count}" :
+                    "Completed orders: {$mostFrequentCompletedGovernorate->order_count}")
+                ->icon('heroicon-m-map')
+                ->url($mostCompletedGovernorateUrl)
+                ->openUrlInNewTab()
+                ->extraAttributes($extraAttributes);
+
+            $stats[] = Stat::make($locale === 'ar' ? 'المحافظة الأقل طلباً (مكتملة)' : 'Least Completed Orders Governorate',
+                $leastFrequentCompletedGovernorate->governorate?->name ?? ($locale === 'ar' ? 'غير معروف' : 'Unknown'))
+                ->color('warning')
+                ->description($locale === 'ar' ?
+                    "عدد الطلبات المكتملة: {$leastFrequentCompletedGovernorate->order_count}" :
+                    "Completed orders: {$leastFrequentCompletedGovernorate->order_count}")
+                ->icon('heroicon-m-map')
+                ->url($leastCompletedGovernorateUrl)
+                ->openUrlInNewTab()
+                ->extraAttributes($extraAttributes);
+        }
+
+        if ($mostFrequentCompletedCity) {
+            $mostCompletedCityUrl = $mostFrequentCompletedCity->city_id ?
+                "/admin/orders?tableFilters[location][city_ids][0]={$mostFrequentCompletedCity->city_id}&tableFilters[status][values][0]=completed&tableFilters[created_at][created_from]={$encodedFrom}&tableFilters[created_at][created_until]={$encodedUntil}" :
+                null;
+
+            $leastCompletedCityUrl = $leastFrequentCompletedCity->city_id ?
+                "/admin/orders?tableFilters[location][city_ids][0]={$leastFrequentCompletedCity->city_id}&tableFilters[status][values][0]=completed&tableFilters[created_at][created_from]={$encodedFrom}&tableFilters[created_at][created_until]={$encodedUntil}" :
+                null;
+
+            $stats[] = Stat::make($locale === 'ar' ? 'المدينة الأكثر طلباً (مكتملة)' : 'Most Completed Orders City',
+                $mostFrequentCompletedCity->city?->name ?? ($locale === 'ar' ? 'غير معروف' : 'Unknown'))
+                ->color('success')
+                ->description($locale === 'ar' ?
+                    "عدد الطلبات المكتملة: {$mostFrequentCompletedCity->order_count}" :
+                    "Completed orders: {$mostFrequentCompletedCity->order_count}")
+                ->icon('heroicon-m-building-office')
+                ->url($mostCompletedCityUrl)
+                ->openUrlInNewTab()
+                ->extraAttributes($extraAttributes);
+
+            $stats[] = Stat::make($locale === 'ar' ? 'المدينة الأقل طلباً (مكتملة)' : 'Least Completed Orders City',
+                $leastFrequentCompletedCity->city?->name ?? ($locale === 'ar' ? 'غير معروف' : 'Unknown'))
+                ->color('warning')
+                ->description($locale === 'ar' ?
+                    "عدد الطلبات المكتملة: {$leastFrequentCompletedCity->order_count}" :
+                    "Completed orders: {$leastFrequentCompletedCity->order_count}")
+                ->icon('heroicon-m-building-office')
+                ->url($leastCompletedCityUrl)
                 ->openUrlInNewTab()
                 ->extraAttributes($extraAttributes);
         }

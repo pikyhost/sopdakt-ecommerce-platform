@@ -66,6 +66,21 @@ class LastOrders extends BaseWidget
                     ->label(__('Number'))
                     ->searchable(),
 
+                Tables\Columns\TextColumn::make('country.name')
+                    ->label(__('Country'))
+                    ->placeholder('-')
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('governorate.name')
+                    ->label(__('governorate'))
+                    ->placeholder('-')
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('city.name')
+                    ->label(__('City'))
+                    ->placeholder('-')
+                    ->searchable(),
+
                 Tables\Columns\TextColumn::make('user.name')
                     ->formatStateUsing(function ($record) {
                         return $record->user->name.' (#'.$record->user_id.')';

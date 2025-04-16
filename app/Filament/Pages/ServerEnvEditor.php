@@ -229,4 +229,10 @@ class ServerEnvEditor extends Page implements Forms\Contracts\HasForms
             'MAIL_PASSWORD', 'MAIL_ENCRYPTION', 'MAIL_FROM_ADDRESS', 'MAIL_FROM_NAME',
         ];
     }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasRole('super_admin');
+    }
+
 }

@@ -44,6 +44,21 @@ class OrdersRelationManager extends RelationManager
                     ->label(__('Number'))
                     ->searchable(),
 
+                Tables\Columns\TextColumn::make('country.name')
+                    ->label(__('Country'))
+                    ->placeholder('-')
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('governorate.name')
+                    ->label(__('governorate'))
+                    ->placeholder('-')
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('city.name')
+                    ->label(__('City'))
+                    ->placeholder('-')
+                    ->searchable(),
+
                 Tables\Columns\TextColumn::make('status')
                     ->label(__('Status'))
                     ->badge()
