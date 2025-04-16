@@ -11,6 +11,7 @@ use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\SpatieMediaLibraryImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
+use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
@@ -18,6 +19,8 @@ use Filament\Tables\Table;
 
 class InventoryResource extends Resource
 {
+    use Translatable;
+
     protected static ?string $model = Inventory::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-building-storefront';
@@ -198,7 +201,7 @@ class InventoryResource extends Resource
         return [
             'index' => Pages\ListInventories::route('/'),
             'create' => Pages\CreateInventory::route('/create'),
-            'view' => Pages\ViewUser::route('/{record}'),
+            'view' => Pages\ViewInventory::route('/{record}'),
             'edit' => Pages\EditInventory::route('/{record}/edit'),
         ];
     }
