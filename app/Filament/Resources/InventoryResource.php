@@ -2,20 +2,30 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\UserRole;
 use App\Filament\Resources\InventoryResource\Pages;
+use App\Models\ContactMessage;
 use App\Models\Inventory;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists\Components\ColorEntry;
 use Filament\Infolists\Components\Grid;
+use Filament\Infolists\Components\Group;
+use Filament\Infolists\Components\IconEntry;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\SpatieMediaLibraryImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\FontFamily;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Ysfkaya\FilamentPhoneInput\Infolists\PhoneEntry;
 
 class InventoryResource extends Resource
 {
@@ -40,9 +50,6 @@ class InventoryResource extends Resource
         return __('Stock');
     }
 
-    /**
-     * @return string|null
-     */
     public static function getPluralLabel(): ?string
     {
         return __('Stock');
@@ -66,10 +73,6 @@ class InventoryResource extends Resource
                     Forms\Components\Select::make('product_id')
                         ->relationship('product', 'name')
                         ->required(),
-                    Forms\Components\TextInput::make('quantity')
-                        ->required()
-                        ->numeric()
-                        ->default(0),
                 ])->columns(1)
             ]);
     }
@@ -127,6 +130,8 @@ class InventoryResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\DeleteAction::make()
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -137,52 +142,66 @@ class InventoryResource extends Resource
 
     public static function infolist(Infolist $infolist): Infolist
     {
-        return $infolist
-            ->schema([
-                Section::make('Product Information')
+        return $infolist->schema([
+            Section::make()->schema([
+                \Filament\Infolists\Components\Split::make([
+                    Grid::make(2)->schema([
+                        Group::make([
+                            TextEntry::make('product.name')
+                                ->url(function (Inventory $record) {
+                                    return ProductResource::getUrl('edit', ['record' => $record->product->slug]);
+                                }, true)
+                                ->label(__('Product Name')),
+
+                            TextEntry::make('product.sku')
+                                ->weight(FontWeight::Bold)
+                                ->label(__('SKU')),
+                        ]),
+                        Group::make([
+                            TextEntry::make('quantity')
+                                ->label(__('Total Quantity')),
+
+                          IconEntry::make('product.is_published')
+                              ->boolean()
+                              ->label(__("Is Active?"))
+                        ]),
+                    ]),
+                    SpatieMediaLibraryImageEntry::make('product.feature_product_image')
+                        ->simpleLightbox()
+                        ->label(__('Product Image'))
+                        ->collection('feature_product_image') ->hiddenLabel()
+                        ->grow(false),
+                ])->from('xl'),
+            ]),
+
+                Section::make(__('Product Availability (Colors, Sizes and Quantities)'))
                     ->schema([
-                        Grid::make(2)
+                        RepeatableEntry::make('product.productColors')
+                        ->hiddenLabel()
                             ->schema([
-                                SpatieMediaLibraryImageEntry::make('product.feature_product_image')
-                                    ->circular()
-                                    ->label(__('Feature Image'))
-                                    ->columnSpan(1),
+                                ColorEntry::make('color.code')
+                                    ->hiddenLabel(),
 
-                                TextEntry::make('product.name')
-                                    ->label(__('Product Name'))
-                                    ->columnSpan(1),
+                                RepeatableEntry::make('productColorSizes')
+                                   ->hiddenLabel()
+                                    ->schema([
+                                        TextEntry::make('size.name')
+                                            ->weight(FontWeight::Bold)
+                                            ->hiddenLabel(),
 
-                                TextEntry::make('product.sku')
-                                    ->label(__('SKU'))
-                                    ->columnSpan(1),
-
-                                TextEntry::make('quantity')
-                                    ->label(__('Total Quantity'))
-                                    ->columnSpan(1),
-                            ]),
+                                        TextEntry::make('quantity')
+                                            ->badge()
+                                            ->hiddenLabel(),
+                                    ])
+                                    ->columns(2)
+                                    ->columnSpanFull(),
+                            ])
+                            ->columns(1)
+                            ->columnSpanFull(),
                     ]),
 
-                Section::make('Variants Information')
-                    ->schema([
-                        TextEntry::make('variants')
-                            ->label('')
-                            ->formatStateUsing(function ($record) {
-                                $variants = $record->product->productColors
-                                    ->flatMap(function ($productColor) {
-                                        return $productColor->productColorSizes->map(function ($size) use ($productColor) {
-                                            $colorName = $productColor->color->name ?? 'N/A';
-                                            $sizeName = $size->size->name ?? 'N/A';
-                                            return "{$colorName} → {$sizeName} = {$size->quantity}";
-                                        });
-                                    })
-                                    ->implode('<br>');
-
-                                return empty($variants) ? 'No variants available' : $variants;
-                            })
-                            ->html(),
-                    ]),
-
-                Section::make('Metadata')
+                Section::make()
+                    ->hiddenLabel()
                     ->schema([
                         TextEntry::make('created_at')
                             ->label(__('Created At'))
@@ -193,7 +212,7 @@ class InventoryResource extends Resource
                             ->dateTime(),
                     ])
                     ->columns(2),
-            ]);
+        ]);
     }
 
     public static function getPages(): array

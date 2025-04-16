@@ -16,7 +16,8 @@
     "navigation.Groups.settings": "Settings",
     "navigation.Labels.contact_settings": "Contact Settings",
     "Landing Page Settings": "Landing Page Settings",
-
+    "Product Availability": "توفر المنتج",
+    "Product Availability (Colors, Sizes and Quantities)": "توفر المنتج (الألوان والأحجام والكميات)",
     "ContactMessage.Subject": "New Contact Message",
     "ContactMessage.Greeting": "Hello!",
     "ContactMessage.Intro": "A new contact message has been submitted:",
