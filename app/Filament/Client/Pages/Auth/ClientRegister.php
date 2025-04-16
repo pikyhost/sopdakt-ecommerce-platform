@@ -4,14 +4,17 @@ namespace App\Filament\Client\Pages\Auth;
 
 use App\Enums\UserRole;
 use App\Helpers\GeneralHelper;
+use App\Rules\CustomPassword;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\TextInput;
 use Filament\Pages\Auth\Register as BaseRegister;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 
@@ -36,6 +39,19 @@ class ClientRegister extends BaseRegister
                     ->statePath('data'),
             ),
         ];
+    }
+
+    protected function getPasswordFormComponent(): Component
+    {
+        return TextInput::make('password')
+            ->label(__('filament-panels::pages/auth/register.form.password.label'))
+            ->password()
+            ->revealable(filament()->arePasswordsRevealable())
+            ->required()
+            ->rule(['min:8', new CustomPassword()])
+            ->dehydrateStateUsing(fn ($state) => Hash::make($state))
+            ->same('passwordConfirmation')
+            ->validationAttribute(__('filament-panels::pages/auth/register.form.password.validation_attribute'));
     }
 
     protected function getPreferredLanguageFormComponent()

@@ -242,13 +242,13 @@ class OrderResource extends Resource
              Filter::make('location')
                  ->form([
                      Select::make('country_ids')
-                         ->label('Countries')
+                         ->label(__('Countries'))
                          ->multiple()
                          ->live()
                          ->options(fn () => Country::pluck('name', 'id')),
 
                      Select::make('governorate_ids')
-                         ->label('Governorates')
+                         ->label(__('Governorates'))
                          ->multiple()
                          ->live()
                          ->searchable()
@@ -264,7 +264,7 @@ class OrderResource extends Resource
                          }),
 
                      Select::make('city_ids')
-                         ->label('Cities')
+                         ->label(__('Cities'))
                          ->multiple()
                          ->searchable()
                          ->options(function (callable $get) {
