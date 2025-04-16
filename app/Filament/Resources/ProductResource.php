@@ -244,28 +244,42 @@ class ProductResource extends Resource
                                     ->nullable(),
 
                                 Repeater::make('productColors')
-                                    ->columnSpanFull()
-                                    ->relationship('productColors') // Uses hasMany relationship
+                                    ->relationship('productColors')
                                     ->label(__('Colors'))
                                     ->schema([
                                         Select::make('color_id')
                                             ->label(__('Color'))
-                                            ->relationship('color', 'name') // Fetch color names
+                                            ->relationship('color', 'name')
                                             ->required(),
-
-                                        Select::make('sizes')
-                                            ->multiple()
-                                            ->label(__('Sizes'))
-                                            ->relationship('sizes', 'name')
-                                            ->preload(),
 
                                         FileUpload::make('image')
-                                            ->columnSpanFull()
                                             ->label(__('Image'))
                                             ->imageEditor()
+                                            ->columnSpanFull()
                                             ->required(),
-                                    ])->columns(2)
-                                    ->collapsible(),
+
+                                        Repeater::make('productColorSizes')
+                                            ->relationship('productColorSizes') // hasMany
+                                            ->label(__('Sizes with Quantities'))
+                                            ->schema([
+                                                Select::make('size_id')
+                                                    ->label(__('Size'))
+                                                    ->relationship('size', 'name')
+                                                    ->required(),
+
+                                                TextInput::make('quantity')
+                                                    ->label(__('Quantity'))
+                                                    ->required()
+                                                    ->numeric()
+                                                    ->default(1),
+                                            ])
+                                            ->columns(2)
+                                            ->columnSpanFull(),
+                                    ])
+                                    ->columns(2)
+                                    ->collapsible()
+                                    ->columnSpanFull(),
+
 
 //                                Repeater::make('types')
 //                                    ->defaultItems(0)

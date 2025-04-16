@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\ProductResource\RelationManagers;
 
+use Filament\Resources\RelationManagers\Concerns\Translatable;
+use Filament\Resources\RelationManagers\RelationManager;
 use Closure;
 use Filament\Forms;
 use Filament\Forms\Components\Hidden;
@@ -10,14 +12,19 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
-use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
+use Livewire\Attributes\Reactive;
 
 class BundlesRelationManager extends RelationManager
 {
+    use Translatable;
+
     protected static string $relationship = 'bundles';
+
+    #[Reactive]
+    public ?string $activeLocale = null;
 
     protected static bool $isLazy = false;
 
@@ -223,6 +230,10 @@ class BundlesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->headerActions([
+                // ...
+                Tables\Actions\LocaleSwitcher::make(),
+            ])
             ->defaultSort('bundles.id', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('name')

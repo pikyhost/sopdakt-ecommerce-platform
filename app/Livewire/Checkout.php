@@ -55,7 +55,6 @@ class Checkout extends Component
                 'required',
                 'string',
                 'min:10',
-                'different:second_phone',
                 function ($attribute, $value, $fail) {
                     foreach ($this->generatePhoneVariations($value) as $variation) {
                         if (GeneralHelper::isPhoneBlocked($variation)) {
