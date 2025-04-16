@@ -22,6 +22,25 @@ class Order extends Model
     protected static function booted()
     {
         static::created(function (Order $order) {
+
+            $query = Order::query()
+                ->where('created_at', '>=', now()->subMinutes(2));
+
+            // Case 1: Authenticated user
+            if ($order->user_id) {
+                $query->where('user_id', $order->user_id);
+            }
+
+            // Case 2: Guest order by contact_id or IP
+            elseif ($order->contact_id) {
+                $query->where('contact_id', $order->contact_id);
+            }
+
+            if ($query->exists()) {
+                // Stop creating silently
+                return false;
+            }
+
             foreach ($order->items as $item) {
                 if ($item->product_id) {
                     // Find the product
@@ -145,22 +164,6 @@ class Order extends Model
     public function items(): HasMany
     {
         return $this->hasMany(OrderItem::class);
-    }
-
-    /**
-     * Scope to filter orders by status.
-     */
-    public function scopeStatus($query, $status)
-    {
-        return $query->where('status', $status);
-    }
-
-    /**
-     * Check if the order is completed.
-     */
-    public function isCompleted(): bool
-    {
-        return $this->status === 'completed';
     }
 
     public function country()
