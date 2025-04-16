@@ -70,13 +70,17 @@ class ProfileContactDetails extends MyProfileComponent implements HasActions, Ha
                     ->columnSpanFull(),
 
                 PhoneInput::make('second_phone')
+                    ->different('phone')
                     ->separateDialCode(true) // Shows flag and +20 separately
                     ->enableIpLookup(true) // Enable IP-based country detection
                     ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
                     ->nullable()
                     ->rules([
-                        'max:20', // Match database column limit
-                        Rule::unique('users', 'phone')->ignore(auth()->id()), // Ignore the current user in uniqueness check
+                        'max:20',
+                        Rule::unique('users')->where(function ($query) {
+                            $query->where('phone', request('phone'))
+                                ->orWhere('second_phone', request('phone'));
+                        }),
                     ])
                     ->label(__('Secondary Phone'))
                     ->columnSpanFull(),

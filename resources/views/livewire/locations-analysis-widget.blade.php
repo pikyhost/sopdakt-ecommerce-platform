@@ -30,14 +30,20 @@
                         <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
-                                <th class="px-4 py-3 text-start text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-2/4">
+                                <th class="px-4 py-3 text-start text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-2/6">
                                     {{ __('Country') }}
                                 </th>
-                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/4">
+                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/6">
                                     {{ __('Orders') }}
                                 </th>
-                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/4">
+                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/6">
+                                    {{ __('Completed') }}
+                                </th>
+                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/6">
                                     {{ __('Share (%)') }}
+                                </th>
+                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/6">
+                                    {{ __('Completed %') }}
                                 </th>
                             </tr>
                             </thead>
@@ -53,6 +59,9 @@
                                         'tableFilters[created_at][created_from]' => $this->fromDate->format('Y-m-d'),
                                         'tableFilters[created_at][created_until]' => $this->toDate->format('Y-m-d'),
                                     ]);
+                                    $completedPercentage = $country['total'] > 0
+                                        ? round(($country['completed'] / $country['total']) * 100, 1)
+                                        : 0;
                                 @endphp
                                 <tr
                                     class="transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 group cursor-pointer"
@@ -65,12 +74,18 @@
                                         {{ number_format($country['total']) }}
                                     </td>
                                     <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-end group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                                        {{ number_format($country['completed']) }}
+                                    </td>
+                                    <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-end group-hover:text-primary-600 dark:group-hover:text-primary-400">
                                         {{ round(($country['total'] / $countryTotal) * 100, 1) }}%
+                                    </td>
+                                    <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-end group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                                        {{ $completedPercentage }}%
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="3" class="px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-300">
+                                    <td colspan="5" class="px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-300">
                                         {{ __('No country data available') }}
                                     </td>
                                 </tr>
@@ -89,14 +104,20 @@
                         <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
-                                <th class="px-4 py-3 text-start text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-2/4">
+                                <th class="px-4 py-3 text-start text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-2/6">
                                     {{ __('Governorate') }}
                                 </th>
-                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/4">
+                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/6">
                                     {{ __('Orders') }}
                                 </th>
-                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/4">
+                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/6">
+                                    {{ __('Completed') }}
+                                </th>
+                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/6">
                                     {{ __('Share (%)') }}
+                                </th>
+                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/6">
+                                    {{ __('Completed %') }}
                                 </th>
                             </tr>
                             </thead>
@@ -112,6 +133,9 @@
                                         'tableFilters[created_at][created_from]' => $this->fromDate->format('Y-m-d'),
                                         'tableFilters[created_at][created_until]' => $this->toDate->format('Y-m-d'),
                                     ]);
+                                    $completedPercentage = $governorate['total'] > 0
+                                        ? round(($governorate['completed'] / $governorate['total']) * 100, 1)
+                                        : 0;
                                 @endphp
                                 <tr
                                     class="transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 group cursor-pointer"
@@ -124,12 +148,18 @@
                                         {{ number_format($governorate['total']) }}
                                     </td>
                                     <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-end group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                                        {{ number_format($governorate['completed']) }}
+                                    </td>
+                                    <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-end group-hover:text-primary-600 dark:group-hover:text-primary-400">
                                         {{ round(($governorate['total'] / $governorateTotal) * 100, 1) }}%
+                                    </td>
+                                    <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-end group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                                        {{ $completedPercentage }}%
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="3" class="px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-300">
+                                    <td colspan="5" class="px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-300">
                                         {{ __('No governorate data available') }}
                                     </td>
                                 </tr>
@@ -148,14 +178,20 @@
                         <table class="w-full divide-y divide-gray-200 dark:divide-gray-700">
                             <thead class="bg-gray-50 dark:bg-gray-700">
                             <tr>
-                                <th class="px-4 py-3 text-start text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-2/4">
+                                <th class="px-4 py-3 text-start text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-2/6">
                                     {{ __('City') }}
                                 </th>
-                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/4">
+                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/6">
                                     {{ __('Orders') }}
                                 </th>
-                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/4">
+                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/6">
+                                    {{ __('Completed') }}
+                                </th>
+                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/6">
                                     {{ __('Share (%)') }}
+                                </th>
+                                <th class="px-4 py-3 text-end text-xs font-semibold tracking-wide text-gray-700 dark:text-gray-200 uppercase w-1/6">
+                                    {{ __('Completed %') }}
                                 </th>
                             </tr>
                             </thead>
@@ -171,6 +207,9 @@
                                         'tableFilters[created_at][created_from]' => $this->fromDate->format('Y-m-d'),
                                         'tableFilters[created_at][created_until]' => $this->toDate->format('Y-m-d'),
                                     ]);
+                                    $completedPercentage = $city['total'] > 0
+                                        ? round(($city['completed'] / $city['total']) * 100, 1)
+                                        : 0;
                                 @endphp
                                 <tr
                                     class="transition-colors hover:bg-gray-100 dark:hover:bg-gray-700 group cursor-pointer"
@@ -183,12 +222,18 @@
                                         {{ number_format($city['total']) }}
                                     </td>
                                     <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-end group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                                        {{ number_format($city['completed']) }}
+                                    </td>
+                                    <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-end group-hover:text-primary-600 dark:group-hover:text-primary-400">
                                         {{ round(($city['total'] / $cityTotal) * 100, 1) }}%
+                                    </td>
+                                    <td class="px-4 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 text-end group-hover:text-primary-600 dark:group-hover:text-primary-400">
+                                        {{ $completedPercentage }}%
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="3" class="px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-300">
+                                    <td colspan="5" class="px-4 py-4 text-center text-sm text-gray-500 dark:text-gray-300">
                                         {{ __('No city data available') }}
                                     </td>
                                 </tr>

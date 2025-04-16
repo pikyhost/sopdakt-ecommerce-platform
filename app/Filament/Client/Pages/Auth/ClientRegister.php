@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
@@ -118,13 +119,16 @@ class ClientRegister extends BaseRegister
     protected function getPhoneFormComponent(): Component
     {
         return PhoneInput::make('phone')
-            ->separateDialCode(true) // Shows flag and +20 separately
-            ->enableIpLookup(true) // Enable IP-based country detection
+            ->separateDialCode(true)
+            ->enableIpLookup(true)
             ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
             ->required()
             ->rules([
-                'max:20', // Match database column limit
-                'unique:users,phone', // Ensure uniqueness in the `users` table
+                'max:20',
+                Rule::unique('users')->where(function ($query) {
+                    $query->where('phone', request('phone'))
+                        ->orWhere('second_phone', request('phone'));
+                }),
             ])
             ->label(__('profile.phone'))
             ->columnSpanFull();

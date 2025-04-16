@@ -55,6 +55,7 @@ class Checkout extends Component
                 'required',
                 'string',
                 'min:10',
+                'different:second_phone',
                 function ($attribute, $value, $fail) {
                     foreach ($this->generatePhoneVariations($value) as $variation) {
                         if (GeneralHelper::isPhoneBlocked($variation)) {
@@ -66,10 +67,12 @@ class Checkout extends Component
                     }
                 },
             ],
+
             'second_phone' => [
                 'required',
                 'string',
                 'min:10',
+                'different:phone',
                 function ($attribute, $value, $fail) {
                     foreach ($this->generatePhoneVariations($value) as $variation) {
                         if (GeneralHelper::isPhoneBlocked($variation)) {
@@ -231,7 +234,6 @@ class Checkout extends Component
                 return;
             }
 
-            $primaryAddress = $user->addresses()->where('is_primary', true)->first();
             $user->update([
                 'name' => $this->name,
                 'email' => $this->email,
@@ -239,14 +241,25 @@ class Checkout extends Component
                 'second_phone' => $this->second_phone,
             ]);
 
+            $primaryAddress = $user->addresses()->where('is_primary', true)->first();
+
             if ($primaryAddress) {
                 $primaryAddress->update([
                     'address' => $this->address,
-                    'country_id' => $this->cart->country_id,
-                    'governorate_id' => $this->cart->governorate_id,
-                    'city_id' => $this->cart->city_id,
+                    'country_id' => $this->cart->country_id ?? null,
+                    'governorate_id' => $this->cart->governorate_id ?? null,
+                    'city_id' => $this->cart->city_id ?? null,
+                ]);
+            } else {
+                $user->addresses()->create([
+                    'address' => $this->address,
+                    'country_id' => $this->cart->country_id ?? null,
+                    'governorate_id' => $this->cart->governorate_id ?? null,
+                    'city_id' => $this->cart->city_id ?? null,
+                    'is_primary' => true,
                 ]);
             }
+
             return $user;
         } else {
             $session_id = session()->getId();
@@ -272,9 +285,20 @@ class Checkout extends Component
                 if ($guestContact) {
                     $guestContact->delete();
                 }
+
+                // Create initial primary address
+                $user->addresses()->create([
+                    'address' => $this->address,
+                    'country_id' => $this->cart->country_id ?? null,
+                    'governorate_id' => $this->cart->governorate_id ?? null,
+                    'city_id' => $this->cart->city_id ?? null,
+                    'address_name' => 'home',
+                    'is_primary' => true,
+                ]);
+
                 return $user;
             } else {
-                // Create or update guest contact
+                // Guest logic
                 if (!$guestContact) {
                     $guestContact = Contact::create([
                         'session_id' => $session_id,
@@ -303,6 +327,7 @@ class Checkout extends Component
             }
         }
     }
+
 
     public function placeOrder()
     {

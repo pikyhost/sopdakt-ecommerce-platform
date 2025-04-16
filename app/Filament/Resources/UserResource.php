@@ -46,6 +46,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role;
 use Webbingbrasil\FilamentAdvancedFilter\Filters\DateFilter;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
@@ -152,10 +153,28 @@ class UserResource extends Resource
                 ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
                 ->required()
                 ->rules([
-                    'max:20', // Match database column limit
-                    'unique:users,phone', // Ensure uniqueness in the `users` table
+                    'max:20',
+                    Rule::unique('users')->where(function ($query) {
+                        $query->where('phone', request('phone'))
+                            ->orWhere('second_phone', request('phone'));
+                    }),
                 ])
                 ->label(__('Phone Number')),
+
+            PhoneInput::make('second_phone')
+                ->different('phone')
+                ->separateDialCode(true) // Shows flag and +20 separately
+                ->enableIpLookup(true) // Enable IP-based country detection
+                ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
+                ->required()
+                ->rules([
+                    'max:20',
+                    Rule::unique('users')->where(function ($query) {
+                        $query->where('phone', request('phone'))
+                            ->orWhere('second_phone', request('phone'));
+                    }),
+                ])
+                ->label(__('Second Phone Number')),
 
         Forms\Components\Select::make('roles')
                 ->preload()
@@ -252,17 +271,17 @@ class UserResource extends Resource
                     ->iconColor('primary')
                     ->icon('heroicon-o-envelope'),
 
-                TextColumn::make('second_phone')
-                    ->iconColor('primary')
-                    ->icon('heroicon-o-phone')
-                    ->label(__('Second Phone'))
-                    ->placeholder(__('No phone number saved'))
-                    ->searchable(),
-
                 TextColumn::make('phone')
                     ->iconColor('primary')
                     ->icon('heroicon-o-phone')
                     ->label(__('Phone'))
+                    ->placeholder(__('No phone number saved'))
+                    ->searchable(),
+
+                TextColumn::make('second_phone')
+                    ->iconColor('primary')
+                    ->icon('heroicon-o-phone')
+                    ->label(__('Second Phone'))
                     ->placeholder(__('No phone number saved'))
                     ->searchable(),
 
@@ -449,6 +468,11 @@ class UserResource extends Resource
                             PhoneEntry::make('phone')
                                 ->placeholder(__('No phone number saved'))
                                 ->label(__('Phone number'))
+                                ->countryColumn('phone_country'),
+
+                            PhoneEntry::make('second_phone')
+                                ->placeholder(__('No phone number saved'))
+                                ->label(__('Second Phone Number'))
                                 ->countryColumn('phone_country'),
 
                             TextEntry::make('created_at')

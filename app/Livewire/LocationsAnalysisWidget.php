@@ -58,15 +58,15 @@ class LocationsAnalysisWidget extends Widget
         $this->cityData = $this->getCityDistribution();
     }
 
-
-    // In LocationsAnalysisWidget.php
-
+    // Add these methods to your widget class
     protected function getCountryDistribution(): Collection
     {
         return Order::query()
             ->join('countries as c', 'orders.country_id', '=', 'c.id')
             ->whereBetween('orders.created_at', [$this->fromDate, $this->toDate])
-            ->selectRaw('c.id as country_id, c.name as country, COUNT(orders.id) as total')
+            ->selectRaw('c.id as country_id, c.name as country,
+            COUNT(orders.id) as total,
+            SUM(CASE WHEN orders.status = "completed" THEN 1 ELSE 0 END) as completed')
             ->groupBy('orders.country_id', 'c.id', 'c.name')
             ->orderByDesc('total')
             ->get()
@@ -74,15 +74,19 @@ class LocationsAnalysisWidget extends Widget
                 'id' => $item->country_id,
                 'country' => json_decode($item->country, true) ?? ['en' => $item->country],
                 'total' => $item->total,
+                'completed' => $item->completed,
             ]);
     }
 
+// Do the same for governorate and city methods
     protected function getGovernorateDistribution(): Collection
     {
         return Order::query()
             ->join('governorates as g', 'orders.governorate_id', '=', 'g.id')
             ->whereBetween('orders.created_at', [$this->fromDate, $this->toDate])
-            ->selectRaw('g.id as governorate_id, g.name as governorate, COUNT(orders.id) as total')
+            ->selectRaw('g.id as governorate_id, g.name as governorate,
+            COUNT(orders.id) as total,
+            SUM(CASE WHEN orders.status = "completed" THEN 1 ELSE 0 END) as completed')
             ->groupBy('orders.governorate_id', 'g.id', 'g.name')
             ->orderByDesc('total')
             ->get()
@@ -90,6 +94,7 @@ class LocationsAnalysisWidget extends Widget
                 'id' => $item->governorate_id,
                 'governorate' => json_decode($item->governorate, true) ?? ['en' => $item->governorate],
                 'total' => $item->total,
+                'completed' => $item->completed,
             ]);
     }
 
@@ -98,7 +103,9 @@ class LocationsAnalysisWidget extends Widget
         return Order::query()
             ->join('cities as c', 'orders.city_id', '=', 'c.id')
             ->whereBetween('orders.created_at', [$this->fromDate, $this->toDate])
-            ->selectRaw('c.id as city_id, c.name as city, COUNT(orders.id) as total')
+            ->selectRaw('c.id as city_id, c.name as city,
+            COUNT(orders.id) as total,
+            SUM(CASE WHEN orders.status = "completed" THEN 1 ELSE 0 END) as completed')
             ->groupBy('orders.city_id', 'c.id', 'c.name')
             ->orderByDesc('total')
             ->get()
@@ -106,6 +113,7 @@ class LocationsAnalysisWidget extends Widget
                 'id' => $item->city_id,
                 'city' => json_decode($item->city, true) ?? ['en' => $item->city],
                 'total' => $item->total,
+                'completed' => $item->completed,
             ]);
     }
 }

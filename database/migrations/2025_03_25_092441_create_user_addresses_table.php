@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('governorate_id')->nullable()->constrained('governorates')->cascadeOnDelete();
             $table->foreignId('city_id')->nullable()->constrained('cities')->cascadeOnDelete();
             $table->tinyText('address')->nullable();
-            $table->tinyText('address_name'); // Example: "Home", "Work"
+            $table->tinyText('address_name')->default('home'); // Example: "Home", "Work"
             $table->boolean('is_primary')->default(false);
             $table->timestamps();
         });
