@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use Closure;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers\BundlesRelationManager;
 use App\Models\City;
@@ -10,7 +11,6 @@ use App\Models\Product;
 use App\Models\Setting;
 use App\Models\ShippingCost;
 use App\Services\ProductActionsService;
-use Closure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Components\CheckboxList;
@@ -130,11 +130,27 @@ class ProductResource extends Resource
                                     ->unique(ignoreRecord: true)
                                     ->required()
                                     ->maxLength(255),
-                                Forms\Components\TextInput::make('quantity')
-                                    ->label(__('Quantity'))
-                                    ->required()
+                                TextInput::make('quantity')
+                                    ->label(__('Total Quantity'))
                                     ->numeric()
-                                    ->default(1),
+                                    ->default(1)
+                                    ->required()
+                                    ->rule(function (Get $get) {
+                                        return function (string $attribute, $value, Closure $fail) use ($get) {
+                                            $productColors = $get('productColors');
+
+                                            $sumOfVariants = collect($productColors)
+                                                ->flatMap(fn ($color) => $color['productColorSizes'] ?? [])
+                                                ->sum('quantity');
+
+                                            if ((int) $value !== (int) $sumOfVariants) {
+                                                $fail(__('The total quantity must equal the sum of all variant quantities. You entered :value, but the sum is :sum.', [
+                                                    'value' => $value,
+                                                    'sum' => $sumOfVariants,
+                                                ]));
+                                            }
+                                        };
+                                    }),
                                 TextInput::make('price')
                                     ->label(__('Price'))
                                     ->required()
@@ -245,10 +261,11 @@ class ProductResource extends Resource
 
                                 Repeater::make('productColors')
                                     ->relationship('productColors')
-                                    ->label(__('Colors'))
+                                    ->label(__('Variants Information'))
                                     ->schema([
                                         Select::make('color_id')
                                             ->label(__('Color'))
+                                            ->columnSpanFull()
                                             ->relationship('color', 'name')
                                             ->required(),
 
@@ -279,7 +296,6 @@ class ProductResource extends Resource
                                     ->columns(2)
                                     ->collapsible()
                                     ->columnSpanFull(),
-
 
 //                                Repeater::make('types')
 //                                    ->defaultItems(0)

@@ -196,8 +196,7 @@ class InventoryResource extends Resource
                                             ->badge()
                                             ->hiddenLabel(),
                                     ])
-                                    ->columns(2)
-                                    ->columnSpanFull(),
+                                    ->columns(2),
                             ])
                             ->columns(1)
                             ->columnSpanFull(),
