@@ -39,7 +39,7 @@ class Order extends Model
 
         // ✅ Decrement stock after order created
         static::created(function (Order $order) {
-            $order->syncInventoryOnCreate();
+//            $order->syncInventoryOnCreate();
         });
 
         // ✅ Restore stock if order deleted
@@ -48,23 +48,23 @@ class Order extends Model
         });
     }
 
-    public function setStatusAttribute($value)
-    {
-        $oldStatus = $this->status;
-        $this->attributes['status'] = $value;
-
-        // Restore if order cancelled or refunded from in-progress status
-        if (in_array($oldStatus, ['pending', 'preparing', 'shipping']) &&
-            in_array($value, ['cancelled', 'refund'])) {
-            $this->restoreInventory();
-        }
-
-        // Deduct if status is moved to preparing/shipping and was previously refund/cancelled
-        if (in_array($oldStatus, ['cancelled', 'refund']) &&
-            in_array($value, ['pending', 'preparing', 'shipping'])) {
-            $this->syncInventoryOnCreate(); // re-deduct inventory
-        }
-    }
+//    public function setStatusAttribute($value)
+//    {
+//        $oldStatus = $this->status;
+//        $this->attributes['status'] = $value;
+//
+//        // Restore if order cancelled or refunded from in-progress status
+//        if (in_array($oldStatus, ['pending', 'preparing', 'shipping']) &&
+//            in_array($value, ['cancelled', 'refund'])) {
+//            $this->restoreInventory();
+//        }
+//
+//        // Deduct if status is moved to preparing/shipping and was previously refund/cancelled
+//        if (in_array($oldStatus, ['cancelled', 'refund']) &&
+//            in_array($value, ['pending', 'preparing', 'shipping'])) {
+//            $this->syncInventoryOnCreate(); // re-deduct inventory
+//        }
+//    }
 
     public function syncInventoryOnCreate()
     {
