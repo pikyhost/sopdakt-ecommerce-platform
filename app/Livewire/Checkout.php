@@ -344,7 +344,6 @@ class Checkout extends Component
 
         DB::beginTransaction();
         try {
-            // Get the cart for user or guest session
             $cart = Cart::where(function ($query) {
                 if (Auth::check()) {
                     $query->where('user_id', Auth::id());
@@ -357,13 +356,10 @@ class Checkout extends Component
                 return redirect()->route('cart.index')->with('error', __('Your cart is empty. Please add items before proceeding.'));
             }
 
-            // Save contact details
             $contact = $this->save();
 
-            // Define order status dynamically
             $orderStatus = OrderStatus::Pending;
 
-            // Create order
             $order = Order::create([
                 'user_id' => Auth::check() ? Auth::id() : null,
                 'contact_id' => Auth::check() ? null : $contact->id,
@@ -382,7 +378,11 @@ class Checkout extends Component
                 'notes' => $this->notes,
             ]);
 
-            // Transfer cart items to order items
+            // ✅ تأكيد أن الطلب تم إنشاؤه بنجاح
+            if (!$order || !$order->id) {
+                throw new \Exception('Order was not created successfully.');
+            }
+
             foreach ($cart->items as $cartItem) {
                 OrderItem::create([
                     'order_id' => $order->id,
@@ -401,10 +401,8 @@ class Checkout extends Component
                     $product = \App\Models\Product::find($item->product_id);
 
                     if ($product) {
-                        // Decrease main product quantity
                         $product->decrement('quantity', $item->quantity);
 
-                        // Decrease variant quantity (Color + Size)
                         $variant = $product->productColors()
                             ->where('color_id', $item->color_id)
                             ->first()
@@ -416,10 +414,8 @@ class Checkout extends Component
                             $variant->decrement('quantity', $item->quantity);
                         }
 
-                        // Decrease inventory stock
                         $product->inventory()?->decrement('quantity', $item->quantity);
 
-                        // Create inventory transaction
                         \App\Models\Transaction::create([
                             'product_id' => $item->product_id,
                             'type'       => \App\Enums\TransactionType::SALE,
@@ -430,20 +426,14 @@ class Checkout extends Component
                 }
             }
 
-            $productIds = $order->items
-                ->pluck('product_id')
-                ->filter()
-                ->unique();
-
+            $productIds = $order->items->pluck('product_id')->filter()->unique();
             $products = \App\Models\Product::whereIn('id', $productIds)->get();
 
             \App\Services\StockLevelNotifier::notifyAdminsForLowStock($products);
 
-            // Clear the cart
             $cart->items()->delete();
             $cart->delete();
 
-            // Send order confirmation
             $recipientEmail = Auth::check() ? Auth::user()->email : ($contact->email ?? null);
             $language = Auth::check()
                 ? auth()->user()->preferred_language
@@ -455,7 +445,6 @@ class Checkout extends Component
                     ->send(new OrderStatusMail($order, $orderStatus));
             }
 
-            // Send guest invitation if not authenticated
             if (!Auth::check() && $contact) {
                 $locale = request()->getPreferredLanguage(['en', 'ar']) ?? 'en';
 
@@ -482,8 +471,7 @@ class Checkout extends Component
             $this->addError('order', __('We encountered an issue while placing your order. Please try again later. Error: :error', ['error' => $e->getMessage()]));
         }
     }
-
-
+    
     public function getIsCheckoutReadyProperty()
     {
         return count($this->cartItems) > 0 // Ensure cart is not empty

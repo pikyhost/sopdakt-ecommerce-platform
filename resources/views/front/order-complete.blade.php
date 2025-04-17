@@ -16,13 +16,17 @@
             </div>
         @endif
 
-        {{-- Thank You GIF --}}
-        <img src="https://media.giphy.com/media/111ebonMs90YLu/giphy.gif" alt="Thank You" class="img-fluid my-4" style="max-height: 250px;">
 
-        <h1>{{ __('order_created_successfully') }}</h1>
+        {{-- Professional Thank You GIF --}}
+            {{-- Professional Thank You GIF --}}
+            <div class="d-flex justify-content-center mb-4">
+                <img src="https://media.giphy.com/media/3o6ZsVGl3uU1HJ6NoQ/giphy.gif" alt="Thank You" style="max-height: 250px;">
+            </div>
+            <h1>{{ __('order_created_successfully') }}</h1>
         <p>{{ __('order_confirmation_message') }}</p>
         <br>
         <a href="{{ url('/') }}" class="btn btn-primary">{{ __('go_to_home') }}</a>
     </div>
+
     <br>
 @endsection
