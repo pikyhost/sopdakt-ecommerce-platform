@@ -16,6 +16,9 @@
             </div>
         @endif
 
+        {{-- Thank You GIF --}}
+        <img src="https://media.giphy.com/media/111ebonMs90YLu/giphy.gif" alt="Thank You" class="img-fluid my-4" style="max-height: 250px;">
+
         <h1>{{ __('order_created_successfully') }}</h1>
         <p>{{ __('order_confirmation_message') }}</p>
         <br>
