@@ -71,11 +71,11 @@
         </div>
 
         <!-- Messages -->
-        @if ($errors->has('cart_error'))
-            <div class="alert alert-danger mt-3">
-                {{ __('cart_error') }}
-            </div>
-        @endif
+            @if ($errors->has('cart_error'))
+                <div class="alert alert-danger mt-3">
+                    {{ $errors->first('cart_error') }}
+                </div>
+            @endif
         @if (session()->has('success'))
             <div class="alert alert-success mt-3 fade show" role="alert">
                 {{ __('success_message') }}

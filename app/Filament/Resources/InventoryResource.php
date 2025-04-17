@@ -179,6 +179,7 @@ class InventoryResource extends Resource
                 Section::make(__('Product Availability (Colors, Sizes and Quantities)'))
                     ->schema([
                         RepeatableEntry::make('product.productColors')
+                            ->placeholder(__('There are no different colors or sizes.'))
                             ->grid(2)
                         ->hiddenLabel()
                             ->schema([
