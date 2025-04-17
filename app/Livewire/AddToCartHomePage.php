@@ -53,15 +53,13 @@ class AddToCartHomePage extends Component
     {
         $this->resetErrorBag();
 
-        $link = '<a href="' . route('contact.us') . '" target="_blank">our support page</a>';
-
         if (!$this->quantity || $this->quantity < 1) {
-            $this->addError('quantity', "Please enter a valid quantity. For assistance, visit $link.");
+            $this->addError('quantity', 'Please enter a valid quantity.');
             return;
         }
 
         if ($this->quantity > 10) {
-            $this->addError('quantity', "The maximum quantity allowed to be added to the cart is 10. Need more? Contact us via $link.");
+            $this->addError('quantity', 'The maximum quantity allowed to be added to the cart is 10.');
             return;
         }
 

@@ -83,7 +83,6 @@ class AddToCart extends Component
     {
         $this->resetErrorBag();
 
-
         if (!$this->quantity || $this->quantity < 1) {
             $this->addError('quantity', 'Please enter a valid quantity.');
             return;

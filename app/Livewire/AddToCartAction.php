@@ -61,7 +61,7 @@ class AddToCartAction extends Component
             $this->addError('quantity', 'The maximum quantity allowed to be added to the cart is 10.');
             return;
         }
-
+        
         $product = $this->product;
         $hasColors = $product->productColors()->exists();
         $variantStock = null;

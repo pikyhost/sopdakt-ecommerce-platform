@@ -62,6 +62,10 @@
                         <div class="alert alert-danger mt-3">
                             {!! $errors->first('quantity') !!}
                         </div>
+
+                        <div class="alert alert-success mt-3">
+                            <a href="{{ route('contact.us') }}" class="alert-link">Contact our sales team</a>.
+                        </div>
                     @endif
 
 
@@ -174,6 +178,7 @@
         .selection-container div {
             flex: 1;
         }
+
     </style>
 
 </div>
