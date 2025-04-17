@@ -93,7 +93,7 @@ class InventoryResource extends Resource
                 Tables\Columns\TextColumn::make('product.sku')
                     ->label(__('SKU'))
                     ->sortable(),
-                Tables\Columns\TextColumn::make('quantity')
+                Tables\Columns\TextColumn::make('product.quantity')
                     ->label(__('Total Quantity'))
                     ->numeric()
                     ->sortable(),
