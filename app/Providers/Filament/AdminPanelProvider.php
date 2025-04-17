@@ -29,6 +29,7 @@ use App\Filament\Resources\LandingPageSettingResource;
 use App\Filament\Resources\OrderResource;
 use App\Filament\Resources\PaymentMethodResource;
 use App\Filament\Resources\PolicyResource;
+use App\Filament\Resources\PopupResource;
 use App\Filament\Resources\ProductRatingResource;
 use App\Filament\Resources\ProductResource;
 use App\Filament\Resources\RoleResource;
@@ -257,6 +258,7 @@ class AdminPanelProvider extends PanelProvider
                     TopNoticeResource::getNavigationItems(),
                     BannerResource::getNavigationItems(),
                     HomePageSettingResource::getNavigationItems(),
+                    PopupResource::getNavigationItems(),
                     PolicyResource::getNavigationItems(),
                 ],
             ],
