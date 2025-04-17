@@ -36,23 +36,8 @@ class ShoppingCart extends Component
 
     public function refreshCart()
     {
-        $this->loadCart(); // Reload the cart when a product is added
+        $this->loadCart();
     }
-
-    /*
-  protected $listeners = ['refreshCart' => 'loadCart', 'productAdded' => 'refreshCart', 'refreshComplementaryProducts' => 'refreshComplementary'];
-
-    public function refreshCart()
-    {
-        $this->loadCart(); // Reload the cart when a product is added
-    }
-
-    public function refreshComplementary()
-    {
-        $this->render(); // Re-render the component without resetting Livewire instances
-    }
-     *
-     * */
 
     public function mount()
     {
@@ -550,19 +535,34 @@ class ShoppingCart extends Component
 
     public function proceedToCheckout()
     {
+        $link = '<a href="' . route('contact.us') . '" target="_blank">our support page</a>';
+
+// Loop through cart items
+        foreach ($this->cartItems as $item) {
+            if ($item['quantity'] < 1) {
+                $this->addError('quantity', "Please enter a valid quantity for all products. For help, visit $link.");
+                return;
+            }
+
+            if ($item['quantity'] > 10) {
+                $this->addError('quantity', "The maximum quantity allowed per product is 10. Need more? Contact us via $link.");
+                return;
+            }
+        }
+
+        // Shipping and location validations
         $this->validate([
-                'selected_shipping' => Setting::isShippingEnabled() ? 'required' : 'nullable',
-            ] +  [
-                'country_id' => 'required|exists:countries,id',
-                'governorate_id' => 'required|exists:governorates,id',
-                'city_id' => 'nullable|exists:cities,id',
-            ]);
+            'selected_shipping' => Setting::isShippingEnabled() ? 'required' : 'nullable',
+            'country_id' => 'required|exists:countries,id',
+            'governorate_id' => 'required|exists:governorates,id',
+            'city_id' => 'nullable|exists:cities,id',
+        ]);
 
-
+        // Tax calculation
         $taxPercentage = Setting::first()?->tax_percentage ?? 0;
         $taxAmount = ($taxPercentage > 0) ? ($this->subtotal * $taxPercentage / 100) : 0;
 
-        // Ensure the cart exists and update it with the selected shipping and tax info
+        // Cart update
         if ($this->cart) {
             $this->cart->update([
                 'subtotal' => $this->subtotal,

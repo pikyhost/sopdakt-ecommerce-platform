@@ -79,9 +79,10 @@
 
             @if ($errors->has('quantity'))
                 <div class="alert alert-danger mt-3">
-                    {{ $errors->first('quantity') }}
+                    {!! $errors->first('quantity') !!}
                 </div>
             @endif
+
 
         @if (session()->has('success'))
             <div class="alert alert-success mt-3 fade show" role="alert">

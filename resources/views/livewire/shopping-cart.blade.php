@@ -196,6 +196,12 @@
                         </tfoot>
                     </table>
 
+                    @if ($errors->has('quantity'))
+                        <div class="alert alert-danger mt-3">
+                            {!! $errors->first('quantity') !!}
+                        </div>
+                    @endif
+
                     <div class="checkout-methods">
                         <button wire:click="proceedToCheckout" class="btn btn-block btn-dark" wire:loading.attr="disabled">
                             Proceed to Checkout <i class="fa fa-arrow-right"></i>
