@@ -397,6 +397,10 @@ class Checkout extends Component
                 ]);
             }
 
+            // Sync inventory after order items are created
+            $order->load('items'); // ensure relationship is loaded
+            $order->syncInventoryOnCreate();
+
             // Clear the cart
             $cart->items()->delete();
             $cart->delete();
