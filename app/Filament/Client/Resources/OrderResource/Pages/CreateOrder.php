@@ -3,7 +3,6 @@
 namespace App\Filament\Client\Resources\OrderResource\Pages;
 
 use App\Filament\Client\Resources\OrderResource;
-use Filament\Actions;
 use Filament\Facades\Filament;
 use Filament\Resources\Pages\CreateRecord;
 
@@ -21,5 +20,10 @@ class CreateOrder extends CreateRecord
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');
+    }
+
+    protected function afterCreate(): void
+    {
+        $this->record->syncInventoryOnCreate();
     }
 }

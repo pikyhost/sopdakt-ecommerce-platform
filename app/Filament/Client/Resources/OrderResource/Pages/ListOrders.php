@@ -16,10 +16,7 @@ class ListOrders extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()
-                ->after(function (Order $record) {
-                    ProductStockNotifier::notify($record);
-                }),
+            Actions\CreateAction::make(),
         ];
     }
 
