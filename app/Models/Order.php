@@ -21,7 +21,7 @@ class Order extends Model
 
     protected static function booted()
     {
-        // ✅ Prevent duplicate orders within 2 minutes
+        // Prevent duplicate orders within 2 minutes
         static::creating(function (Order $order) {
             $query = Order::query()
                 ->where('created_at', '>=', now()->subMinutes(2));
@@ -37,34 +37,11 @@ class Order extends Model
             }
         });
 
-        // ✅ Decrement stock after order created
-        static::created(function (Order $order) {
-//            $order->syncInventoryOnCreate();
-        });
-
-        // ✅ Restore stock if order deleted
+        // Restore stock if order deleted
         static::deleting(function (Order $order) {
             $order->restoreInventory();
         });
     }
-
-//    public function setStatusAttribute($value)
-//    {
-//        $oldStatus = $this->status;
-//        $this->attributes['status'] = $value;
-//
-//        // Restore if order cancelled or refunded from in-progress status
-//        if (in_array($oldStatus, ['pending', 'preparing', 'shipping']) &&
-//            in_array($value, ['cancelled', 'refund'])) {
-//            $this->restoreInventory();
-//        }
-//
-//        // Deduct if status is moved to preparing/shipping and was previously refund/cancelled
-//        if (in_array($oldStatus, ['cancelled', 'refund']) &&
-//            in_array($value, ['pending', 'preparing', 'shipping'])) {
-//            $this->syncInventoryOnCreate(); // re-deduct inventory
-//        }
-//    }
 
     public function syncInventoryOnCreate()
     {

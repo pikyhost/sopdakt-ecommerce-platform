@@ -328,7 +328,6 @@ class Checkout extends Component
         }
     }
 
-
     public function placeOrder()
     {
         if (Auth::check() && !Auth::user()->is_active) {
@@ -362,7 +361,7 @@ class Checkout extends Component
             $contact = $this->save();
 
             // Define order status dynamically
-            $orderStatus = OrderStatus::Pending; // Using enum
+            $orderStatus = OrderStatus::Pending;
 
             // Create order
             $order = Order::create([
@@ -379,7 +378,7 @@ class Checkout extends Component
                 'tax_amount' => $cart->tax_amount,
                 'subtotal' => $cart->subtotal,
                 'total' => $cart->total,
-                'status' => $orderStatus->value, // Enum value
+                'status' => $orderStatus->value,
                 'notes' => $this->notes,
             ]);
 
@@ -397,26 +396,27 @@ class Checkout extends Component
                 ]);
             }
 
-            // Sync inventory after order items are created
-            $order->load('items'); // ensure relationship is loaded
+            // ✅ Sync inventory after order items are created
+            $order->load('items');
             $order->syncInventoryOnCreate();
 
             // Clear the cart
             $cart->items()->delete();
             $cart->delete();
 
+            // Send order confirmation
             $recipientEmail = Auth::check() ? Auth::user()->email : ($contact->email ?? null);
             $language = Auth::check()
                 ? auth()->user()->preferred_language
-                : (request()->getPreferredLanguage(['en', 'ar']) ?? 'en'); // Default to English if none found
+                : (request()->getPreferredLanguage(['en', 'ar']) ?? 'en');
 
             if ($recipientEmail) {
                 Mail::to($recipientEmail)
-                    ->locale($language) // Set email locale
+                    ->locale($language)
                     ->send(new OrderStatusMail($order, $orderStatus));
             }
 
-            // Send Guest Invitation Email (if user is a guest)
+            // Send guest invitation if not authenticated
             if (!Auth::check() && $contact) {
                 $locale = request()->getPreferredLanguage(['en', 'ar']) ?? 'en';
 
@@ -449,7 +449,7 @@ class Checkout extends Component
         return count($this->cartItems) > 0 // Ensure cart is not empty
             && $this->cart->country_id // Ensure country is selected
             && $this->cart->governorate_id // Ensure governorate is selected
-            ; // Ensure subtotal is greater than zero
+            ;
     }
 
     public function render()
