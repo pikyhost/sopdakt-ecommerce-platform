@@ -1,7 +1,5 @@
 <?php
 
-// app/Services/StockLevelNotifier.php
-
 namespace App\Services;
 
 use App\Models\Setting;

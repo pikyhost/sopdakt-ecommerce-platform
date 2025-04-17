@@ -28,17 +28,17 @@ class CreateOrder extends CreateRecord
     {
         $this->record->syncInventoryOnCreate();
 
-        // Get the related product IDs from the order items
-        $productIds = $this->record->items
-            ->pluck('product_id')
-            ->filter() // remove nulls (if you allow bundles, etc.)
-            ->unique();
-
-        // Load the updated product records
-        $products = Product::whereIn('id', $productIds)->get();
-
-        // Trigger notification if any products are below minimum stock
-        StockLevelNotifier::notifyAdminsForLowStock($products);
+//        // Get the related product IDs from the order items
+//        $productIds = $this->record->items
+//            ->pluck('product_id')
+//            ->filter() // remove nulls (if you allow bundles, etc.)
+//            ->unique();
+//
+//        // Load the updated product records
+//        $products = Product::whereIn('id', $productIds)->get();
+//
+//        // Trigger notification if any products are below minimum stock
+//        StockLevelNotifier::notifyAdminsForLowStock($products);
     }
 
 }

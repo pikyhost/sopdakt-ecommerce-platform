@@ -3,6 +3,9 @@
 namespace App\Filament\Client\Resources\OrderResource\Pages;
 
 use App\Filament\Client\Resources\OrderResource;
+use App\Models\Order;
+use App\Models\Product;
+use App\Services\StockLevelNotifier;
 use Filament\Actions;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
@@ -14,7 +17,19 @@ class ListOrders extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()->after(function (Order $order) {
+                // Get the related product IDs from the order items
+                $productIds = $order->items
+                    ->pluck('product_id')
+                    ->filter() // remove nulls (if you allow bundles, etc.)
+                    ->unique();
+
+                // Load the updated product records
+                $products = Product::whereIn('id', $productIds)->get();
+
+                // Trigger notification if any products are below minimum stock
+                StockLevelNotifier::notifyAdminsForLowStock($products);
+            }),
         ];
     }
 
