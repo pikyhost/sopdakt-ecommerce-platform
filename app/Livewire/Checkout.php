@@ -429,6 +429,15 @@ class Checkout extends Component
                     }
                 }
             }
+            
+            $productIds = $order->items
+                ->pluck('product_id')
+                ->filter()
+                ->unique();
+
+            $products = \App\Models\Product::whereIn('id', $productIds)->get();
+
+            \App\Services\StockLevelNotifier::notifyAdminsForLowStock($products);
 
             // Clear the cart
             $cart->items()->delete();
@@ -473,6 +482,7 @@ class Checkout extends Component
             $this->addError('order', __('We encountered an issue while placing your order. Please try again later. Error: :error', ['error' => $e->getMessage()]));
         }
     }
+
 
     public function getIsCheckoutReadyProperty()
     {

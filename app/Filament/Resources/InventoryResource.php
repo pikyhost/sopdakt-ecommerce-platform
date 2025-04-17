@@ -82,8 +82,11 @@ class InventoryResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\SpatieMediaLibraryImageColumn::make('product.feature_product_image')
+                    ->simpleLightbox()
                     ->circular()
-                    ->label(__('Feature Image')),
+                    ->label(__('Product Image'))
+                    ->toggleable()
+                    ->collection('feature_product_image'),
                 Tables\Columns\TextColumn::make('product.name')
                     ->label(__('Product'))
                     ->formatStateUsing(function ($record) {
