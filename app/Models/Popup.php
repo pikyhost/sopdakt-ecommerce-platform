@@ -3,9 +3,21 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\Translatable\HasTranslations;
 
 class Popup extends Model
 {
+    use HasTranslations;
+
+    /**
+     * Translatable attributes.
+     */
+    public $translatable = [
+        'title',
+        'description',
+        'cta_text',
+    ];
+
     /**
      * The attributes that are mass assignable.
      */
@@ -51,7 +63,7 @@ class Popup extends Model
             return in_array($path, $this->specific_pages);
         }
 
-        // Add logic for page_group if you support group-based logic
+        // Add logic for page_group if needed
         return false;
     }
 }

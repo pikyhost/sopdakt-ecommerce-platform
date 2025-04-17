@@ -6,43 +6,93 @@ use App\Filament\Resources\PopupResource\Pages;
 use App\Models\Popup;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 
 class PopupResource extends Resource
 {
+    use Translatable;
+
     protected static ?string $model = Popup::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    public static function getNavigationLabel(): string
+    {
+        return __('Popups');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Content Management');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('Popup');
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return __('Popups');
+    }
+
+    public static function getLabel(): ?string
+    {
+        return __('Popup');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('Popups');
+    }
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('title')
+                    ->label(__('Title'))
                     ->required()
                     ->maxLength(255),
+
                 Forms\Components\Textarea::make('description')
+                    ->label(__('Description'))
                     ->required()
                     ->columnSpanFull(),
+
                 Forms\Components\FileUpload::make('image_path')
+                    ->label(__('Image'))
                     ->image(),
+
                 Forms\Components\TextInput::make('cta_text')
+                    ->label(__('CTA Text'))
                     ->required()
                     ->maxLength(255),
+
                 Forms\Components\TextInput::make('cta_link')
+                    ->label(__('CTA Link'))
                     ->required()
                     ->maxLength(255),
+
                 Forms\Components\TextInput::make('delay_seconds')
+                    ->label(__('Delay Seconds'))
                     ->required()
                     ->numeric()
                     ->default(5),
+
                 Forms\Components\Toggle::make('is_active')
+                    ->label(__('Is Active'))
                     ->required(),
+
                 Forms\Components\TextInput::make('display_rules')
+                    ->label(__('Display Rules'))
                     ->required(),
-                Forms\Components\TextInput::make('specific_pages'),
+
+                Forms\Components\TextInput::make('specific_pages')
+                    ->label(__('Specific Pages')),
             ]);
     }
 
@@ -51,23 +101,40 @@ class PopupResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('title')
+                    ->label(__('Title'))
                     ->searchable(),
-                Tables\Columns\ImageColumn::make('image_path'),
+
+                Tables\Columns\ImageColumn::make('image_path')
+                    ->label(__('Image')),
+
                 Tables\Columns\TextColumn::make('cta_text')
+                    ->label(__('CTA Text'))
                     ->searchable(),
+
                 Tables\Columns\TextColumn::make('cta_link')
+                    ->label(__('CTA Link'))
                     ->searchable(),
+
                 Tables\Columns\TextColumn::make('delay_seconds')
+                    ->label(__('Delay Seconds'))
                     ->numeric()
                     ->sortable(),
+
                 Tables\Columns\IconColumn::make('is_active')
+                    ->label(__('Is Active'))
                     ->boolean(),
-                Tables\Columns\TextColumn::make('display_rules'),
+
+                Tables\Columns\TextColumn::make('display_rules')
+                    ->label(__('Display Rules')),
+
                 Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('Created At'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
                 Tables\Columns\TextColumn::make('updated_at')
+                    ->label(__('Updated At'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -76,11 +143,13 @@ class PopupResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->label(__('Edit')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->label(__('Delete Selected')),
                 ]),
             ]);
     }

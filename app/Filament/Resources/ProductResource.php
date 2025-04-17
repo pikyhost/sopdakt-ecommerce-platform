@@ -73,9 +73,6 @@ class ProductResource extends Resource
         return __('product.label');
     }
 
-    /**
-     * @return string|null
-     */
     public static function getPluralLabel(): ?string
     {
         return __('product.label');

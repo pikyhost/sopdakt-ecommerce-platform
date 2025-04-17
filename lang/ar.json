@@ -1,4 +1,10 @@
 {
+    "Popups": "النوافذ المنبثقة",
+    "Popup": "نافذة منبثقة",
+    "Content Management": "إدارة المحتوى",
+    "Delay Seconds": "ثواني التأخير",
+    "Display Rules": "قواعد العرض",
+    "Specific Pages": "الصفحات المحددة",
     "blocked_phones.navigation_label": "الأرقام المحظورة",
     "blocked_phones.single": "رقم محظور",
     "blocked_phones.plural": "الأرقام المحظورة",
