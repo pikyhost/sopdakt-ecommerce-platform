@@ -100,11 +100,13 @@ class PopupResource extends Resource
                         ->helperText(__('popup.helpers.specific_pages'))
                         ->visible(fn ($get) => $get('display_rules') === 'specific_pages' || $get('display_rules') === 'page_group'),
 
+                    Forms\Components\Checkbox::make('email_needed')
+                        ->label(__('Email needed?')),
+
                     Forms\Components\Toggle::make('is_active')
                         ->columnSpanFull()
                         ->label(__('Is Active'))
                         ->required(),
-
                 ])
             ]);
     }
@@ -137,6 +139,11 @@ class PopupResource extends Resource
                     ->label(__('Is Active'))
                     ->boolean(),
 
+
+                Tables\Columns\IconColumn::make('email_needed')
+                    ->label(__('Email needed?'))
+                    ->boolean(),
+
                 Tables\Columns\TextColumn::make('display_rules')
                     ->label(__('Display Rules')),
 
@@ -145,15 +152,6 @@ class PopupResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label(__('Updated At'))
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
-                //
             ])
             ->actions([
                 Tables\Actions\EditAction::make()

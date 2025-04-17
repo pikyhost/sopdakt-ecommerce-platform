@@ -10,22 +10,41 @@ class PopupComponent extends Component
     public $showPopup = false;
     public $popupData;
     public $dontShowAgain = false;
+    public string $email = '';
 
     public function mount()
     {
+        // Check if user has opted not to see the popup
         if (request()->cookie('dont_show_popup')) {
             return;
         }
 
+        // Get active popup
         $this->popupData = Popup::where('is_active', true)->first();
 
         if ($this->popupData) {
+            // Check display rules
             if ($this->shouldShowOnCurrentPage()) {
+                // Show popup after delay
                 $this->dispatch('init-popup', [
                     'delay' => $this->popupData->delay_seconds * 1000
                 ]);
             }
         }
+    }
+
+    public function submitEmail()
+    {
+        $this->validate([
+            'email' => 'required|email',
+        ]);
+
+        // Handle  subscription logic here...
+        // NewsletterSubscription::create([...]);
+
+        session()->flash('message', 'Thanks for joining our newsletter!');
+        $this->reset('email');
+        $this->showPopup = false;
     }
 
     protected function shouldShowOnCurrentPage()
@@ -39,6 +58,7 @@ class PopupComponent extends Component
                 $pages = explode("\n", $this->popupData->specific_pages);
                 return in_array($currentPath, array_map('trim', $pages));
             case 'page_group':
+                // Implement your page group logic here
                 return $this->checkPageGroup($currentPath);
             default:
                 return false;
@@ -50,6 +70,7 @@ class PopupComponent extends Component
         $this->showPopup = false;
 
         if ($this->dontShowAgain) {
+            // Set cookie to not show again for 30 days
             cookie()->queue('dont_show_popup', true, 60 * 24 * 30);
         }
     }
