@@ -51,9 +51,14 @@ class AddToCartAction extends Component
     {
         $this->resetErrorBag();
 
-        // Validate quantity
+
         if (!$this->quantity || $this->quantity < 1) {
             $this->addError('quantity', 'Please enter a valid quantity.');
+            return;
+        }
+
+        if ($this->quantity > 10) {
+            $this->addError('quantity', 'The maximum quantity allowed to be added to the cart is 10.');
             return;
         }
 

@@ -98,6 +98,12 @@
                                 {{ $errors->first('cart_error') }}
                             </div>
                         @endif
+
+                            @if ($errors->has('quantity'))
+                                <div class="alert alert-danger mt-3">
+                                    {{ $errors->first('quantity') }}
+                                </div>
+                            @endif
                     </div>
 
                     <!-- Modal Footer -->

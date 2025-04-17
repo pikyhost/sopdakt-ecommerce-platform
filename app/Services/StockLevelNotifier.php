@@ -18,7 +18,7 @@ class StockLevelNotifier
         foreach ($products as $product) {
             if (
                 $product->quantity !== null &&
-                $product->minimum_stock_level !== null &&
+                Setting::getMinimumStockLevel() !== null &&
                 $product->quantity <= Setting::getMinimumStockLevel()
             ) {
                 foreach ($admins as $admin) {

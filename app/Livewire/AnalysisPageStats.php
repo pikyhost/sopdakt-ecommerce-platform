@@ -97,7 +97,7 @@ class AnalysisPageStats extends BaseWidget
             ->orderBy('order_count', 'desc')
             ->orderBy('last_order_date', 'asc')
             ->get()
-            ->filter(function($order) {
+            ->filter(function ($order) {
                 return $order->city_id !== null;
             });
 
@@ -111,7 +111,7 @@ class AnalysisPageStats extends BaseWidget
             ->orderBy('order_count', 'asc')
             ->orderBy('last_order_date', 'desc')
             ->get()
-            ->filter(function($order) {
+            ->filter(function ($order) {
                 return $order->city_id !== null;
             });
 
@@ -150,7 +150,7 @@ class AnalysisPageStats extends BaseWidget
             ->orderBy('order_count', 'desc')
             ->orderBy('last_order_date', 'asc')
             ->get()
-            ->filter(function($order) {
+            ->filter(function ($order) {
                 return $order->city_id !== null;
             });
 
@@ -165,7 +165,7 @@ class AnalysisPageStats extends BaseWidget
             ->orderBy('order_count', 'asc')
             ->orderBy('last_order_date', 'desc')
             ->get()
-            ->filter(function($order) {
+            ->filter(function ($order) {
                 return $order->city_id !== null;
             });
 
@@ -175,6 +175,69 @@ class AnalysisPageStats extends BaseWidget
         $winLossRatio = $totalLosses > 0 ? round($completedOrders / $totalLosses, 2) : 'N/A';
         $averageSale = $ordersForSelectedPeriod > 0 ? round($totalRevenue / $ordersForSelectedPeriod, 2) : 0;
         $customerExpense = $uniqueCustomers > 0 ? round($totalRevenue / $uniqueCustomers, 2) : 0;
+
+// Get all product stats
+        $productStats = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->with('items.product')
+            ->get()
+            ->flatMap(function ($order) {
+                return $order->items->filter(fn($item) => $item->product_id)->map(function ($item) {
+                    return [
+                        'product_id' => $item->product_id,
+                        'product_name' => optional($item->product)->name ?? 'Unknown',
+                        'slug' => optional($item->product)->slug ?? null, // ✅ Include slug
+                        'revenue' => $item->subtotal,
+                        'quantity' => $item->quantity,
+                    ];
+                });
+            })
+            ->groupBy('product_id')
+            ->map(function ($items, $productId) {
+                return [
+                    'product_id' => $productId,
+                    'product_name' => $items->first()['product_name'],
+                    'slug' => $items->first()['slug'], // ✅ Include slug
+                    'total_revenue' => $items->sum('revenue'),
+                    'total_quantity' => $items->sum('quantity'),
+                ];
+            })
+            ->sortByDesc('total_revenue')
+            ->values();
+
+        $mostProfitableProduct = $productStats->first();
+        $leastProfitableProduct = $productStats->where('total_revenue', '>', 0)->last();
+
+// Get product stats for completed orders only
+        $completedProductStats = Order::whereBetween('created_at', [$startDate, $endDate])
+            ->where('status', OrderStatus::Completed)
+            ->with('items.product')
+            ->get()
+            ->flatMap(function ($order) {
+                return $order->items->filter(fn($item) => $item->product_id)->map(function ($item) {
+                    return [
+                        'product_id' => $item->product_id,
+                        'product_name' => optional($item->product)->name ?? 'Unknown',
+                        'slug' => optional($item->product)->slug ?? null, // ✅ Include slug
+                        'revenue' => $item->subtotal,
+                        'quantity' => $item->quantity,
+                    ];
+                });
+            })
+            ->groupBy('product_id')
+            ->map(function ($items, $productId) {
+                return [
+                    'product_id' => $productId,
+                    'product_name' => $items->first()['product_name'],
+                    'slug' => $items->first()['slug'], // ✅ Include slug
+                    'total_revenue' => $items->sum('revenue'),
+                    'total_quantity' => $items->sum('quantity'),
+                ];
+            })
+            ->sortByDesc('total_revenue')
+            ->values();
+
+        $mostProfitableCompletedProduct = $completedProductStats->first();
+        $leastProfitableCompletedProduct = $completedProductStats->where('total_revenue', '>', 0)->last();
 
         $extraAttributes = [
             'class' => 'cursor-pointer transition transform duration-200 ease-in-out rounded-md hover:bg-gray-100 hover:scale-[1.01] dark:hover:bg-white/10 dark:hover:shadow-lg',
@@ -422,8 +485,85 @@ class AnalysisPageStats extends BaseWidget
                 ->url($leastCompletedCityUrl)
                 ->openUrlInNewTab()
                 ->extraAttributes($extraAttributes);
-        }
 
+// Stats array updates (Arabic or English based on $locale)
+            if ($mostProfitableProduct) {
+                $mostProductUrl = $mostProfitableProduct['slug']
+                    ? "/admin/products/{$mostProfitableProduct['slug']}/edit"
+                    : null;
+
+                $stats[] = Stat::make(
+                    $locale === 'ar' ? 'المنتج الأكثر ربحية' : 'Most Profitable Product',
+                    $mostProfitableProduct['product_name']
+                )
+                    ->color('success')
+                    ->description($locale === 'ar'
+                        ? "إجمالي الإيرادات: " . number_format($mostProfitableProduct['total_revenue'], 2) . " (" . $mostProfitableProduct['total_quantity'] . " وحدة)"
+                        : "Total revenue: " . number_format($mostProfitableProduct['total_revenue'], 2) . " (" . $mostProfitableProduct['total_quantity'] . " units)")
+                    ->icon('heroicon-m-currency-dollar')
+                    ->url($mostProductUrl)
+                    ->openUrlInNewTab()
+                    ->extraAttributes($extraAttributes);
+            }
+
+            if ($leastProfitableProduct && $leastProfitableProduct['total_revenue'] > 0) {
+                $leastProductUrl = $leastProfitableProduct['slug']
+                    ? "/admin/products/{$leastProfitableProduct['slug']}/edit"
+                    : null;
+
+                $stats[] = Stat::make(
+                    $locale === 'ar' ? 'المنتج الأقل ربحية' : 'Least Profitable Product',
+                    $leastProfitableProduct['product_name']
+                )
+                    ->color('warning')
+                    ->description($locale === 'ar'
+                        ? "إجمالي الإيرادات: " . number_format($leastProfitableProduct['total_revenue'], 2) . " (" . $leastProfitableProduct['total_quantity'] . " وحدة)"
+                        : "Total revenue: " . number_format($leastProfitableProduct['total_revenue'], 2) . " (" . $leastProfitableProduct['total_quantity'] . " units)")
+                    ->icon('heroicon-m-currency-dollar')
+                    ->url($leastProductUrl)
+                    ->openUrlInNewTab()
+                    ->extraAttributes($extraAttributes);
+            }
+
+            if ($mostProfitableCompletedProduct) {
+                $mostCompletedProductUrl = $mostProfitableCompletedProduct['slug']
+                    ? "/admin/products/{$mostProfitableCompletedProduct['slug']}/edit"
+                    : null;
+
+                $stats[] = Stat::make(
+                    $locale === 'ar' ? 'المنتج الأكثر ربحية (مكتملة)' : 'Most Profitable Product (Completed)',
+                    $mostProfitableCompletedProduct['product_name']
+                )
+                    ->color('success')
+                    ->description($locale === 'ar'
+                        ? "إجمالي الإيرادات: " . number_format($mostProfitableCompletedProduct['total_revenue'], 2) . " (" . $mostProfitableCompletedProduct['total_quantity'] . " وحدة)"
+                        : "Total revenue: " . number_format($mostProfitableCompletedProduct['total_revenue'], 2) . " (" . $mostProfitableCompletedProduct['total_quantity'] . " units)")
+                    ->icon('heroicon-m-currency-dollar')
+                    ->url($mostCompletedProductUrl)
+                    ->openUrlInNewTab()
+                    ->extraAttributes($extraAttributes);
+            }
+
+            if ($leastProfitableCompletedProduct && $leastProfitableCompletedProduct['total_revenue'] > 0) {
+                $leastCompletedProductUrl = $leastProfitableCompletedProduct['slug']
+                    ? "/admin/products/{$leastProfitableCompletedProduct['slug']}/edit"
+                    : null;
+
+                $stats[] = Stat::make(
+                    $locale === 'ar' ? 'المنتج الأقل ربحية (مكتملة)' : 'Least Profitable Product (Completed)',
+                    $leastProfitableCompletedProduct['product_name']
+                )
+                    ->color('warning')
+                    ->description($locale === 'ar'
+                        ? "إجمالي الإيرادات: " . number_format($leastProfitableCompletedProduct['total_revenue'], 2) . " (" . $leastProfitableCompletedProduct['total_quantity'] . " وحدة)"
+                        : "Total revenue: " . number_format($leastProfitableCompletedProduct['total_revenue'], 2) . " (" . $leastProfitableCompletedProduct['total_quantity'] . " units)")
+                    ->icon('heroicon-m-currency-dollar')
+                    ->url($leastCompletedProductUrl)
+                    ->openUrlInNewTab()
+                    ->extraAttributes($extraAttributes);
+            }
+
+        }
         return $stats;
     }
 }

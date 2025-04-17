@@ -58,6 +58,12 @@
                         </div>
                     @endif
 
+                    @if ($errors->has('quantity'))
+                        <div class="alert alert-danger mt-3">
+                            {{ $errors->first('quantity') }}
+                        </div>
+                    @endif
+
                     <div class="modal-footer">
                         <button class="btn btn-secondary" wire:click="closeModal">Cancel</button>
                         <button class="btn btn-dark" wire:click="addToCart" wire:loading.attr="disabled">

@@ -58,6 +58,11 @@ class AddToCartHomePage extends Component
             return;
         }
 
+        if ($this->quantity > 10) {
+            $this->addError('quantity', 'The maximum quantity allowed to be added to the cart is 10.');
+            return;
+        }
+
         $product = $this->product;
 
         // Check if the product has colors
