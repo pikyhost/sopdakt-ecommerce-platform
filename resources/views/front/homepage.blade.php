@@ -604,7 +604,7 @@
                                 </ul>
                             </div><!-- End .header-menu -->
                         </div><!-- End .header-dropdown -->
-                      
+
                         <!-- End .header-dropown -->
                     </div>
                     <!-- End .header-dropdowns -->
@@ -1275,6 +1275,9 @@
         </a>
     </div>
 </div>
+
+<!-- Before closing body tag -->
+@livewire('popup-component')
 
 <a id="scroll-top" href="#top" title="Top" role="button"><i class="icon-angle-up"></i></a>
 

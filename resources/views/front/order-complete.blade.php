@@ -17,10 +17,9 @@
         @endif
 
 
-        {{-- Professional Thank You GIF --}}
-            {{-- Professional Thank You GIF --}}
+
             <div class="d-flex justify-content-center mb-4">
-                <img src="https://media.giphy.com/media/3o6ZsVGl3uU1HJ6NoQ/giphy.gif" alt="Thank You" style="max-height: 250px;">
+                <img src="https://media.giphy.com/media/3o7abKhOpu0NwenH3O/giphy.gif" alt="Thank You">
             </div>
             <h1>{{ __('order_created_successfully') }}</h1>
         <p>{{ __('order_confirmation_message') }}</p>
