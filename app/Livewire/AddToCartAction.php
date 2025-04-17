@@ -51,41 +51,38 @@ class AddToCartAction extends Component
     {
         $this->resetErrorBag();
 
+        // Validate quantity
         if (!$this->quantity || $this->quantity < 1) {
             $this->addError('quantity', 'Please enter a valid quantity.');
             return;
         }
 
         $product = $this->product;
-
-        // Check if the product has colors
         $hasColors = $product->productColors()->exists();
-
-        if ($hasColors && !$this->colorId) {
-            $this->addError('colorId', 'Please select a color.');
-            return;
-        }
-
         $variantStock = null;
 
-        if ($this->colorId) {
-            $productColor = $product->productColors()->where('color_id', $this->colorId)->first();
+        // Color validation
+        if ($hasColors) {
+            if (!$this->colorId) {
+                $this->addError('colorId', 'Please select a color.');
+                return;
+            }
 
+            $productColor = $product->productColors()->where('color_id', $this->colorId)->first();
             if (!$productColor) {
                 $this->addError('colorId', 'Invalid color selection.');
                 return;
             }
 
+            // Size validation
             $hasSizes = $productColor->sizes()->exists();
-
-            if ($hasSizes && !$this->sizeId) {
-                $this->addError('sizeId', 'Please select a size.');
-                return;
-            }
-
             if ($hasSizes) {
-                $productColorSize = $productColor->sizes()->where('size_id', $this->sizeId)->first();
+                if (!$this->sizeId) {
+                    $this->addError('sizeId', 'Please select a size.');
+                    return;
+                }
 
+                $productColorSize = $productColor->sizes()->where('size_id', $this->sizeId)->first();
                 if (!$productColorSize) {
                     $this->addError('sizeId', 'Invalid size selection.');
                     return;
@@ -96,9 +93,10 @@ class AddToCartAction extends Component
                 $variantStock = $productColor->quantity ?? 0;
             }
         } else {
-            $variantStock = $product->quantity;
+            $variantStock = $product->quantity ?? 0;
         }
 
+        // Stock validation
         if ($variantStock <= 0) {
             $this->addError('cart_error', 'This product is out of stock!');
             return;
@@ -109,6 +107,7 @@ class AddToCartAction extends Component
             return;
         }
 
+        // Get user or session-based cart
         $user = Auth::user();
         $sessionId = session()->getId();
         $pricePerUnit = (float) $product->discount_price_for_current_country;
@@ -118,13 +117,15 @@ class AddToCartAction extends Component
             'session_id' => $user ? null : $sessionId
         ]);
 
+        // Check if cart item already exists
         $cartItem = CartItem::where('cart_id', $cart->id)
             ->where('product_id', $product->id)
-            ->where('size_id', $this->sizeId)
             ->where('color_id', $this->colorId)
+            ->where('size_id', $this->sizeId)
             ->first();
 
         $newQuantity = $this->quantity;
+
         if ($cartItem) {
             $newQuantity += $cartItem->quantity;
 
@@ -141,8 +142,8 @@ class AddToCartAction extends Component
             CartItem::create([
                 'cart_id' => $cart->id,
                 'product_id' => $product->id,
-                'size_id' => $this->sizeId,
                 'color_id' => $this->colorId,
+                'size_id' => $this->sizeId,
                 'quantity' => $this->quantity,
                 'price_per_unit' => $pricePerUnit,
                 'subtotal' => $this->quantity * $pricePerUnit,
@@ -154,7 +155,8 @@ class AddToCartAction extends Component
         $this->closeModal();
         $this->dispatch('cartUpdated');
     }
-    
+
+
     private function availableSizes()
     {
         return $this->product->productColors->where('id', $this->colorId)->first()?->sizes ?? [];

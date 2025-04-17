@@ -83,24 +83,26 @@ class AddToCart extends Component
     {
         $this->resetErrorBag();
 
-        if (!$this->quantity || $this->quantity < 1) {
+        if ($this->quantity < 1) {
             $this->addError('quantity', 'Please enter a valid quantity.');
             return;
         }
 
         $product = Product::find($this->productId);
+
         if (!$product) {
             $this->addError('cart_error', 'Product not found.');
             return;
         }
 
+        // Validate color selection
         $hasColors = $product->productColors()->exists();
-
         if ($hasColors && !$this->colorId) {
             $this->addError('colorId', 'Please select a color.');
             return;
         }
 
+        // Validate size selection if needed
         $hasSizes = false;
         if ($this->colorId) {
             $color = $product->productColors()->where('color_id', $this->colorId)->first();
@@ -112,16 +114,14 @@ class AddToCart extends Component
             }
         }
 
-        // 🧠 Determine available stock based on variant or product
-        $availableStock = $product->quantity; // default
+        // Determine stock based on variant or product
+        $availableStock = $product->quantity;
 
         if ($this->colorId && $this->sizeId) {
             $variant = ProductColorSize::whereHas('productColor', function ($query) {
                 $query->where('product_id', $this->productId)
                     ->where('color_id', $this->colorId);
-            })
-                ->where('size_id', $this->sizeId)
-                ->first();
+            })->where('size_id', $this->sizeId)->first();
 
             if (!$variant) {
                 $this->addError('cart_error', 'Selected variant is not available.');
@@ -141,16 +141,21 @@ class AddToCart extends Component
             return;
         }
 
-        $this->cart = Cart::firstOrCreate([
-            'user_id' => Auth::id(),
-            'session_id' => Auth::check() ? null : Session::getId(),
-        ]);
+        // Create or get cart
+        $this->cart = Cart::firstOrCreate(
+            ['user_id' => Auth::id()],
+            ['session_id' => Auth::check() ? null : Session::getId()]
+        );
 
+        // Find or create cart item
         $cartItem = $this->cart->items()
             ->where('product_id', $product->id)
             ->where('size_id', $this->sizeId)
             ->where('color_id', $this->colorId)
             ->first();
+
+        $price = (float) $product->discount_price_for_current_country;
+        $subtotal = $this->quantity * $price;
 
         if ($cartItem) {
             $cartItem->increment('quantity', $this->quantity);
@@ -161,8 +166,8 @@ class AddToCart extends Component
                 'size_id' => $this->sizeId,
                 'color_id' => $this->colorId,
                 'quantity' => $this->quantity,
-                'price_per_unit' => (float) $product->discount_price_for_current_country,
-                'subtotal' => $this->quantity * (float) $product->discount_price_for_current_country,
+                'price_per_unit' => $price,
+                'subtotal' => $subtotal,
                 'currency_id' => optional(Setting::getCurrency())->id,
             ]);
         }

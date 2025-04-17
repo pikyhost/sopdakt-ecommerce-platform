@@ -17,7 +17,7 @@ class AddBundleToCart extends Component
     public $selectedBundle;
     public $sizes = [];
     public $colors = [];
-    public $selections = []; // Store dynamic selections
+    public $selections = [];
     public $showModal = false;
 
     protected $listeners = ['selectBundle'];
@@ -26,6 +26,7 @@ class AddBundleToCart extends Component
     {
         $this->product = $product;
     }
+
     public function selectBundle($bundleId)
     {
         $this->selectedBundle = Bundle::with(['products.colors'])->find($bundleId);
@@ -38,7 +39,7 @@ class AddBundleToCart extends Component
         $this->sizes = [];
 
         foreach ($this->selectedBundle->products as $bundleProduct) {
-            $colors = $bundleProduct->colors; // Use eager-loaded relation
+            $colors = $bundleProduct->colors;
 
             if ($colors->isNotEmpty()) {
                 $this->colors[$bundleProduct->id] = $colors;
@@ -78,35 +79,63 @@ class AddBundleToCart extends Component
     public function rules()
     {
         $rules = [];
+
         foreach ($this->selectedBundle->products as $bundleProduct) {
-            if (!empty($this->colors[$bundleProduct->id])) {
-                foreach ($this->selections[$bundleProduct->id] ?? [] as $index => $selection) {
-                    $rules["selections.{$bundleProduct->id}.{$index}.color_id"] = 'required';
-                    $rules["selections.{$bundleProduct->id}.{$index}.size_id"] = 'required';
+            $productId = $bundleProduct->id;
+
+            foreach ($this->selections[$productId] ?? [] as $index => $selection) {
+                if (!empty($this->colors[$productId])) {
+                    $rules["selections.{$productId}.{$index}.color_id"] = 'required|exists:colors,id';
+
+                    if (!empty($this->sizes[$productId][$index])) {
+                        $rules["selections.{$productId}.{$index}.size_id"] = 'required|exists:sizes,id';
+                    }
                 }
             }
         }
+
         return $rules;
     }
 
     protected $messages = [
         'selections.*.*.color_id.required' => 'The color selection is required.',
-        'selections.*.*.size_id.required' => 'The size selection is required.',
+        'selections.*.*.color_id.exists'   => 'The selected color is invalid.',
+        'selections.*.*.size_id.required'  => 'The size selection is required.',
+        'selections.*.*.size_id.exists'    => 'The selected size is invalid.',
     ];
 
     protected $validationAttributes = [
         'selections.*.*.color_id' => 'color',
-        'selections.*.*.size_id' => 'size',
+        'selections.*.*.size_id'  => 'size',
     ];
-
 
     public function addToCart()
     {
-        $this->validate();
-        if (!$this->selectedBundle || ($this->product->quantity ?? 0) <= 0) {
+        if (!$this->selectedBundle) {
+            $this->addError('cart_bundle_error', 'Please select a bundle before adding to cart.');
+            return;
+        }
+
+        if (($this->product->quantity ?? 0) <= 0) {
             $this->addError('cart_bundle_error', 'This product is out of stock!');
             return;
         }
+
+        $totalExpectedInputs = ($this->selectedBundle->bundle_type === BundleType::BUY_X_GET_Y)
+            ? (int) $this->selectedBundle->buy_x + (int) $this->selectedBundle->get_y
+            : 1;
+
+        foreach ($this->selectedBundle->products as $bundleProduct) {
+            $productId = $bundleProduct->id;
+            $actualSelections = $this->selections[$productId] ?? [];
+
+            if (count($actualSelections) !== $totalExpectedInputs) {
+                $this->addError('cart_bundle_error', "You must select {$totalExpectedInputs} options for product: {$bundleProduct->name}.");
+                return;
+            }
+        }
+
+        $this->validate();
 
         DB::transaction(function () {
             $cart = Auth::check()

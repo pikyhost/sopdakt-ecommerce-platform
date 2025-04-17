@@ -78,7 +78,7 @@ class AddToCartHomePage extends Component
                 return;
             }
 
-            $hasSizes = $productColor->sizes()->exists();
+            $hasSizes = ProductColorSize::where('product_color_id', $productColor->id)->exists();
 
             if ($hasSizes && !$this->sizeId) {
                 $this->addError('sizeId', 'Please select a size.');
@@ -86,19 +86,21 @@ class AddToCartHomePage extends Component
             }
 
             if ($hasSizes) {
-                $productColorSize = $productColor->sizes()->where('size_id', $this->sizeId)->first();
+                $productColorSize = ProductColorSize::where('product_color_id', $productColor->id)
+                    ->where('size_id', $this->sizeId)
+                    ->first();
 
                 if (!$productColorSize) {
                     $this->addError('sizeId', 'Invalid size selection.');
                     return;
                 }
 
-                $variantStock = $productColorSize->pivot->quantity ?? 0;
+                $variantStock = $productColorSize->quantity ?? 0;
             } else {
                 $variantStock = $productColor->quantity ?? 0;
             }
         } else {
-            $variantStock = $product->quantity;
+            $variantStock = $product->quantity ?? 0;
         }
 
         if ($variantStock <= 0) {
@@ -117,7 +119,7 @@ class AddToCartHomePage extends Component
 
         $cart = Cart::firstOrCreate([
             'user_id' => $user->id ?? null,
-            'session_id' => $user ? null : $sessionId
+            'session_id' => $user ? null : $sessionId,
         ]);
 
         $cartItem = CartItem::where('cart_id', $cart->id)
@@ -127,6 +129,7 @@ class AddToCartHomePage extends Component
             ->first();
 
         $newQuantity = $this->quantity;
+
         if ($cartItem) {
             $newQuantity += $cartItem->quantity;
 
@@ -156,7 +159,6 @@ class AddToCartHomePage extends Component
         $this->closeModal();
         $this->dispatch('cartUpdated');
     }
-
 
     private function availableSizes()
     {
