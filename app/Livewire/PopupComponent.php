@@ -25,7 +25,7 @@ class PopupComponent extends Component
             // Check display rules
             if ($this->shouldShowOnCurrentPage()) {
                 // Show popup after delay
-                $this->dispatchBrowserEvent('init-popup', [
+                $this->dispatch('init-popup', [
                     'delay' => $this->popupData->delay_seconds * 1000
                 ]);
             }

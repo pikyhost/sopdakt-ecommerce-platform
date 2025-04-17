@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PopupResource\Pages;
 use App\Models\Popup;
 use Filament\Forms;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
@@ -53,46 +54,58 @@ class PopupResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('title')
-                    ->label(__('Title'))
-                    ->required()
-                    ->maxLength(255),
+                Section::make()->schema([
+                    Forms\Components\TextInput::make('title')
+                        ->label(__('Title'))
+                        ->required()
+                        ->maxLength(255)
+                        ->columnSpanFull(),
 
-                Forms\Components\Textarea::make('description')
-                    ->label(__('Description'))
-                    ->required()
-                    ->columnSpanFull(),
+                    Forms\Components\Textarea::make('description')
+                        ->label(__('Description'))
+                        ->required()
+                        ->columnSpanFull(),
 
-                Forms\Components\FileUpload::make('image_path')
-                    ->label(__('Image'))
-                    ->image(),
+                    Forms\Components\FileUpload::make('image_path')
+                        ->label(__('Image'))
+                        ->image(),
 
-                Forms\Components\TextInput::make('cta_text')
-                    ->label(__('CTA Text'))
-                    ->required()
-                    ->maxLength(255),
+                    Forms\Components\TextInput::make('cta_text')
+                        ->label(__('CTA Text'))
+                        ->required()
+                        ->maxLength(255),
 
-                Forms\Components\TextInput::make('cta_link')
-                    ->label(__('CTA Link'))
-                    ->required()
-                    ->maxLength(255),
+                    Forms\Components\TextInput::make('cta_link')
+                        ->label(__('CTA Link'))
+                        ->required()
+                        ->maxLength(255),
 
-                Forms\Components\TextInput::make('delay_seconds')
-                    ->label(__('Delay Seconds'))
-                    ->required()
-                    ->numeric()
-                    ->default(5),
+                    Forms\Components\TextInput::make('delay_seconds')
+                        ->label(__('Delay Seconds'))
+                        ->required()
+                        ->numeric()
+                        ->default(5),
 
-                Forms\Components\Toggle::make('is_active')
-                    ->label(__('Is Active'))
-                    ->required(),
+                    Forms\Components\Select::make('display_rules')
+                        ->label(__('Display Rules'))
+                        ->options([
+                            'all_pages' => __('All Pages'),
+                            'specific_pages' => __('Specific Pages'),
+                            'page_group' => __('Pages group'),
+                        ])
+                        ->required(),
 
-                Forms\Components\TextInput::make('display_rules')
-                    ->label(__('Display Rules'))
-                    ->required(),
+                    Forms\Components\Textarea::make('specific_pages')
+                        ->label(__('popup.fields.specific_pages'))
+                        ->helperText(__('popup.helpers.specific_pages'))
+                        ->visible(fn ($get) => $get('display_rules') === 'specific_pages' || $get('display_rules') === 'page_group'),
 
-                Forms\Components\TextInput::make('specific_pages')
-                    ->label(__('Specific Pages')),
+                    Forms\Components\Toggle::make('is_active')
+                        ->columnSpanFull()
+                        ->label(__('Is Active'))
+                        ->required(),
+
+                ])
             ]);
     }
 
