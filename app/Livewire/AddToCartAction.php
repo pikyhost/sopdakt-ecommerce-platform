@@ -49,7 +49,6 @@ class AddToCartAction extends Component
 
     public function addToCart()
     {
-        // Clear previous errors
         $this->resetErrorBag();
 
         if (!$this->quantity || $this->quantity < 1) {
@@ -62,57 +61,74 @@ class AddToCartAction extends Component
         // Check if the product has colors
         $hasColors = $product->productColors()->exists();
 
-        // If the product has colors, ensure color is selected
         if ($hasColors && !$this->colorId) {
             $this->addError('colorId', 'Please select a color.');
             return;
         }
 
-        // Check if the selected color has available sizes
-        if ($this->colorId) {
-            $color = $product->productColors()->where('color_id', $this->colorId)->first();
-            $hasSizes = $color && $color->sizes()->exists();
+        $variantStock = null;
 
-            // If the selected color has sizes, ensure size is selected
+        if ($this->colorId) {
+            $productColor = $product->productColors()->where('color_id', $this->colorId)->first();
+
+            if (!$productColor) {
+                $this->addError('colorId', 'Invalid color selection.');
+                return;
+            }
+
+            $hasSizes = $productColor->sizes()->exists();
+
             if ($hasSizes && !$this->sizeId) {
                 $this->addError('sizeId', 'Please select a size.');
                 return;
             }
+
+            if ($hasSizes) {
+                $productColorSize = $productColor->sizes()->where('size_id', $this->sizeId)->first();
+
+                if (!$productColorSize) {
+                    $this->addError('sizeId', 'Invalid size selection.');
+                    return;
+                }
+
+                $variantStock = $productColorSize->pivot->quantity ?? 0;
+            } else {
+                $variantStock = $productColor->quantity ?? 0;
+            }
+        } else {
+            $variantStock = $product->quantity;
         }
 
-        // Stock and quantity validation
-        $availableStock = $product->quantity;
-        if ($availableStock <= 0) {
+        if ($variantStock <= 0) {
             $this->addError('cart_error', 'This product is out of stock!');
             return;
         }
 
-        if ($this->quantity > $availableStock) {
+        if ($this->quantity > $variantStock) {
             $this->addError('cart_error', 'The requested quantity exceeds available stock!');
             return;
         }
 
         $user = Auth::user();
         $sessionId = session()->getId();
-        $pricePerUnit = (float) $this->product->discount_price_for_current_country; // Ensure valid decimal
+        $pricePerUnit = (float) $product->discount_price_for_current_country;
 
-        // Find or create cart
         $cart = Cart::firstOrCreate([
             'user_id' => $user->id ?? null,
             'session_id' => $user ? null : $sessionId
         ]);
 
-        // Check if the item exists in the cart
         $cartItem = CartItem::where('cart_id', $cart->id)
-            ->where('product_id', $this->product->id)
+            ->where('product_id', $product->id)
             ->where('size_id', $this->sizeId)
             ->where('color_id', $this->colorId)
             ->first();
 
+        $newQuantity = $this->quantity;
         if ($cartItem) {
-            $newQuantity = $cartItem->quantity + $this->quantity;
+            $newQuantity += $cartItem->quantity;
 
-            if ($newQuantity > $availableStock) {
+            if ($newQuantity > $variantStock) {
                 $this->addError('cart_error', 'Not enough stock available for the requested quantity!');
                 return;
             }
@@ -124,24 +140,21 @@ class AddToCartAction extends Component
         } else {
             CartItem::create([
                 'cart_id' => $cart->id,
-                'product_id' => $this->product->id,
+                'product_id' => $product->id,
                 'size_id' => $this->sizeId,
                 'color_id' => $this->colorId,
                 'quantity' => $this->quantity,
-                'price_per_unit' => $pricePerUnit, // Ensure it's a float
+                'price_per_unit' => $pricePerUnit,
                 'subtotal' => $this->quantity * $pricePerUnit,
-                'currency_id' => optional(Setting::getCurrency())->id, // safe null handling
+                'currency_id' => optional(Setting::getCurrency())->id,
             ]);
         }
-
-        // Reduce product stock safely
-        $this->product->decrement('quantity', $this->quantity);
 
         session()->flash('cart_success', 'Product added to cart successfully!');
         $this->closeModal();
         $this->dispatch('cartUpdated');
     }
-
+    
     private function availableSizes()
     {
         return $this->product->productColors->where('id', $this->colorId)->first()?->sizes ?? [];

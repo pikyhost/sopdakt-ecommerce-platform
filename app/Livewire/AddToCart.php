@@ -81,7 +81,6 @@ class AddToCart extends Component
 
     public function addToCart(): void
     {
-        // Clear previous errors
         $this->resetErrorBag();
 
         if (!$this->quantity || $this->quantity < 1) {
@@ -90,30 +89,48 @@ class AddToCart extends Component
         }
 
         $product = Product::find($this->productId);
+        if (!$product) {
+            $this->addError('cart_error', 'Product not found.');
+            return;
+        }
 
-        // Check if the product has colors
         $hasColors = $product->productColors()->exists();
 
-        // If the product has colors, ensure color is selected
         if ($hasColors && !$this->colorId) {
             $this->addError('colorId', 'Please select a color.');
             return;
         }
 
-        // Check if the selected color has available sizes
+        $hasSizes = false;
         if ($this->colorId) {
             $color = $product->productColors()->where('color_id', $this->colorId)->first();
             $hasSizes = $color && $color->sizes()->exists();
 
-            // If the selected color has sizes, ensure size is selected
             if ($hasSizes && !$this->sizeId) {
                 $this->addError('sizeId', 'Please select a size.');
                 return;
             }
         }
 
-        // Stock and quantity validation
-        $availableStock = $product->quantity;
+        // 🧠 Determine available stock based on variant or product
+        $availableStock = $product->quantity; // default
+
+        if ($this->colorId && $this->sizeId) {
+            $variant = ProductColorSize::whereHas('productColor', function ($query) {
+                $query->where('product_id', $this->productId)
+                    ->where('color_id', $this->colorId);
+            })
+                ->where('size_id', $this->sizeId)
+                ->first();
+
+            if (!$variant) {
+                $this->addError('cart_error', 'Selected variant is not available.');
+                return;
+            }
+
+            $availableStock = $variant->quantity;
+        }
+
         if ($availableStock <= 0) {
             $this->addError('cart_error', 'This product is out of stock!');
             return;
@@ -124,12 +141,11 @@ class AddToCart extends Component
             return;
         }
 
-        // Ensure only one cart per user or session
-        $this->cart = Cart::firstOrCreate(
-            ['user_id' => Auth::id(), 'session_id' => Auth::check() ? null : Session::getId()]
-        );
+        $this->cart = Cart::firstOrCreate([
+            'user_id' => Auth::id(),
+            'session_id' => Auth::check() ? null : Session::getId(),
+        ]);
 
-        // Check if the product with the same size and color already exists in the cart
         $cartItem = $this->cart->items()
             ->where('product_id', $product->id)
             ->where('size_id', $this->sizeId)
@@ -137,11 +153,9 @@ class AddToCart extends Component
             ->first();
 
         if ($cartItem) {
-            // Update quantity and subtotal if item already exists
             $cartItem->increment('quantity', $this->quantity);
             $cartItem->update(['subtotal' => $cartItem->quantity * $cartItem->price_per_unit]);
         } else {
-            // Create a new cart item if not exists
             $this->cart->items()->create([
                 'product_id' => $product->id,
                 'size_id' => $this->sizeId,
@@ -149,11 +163,10 @@ class AddToCart extends Component
                 'quantity' => $this->quantity,
                 'price_per_unit' => (float) $product->discount_price_for_current_country,
                 'subtotal' => $this->quantity * (float) $product->discount_price_for_current_country,
-                'currency_id' => optional(Setting::getCurrency())->id, // safe null handling
+                'currency_id' => optional(Setting::getCurrency())->id,
             ]);
         }
 
-        // Refresh cart details
         $this->loadCartData();
         $this->dispatch('cartUpdated');
         session()->flash('success', 'Product added to cart!');

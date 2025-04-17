@@ -396,9 +396,39 @@ class Checkout extends Component
                 ]);
             }
 
-            // ✅ Sync inventory after order items are created
-            $order->load('items');
-            $order->syncInventoryOnCreate();
+            foreach ($order->items as $item) {
+                if ($item->product_id) {
+                    $product = \App\Models\Product::find($item->product_id);
+
+                    if ($product) {
+                        // Decrease main product quantity
+                        $product->decrement('quantity', $item->quantity);
+
+                        // Decrease variant quantity (Color + Size)
+                        $variant = $product->productColors()
+                            ->where('color_id', $item->color_id)
+                            ->first()
+                            ?->productColorSizes()
+                            ->where('size_id', $item->size_id)
+                            ->first();
+
+                        if ($variant) {
+                            $variant->decrement('quantity', $item->quantity);
+                        }
+
+                        // Decrease inventory stock
+                        $product->inventory()?->decrement('quantity', $item->quantity);
+
+                        // Create inventory transaction
+                        \App\Models\Transaction::create([
+                            'product_id' => $item->product_id,
+                            'type'       => \App\Enums\TransactionType::SALE,
+                            'quantity'   => $item->quantity,
+                            'notes'      => "Sale of {$item->quantity} units for Order #{$order->id}",
+                        ]);
+                    }
+                }
+            }
 
             // Clear the cart
             $cart->items()->delete();

@@ -98,6 +98,7 @@ class InventoryResource extends Resource
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('id')
+                    ->placeholder('-')
                     ->limit(90)
                     ->tooltip(function (TextColumn $column): ?string {
                         $state = $column->getState();
@@ -107,7 +108,7 @@ class InventoryResource extends Resource
                         }
                         return $state;
                     })
-                    ->label(__('Variants'))
+                    ->label(__('Variants Information'))
                     ->formatStateUsing(function ($record) {
                         return $record->product->productColors
                             ->flatMap(function ($productColor) {

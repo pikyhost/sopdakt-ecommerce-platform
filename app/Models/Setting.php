@@ -27,7 +27,8 @@ class Setting extends Model
         'snapchat',
         'tiktok',
         'shipping_type_enabled',
-        'shipping_locations_enabled'
+        'shipping_locations_enabled',
+        'minimum_stock_level'
     ];
 
     protected static string $cacheKey = 'app_settings';
