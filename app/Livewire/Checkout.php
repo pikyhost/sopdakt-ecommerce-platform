@@ -429,7 +429,7 @@ class Checkout extends Component
                     }
                 }
             }
-            
+
             $productIds = $order->items
                 ->pluck('product_id')
                 ->filter()

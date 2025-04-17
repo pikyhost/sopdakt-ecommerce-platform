@@ -4,9 +4,12 @@
 
 namespace App\Services;
 
+use App\Models\Setting;
 use App\Models\User;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\App;
+use Filament\Notifications\Actions\Action;
 
 class StockLevelNotifier
 {
@@ -18,16 +21,26 @@ class StockLevelNotifier
             if (
                 $product->quantity !== null &&
                 $product->minimum_stock_level !== null &&
-                $product->quantity <= $product->minimum_stock_level
+                $product->quantity <= Setting::getMinimumStockLevel()
             ) {
                 foreach ($admins as $admin) {
-                    $admin->notify(
-                        Notification::make()
-                            ->title("⚠️ Low Stock Alert")
-                            ->body("Product '{$product->name}' has reached the minimum stock level ({$product->quantity} left).")
-                            ->warning()
-                            ->toDatabase()
-                    );
+                    App::setLocale($admin->locale ?? config('app.locale'));
+                    $inventory = $product->inventory;
+
+                    Notification::make()
+                        ->title(__('notifications.low_stock.title'))
+                        ->warning()
+                        ->body(__('notifications.low_stock.body', [
+                            'name' => $product->name,
+                            'quantity' => $product->quantity,
+                        ]))
+                        ->actions([
+                            Action::make('view')
+                                ->label(__('notifications.low_stock.view_button'))
+                                ->url(route('filament.admin.resources.inventories.view', ['record' => $inventory->id]))
+                                ->markAsRead(),
+                        ])
+                        ->sendToDatabase($admin);
                 }
             }
         }

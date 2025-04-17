@@ -36,7 +36,7 @@ class Setting extends Model
     /**
      * Boot method to clear cache on updates.
      */
-    protected static function boot()
+    protected static function boot(): void
     {
         parent::boot();
 
@@ -61,20 +61,31 @@ class Setting extends Model
     /**
      * Retrieve a specific setting value.
      */
-    public static function getSetting(string $key)
+    public static function getSetting(string $key): mixed
     {
-        return self::getAllSettings()[$key] ?? null;
+        $settings = self::getAllSettings();
+
+        if (!array_key_exists($key, $settings)) {
+            return null;
+        }
+
+        return $settings[$key];
     }
 
     /**
      * Update settings and refresh the cache.
      */
-    public static function updateSettings(array $data): void
+    public static function updateSettings(array $data): bool
     {
-        $settings = self::firstOrNew();
-        $settings->fill($data);
-        $settings->save();
-        self::reloadCache();
+        try {
+            $settings = self::firstOrNew();
+            $settings->fill($data);
+            $settings->save();
+            return true;
+        } catch (\Exception $e) {
+            logger()->error('Failed to update settings: ' . $e->getMessage());
+            return false;
+        }
     }
 
     /**
@@ -86,6 +97,11 @@ class Setting extends Model
 
         $settings = self::query()->first()?->toArray() ?? [];
         Cache::forever(self::$cacheKey, $settings);
+
+        // Clear related caches
+        if (isset($settings['currency_id'])) {
+            Cache::forget("currency_{$settings['currency_id']}");
+        }
     }
 
     /**
@@ -99,7 +115,7 @@ class Setting extends Model
     /**
      * Currency relationship.
      */
-    public function currency()
+    public function currency(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Currency::class);
     }
@@ -107,23 +123,24 @@ class Setting extends Model
     /**
      * Country relationship.
      */
-    public function country()
+    public function country(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(Country::class); // ✅ added
+        return $this->belongsTo(Country::class);
     }
 
     /**
      * Get the currency with its symbol.
      */
-    public static function getCurrency(): ?object
+    public static function getCurrency(): ?Currency
     {
         $settings = self::getAllSettings();
-        if (!isset($settings['currency_id'])) {
+
+        if (empty($settings['currency_id'])) {
             return null;
         }
 
         return Cache::rememberForever("currency_{$settings['currency_id']}", function () use ($settings) {
-            return \App\Models\Currency::find($settings['currency_id']);
+            return Currency::find($settings['currency_id']);
         });
     }
 
@@ -132,7 +149,7 @@ class Setting extends Model
      */
     public static function getTaxPercentage(): float
     {
-        return self::getAllSettings()['tax_percentage'] ?? 0.0;
+        return (float)(self::getAllSettings()['tax_percentage'] ?? 0.0);
     }
 
     /**
@@ -161,13 +178,27 @@ class Setting extends Model
         ];
     }
 
+    /**
+     * Check if shipping type is enabled.
+     */
     public static function isShippingEnabled(): bool
     {
         return (bool) self::getSetting('shipping_type_enabled');
     }
 
+    /**
+     * Check if shipping locations are enabled.
+     */
     public static function isShippingLocationsEnabled(): bool
     {
         return (bool) self::getSetting('shipping_locations_enabled');
+    }
+
+    /**
+     * Get the minimum stock level setting.
+     */
+    public static function getMinimumStockLevel(): int
+    {
+        return (int) self::getSetting('minimum_stock_level');
     }
 }
