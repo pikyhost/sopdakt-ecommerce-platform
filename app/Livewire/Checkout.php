@@ -252,6 +252,7 @@ class Checkout extends Component
             } else {
                 $user->addresses()->create([
                     'address' => $this->address,
+                    'address_name' => 'home',
                     'country_id' => $this->cart->country_id ?? null,
                     'governorate_id' => $this->cart->governorate_id ?? null,
                     'city_id' => $this->cart->city_id ?? null,

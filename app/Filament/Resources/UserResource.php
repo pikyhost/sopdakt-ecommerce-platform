@@ -2,12 +2,11 @@
 
 namespace App\Filament\Resources;
 
+use App\Models\User;
+use Closure;
 use App\Enums\UserRole;
-use App\Filament\Resources\ProductResource\RelationManagers\BundlesRelationManager;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\Pages\ManageUserOrders;
-use App\Filament\Resources\UserResource\RelationManagers\OrdersRelationManager;
-use App\Models\User;
 use App\Traits\HasCreatedAtFilter;
 use App\Traits\HasTimestampSection;
 use Filament\Forms\Components\Checkbox;
@@ -44,6 +43,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -134,6 +134,7 @@ class UserResource extends Resource
                 ->required()
                 ->maxLength(255)
                 ->dehydrateStateUsing(fn (string $state): string => ucwords($state)),
+
             TextInput::make('email')
                 ->label(__('Email address'))
                 ->required()
@@ -148,41 +149,43 @@ class UserResource extends Resource
                 }),
 
             PhoneInput::make('phone')
-                ->separateDialCode(true) // Shows flag and +20 separately
-                ->enableIpLookup(true) // Enable IP-based country detection
+                ->separateDialCode(true)
+                ->enableIpLookup(true)
                 ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
                 ->required()
                 ->rules([
+                    'min:11',
                     'max:20',
-                    Rule::unique('users')->where(function ($query) {
-                        $query->where('phone', request('phone'))
-                            ->orWhere('second_phone', request('phone'));
-                    }),
+                    Rule::unique('users', 'phone')
+                        ->where(function ($query) {
+                            return $query->where('id', '!=', request()->route('record'));
+                        }),
+                    Rule::unique('users', 'second_phone')
+                        ->where(function ($query) {
+                            return $query->where('id', '!=', request()->route('record'));
+                        }),
                 ])
                 ->label(__('Phone Number')),
 
             PhoneInput::make('second_phone')
                 ->different('phone')
-                ->separateDialCode(true) // Shows flag and +20 separately
-                ->enableIpLookup(true) // Enable IP-based country detection
+                ->separateDialCode(true)
+                ->enableIpLookup(true)
                 ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
                 ->required()
                 ->rules([
+                    'min:11',
                     'max:20',
-                    Rule::unique('users')->where(function ($query) {
-                        $query->where('phone', request('phone'))
-                            ->orWhere('second_phone', request('phone'));
-                    }),
+                    Rule::unique('users', 'phone')
+                        ->where(function ($query) {
+                            return $query->where('id', '!=', request()->route('record'));
+                        }),
+                    Rule::unique('users', 'second_phone')
+                        ->where(function ($query) {
+                            return $query->where('id', '!=', request()->route('record'));
+                        }),
                 ])
                 ->label(__('Second Phone Number')),
-
-        Forms\Components\Select::make('roles')
-                ->preload()
-                ->maxItems(1)
-                ->multiple()
-                ->label(__('roles'))
-                ->native(false)
-                ->relationship('roles', 'name'),
 
             Forms\Components\TextInput::make('password')
                 ->label(__('Password'))
@@ -209,7 +212,18 @@ class UserResource extends Resource
                 ->requiredWith('password')
                 ->same('password')
                 ->dehydrated(false),
+
+            Forms\Components\Select::make('roles')
+                ->columnSpanFull()
+                ->preload()
+                ->maxItems(1)
+                ->multiple()
+                ->label(__('roles'))
+                ->native(false)
+                ->relationship('roles', 'name'),
+
             Checkbox::make('email_verified_at')
+                ->columnSpanFull()
                 ->label(__('Verified'))
                 ->afterStateHydrated(function (Checkbox $component, $state) {
                     $component->state(!is_null($state));

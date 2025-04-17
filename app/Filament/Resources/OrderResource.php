@@ -690,7 +690,8 @@ class OrderResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form->schema([
+        return $form
+            ->schema([
             Wizard::make([
                 Step::make(__('Order Details'))
                     ->schema([

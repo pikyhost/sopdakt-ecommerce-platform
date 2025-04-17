@@ -17,6 +17,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Jeffgreco13\FilamentBreezy\Livewire\MyProfileComponent;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
@@ -63,8 +64,16 @@ class ProfileContactDetails extends MyProfileComponent implements HasActions, Ha
                     ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
                     ->nullable()
                     ->rules([
-                        'max:20', // Match database column limit
-                        Rule::unique('users', 'phone')->ignore(auth()->id()), // Ignore the current user in uniqueness check
+                        'min:11',
+                        'max:20',
+                        Rule::unique('users', 'phone')
+                            ->where(function ($query) {
+                                return $query->where('id', '!=', Auth::id());
+                            }),
+                        Rule::unique('users', 'second_phone')
+                            ->where(function ($query) {
+                                return $query->where('id', '!=', Auth::id());
+                            }),
                     ])
                     ->label(__('profile.phone'))
                     ->columnSpanFull(),
@@ -76,11 +85,16 @@ class ProfileContactDetails extends MyProfileComponent implements HasActions, Ha
                     ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
                     ->nullable()
                     ->rules([
+                        'min:11',
                         'max:20',
-                        Rule::unique('users')->where(function ($query) {
-                            $query->where('phone', request('phone'))
-                                ->orWhere('second_phone', request('phone'));
-                        }),
+                        Rule::unique('users', 'phone')
+                            ->where(function ($query) {
+                                return $query->where('id', '!=', Auth::id());
+                            }),
+                        Rule::unique('users', 'second_phone')
+                            ->where(function ($query) {
+                                return $query->where('id', '!=', Auth::id());
+                            }),
                     ])
                     ->label(__('Secondary Phone'))
                     ->columnSpanFull(),
