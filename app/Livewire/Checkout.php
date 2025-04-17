@@ -471,7 +471,7 @@ class Checkout extends Component
             $this->addError('order', __('We encountered an issue while placing your order. Please try again later. Error: :error', ['error' => $e->getMessage()]));
         }
     }
-    
+
     public function getIsCheckoutReadyProperty()
     {
         return count($this->cartItems) > 0 // Ensure cart is not empty

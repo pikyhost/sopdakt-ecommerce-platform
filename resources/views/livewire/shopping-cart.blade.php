@@ -200,6 +200,10 @@
                         <div class="alert alert-danger mt-3">
                             {!! $errors->first('quantity') !!}
                         </div>
+
+                        <div class="alert alert-success mt-3">
+                            <a href="{{ route('contact.us') }}" class="alert-link">Contact our managers if you want more than 10 items per product</a>.
+                        </div>
                     @endif
 
                     <div class="checkout-methods">
