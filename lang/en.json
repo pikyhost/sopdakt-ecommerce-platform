@@ -1,4 +1,8 @@
 {
+    "Hide for (days) when closed with \"Don't show again\"": "Hide for (days) when closed with \"Don't show again\"",
+    "Popup Order": "Popup Order",
+    "Interval Between Displays (minutes)": "Interval Between Displays (minutes)",
+    "Page Rules": "Page Rules",
     "image_path_helper": "Upload the image that appears inside the popup.",
     "title_helper": "Main heading of the popup; it grabs the user’s attention.",
     "description_helper": "Details or message content shown inside the popup.",
