@@ -97,20 +97,18 @@
         }
     </style>
 
-    @if($popupData && $showPopup)
+@if ($popupData && $showPopup)
         <div class="newsletter-popup">
             <div class="newsletter-content">
                 <h2>{{ $popupData->title ?? 'SUBSCRIBE TO NEWSLETTER' }}</h2>
                 <p>{{ $popupData->description ?? 'Subscribe to receive updates on new arrivals, special offers and promotions.' }}</p>
 
-
-                @if($popupData->email_needed)
+                @if ($popupData->email_needed)
                     <form wire:submit.prevent="submitEmail">
                         <div class="newsletter-form">
                             <input type="email" wire:model.defer="email" placeholder="Your email address" required>
                             <button type="submit">SUBMIT</button>
                         </div>
-
                         @error('email') <span style="color:red">{{ $message }}</span> @enderror
                     </form>
                 @else
@@ -118,22 +116,20 @@
                         <a href="{{ $popupData->cta_link }}" class="inline-block px-5 py-2 bg-white text-black rounded-full hover:bg-gray-200 transition border border-gray-300">
                             {{ $popupData->cta_text }}
                         </a>
-
-
                     </div>
                 @endif
 
-                <div class="newsletter-checkbox">
+                <div class="newsletter-checkbox mt-2">
                     <label>
-                        <input type="checkbox" wire:model="dontShowAgain"> Don't show this popup again
+                        <input type="checkbox" wire:model="dontShowAgain">
+                        Don't show this popup again
                     </label>
                 </div>
             </div>
 
-            @if($popupData->image_path)
-                <div
-                    class="newsletter-popup-image"
-                    style="background-image: url('{{ Storage::url($popupData->image_path) }}');">
+            @if ($popupData->image_path)
+                <div class="newsletter-popup-image"
+                     style="background-image: url('{{ Storage::url($popupData->image_path) }}');">
                 </div>
             @endif
 
@@ -144,10 +140,18 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             window.addEventListener('init-popup', event => {
+                // Show the popup after the defined delay
                 setTimeout(() => {
-                @this.set('showPopup', false);
-                }, event.detail.duration);
+                    Livewire.dispatch('show-popup');
 
+                    // Auto-close after duration if greater than 0
+                    if (event.detail.duration > 0) {
+                        setTimeout(() => {
+                            Livewire.dispatch('auto-close-popup');
+                        }, event.detail.duration);
+                    }
+
+                }, event.detail.delay);
             });
         });
     </script>

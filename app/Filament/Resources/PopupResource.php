@@ -99,45 +99,36 @@ class PopupResource extends Resource
                         ->numeric(),
 
                     Forms\Components\Select::make('display_rules')
-                        ->label(__('Display Rules'))
+                        ->label('Display Rules')
                         ->options([
-                            'all_pages' => __('All Pages'),
-                            'specific_pages' => __('Specific Pages'),
-                            'page_group' => __('Pages Group'),
+                            'all_pages' => 'All Pages',
+                            'specific_pages' => 'Specific Pages',
+                            'page_group' => 'Page Group',
+                            'all_except_specific' => 'All Pages EXCEPT Specific',
+                            'all_except_group' => 'All Pages EXCEPT Group',
                         ])
-                        ->required()
-                        ->reactive(),
+                        ->live()
+                        ->required(),
 
-                    Forms\Components\Repeater::make('specific_pages')
-                        ->label(__('popup.fields.specific_pages'))
-                        ->helperText(__('popup.helpers.specific_pages'))
-                        ->schema([
-                            Forms\Components\TextInput::make('value')
-                                ->label(__('Page Path'))
-                                ->placeholder(__('e.g. contact, about-us, products/'))
-                                ->required(),
-                        ])
-                        ->visible(fn ($get) => in_array($get('display_rules'), ['specific_pages', 'page_group']))
-                        ->default([])
-                        ->columns(1)
-                        ->actions([
-                            Action::make('suggestPages')
-                                ->label('اقتراح تلقائي من الروابط')
-                                ->icon('heroicon-o-light-bulb')
-                                ->action(function (Forms\Set $set, Forms\Get $get) {
-                                    $existing = collect($get('specific_pages'))->pluck('value')->toArray();
+                    Forms\Components\Textarea::make('specific_pages')
+                        ->label('Page Rules')
+                        ->helperText('أدخل كل رابط في سطر. مثل: contact أو blog/news')
+                        ->visible(fn ($get) => in_array($get('display_rules'), [
+                            'specific_pages', 'page_group', 'all_except_specific', 'all_except_group'
+                        ])),
 
-                                    $suggested = PageSuggestion::getAvailablePagePaths();
+                    Forms\Components\TextInput::make('popup_order')
+                        ->label('Popup Order')
+                        ->numeric()
+                        ->default(0)
+                        ->helperText('كلما كان الرقم أصغر، يظهر البوب أب أولاً'),
 
-                                    $merged = collect($suggested)
-                                        ->filter(fn($item) => !in_array($item, $existing))
-                                        ->map(fn($val) => ['value' => $val])
-                                        ->values()
-                                        ->toArray();
+                    Forms\Components\TextInput::make('show_interval_minutes')
+                        ->label('Interval Between Displays (minutes)')
+                        ->numeric()
+                        ->default(60)
+                        ->helperText('كم دقيقة يجب أن تمر قبل عرض بوب أب آخر'),
 
-                                    $set('specific_pages', array_merge($get('specific_pages') ?? [], $merged));
-                                }),
-                        ]),
 
                     Forms\Components\Checkbox::make('email_needed')
                         ->label(__('Email needed?')),
