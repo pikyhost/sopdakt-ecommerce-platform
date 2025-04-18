@@ -30,9 +30,10 @@ class PopupComponent extends Component
             ->get();
 
         foreach ($popups as $popup) {
+            // Use local variable for validation before assigning
             $this->popupData = $popup;
 
-            if (!$this->shouldShowOnCurrentPage()) {
+            if (!$this->shouldShowOnCurrentPage($popup)) {
                 continue;
             }
 
@@ -44,16 +45,31 @@ class PopupComponent extends Component
                 continue;
             }
 
-            // Set the popup to be shown
+            // Now assign the valid popup
             $this->popupData = $popup;
 
             // Dispatch browser event with delay and duration
             $this->dispatch('init-popup', [
-                'delay' => $this->popupData->delay_seconds * 1000,
-                'duration' => ($this->popupData->duration_seconds ?? 0) * 1000,
+                'delay' => $popup->delay_seconds * 1000,
+                'duration' => ($popup->duration_seconds ?? 0) * 1000,
             ]);
             break;
         }
+    }
+
+    protected function shouldShowOnCurrentPage($popup): bool
+    {
+        $currentPath = $this->getCurrentPath();
+        $pages = collect(json_decode($popup->specific_pages ?? '[]'))->map('trim')->filter();
+
+        return match ($popup->display_rules) {
+            'all_pages' => true,
+            'specific_pages' => $pages->contains($currentPath),
+            'page_group' => $pages->contains(fn($prefix) => str_starts_with($currentPath, $prefix)),
+            'all_except_specific' => !$pages->contains($currentPath),
+            'all_except_group' => !$pages->contains(fn($prefix) => str_starts_with($currentPath, $prefix)),
+            default => false,
+        };
     }
 
     public function showPopupWindow()
@@ -91,21 +107,6 @@ class PopupComponent extends Component
         session()->flash('message', 'Thanks for joining our newsletter!');
         $this->reset('email');
         $this->showPopup = false;
-    }
-
-    protected function shouldShowOnCurrentPage()
-    {
-        $currentPath = $this->getCurrentPath();
-        $pages = collect(json_decode($this->popupData->specific_pages ?? '[]'))->map('trim')->filter();
-
-        return match ($this->popupData->display_rules) {
-            'all_pages' => true,
-            'specific_pages' => $pages->contains($currentPath),
-            'page_group' => $pages->contains(fn($prefix) => str_starts_with($currentPath, $prefix)),
-            'all_except_specific' => !$pages->contains($currentPath),
-            'all_except_group' => !$pages->contains(fn($prefix) => str_starts_with($currentPath, $prefix)),
-            default => false,
-        };
     }
 
     protected function getCurrentPath(): string
