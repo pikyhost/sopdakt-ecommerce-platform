@@ -21,17 +21,7 @@ class Popup extends Model
     /**
      * The attributes that are mass assignable.
      */
-    protected $fillable = [
-        'title',
-        'description',
-        'image_path',
-        'cta_text',
-        'cta_link',
-        'delay_seconds',
-        'is_active',
-        'display_rules',
-        'specific_pages',
-    ];
+    protected $guarded = [];
 
     /**
      * The attributes that should be cast to native types.
@@ -48,22 +38,5 @@ class Popup extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
-
-    /**
-     * Check if this popup should be shown on a given route or path.
-     */
-    public function shouldDisplayOn(string $path): bool
-    {
-        if ($this->display_rules === 'all_pages') {
-            return true;
-        }
-
-        if ($this->display_rules === 'specific_pages' && is_array($this->specific_pages)) {
-            return in_array($path, $this->specific_pages);
-        }
-
-        // Add logic for page_group if needed
-        return false;
     }
 }

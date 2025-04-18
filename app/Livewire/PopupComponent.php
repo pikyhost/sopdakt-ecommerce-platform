@@ -12,49 +12,51 @@ class PopupComponent extends Component
     public $popupData;
     public $dontShowAgain = false;
     public string $email = '';
+    public $allPopups = [];
+    public $currentIndex = 0;
 
     protected $listeners = [
         'show-popup' => 'showPopupWindow',
         'auto-close-popup' => 'closePopup',
+        'next-popup' => 'showNextPopup',
     ];
 
     public function mount()
     {
-        if (request()->cookie('dont_show_popup')) {
+        if (session()->get('popup_blocked') || request()->cookie('dont_show_popup')) {
             return;
         }
 
-        // Get all active popups ordered by priority
-        $popups = Popup::where('is_active', true)
+        $this->allPopups = Popup::where('is_active', true)
             ->orderBy('popup_order')
-            ->get();
+            ->get()
+            ->filter(fn ($popup) => $this->isPopupEligible($popup))
+            ->values();
 
-        foreach ($popups as $popup) {
-            // Use local variable for validation before assigning
-            $this->popupData = $popup;
-
-            if (!$this->shouldShowOnCurrentPage($popup)) {
-                continue;
-            }
-
-            // Check last shown time for this popup
-            $lastShown = request()->cookie('last_shown_popup_' . $popup->id);
-            $minutes = $popup->show_interval_minutes;
-
-            if ($lastShown && now()->diffInMinutes(Carbon::parse($lastShown)) < $minutes) {
-                continue;
-            }
-
-            // Now assign the valid popup
-            $this->popupData = $popup;
-
-            // Dispatch browser event with delay and duration
-            $this->dispatch('init-popup', [
-                'delay' => $popup->delay_seconds * 1000,
-                'duration' => ($popup->duration_seconds ?? 0) * 1000,
-            ]);
-            break;
+        if ($this->allPopups->isNotEmpty()) {
+            $this->popupData = $this->allPopups[$this->currentIndex];
+            $this->dispatchPopup();
         }
+    }
+
+    protected function isPopupEligible($popup): bool
+    {
+        if (!$this->shouldShowOnCurrentPage($popup)) {
+            return false;
+        }
+
+        $lastShown = request()->cookie('last_shown_popup_' . $popup->id);
+        $minutes = $popup->show_interval_minutes;
+
+        return !$lastShown || now()->diffInMinutes(Carbon::parse($lastShown)) >= $minutes;
+    }
+
+    protected function dispatchPopup()
+    {
+        $this->dispatch('init-popup', [
+            'delay' => ($this->popupData->delay_seconds ?? 0) * 1000,
+            'duration' => ($this->popupData->duration_seconds ?? 0) * 1000,
+        ]);
     }
 
     protected function shouldShowOnCurrentPage($popup): bool
@@ -81,13 +83,31 @@ class PopupComponent extends Component
     {
         $this->showPopup = false;
 
+        // Session block for current visit
+        session()->put('popup_blocked', true);
+
+        // Cookie for long-term block
         if ($this->dontShowAgain) {
             $days = $this->popupData->dont_show_again_days ?? 30;
             cookie()->queue('dont_show_popup', true, 60 * 24 * $days);
         }
 
+        // Track last shown time
         if ($this->popupData) {
-            cookie()->queue('last_shown_popup_' . $this->popupData->id, now()->toDateTimeString(), 60 * 24);
+            cookie()->queue('last_shown_popup_' . $this->popupData->id, now()->toDateTimeString());
+        }
+
+        // Move to next popup if available
+        $this->showNextPopup();
+    }
+
+    public function showNextPopup()
+    {
+        $this->currentIndex++;
+
+        if (isset($this->allPopups[$this->currentIndex])) {
+            $this->popupData = $this->allPopups[$this->currentIndex];
+            $this->dispatchPopup();
         }
     }
 
@@ -101,20 +121,21 @@ class PopupComponent extends Component
             'email' => 'required|email',
         ]);
 
-        // Optional: Store to newsletter DB or external service
-        // NewsletterSubscription::create([...]);
+        // Store or process email
 
         session()->flash('message', 'Thanks for joining our newsletter!');
         $this->reset('email');
         $this->showPopup = false;
+
+        $this->showNextPopup();
     }
 
     protected function getCurrentPath(): string
     {
-        $path = request()->path(); // e.g., "en/products/123"
-        $locale = app()->getLocale(); // e.g., "en"
+        $path = request()->path();
+        $locale = app()->getLocale();
 
-        return preg_replace("#^{$locale}/#", '', $path); // returns "products/123"
+        return preg_replace("#^{$locale}/#", '', $path);
     }
 
     public function render()
