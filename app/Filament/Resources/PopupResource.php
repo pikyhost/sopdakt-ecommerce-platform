@@ -112,10 +112,14 @@ class PopupResource extends Resource
 
                     Forms\Components\Textarea::make('specific_pages')
                         ->label('Page Rules')
-                        ->helperText('أدخل كل رابط في سطر. مثل: contact أو blog/news')
+                        ->rows(5)
+                        ->helperText('أدخل كل رابط في سطر جديد. مثال: contact أو blog/news')
                         ->visible(fn ($get) => in_array($get('display_rules'), [
                             'specific_pages', 'page_group', 'all_except_specific', 'all_except_group'
-                        ])),
+                        ]))
+                        ->afterStateHydrated(fn ($state, callable $set) => $set('specific_pages', implode("\n", json_decode($state ?? '[]'))))
+                        ->dehydrateStateUsing(fn ($state) => json_encode(array_map('trim', preg_split("/\r\n|\n|\r/", $state))))
+                        ->nullable(),
 
                     Forms\Components\TextInput::make('popup_order')
                         ->label('Popup Order')
