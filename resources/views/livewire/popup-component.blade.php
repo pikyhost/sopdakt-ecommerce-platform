@@ -155,9 +155,33 @@
             fill: white;
         }
 
+        .submit-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            background-color: black; /* blue-700 */
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .submit-button .button-icon {
+            margin-left: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .submit-button:hover {
+            background-color: black; /* blue-600 */
+            color: white;
+        }
+
         .submit-button:hover .button-icon {
             transform: translateX(4px);
         }
+
 
         .button-loader {
             position: absolute;
@@ -192,65 +216,8 @@
         }
 
         /* CTA Button (Optimized) */
-        /* Premium CTA Button (Ultra Clean Black & White Style) */
-        .premium-cta-button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem 2.5rem;
-            background-color: #000;
-            color: #fff;
-            border-radius: 50px;
-            border: 2px solid transparent;
-            font-weight: 600;
-            font-size: 1.1rem;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            transition: all 0.35s ease;
-            text-decoration: none;
-            cursor: pointer;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-            margin-top: 1.5rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Inverted style on hover */
-        .premium-cta-button:hover {
-            background-color: #fff;
-            color: #000;
-            border-color: #000;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-            transform: translateY(-3px);
-        }
-
-        /* Subtle arrow animation */
-        .premium-cta-button::after {
-            content: "→";
-            margin-left: 10px;
-            transition: transform 0.3s ease;
-        }
-
-        /* Arrow slide effect on hover */
-        .premium-cta-button:hover::after {
-            transform: translateX(6px);
-        }
-
-        /* Optional subtle glowing border on hover */
-        .premium-cta-button:hover {
-            outline: none;
-            box-shadow: 0 0 0 2px #fff, 0 8px 20px rgba(0, 0, 0, 0.2);
-        }
 
         /* Mobile tweaks */
-        @media (max-width: 480px) {
-            .premium-cta-button {
-                width: 100%;
-                padding: 0.85rem 1.5rem;
-                font-size: 1rem;
-            }
-        }
-
         /* Checkbox */
         .newsletter-checkbox {
             font-size: 13px;
@@ -395,7 +362,7 @@
                         </button>
                     </form>
                 @else
-                    <a href="{{ $popupData->cta_link }}" class="premium-cta-button" wire:click="closePopup">
+                    <a href="{{ $popupData->cta_link }}" class="submit-button" wire:click="closePopup">
                         {{ $popupData->cta_text ?? 'Shop Now' }}
                     </a>
                 @endif

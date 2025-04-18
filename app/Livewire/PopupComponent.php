@@ -62,7 +62,9 @@ class PopupComponent extends Component
     protected function shouldShowOnCurrentPage($popup): bool
     {
         $currentPath = $this->getCurrentPath();
-        $pages = collect(json_decode($popup->specific_pages ?? '[]'))->map('trim')->filter();
+        $pages = collect(is_array($popup->specific_pages) ? $popup->specific_pages : json_decode($popup->specific_pages ?? '[]', true))
+            ->map('trim')
+            ->filter();
 
         return match ($popup->display_rules) {
             'all_pages' => true,
@@ -132,10 +134,7 @@ class PopupComponent extends Component
 
     protected function getCurrentPath(): string
     {
-        $path = request()->path();
-        $locale = app()->getLocale();
-
-        return preg_replace("#^{$locale}/#", '', $path);
+        return trim(preg_replace('/^([a-z]{2})\//', '', request()->path()), '/');
     }
 
     public function render()

@@ -57,49 +57,74 @@ class PopupResource extends Resource
         return $form
             ->schema([
                 Section::make()->schema([
+                    // Visual content
+                    Forms\Components\FileUpload::make('image_path')
+                        ->columnSpanFull()
+                        ->label(__('Image'))
+                        ->image()
+                        ->helperText(__('image_path_helper')),
+
+                    // Basic info
                     Forms\Components\TextInput::make('title')
                         ->label(__('Title'))
                         ->required()
                         ->maxLength(255)
-                        ->columnSpanFull(),
+                        ->columnSpanFull()
+                        ->helperText(__('title_helper')),
 
                     Forms\Components\Textarea::make('description')
                         ->label(__('Description'))
                         ->required()
-                        ->columnSpanFull(),
+                        ->columnSpanFull()
+                        ->helperText(__('description_helper')),
 
-                    Forms\Components\FileUpload::make('image_path')
-                        ->label(__('Image'))
-                        ->image(),
-
+                    // CTA
                     Forms\Components\TextInput::make('cta_text')
                         ->label(__('CTA Text'))
                         ->required()
-                        ->maxLength(255),
+                        ->maxLength(255)
+                        ->helperText(__('cta_text_helper')),
 
                     Forms\Components\TextInput::make('cta_link')
                         ->label(__('CTA Link'))
                         ->required()
-                        ->maxLength(255),
+                        ->maxLength(255)
+                        ->helperText(__('cta_link_helper')),
 
+                    // Timing
                     Forms\Components\TextInput::make('delay_seconds')
                         ->label(__('Delay Seconds'))
                         ->required()
                         ->numeric()
-                        ->default(5),
+                        ->default(5)
+                        ->helperText(__('delay_seconds_helper')),
 
                     Forms\Components\TextInput::make('duration_seconds')
                         ->label(__('Display Duration'))
                         ->numeric()
-                        ->helperText(__('How long the popup remains visible before hiding automatically (0 = until manually closed).')),
+                        ->helperText(__('duration_seconds_helper')),
 
                     Forms\Components\TextInput::make('dont_show_again_days')
                         ->label(__('Hide for (days) when closed with "Don\'t show again"'))
                         ->default(30)
-                        ->numeric(),
+                        ->numeric()
+                        ->helperText(__('dont_show_again_days_helper')),
 
+                    Forms\Components\TextInput::make('popup_order')
+                        ->label(__('Popup Order'))
+                        ->numeric()
+                        ->default(0)
+                        ->helperText(__('popup_order_helper')),
+
+                    Forms\Components\TextInput::make('show_interval_minutes')
+                        ->label(__('Interval Between Displays (minutes)'))
+                        ->numeric()
+                        ->default(60)
+                        ->helperText(__('show_interval_minutes_helper')),
+
+                    // Display logic
                     Forms\Components\Select::make('display_rules')
-                        ->label('Display Rules')
+                        ->label(__('Display Rules'))
                         ->options([
                             'all_pages' => 'All Pages',
                             'specific_pages' => 'Specific Pages',
@@ -108,40 +133,29 @@ class PopupResource extends Resource
                             'all_except_group' => 'All Pages EXCEPT Group',
                         ])
                         ->live()
-                        ->required(),
+                        ->required()
+                        ->helperText(__('display_rules_helper')),
 
                     Forms\Components\Textarea::make('specific_pages')
-                        ->label('Page Rules')
+                        ->label(__('Page Rules'))
                         ->rows(5)
-                        ->helperText('أدخل كل رابط في سطر جديد. مثال: contact أو blog/news')
+                        ->helperText(__('specific_pages_helper'))
                         ->visible(fn ($get) => in_array($get('display_rules'), [
                             'specific_pages', 'page_group', 'all_except_specific', 'all_except_group'
                         ]))
                         ->afterStateHydrated(fn ($state, callable $set) => $set('specific_pages', implode("\n", json_decode($state ?? '[]'))))
                         ->dehydrateStateUsing(fn ($state) => json_encode(array_map('trim', preg_split("/\r\n|\n|\r/", $state))))
-                        ->nullable(),
-
-                    Forms\Components\TextInput::make('popup_order')
-                        ->label('Popup Order')
-                        ->numeric()
-                        ->default(0)
-                        ->helperText('كلما كان الرقم أصغر، يظهر البوب أب أولاً'),
-
-                    Forms\Components\TextInput::make('show_interval_minutes')
-                        ->label('Interval Between Displays (minutes)')
-                        ->numeric()
-                        ->default(60)
-                        ->helperText('كم دقيقة يجب أن تمر قبل عرض بوب أب آخر'),
-
+                        ->nullable()
+                        ->columnSpanFull(),
 
                     Forms\Components\Checkbox::make('email_needed')
-                        ->label(__('Email needed?')),
+                        ->label(__('Email needed'))
+                        ->helperText(__('email_needed_helper')),
 
-                    Forms\Components\Toggle::make('is_active')
-                        ->columnSpanFull()
+                    Forms\Components\Checkbox::make('is_active')
                         ->label(__('Is Active'))
-                        ->required(),
-                ])
+                        ->helperText(__('is_active_helper')),
+                ])->columns(2)
             ]);
     }
 
