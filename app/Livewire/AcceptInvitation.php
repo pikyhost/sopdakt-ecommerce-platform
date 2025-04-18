@@ -71,8 +71,8 @@ class AcceptInvitation extends SimplePage
                     ->maxLength(255)
                     ->autofocus(),
                 TextInput::make('role')
-                    ->formatStateUsing(fn ($state) => Str::headline($state))
                     ->label('Roles')
+                    ->formatStateUsing(fn ($state) => Str::headline($state))
                     ->disabled(),
                 TextInput::make('email')
                     ->label(__('filament-panels::pages/auth/register.form.email.label'))
@@ -202,6 +202,7 @@ class AcceptInvitation extends SimplePage
     {
         return [
             Action::make('register')
+                ->color('info')
                 ->label(__('filament-panels::pages/auth/register.form.actions.register.label'))
                 ->submit('create'),
         ];
