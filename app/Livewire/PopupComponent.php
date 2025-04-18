@@ -3,9 +3,15 @@
 namespace App\Livewire;
 
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 use App\Models\Popup;
 use Illuminate\Support\Carbon;
+use App\Models\Invitation;
+use App\Models\Role;
+use App\Enums\UserRole;
+use App\Mail\TeamInvitationMail;
+use Illuminate\Support\Facades\Mail;
 
 class PopupComponent extends Component
 {
@@ -31,7 +37,14 @@ class PopupComponent extends Component
         $this->allPopups = Popup::where('is_active', true)
             ->orderBy('popup_order')
             ->get()
-            ->filter(fn($popup) => $this->isPopupEligible($popup))
+            ->filter(function ($popup) {
+                // If it's a join-us popup, show only to guests, not on /register
+                if ($popup->is_join_us) {
+                    return auth()->guest() && $this->getCurrentPath() !== 'register' && $this->isPopupEligible($popup);
+                }
+
+                return $this->isPopupEligible($popup);
+            })
             ->values();
 
         if ($this->allPopups->isNotEmpty()) {
@@ -39,6 +52,7 @@ class PopupComponent extends Component
             $this->initPopup();
         }
     }
+
 
     public function initPopup()
     {
@@ -123,10 +137,32 @@ class PopupComponent extends Component
         }
 
         $this->validate([
-            'email' => 'required|email',
+            'email' => [
+                'required',
+                'email',
+                Rule::unique('users', 'email'),
+                Rule::unique('invitations', 'email'),
+            ],
         ]);
 
-        session()->flash('message', 'Thanks for joining our newsletter!');
+
+        //  If this popup is a join-us invitation type
+        if ($this->popupData->is_join_us) {
+            $defaultRoleId = Role::where('name', UserRole::Client->value)->value('id');
+
+            $invitation = Invitation::create([
+                'email' => $this->email,
+                'roles' => [$defaultRoleId],
+            ]);
+
+            Mail::to($invitation->email)->send(new TeamInvitationMail($invitation));
+
+            session()->flash('message', __('notification.invited_success'));
+        } else {
+            //  Regular newsletter flow
+            session()->flash('message', __('Thanks for joining our newsletter!'));
+        }
+
         $this->reset('email');
         $this->showPopup = false;
 
