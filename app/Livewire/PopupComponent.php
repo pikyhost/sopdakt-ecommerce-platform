@@ -27,7 +27,8 @@ class PopupComponent extends Component
             if ($this->shouldShowOnCurrentPage()) {
                 // Show popup after delay
                 $this->dispatch('init-popup', [
-                    'delay' => $this->popupData->delay_seconds * 1000
+                    'delay' => $this->popupData->delay_seconds * 1000,
+                    'duration' => ($this->popupData->duration_seconds ?? 0) * 1000,
                 ]);
             }
         }
@@ -49,30 +50,37 @@ class PopupComponent extends Component
 
     protected function shouldShowOnCurrentPage()
     {
-        $currentPath = request()->path();
+        $currentPath = $this->getCurrentPath();
 
-        switch ($this->popupData->display_rules) {
-            case 'all_pages':
-                return true;
-            case 'specific_pages':
-                $pages = explode("\n", $this->popupData->specific_pages);
-                return in_array($currentPath, array_map('trim', $pages));
-            case 'page_group':
-                // Implement your page group logic here
-                return $this->checkPageGroup($currentPath);
-            default:
-                return false;
-        }
+        $rules = $this->popupData->display_rules;
+        $pages = collect($this->popupData->specific_pages ?? [])->pluck('value')->map('trim')->filter();
+
+        return match ($rules) {
+            'all_pages' => true,
+            'specific_pages' => $pages->contains($currentPath),
+            'page_group' => $pages->contains(fn($prefix) => str_starts_with($currentPath, $prefix)),
+            default => false,
+        };
     }
+
+    protected function getCurrentPath()
+    {
+        $path = request()->path(); // مثلاً: en/products/123
+        $locale = app()->getLocale(); // مثلاً: en
+
+        return preg_replace("#^{$locale}/#", '', $path); // يعيد: products/123
+    }
+
 
     public function closePopup()
     {
         $this->showPopup = false;
 
         if ($this->dontShowAgain) {
-            // Set cookie to not show again for 30 days
-            cookie()->queue('dont_show_popup', true, 60 * 24 * 30);
+            $days = $this->popupData->dont_show_again_days ?? 30;
+            cookie()->queue('dont_show_popup', true, 60 * 24 * $days);
         }
+
     }
 
     public function render()

@@ -3,8 +3,10 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PopupResource\Pages;
+use App\Helpers\PageSuggestion;
 use App\Models\Popup;
 use Filament\Forms;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Resources\Concerns\Translatable;
@@ -86,19 +88,56 @@ class PopupResource extends Resource
                         ->numeric()
                         ->default(5),
 
+                    Forms\Components\TextInput::make('duration_seconds')
+                        ->label(__('Display Duration'))
+                        ->numeric()
+                        ->helperText(__('How long the popup remains visible before hiding automatically (0 = until manually closed).')),
+
+                    Forms\Components\TextInput::make('dont_show_again_days')
+                        ->label(__('Hide for (days) when closed with "Don\'t show again"'))
+                        ->default(30)
+                        ->numeric(),
+
                     Forms\Components\Select::make('display_rules')
                         ->label(__('Display Rules'))
                         ->options([
                             'all_pages' => __('All Pages'),
                             'specific_pages' => __('Specific Pages'),
-                            'page_group' => __('Pages group'),
+                            'page_group' => __('Pages Group'),
                         ])
-                        ->required(),
+                        ->required()
+                        ->reactive(),
 
-                    Forms\Components\Textarea::make('specific_pages')
+                    Forms\Components\Repeater::make('specific_pages')
                         ->label(__('popup.fields.specific_pages'))
                         ->helperText(__('popup.helpers.specific_pages'))
-                        ->visible(fn ($get) => $get('display_rules') === 'specific_pages' || $get('display_rules') === 'page_group'),
+                        ->schema([
+                            Forms\Components\TextInput::make('value')
+                                ->label(__('Page Path'))
+                                ->placeholder(__('e.g. contact, about-us, products/'))
+                                ->required(),
+                        ])
+                        ->visible(fn ($get) => in_array($get('display_rules'), ['specific_pages', 'page_group']))
+                        ->default([])
+                        ->columns(1)
+                        ->actions([
+                            Action::make('suggestPages')
+                                ->label('اقتراح تلقائي من الروابط')
+                                ->icon('heroicon-o-light-bulb')
+                                ->action(function (Forms\Set $set, Forms\Get $get) {
+                                    $existing = collect($get('specific_pages'))->pluck('value')->toArray();
+
+                                    $suggested = PageSuggestion::getAvailablePagePaths();
+
+                                    $merged = collect($suggested)
+                                        ->filter(fn($item) => !in_array($item, $existing))
+                                        ->map(fn($val) => ['value' => $val])
+                                        ->values()
+                                        ->toArray();
+
+                                    $set('specific_pages', array_merge($get('specific_pages') ?? [], $merged));
+                                }),
+                        ]),
 
                     Forms\Components\Checkbox::make('email_needed')
                         ->label(__('Email needed?')),

@@ -104,7 +104,7 @@
                 <p>{{ $popupData->description ?? 'Subscribe to receive updates on new arrivals, special offers and promotions.' }}</p>
 
 
-                @if($popupData->is_need_email)
+                @if($popupData->email_needed)
                     <form wire:submit.prevent="submitEmail">
                         <div class="newsletter-form">
                             <input type="email" wire:model.defer="email" placeholder="Your email address" required>
@@ -115,9 +115,11 @@
                     </form>
                 @else
                     <div class="mt-4">
-                        <a href="{{ $popupData->cta_link }}" class="inline-block px-5 py-2 bg-black text-white rounded-full hover:bg-gray-800 transition">
+                        <a href="{{ $popupData->cta_link }}" class="inline-block px-5 py-2 bg-white text-black rounded-full hover:bg-gray-200 transition border border-gray-300">
                             {{ $popupData->cta_text }}
                         </a>
+
+
                     </div>
                 @endif
 
@@ -143,8 +145,9 @@
         document.addEventListener('DOMContentLoaded', function () {
             window.addEventListener('init-popup', event => {
                 setTimeout(() => {
-                @this.set('showPopup', true);
-                }, event.detail.delay);
+                @this.set('showPopup', false);
+                }, event.detail.duration);
+
             });
         });
     </script>
