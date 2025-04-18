@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Enums\UserRole;
 use App\Models\Invitation;
 use App\Models\User;
+use App\Rules\CustomPassword;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\Component;
@@ -83,7 +84,7 @@ class AcceptInvitation extends SimplePage
                     ->label(__('filament-panels::pages/auth/register.form.password.label'))
                     ->password()
                     ->required()
-                    ->rule(Password::default())
+                    ->rule(['min:8', new CustomPassword()])
                     ->same('passwordConfirmation')
                     ->validationAttribute(__('filament-panels::pages/auth/register.form.password.validation_attribute')),
                 TextInput::make('passwordConfirmation')
@@ -171,6 +172,7 @@ class AcceptInvitation extends SimplePage
             'name' => $this->form->getState()['name'],
             'password' => bcrypt($this->form->getState()['password']),
             'email' => $this->invitationModel->email,
+            'email_verified_at' => now()
         ]);
 
         $roleIds = $this->invitationModel->roles ?? [];
@@ -192,7 +194,7 @@ class AcceptInvitation extends SimplePage
         auth()->login($user);
         $this->invitationModel->delete();
 
-        $this->redirect('/client/dashboard');
+        $this->redirect('/client');
     }
 
     /**
@@ -207,7 +209,7 @@ class AcceptInvitation extends SimplePage
                 ->submit('create'),
         ];
     }
-    
+
     public function getHeading(): string
     {
         return __('Accept Invitation');

@@ -91,24 +91,24 @@ class PopupResource extends Resource
                         ->maxLength(255)
                         ->helperText(__('cta_link_helper')),
 
-                    // Timing
-                    Forms\Components\TextInput::make('delay_seconds')
-                        ->label(__('Delay Seconds'))
-                        ->required()
-                        ->numeric()
-                        ->default(5)
-                        ->helperText(__('delay_seconds_helper')),
-
-                    Forms\Components\TextInput::make('duration_seconds')
-                        ->label(__('Display Duration'))
-                        ->numeric()
-                        ->helperText(__('duration_seconds_helper')),
-
-                    Forms\Components\TextInput::make('dont_show_again_days')
-                        ->label(__('Hide for (days) when closed with "Don\'t show again"'))
-                        ->default(30)
-                        ->numeric()
-                        ->helperText(__('dont_show_again_days_helper')),
+//                    // Timing
+//                    Forms\Components\TextInput::make('delay_seconds')
+//                        ->label(__('Delay Seconds'))
+//                        ->required()
+//                        ->numeric()
+//                        ->default(5)
+//                        ->helperText(__('delay_seconds_helper')),
+//
+//                    Forms\Components\TextInput::make('duration_seconds')
+//                        ->label(__('Display Duration'))
+//                        ->numeric()
+//                        ->helperText(__('duration_seconds_helper')),
+//
+//                    Forms\Components\TextInput::make('dont_show_again_days')
+//                        ->label(__('Hide for (days) when closed with "Don\'t show again"'))
+//                        ->default(30)
+//                        ->numeric()
+//                        ->helperText(__('dont_show_again_days_helper')),
 
                     Forms\Components\TextInput::make('popup_order')
                         ->label(__('Popup Order'))
@@ -116,11 +116,11 @@ class PopupResource extends Resource
                         ->default(0)
                         ->helperText(__('popup_order_helper')),
 
-                    Forms\Components\TextInput::make('show_interval_minutes')
-                        ->label(__('Interval Between Displays (minutes)'))
-                        ->numeric()
-                        ->default(60)
-                        ->helperText(__('show_interval_minutes_helper')),
+//                    Forms\Components\TextInput::make('show_interval_minutes')
+//                        ->label(__('Interval Between Displays (minutes)'))
+//                        ->numeric()
+//                        ->default(60)
+//                        ->helperText(__('show_interval_minutes_helper')),
 
                     // Display logic
                     Forms\Components\Select::make('display_rules')
@@ -178,10 +178,10 @@ class PopupResource extends Resource
                     ->label(__('CTA Link'))
                     ->searchable(),
 
-                Tables\Columns\TextColumn::make('delay_seconds')
-                    ->label(__('Delay Seconds'))
-                    ->numeric()
-                    ->sortable(),
+//                Tables\Columns\TextColumn::make('delay_seconds')
+//                    ->label(__('Delay Seconds'))
+//                    ->numeric()
+//                    ->sortable(),
 
                 Tables\Columns\IconColumn::make('is_active')
                     ->label(__('Is Active'))
