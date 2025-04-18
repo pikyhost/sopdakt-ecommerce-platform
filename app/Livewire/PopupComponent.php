@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use App\Models\Popup;
 use Illuminate\Support\Carbon;
@@ -16,8 +17,8 @@ class PopupComponent extends Component
     public $currentIndex = 0;
 
     protected $listeners = [
-        'show-popup' => 'showPopupWindow',
-        'auto-close-popup' => 'closePopup',
+        'show-popup' => 'showPopup',
+        'close-popup' => 'closePopup',
         'next-popup' => 'showNextPopup',
     ];
 
@@ -30,13 +31,27 @@ class PopupComponent extends Component
         $this->allPopups = Popup::where('is_active', true)
             ->orderBy('popup_order')
             ->get()
-            ->filter(fn ($popup) => $this->isPopupEligible($popup))
+            ->filter(fn($popup) => $this->isPopupEligible($popup))
             ->values();
 
         if ($this->allPopups->isNotEmpty()) {
             $this->popupData = $this->allPopups[$this->currentIndex];
-            $this->dispatchPopup();
+            $this->initPopup();
         }
+    }
+
+    public function initPopup()
+    {
+        Log::info('Popup Data Loaded:', [
+            'popup_id' => $this->popupData?->id,
+            'delay' => $this->popupData?->delay_seconds,
+            'duration' => $this->popupData?->duration_seconds,
+        ]);
+
+        $this->dispatch('init-popup', [
+            'delay' => ($this->popupData->delay_seconds ?? 5) * 1000,
+            'duration' => ($this->popupData->duration_seconds ?? 30) * 1000,
+        ]);
     }
 
     protected function isPopupEligible($popup): bool
@@ -49,14 +64,6 @@ class PopupComponent extends Component
         $minutes = $popup->show_interval_minutes;
 
         return !$lastShown || now()->diffInMinutes(Carbon::parse($lastShown)) >= $minutes;
-    }
-
-    protected function dispatchPopup()
-    {
-        $this->dispatch('init-popup', [
-            'delay' => ($this->popupData->delay_seconds ?? 0) * 1000,
-            'duration' => ($this->popupData->duration_seconds ?? 0) * 1000,
-        ]);
     }
 
     protected function shouldShowOnCurrentPage($popup): bool
@@ -76,7 +83,7 @@ class PopupComponent extends Component
         };
     }
 
-    public function showPopupWindow()
+    public function showPopup()
     {
         $this->showPopup = true;
     }
@@ -85,21 +92,17 @@ class PopupComponent extends Component
     {
         $this->showPopup = false;
 
-        // Session block for current visit
         session()->put('popup_blocked', true);
 
-        // Cookie for long-term block
         if ($this->dontShowAgain) {
             $days = $this->popupData->dont_show_again_days ?? 30;
             cookie()->queue('dont_show_popup', true, 60 * 24 * $days);
         }
 
-        // Track last shown time
         if ($this->popupData) {
             cookie()->queue('last_shown_popup_' . $this->popupData->id, now()->toDateTimeString());
         }
 
-        // Move to next popup if available
         $this->showNextPopup();
     }
 
@@ -109,7 +112,7 @@ class PopupComponent extends Component
 
         if (isset($this->allPopups[$this->currentIndex])) {
             $this->popupData = $this->allPopups[$this->currentIndex];
-            $this->dispatchPopup();
+            $this->initPopup();
         }
     }
 
@@ -122,8 +125,6 @@ class PopupComponent extends Component
         $this->validate([
             'email' => 'required|email',
         ]);
-
-        // Store or process email
 
         session()->flash('message', 'Thanks for joining our newsletter!');
         $this->reset('email');

@@ -310,8 +310,8 @@
         }
     </style>
 
-    @if($showPopup)
-        <div class="newsletter-popup">
+    @if($showPopup && isset($popupData))
+        <div class="newsletter-popup" wire:key="popup-{{ $popupData->id }}">
             <div class="newsletter-content">
                 <h2>{{ $popupData->title ?? 'SUBSCRIBE TO NEWSLETTER' }}</h2>
                 <p>{{ $popupData->description ?? 'Subscribe to receive updates on new arrivals, special offers and promotions.' }}</p>
@@ -324,7 +324,8 @@
                     <form wire:submit.prevent="submitEmail" class="popup-form">
                         <div class="form-group">
                             <div class="input-wrapper">
-                                <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <!-- Email SVG -->
+                                <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M1.5 8.67v8.58a3 3 0 003 3h15a3 3 0 003-3V8.67l-8.928 5.493a3 3 0 01-3.144 0L1.5 8.67z" />
                                     <path d="M22.5 6.908V6.75a3 3 0 00-3-3h-15a3 3 0 00-3 3v.158l9.714 5.978a1.5 1.5 0 001.572 0L22.5 6.908z" />
                                 </svg>
@@ -344,21 +345,9 @@
 
                         <button type="submit" class="submit-button">
                             <span class="button-text">Subscribe Now</span>
-                            <svg class="button-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <svg class="button-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
                             </svg>
-                            <span class="button-loader">
-                                <svg viewBox="0 0 38 38" xmlns="http://www.w3.org/2000/svg">
-                                    <g fill="none" fill-rule="evenodd">
-                                        <g transform="translate(1 1)" stroke-width="2">
-                                            <circle stroke-opacity=".5" cx="18" cy="18" r="18"/>
-                                            <path d="M36 18c0-9.94-8.06-18-18-18">
-                                                <animateTransform attributeName="transform" type="rotate" from="0 18 18" to="360 18 18" dur="1s" repeatCount="indefinite"/>
-                                            </path>
-                                        </g>
-                                    </g>
-                                </svg>
-                            </span>
                         </button>
                     </form>
                 @else
@@ -384,7 +373,7 @@
                         width="400"
                         height="400"
                         srcset="{{ Storage::url($popupData->image_path) }} 400w,
-                                {{ Storage::url($popupData->image_path) }} 800w"
+                        {{ Storage::url($popupData->image_path) }} 800w"
                         sizes="(max-width: 768px) 100vw, 50vw"
                     >
                     <div class="newsletter-popup-image-overlay"></div>
@@ -396,44 +385,24 @@
     @endif
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            window.addEventListener('init-popup', event => {
-                setTimeout(() => {
-                    window.dispatchEvent(new CustomEvent('show-popup'));
-                }, event.detail.delay);
+        document.addEventListener('DOMContentLoaded', () => {
+            let showTimeout, hideTimeout;
 
-                if (event.detail.duration > 0) {
-                    setTimeout(() => {
-                        window.dispatchEvent(new CustomEvent('auto-close-popup'));
-                    }, event.detail.delay + event.detail.duration);
-                }
-            });
+            Livewire.on('init-popup', ({ delay = 5000, duration = 30000 }) => {
+                clearTimeout(showTimeout);
+                clearTimeout(hideTimeout);
 
-            window.addEventListener('auto-close-popup', () => {
-                Livewire.dispatch('auto-close-popup');
-            });
+                console.log(`Popup scheduled in ${delay / 1000}s for ${duration / 1000}s`);
 
-            window.addEventListener('show-popup', () => {
-                Livewire.dispatch('show-popup');
-            });
+                showTimeout = setTimeout(() => {
+                    Livewire.dispatch('show-popup');
 
-            window.addEventListener('next-popup', () => {
-                Livewire.dispatch('next-popup');
-            });
-        });
-
-        document.addEventListener('livewire:load', function() {
-            Livewire.hook('message.processed', (message, component) => {
-                const submitButtons = document.querySelectorAll('.submit-button');
-                submitButtons.forEach(button => {
-                    if (message.component.fingerprint.name === 'popup-component' &&
-                        message.updateQueue[0]?.payload.event === 'callMethod' &&
-                        message.updateQueue[0]?.payload.method === 'submitEmail') {
-                        button.classList.add('loading');
-                    } else {
-                        button.classList.remove('loading');
+                    if (duration > 0) {
+                        hideTimeout = setTimeout(() => {
+                            Livewire.dispatch('close-popup');
+                        }, duration);
                     }
-                });
+                }, delay);
             });
         });
     </script>
