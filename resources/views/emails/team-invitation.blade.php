@@ -7,44 +7,50 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #fdf2f8;
+            background-color: #ffffff;
+            color: #1f2937;
             margin: 0;
             padding: 0;
-            color: #4b5563;
         }
+
         .container {
             width: 100%;
             max-width: 600px;
             margin: 20px auto;
             background-color: #ffffff;
+            border: 1px solid #d1d5db;
             padding: 20px;
             border-radius: 8px;
-            border: 1px solid #fbcfe8;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
         }
+
         .header {
             text-align: center;
             padding-bottom: 20px;
-            border-bottom: 1px solid #fbcfe8;
+            border-bottom: 1px solid #d1d5db;
         }
+
         .header h1 {
             margin: 0;
             font-size: 24px;
-            color: #ec4899;
+            color: #111827;
         }
+
         .content {
             padding: 20px 0;
             text-align: center;
         }
+
         .content p {
             font-size: 16px;
             line-height: 1.6;
             margin: 10px 0;
         }
+
         .btn {
             display: inline-block;
             padding: 12px 24px;
-            background-color: #ec4899;
+            background-color: #111827;
             color: #ffffff;
             text-decoration: none;
             border-radius: 6px;
@@ -52,21 +58,25 @@
             font-size: 16px;
             transition: background-color 0.3s ease;
         }
+
         .btn:hover {
-            background-color: #c02675;
+            background-color: #000000;
         }
+
         .footer {
             text-align: center;
             padding-top: 20px;
-            border-top: 1px solid #fbcfe8;
+            border-top: 1px solid #d1d5db;
             margin-top: 20px;
             color: #6b7280;
             font-size: 12px;
         }
+
         .footer a {
-            color: #9333ea;
+            color: #1f2937;
             text-decoration: none;
         }
+
         .footer a:hover {
             text-decoration: underline;
         }
@@ -75,29 +85,35 @@
         @media (prefers-color-scheme: dark) {
             body {
                 background-color: #0f172a;
-                color: #e2e8f0;
+                color: #e5e7eb;
             }
+
             .container {
-                background-color: #1e293b;
-                border-color: #334155;
+                background-color: #1f2937;
+                border-color: #374151;
                 box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
             }
+
             .header h1 {
-                color: #f472b6;
+                color: #f9fafb;
             }
+
             .btn {
-                background-color: #f472b6;
-                color: #1e293b;
+                background-color: #e5e7eb;
+                color: #1f2937;
             }
+
             .btn:hover {
-                background-color: #be185d;
+                background-color: #ffffff;
             }
+
             .footer {
-                color: #94a3b8;
-                border-top-color: #334155;
+                color: #9ca3af;
+                border-top-color: #4b5563;
             }
+
             .footer a {
-                color: #c084fc;
+                color: #f9fafb;
             }
         }
     </style>
@@ -111,13 +127,13 @@
         <p>Hello,</p>
         <p>You have been invited to join <strong>{{ config('app.name') }}</strong> as a
             <strong>{{ \App\Enums\UserRole::getLabelFor($invitation->role->name) }}</strong>.</p>
-        <p>Click the button below to accept the invitation:</p>
+        <p>Click the button below to accept your invitation:</p>
         <a href="{{ $acceptUrl }}" class="btn">Accept Invitation</a>
     </div>
     <div class="footer">
-        <p>If you weren’t expecting this invitation, feel free to ignore this email.</p>
+        <p>If you weren’t expecting this invitation, you can safely ignore this email.</p>
         <p>© {{ date('Y') }} {{ config('app.name') }}. All rights reserved.</p>
-        <p><a href="{{ config('app.url') }}">Visit Website</a></p>
+        <p><a href="{{ config('app.url') }}">Visit our website</a></p>
     </div>
 </div>
 </body>

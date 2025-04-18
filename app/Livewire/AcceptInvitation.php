@@ -70,10 +70,10 @@ class AcceptInvitation extends SimplePage
                     ->required()
                     ->maxLength(255)
                     ->autofocus(),
-                TextInput::make('role')
-                    ->label('Roles')
-                    ->formatStateUsing(fn ($state) => Str::headline($state))
-                    ->disabled(),
+//                TextInput::make('role')
+//                    ->label('Roles')
+//                    ->formatStateUsing(fn ($state) => Str::headline($state))
+//                    ->disabled(),
                 TextInput::make('email')
                     ->label(__('filament-panels::pages/auth/register.form.email.label'))
                     ->disabled(),
@@ -207,7 +207,7 @@ class AcceptInvitation extends SimplePage
                 ->submit('create'),
         ];
     }
-
+    
     public function getHeading(): string
     {
         return __('Accept Invitation');
