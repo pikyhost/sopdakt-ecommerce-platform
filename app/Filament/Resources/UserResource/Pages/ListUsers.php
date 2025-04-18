@@ -37,21 +37,19 @@ class ListUsers extends ListRecords
                         ->validationMessages([
                             'unique' => __('email.unique'),
                         ]),
-                    Select::make('roles')
-                        ->label(__('roles'))
+                    Select::make('role_id')
+                    ->label(__('roles'))
                         ->helperText(__('roles.helper'))
                         ->options(
-                            Role::pluck('name', 'id')
-                                ->toArray()
+                            Role::pluck('name', 'id')->toArray()
                         )
-                        ->nullable(),
+                        ->default(Role::where('name', UserRole::Client->value)->value('id')) // Optional default
+                        ->required(), // Optional, if not nullable
                 ])
                 ->action(function ($data) {
-                    $roles = $data['roles'] ?? [Role::where('name', UserRole::Client->value)->first()->id];
-
                     $invitation = Invitation::create([
                         'email' => $data['email'],
-                        'roles' => $roles,
+                        'role_id' => $data['role_id'],
                     ]);
 
                     Mail::to($invitation->email)->send(new TeamInvitationMail($invitation));

@@ -8,10 +8,10 @@ use Livewire\Component;
 use App\Models\Popup;
 use Illuminate\Support\Carbon;
 use App\Models\Invitation;
-use App\Models\Role;
 use App\Enums\UserRole;
 use App\Mail\TeamInvitationMail;
 use Illuminate\Support\Facades\Mail;
+use Spatie\Permission\Models\Role;
 
 class PopupComponent extends Component
 {
@@ -145,21 +145,20 @@ class PopupComponent extends Component
             ],
         ]);
 
-
-        //  If this popup is a join-us invitation type
+        // If this popup is a join-us invitation type
         if ($this->popupData->is_join_us) {
             $defaultRoleId = Role::where('name', UserRole::Client->value)->value('id');
 
             $invitation = Invitation::create([
                 'email' => $this->email,
-                'roles' => [$defaultRoleId],
+                'role_id' => $defaultRoleId, // ✅ fixed here
             ]);
 
             Mail::to($invitation->email)->send(new TeamInvitationMail($invitation));
 
             session()->flash('message', __('notification.invited_success'));
         } else {
-            //  Regular newsletter flow
+            // Regular newsletter flow
             session()->flash('message', __('Thanks for joining our newsletter!'));
         }
 
@@ -168,6 +167,7 @@ class PopupComponent extends Component
 
         $this->showNextPopup();
     }
+
 
     protected function getCurrentPath(): string
     {
