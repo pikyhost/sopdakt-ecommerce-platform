@@ -21,14 +21,13 @@ class CouponResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\Section::make('Coupon Information')
+                Forms\Components\Section::make()
                     ->schema([
                         Forms\Components\Select::make('discount_id')
                             ->label(__('Discount'))
                             ->relationship('discount', 'name')
                             ->searchable()
-                            ->required()
-                            ->columnSpanFull(),
+                            ->required(),
 
                         Forms\Components\TextInput::make('code')
                             ->default(Coupon::generateCode())
@@ -52,7 +51,7 @@ class CouponResource extends Resource
                             ->nullable()
                             ->columnSpan(1),
                     ])
-                    ->columns(2),
+                    ->columns(1)
             ]);
     }
 
@@ -68,18 +67,15 @@ class CouponResource extends Resource
                 Tables\Columns\TextColumn::make('discount.name')
                     ->label(__('Discount'))
                     ->searchable()
-                    ->sortable()
-                    ->formatStateUsing(fn ($state) => $state[app()->getLocale()] ?? $state['en'] ?? ''),
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('usage_limit_per_user')
                     ->label(__('Per Customer'))
-                    ->sortable()
-                    ->formatStateUsing(fn ($state) => $state ?? __('Unlimited')),
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('total_usage_limit')
                     ->label(__('Total Limit'))
-                    ->sortable()
-                    ->formatStateUsing(fn ($state) => $state ?? __('Unlimited')),
+                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('usages_count')
                     ->label(__('Times Used'))
@@ -98,11 +94,13 @@ class CouponResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('discount_id')
+                    ->columnSpanFull()
                     ->label(__('Discount'))
                     ->relationship('discount', 'name')
                     ->searchable(),
 
                 Tables\Filters\Filter::make('active')
+                    ->columnSpanFull()
                     ->label(__('Active Coupons'))
                     ->query(fn ($query) => $query->active()),
             ])
