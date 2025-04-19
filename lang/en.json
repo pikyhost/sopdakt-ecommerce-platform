@@ -1,4 +1,5 @@
 {
+    "discounts.fields.usage_limit_help": "Maximum number of times this discount can be used.",
     "Hide for (days) when closed with \"Don't show again\"": "Hide for (days) when closed with \"Don't show again\"",
     "Popup Order": "Popup Order",
     "Interval Between Displays (minutes)": "Interval Between Displays (minutes)",

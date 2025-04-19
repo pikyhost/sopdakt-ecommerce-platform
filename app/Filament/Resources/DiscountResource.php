@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\DiscountResource\Pages;
 use App\Models\Discount;
 use App\Models\Product;
+use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -54,6 +55,7 @@ class DiscountResource extends Resource
                     ]),
 
                 Section::make(__('Applies To Settings'))
+                    ->columns(2)
                     ->schema([
                         // Show products if applies_to = product
                         Select::make('products')
@@ -110,6 +112,7 @@ class DiscountResource extends Resource
                     ]),
 
                 Section::make(__('Discount Settings'))
+                    ->columns(2)
                     ->schema([
                         Select::make('discount_type')
                             ->label(__('Discount Type'))
@@ -132,6 +135,7 @@ class DiscountResource extends Resource
                     ]),
 
                 Section::make(__('Price Calculation'))
+                    ->columns(3)
                     ->schema([
                         TextInput::make('price')
                             ->label(__('Original Price (for preview)'))
@@ -151,6 +155,13 @@ class DiscountResource extends Resource
 
                 Section::make(__('Validity'))
                     ->schema([
+                        TextInput::make('usage_limit')
+                            ->label(__('Usage Limit'))
+                            ->helperText(__('discounts.fields.usage_limit_help'))
+                            ->columnSpanFull()
+                            ->numeric()
+                            ->nullable(),
+                        
                         DateTimePicker::make('starts_at')
                             ->label(__('Starts At'))
                             ->nullable(),
@@ -159,17 +170,14 @@ class DiscountResource extends Resource
                             ->label(__('Ends At'))
                             ->nullable(),
 
-                        TextInput::make('usage_limit')
-                            ->label(__('Usage Limit'))
-                            ->numeric()
-                            ->nullable(),
-
-                        Toggle::make('requires_coupon')
+                        Checkbox::make('requires_coupon')
                             ->label(__('Requires Coupon')),
-                    ]),
+
+                        Checkbox::make('is_active')
+                            ->label(__("Active")),
+                    ])->columns(2),
             ]);
     }
-
 
     public static function table(Table $table): Table
     {
@@ -203,6 +211,10 @@ class DiscountResource extends Resource
                 TextColumn::make('ends_at')
                     ->label(__('Ends At'))
                     ->dateTime(),
+
+                Tables\Columns\IconColumn::make('is_active')
+                    ->boolean()
+                    ->label(__("Active")),
             ])
             ->defaultSort('starts_at', 'desc')
             ->filters([])

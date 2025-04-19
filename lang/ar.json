@@ -1,4 +1,10 @@
 {
+    "Basic Information": "المعلومات الأساسية",
+    "Applies To Settings": "إعدادات التطبيق",
+    "Discount Settings": "إعدادات الخصم",
+    "Price Calculation": "حساب السعر",
+    "Validity": "الصلاحية",
+    "discounts.fields.usage_limit_help": "الحد الأقصى لعدد مرات استخدام هذا الخصم.",
     "Discounts": "الخصمومات",
     "Discount Type": "نوع الخصم",
     "Applies To": "يُطبق على",
