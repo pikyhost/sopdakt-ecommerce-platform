@@ -1,4 +1,9 @@
 {
+    "Wheel Prizes": "جوائز العجلة",
+    "Available": "متاح",
+    "Probability %": "احتمالية %",
+    "Prize Name": "اسم الجائزة",
+    "Prize Type": "نوع الجائزة",
     "Is Winner": "فائز",
     "Winner": "فائز",
     "Spin Date": "تاريخ التدوير",
@@ -13,7 +18,6 @@
     "Is Available": "متاح",
     "Limits": "الحدود",
     "Daily Limit": "الحد اليومي",
-    "Available": "متاح",
     "Only Available": "المتاحة فقط",
     "points": "نقاط",
     "Prize": "جائزة",

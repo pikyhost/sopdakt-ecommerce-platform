@@ -37,6 +37,65 @@ class WheelResource extends Resource
                             ->label(__('Is Active')),
                     ])->columns(2),
 
+                Forms\Components\Section::make(__('Prizes'))->schema([
+                    Forms\Components\Repeater::make('prizes')
+                        ->relationship()
+                        ->label(__('Wheel Prizes'))
+                        ->schema([
+                            Forms\Components\TextInput::make('name')
+                                ->required()
+                                ->label(__('Prize Name')),
+
+                            Forms\Components\Select::make('type')
+                                ->required()
+                                ->options([
+                                    'coupon' => 'Coupon',
+                                    'discount' => 'Discount',
+                                    'points' => 'Points',
+                                    'product' => 'Product',
+                                ])
+                                ->label(__('Prize Type')),
+
+                            Forms\Components\TextInput::make('value')
+                                ->numeric()
+                                ->label(__('Value')),
+
+                            Forms\Components\Select::make('coupon_id')
+                                ->relationship('coupon', 'code') // تأكد أن العلاقة موجودة بـ WheelPrize
+                                ->label(__('Coupon'))
+                                ->searchable(),
+
+                            Forms\Components\Select::make('discount_id')
+                                ->relationship('discount', 'name')
+                                ->label(__('Discount'))
+                                ->searchable(),
+
+                            Forms\Components\TextInput::make('probability')
+                                ->required()
+                                ->numeric()
+                                ->default(10)
+                                ->minValue(1)
+                                ->maxValue(100)
+                                ->label(__('Probability %')),
+
+                            Forms\Components\Toggle::make('is_available')
+                                ->default(true)
+                                ->label(__('Available')),
+
+                            Forms\Components\TextInput::make('daily_limit')
+                                ->numeric()
+                                ->label(__('Daily Limit')),
+
+                            Forms\Components\TextInput::make('total_limit')
+                                ->numeric()
+                                ->label(__('Total Limit')),
+                        ])
+                        ->columns(2)
+                        ->defaultItems(1)
+                        ->label(__('Wheel Prizes'))
+                        ->columnSpanFull()
+                ]),
+
                 Forms\Components\Section::make(__('Date Range'))
                     ->schema([
                         Forms\Components\DateTimePicker::make('start_date')
