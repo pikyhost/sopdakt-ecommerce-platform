@@ -66,9 +66,11 @@ class WheelSpinResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('wheel')
+                    ->columnSpanFull()
                     ->relationship('wheel', 'name')
                     ->label(__('Wheel')),
                 Tables\Filters\Filter::make('winners')
+                    ->columnSpanFull()
                     ->query(fn (Builder $query): Builder => $query->where('is_winner', true))
                     ->label(__('Only Winners')),
             ])

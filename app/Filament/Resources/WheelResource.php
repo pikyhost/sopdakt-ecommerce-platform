@@ -26,10 +26,12 @@ class WheelResource extends Resource
                 Forms\Components\Section::make(__('Basic Information'))
                     ->schema([
                         Forms\Components\TextInput::make('name')
+                            ->columnSpanFull()
                             ->required()
                             ->maxLength(255)
                             ->label(__('Name')),
-                        Forms\Components\Toggle::make('is_active')
+                        Forms\Components\Checkbox::make('is_active')
+                            ->columnSpanFull()
                             ->required()
                             ->default(true)
                             ->label(__('Is Active')),

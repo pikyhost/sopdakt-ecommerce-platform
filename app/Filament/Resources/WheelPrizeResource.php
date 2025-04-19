@@ -137,9 +137,11 @@ class WheelPrizeResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('wheel')
+                    ->columnSpanFull()
                     ->relationship('wheel', 'name')
                     ->label(__('Wheel')),
                 Tables\Filters\Filter::make('is_available')
+                    ->columnSpanFull()
                     ->query(fn (Builder $query): Builder => $query->where('is_available', true))
                     ->label(__('Only Available')),
             ])
