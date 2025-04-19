@@ -11,9 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('collections', function (Blueprint $table) {
+        Schema::create('wheels', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->boolean('is_active')->default(true);
+            $table->dateTime('start_date')->nullable();
+            $table->dateTime('end_date')->nullable();
+            $table->integer('spins_per_user')->default(1); // Max spins per user
+            $table->integer('spins_duration')->default(24); // Cooldown period in hours
             $table->timestamps();
         });
     }
@@ -23,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('collections');
+        Schema::dropIfExists('wheels');
     }
 };

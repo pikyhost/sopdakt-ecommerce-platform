@@ -3,8 +3,6 @@
 namespace App\Filament\Client\Resources\OrderResource\Pages;
 
 use App\Filament\Client\Resources\OrderResource;
-use App\Models\Order;
-use Filament\Notifications\Notification;
 use Filament\Facades\Filament;
 use Filament\Resources\Pages\CreateRecord;
 
@@ -29,22 +27,12 @@ class CreateOrder extends CreateRecord
         $this->record->syncInventoryOnCreate();
     }
 
-    public static function beforeCreate(array $data): void
+    protected function beforeCreate(): void
     {
-        if (!empty($data['checkout_token']) && Order::where('checkout_token', $data['checkout_token'])->exists()) {
-            $locale = app()->getLocale();
+        $data = $this->form->getState();
 
-            Notification::make()
-                ->title($locale === 'ar' ? 'تم إرسال الطلب مسبقًا' : 'Duplicate Order Submission')
-                ->body($locale === 'ar'
-                    ? 'هذا الطلب تم تقديمه بالفعل. يرجى الانتظار قليلاً قبل المحاولة مرة أخرى.'
-                    : 'This order has already been submitted. Please wait a moment before trying again.')
-                ->color('danger')
-                ->send();
-
-            return; // Optionally stop further processing
+        if (!empty($data['checkout_token']) && \App\Models\Order::where('checkout_token', $data['checkout_token'])->exists()) {
+            $this->halt();
         }
     }
-
-
 }

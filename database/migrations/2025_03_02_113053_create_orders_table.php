@@ -33,6 +33,8 @@ return new class extends Migration
             $table->string('tracking_number')->nullable();
             $table->string('shipping_status')->nullable();
             $table->json('shipping_response')->nullable();
+
+            $table->uuid('checkout_token')->unique()->nullable();
         });
     }
 

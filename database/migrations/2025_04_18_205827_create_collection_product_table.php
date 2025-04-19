@@ -15,9 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('collection_id')->constrained()->cascadeOnDelete();
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
-
-            // الكمية المطلوبة من هذا المنتج داخل الباقة
-            $table->unsignedInteger('min_quantity')->default(2);
         });
     }
 

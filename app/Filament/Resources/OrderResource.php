@@ -40,6 +40,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class OrderResource extends Resource
 {
@@ -692,6 +693,9 @@ class OrderResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\Hidden::make('checkout_token')
+                    ->default(fn () => (string) Str::uuid())
+                    ->dehydrated(),
             Wizard::make([
                 Step::make(__('Order Details'))
                     ->schema([

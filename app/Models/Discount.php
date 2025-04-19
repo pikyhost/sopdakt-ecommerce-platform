@@ -90,6 +90,10 @@ class Discount extends Model
         return $this->belongsToMany(Collection::class, 'collection_discount');
     }
 
+    public function wheelPrizes()
+    {
+        return $this->hasMany(WheelPrize::class);
+    }
 
     /**
      * Get the coupons for this discount.

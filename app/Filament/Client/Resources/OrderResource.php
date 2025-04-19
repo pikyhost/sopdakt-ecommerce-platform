@@ -240,10 +240,9 @@ class OrderResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            TextInput::make('checkout_token')
+            Forms\Components\Hidden::make('checkout_token')
                 ->default(fn () => (string) Str::uuid())
-                ->hidden()
-                ->dehydrated(), // this ensures it's saved
+                ->dehydrated(),
             Wizard::make([
                 Step::make(__('Order Items'))
                     ->schema([

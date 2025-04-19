@@ -11,9 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('collections', function (Blueprint $table) {
+        Schema::create('wheel_spins', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('wheel_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('wheel_prize_id')->nullable()->constrained()->nullOnDelete();
+            $table->boolean('is_winner')->default(false);
             $table->timestamps();
         });
     }
@@ -23,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('collections');
+        Schema::dropIfExists('wheel_spins');
     }
 };

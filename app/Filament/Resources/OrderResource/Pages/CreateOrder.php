@@ -5,17 +5,12 @@ namespace App\Filament\Resources\OrderResource\Pages;
 use App\Filament\Resources\OrderResource;
 use App\Models\Product;
 use App\Services\StockLevelNotifier;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateOrder extends CreateRecord
 {
     protected static string $resource = OrderResource::class;
-
-    protected function getHeaderActions(): array
-    {
-        return [
-        ];
-    }
 
     protected function getRedirectUrl(): string
     {
@@ -25,17 +20,14 @@ class CreateOrder extends CreateRecord
     protected function afterCreate(): void
     {
         $this->record->syncInventoryOnCreate();
+    }
 
-        // Get the related product IDs from the order items
-        $productIds = $this->record->items
-            ->pluck('product_id')
-            ->filter() // remove nulls (if you allow bundles, etc.)
-            ->unique();
+    protected function beforeCreate(): void
+    {
+        $data = $this->form->getState();
 
-        // Load the updated product records
-        $products = Product::whereIn('id', $productIds)->get();
-
-        // Trigger notification if any products are below minimum stock
-        StockLevelNotifier::notifyAdminsForLowStock($products);
+        if (!empty($data['checkout_token']) && \App\Models\Order::where('checkout_token', $data['checkout_token'])->exists()) {
+            $this->halt();
+        }
     }
 }
