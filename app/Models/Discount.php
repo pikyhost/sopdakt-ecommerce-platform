@@ -99,10 +99,11 @@ class Discount extends Model
      *
      * @return BelongsToMany
      */
-    public function collections(): BelongsToMany
+    public function collections()
     {
-        return $this->belongsToMany(Collection::class, 'discount_collection');
+        return $this->belongsToMany(Collection::class, 'collection_discount');
     }
+
 
     /**
      * Get the coupons for this discount.
