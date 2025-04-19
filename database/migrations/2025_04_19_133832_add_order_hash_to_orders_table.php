@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            $table->string('order_hash')->nullable()->index();  // Add a hash to compare the order's uniqueness
+            $table->uuid('checkout_token')->unique()->nullable();
         });
     }
 

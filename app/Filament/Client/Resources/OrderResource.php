@@ -15,7 +15,6 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductColor;
 use App\Models\Setting;
-use App\Models\ShippingCost;
 use App\Models\ShippingType;
 use Carbon\Carbon;
 use Filament\Forms;
@@ -36,6 +35,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 class OrderResource extends Resource
 {
@@ -240,6 +240,10 @@ class OrderResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
+            TextInput::make('checkout_token')
+                ->default(fn () => (string) Str::uuid())
+                ->hidden()
+                ->dehydrated(), // this ensures it's saved
             Wizard::make([
                 Step::make(__('Order Items'))
                     ->schema([

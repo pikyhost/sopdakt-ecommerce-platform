@@ -21,27 +21,11 @@ class Order extends Model
 
     protected static function booted()
     {
-        // Prevent duplicate orders within 2 minutes
+        // Prevent duplicate orders
         static::creating(function (Order $order) {
-            // Generate a hash based on key order attributes (like user, contact, items)
-            $orderHash = sha1(json_encode([
-                'user_id'    => $order->user_id,
-                'contact_id' => $order->contact_id,
-                'items'      => $order->items->pluck('product_id', 'quantity')->toArray(), // Customize this to match the structure of your order items
-                'total'      => $order->total,
-            ]));
-
-            // Prevent duplicate orders within 2 minutes for the same user/contact
-            $query = Order::query()
-                ->where('order_hash', $orderHash)
-                ->where('created_at', '>=', now()->subMinutes(2));
-
-            if ($query->exists()) {
-                return false; // Prevent duplicate
+            if (!empty($order->checkout_token) && Order::where('checkout_token', $order->checkout_token)->exists()) {
+                throw new \Exception('Duplicate order attempt.');
             }
-
-            // Save the hash in the order to compare in future orders
-            $order->order_hash = $orderHash;
         });
 
         // Restore stock if order deleted

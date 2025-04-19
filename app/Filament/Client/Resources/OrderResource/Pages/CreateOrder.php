@@ -3,8 +3,8 @@
 namespace App\Filament\Client\Resources\OrderResource\Pages;
 
 use App\Filament\Client\Resources\OrderResource;
-use App\Models\Product;
-use App\Services\StockLevelNotifier;
+use App\Models\Order;
+use Filament\Notifications\Notification;
 use Filament\Facades\Filament;
 use Filament\Resources\Pages\CreateRecord;
 
@@ -27,18 +27,24 @@ class CreateOrder extends CreateRecord
     protected function afterCreate(): void
     {
         $this->record->syncInventoryOnCreate();
-
-//        // Get the related product IDs from the order items
-//        $productIds = $this->record->items
-//            ->pluck('product_id')
-//            ->filter() // remove nulls (if you allow bundles, etc.)
-//            ->unique();
-//
-//        // Load the updated product records
-//        $products = Product::whereIn('id', $productIds)->get();
-//
-//        // Trigger notification if any products are below minimum stock
-//        StockLevelNotifier::notifyAdminsForLowStock($products);
     }
+
+    public static function beforeCreate(array $data): void
+    {
+        if (!empty($data['checkout_token']) && Order::where('checkout_token', $data['checkout_token'])->exists()) {
+            $locale = app()->getLocale();
+
+            Notification::make()
+                ->title($locale === 'ar' ? 'تم إرسال الطلب مسبقًا' : 'Duplicate Order Submission')
+                ->body($locale === 'ar'
+                    ? 'هذا الطلب تم تقديمه بالفعل. يرجى الانتظار قليلاً قبل المحاولة مرة أخرى.'
+                    : 'This order has already been submitted. Please wait a moment before trying again.')
+                ->color('danger')
+                ->send();
+
+            return; // Optionally stop further processing
+        }
+    }
+
 
 }

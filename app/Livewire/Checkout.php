@@ -28,6 +28,7 @@ use Spatie\Permission\Models\Role;
 
 class Checkout extends Component
 {
+    public string $checkoutToken;
     public $currentRoute;
     public $name;
     public $address;
@@ -114,6 +115,8 @@ class Checkout extends Component
 
     public function mount()
     {
+        $this->checkoutToken = (string) Str::uuid();
+
         $this->currentRoute = Route::currentRouteName();
 
         // Load cart data
@@ -340,6 +343,12 @@ class Checkout extends Component
             return;
         }
 
+        //  Prevent duplicate submission
+        if (Order::where('checkout_token', $this->checkoutToken)->exists()) {
+            $this->addError('duplicate', __('Your order is already being processed. Please wait.'));
+            return;
+        }
+
         $this->validate();
 
         DB::beginTransaction();
@@ -357,7 +366,6 @@ class Checkout extends Component
             }
 
             $contact = $this->save();
-
             $orderStatus = OrderStatus::Pending;
 
             $order = Order::create([
@@ -376,9 +384,9 @@ class Checkout extends Component
                 'total' => $cart->total,
                 'status' => $orderStatus->value,
                 'notes' => $this->notes,
+                'checkout_token' => $this->checkoutToken,
             ]);
 
-            // ✅ تأكيد أن الطلب تم إنشاؤه بنجاح
             if (!$order || !$order->id) {
                 throw new \Exception('Order was not created successfully.');
             }
@@ -462,6 +470,9 @@ class Checkout extends Component
             }
 
             DB::commit();
+
+            // Reset the token to prevent reuse
+            $this->checkoutToken = (string) Str::uuid();
 
             session()->flash('success', __('Your order has been placed successfully! You will receive a confirmation email shortly.'));
 
