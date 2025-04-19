@@ -17,10 +17,14 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\QueryBuilder;
+use Filament\Tables\Filters\QueryBuilder\Constraints\NumberConstraint;
+use Filament\Tables\Filters\QueryBuilder\Constraints\TextConstraint;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Webbingbrasil\FilamentAdvancedFilter\Filters\BooleanFilter;
+use Webbingbrasil\FilamentAdvancedFilter\Filters\DateFilter;
 
 class DiscountResource extends Resource
 {
@@ -238,16 +242,27 @@ class DiscountResource extends Resource
                         'collection' => __('Collection'),
                     ]),
 
-                BooleanFilter::make('is_active')
-                    ->label(__("Active")),
-
                 // Filter by specific collection
                 SelectFilter::make('collections')
                     ->label(__('Collection'))
                     ->relationship('collections', 'name'),
 
+                DateFilter::make('starts_at')
+                    ->label(__('Starts At')),
+                DateFilter::make('ends_at')
+                    ->label(__('Ends At')),
+
+                QueryBuilder::make()
+                    ->constraints([
+                        TextConstraint::make('price')
+                            ->label(__('Price')),
+                        NumberConstraint::make('after_discount_price')
+                            ->label(__('After Discount Price')),
+                    ])->columnSpanFull(),
+
                 // Filter by date range (e.g. active discounts)
                 Filter::make('active')
+                    ->columnSpanFull()
                     ->label(__('Currently Active'))
                     ->query(fn (Builder $query) =>
                     $query->where(function ($query) {
@@ -258,6 +273,11 @@ class DiscountResource extends Resource
                             ->orWhere('ends_at', '>=', now());
                     })
                     ),
+
+                BooleanFilter::make('is_active')
+                    ->columnSpanFull()
+                    ->label(__("Active")),
+
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
