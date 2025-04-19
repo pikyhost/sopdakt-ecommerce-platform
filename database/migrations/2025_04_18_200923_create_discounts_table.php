@@ -25,6 +25,7 @@ return new class extends Migration
             $table->dateTime('ends_at')->nullable();
             $table->integer('usage_limit')->nullable();
             $table->boolean('requires_coupon')->default(false);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

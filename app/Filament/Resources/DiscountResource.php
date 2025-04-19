@@ -254,14 +254,12 @@ class DiscountResource extends Resource
                     ->label(__('Ends At')),
 
                 TernaryFilter::make('is_active')
-                    ->label(__('Enabled'))
                     ->columnSpanFull()
-                    ->helperText(__('discounts.filters.is_active_help')),
+                    ->label(__('discounts.filters.is_active_help')),
 
                 Filter::make('active')
-                    ->label(__('Currently Active'))
+                    ->label(__('discounts.filters.active_period_help'))
                     ->columnSpanFull()
-                    ->helperText(__('discounts.filters.active_period_help'))
                     ->query(fn (Builder $query) =>
                     $query->where(function ($query) {
                         $query->whereNull('starts_at')
@@ -279,8 +277,7 @@ class DiscountResource extends Resource
                         NumberConstraint::make('after_discount_price')
                             ->label(__('After Discount Price')),
                     ])->columnSpanFull(),
-
-            ])
+            ], Tables\Enums\FiltersLayout::AboveContentCollapsible)
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),

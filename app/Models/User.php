@@ -101,4 +101,9 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     {
         return $this->hasMany(Order::class);
     }
+
+    public function couponUsages()
+    {
+        return $this->hasMany(CouponUsage::class);
+    }
 }

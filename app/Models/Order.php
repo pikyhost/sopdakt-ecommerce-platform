@@ -157,4 +157,10 @@ class Order extends Model
     {
         return $this->belongsTo(City::class);
     }
+
+    public function couponUsage()
+    {
+        return $this->hasOne(CouponUsage::class);
+    }
+
 }
