@@ -8,6 +8,8 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Http\Responses\Auth\Contracts\LogoutResponse as LogoutResponseContract;
 use Filament\Navigation\NavigationGroup;
+use Filament\Support\Assets\Js;
+use Filament\Support\Facades\FilamentAsset;
 use Illuminate\Support\Facades\App;
 use Livewire\Livewire;
 use App\Enums\UserRole;
@@ -45,6 +47,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        FilamentAsset::register([
+            Js::make('custom-js', __DIR__ . '/../../resources/js/custom.js'),
+        ]);
 //        $this->configureDatePicker();
 //        $this->configureDateTimePicker();
         ProfileContactDetails::setSort(10);

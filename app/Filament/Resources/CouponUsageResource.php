@@ -100,12 +100,14 @@ class CouponUsageResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('coupon_id')
+                    ->columnSpanFull()
                     ->label(__('Coupon'))
                     ->relationship('coupon', 'code')
                     ->searchable(),
 
                 Tables\Filters\SelectFilter::make('user_id')
                     ->label(__('Customer'))
+                    ->columnSpanFull()
                     ->relationship('user', 'name')
                     ->searchable(),
             ])

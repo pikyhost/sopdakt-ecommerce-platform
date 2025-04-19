@@ -45,6 +45,7 @@ use App\Filament\Resources\SizeResource;
 use App\Filament\Resources\TopNoticeResource;
 use App\Filament\Resources\TransactionResource;
 use App\Filament\Resources\UserResource;
+use DragonCode\Support\Facades\Helpers\Str;
 use Filament\Navigation\NavigationBuilder;
 use Filament\Navigation\NavigationGroup;
 use App\Filament\Pages\Dashboard;
@@ -58,6 +59,7 @@ use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\MenuItem;
+use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\SpatieLaravelTranslatablePlugin;
@@ -69,6 +71,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Jeffgreco13\FilamentBreezy\BreezyCore;
 use Jeffgreco13\FilamentBreezy\Pages\MyProfilePage;
@@ -124,9 +127,9 @@ class AdminPanelProvider extends PanelProvider
                     ...ContactMessageResource::getNavigationItems(),
                 ])->groups($this->getCustomNavigationGroups());
             })
-            ->renderHook('head.end', function () {
-                return view('filament.scripts.navigation-reset');
-            })
+//            ->renderHook('head.end', function () {
+//                return view('filament.scripts.navigation-reset');
+//            })
             ->userMenuItems([
                 'profile' => MenuItem::make()
                     ->visible(fn() => Filament::auth()->check())
@@ -176,6 +179,7 @@ class AdminPanelProvider extends PanelProvider
                     ->avatarUploadComponent(fn ($fileUpload) => $fileUpload->columnSpan('full')),
             ])
             ->databaseNotifications()
+            ->renderHook(PanelsRenderHook::SIDEBAR_NAV_START, fn () => view('custom'))
             ->renderHook(PanelsRenderHook::SIDEBAR_NAV_START, fn () => view('navigation-filter'));
     }
 
@@ -282,8 +286,24 @@ class AdminPanelProvider extends PanelProvider
         $navigationGroups = [];
 
         foreach ($groups as $group) {
-            $navigationGroups[] = NavigationGroup::make($group['label'])
-                ->items(array_merge(...$group['items']));
+            $items = collect($group['items'])->flatten()->values();
+
+            $hasActiveItem = $items->contains(function (NavigationItem $item) {
+                $itemUrl = $item->getUrl();
+                $currentUrl = URL::current();
+
+                // This allows us to match if current page is under the item's base path
+                return $itemUrl && Str::startsWith($currentUrl, $itemUrl);
+            });
+
+            $groupBuilder = NavigationGroup::make($group['label'])
+                ->items($items->all());
+
+            if (! $hasActiveItem) {
+                $groupBuilder->collapsed();
+            }
+
+            $navigationGroups[] = $groupBuilder;
         }
 
         return $navigationGroups;

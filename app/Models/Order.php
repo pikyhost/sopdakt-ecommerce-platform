@@ -23,18 +23,25 @@ class Order extends Model
     {
         // Prevent duplicate orders within 2 minutes
         static::creating(function (Order $order) {
+            // Generate a hash based on key order attributes (like user, contact, items)
+            $orderHash = sha1(json_encode([
+                'user_id'    => $order->user_id,
+                'contact_id' => $order->contact_id,
+                'items'      => $order->items->pluck('product_id', 'quantity')->toArray(), // Customize this to match the structure of your order items
+                'total'      => $order->total,
+            ]));
+
+            // Prevent duplicate orders within 2 minutes for the same user/contact
             $query = Order::query()
+                ->where('order_hash', $orderHash)
                 ->where('created_at', '>=', now()->subMinutes(2));
 
-            if ($order->user_id) {
-                $query->where('user_id', $order->user_id);
-            } elseif ($order->contact_id) {
-                $query->where('contact_id', $order->contact_id);
+            if ($query->exists()) {
+                return false; // Prevent duplicate
             }
 
-            if ($query->exists()) {
-                return false;
-            }
+            // Save the hash in the order to compare in future orders
+            $order->order_hash = $orderHash;
         });
 
         // Restore stock if order deleted
@@ -161,6 +168,12 @@ class Order extends Model
     public function couponUsage()
     {
         return $this->hasOne(CouponUsage::class);
+    }
+
+    // Define the uniqueness of the order items for hashing
+    public function getOrderItemsHash()
+    {
+        return sha1(json_encode($this->orderItems->pluck('product_id', 'quantity')->toArray()));
     }
 
 }
