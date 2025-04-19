@@ -17,11 +17,6 @@ class CouponResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-ticket';
 
-    protected static ?string $modelLabel = 'Coupon';
-
-    protected static ?string $navigationLabel = 'Coupons';
-
-
     public static function form(Form $form): Form
     {
         return $form

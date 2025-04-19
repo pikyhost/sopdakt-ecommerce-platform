@@ -19,6 +19,8 @@ use App\Filament\Resources\ContactResource;
 use App\Filament\Resources\ContactSettingResource;
 use App\Filament\Resources\CountryGroupResource;
 use App\Filament\Resources\CountryResource;
+use App\Filament\Resources\CouponResource;
+use App\Filament\Resources\CouponUsageResource;
 use App\Filament\Resources\CurrencyResource;
 use App\Filament\Resources\DiscountResource;
 use App\Filament\Resources\GovernorateResource;
@@ -212,6 +214,8 @@ class AdminPanelProvider extends PanelProvider
                 'label' => __('Offers'),
                 'items' => [
                    DiscountResource::getNavigationItems(),
+                    CouponResource::getNavigationItems(),
+                    CouponUsageResource::getNavigationItems(),
                 ],
             ],
 

@@ -20,9 +20,30 @@ class CouponUsageResource extends Resource
 
     protected static ?string $navigationLabel = 'Coupon Usages';
 
-    protected static ?string $navigationGroup = 'Discounts';
+    public static function getModelLabel(): string
+    {
+        return __('Coupon Usages');
+    }
 
-    protected static ?int $navigationSort = 3;
+    public static function getPluralModelLabel(): string
+    {
+        return __('Coupon Usages');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('Coupon Usages');
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return __('Coupon Usages');
+    }
+
+    public static function getLabel(): ?string
+    {
+        return __('Coupon Usage');
+    }
 
     public static function form(Form $form): Form
     {
