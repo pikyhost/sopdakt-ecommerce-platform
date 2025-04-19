@@ -11,14 +11,16 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Webbingbrasil\FilamentAdvancedFilter\Filters\BooleanFilter;
 
 class DiscountResource extends Resource
 {
@@ -26,7 +28,7 @@ class DiscountResource extends Resource
 
     protected static ?string $model = Discount::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-tag';
+    protected static ?string $navigationIcon = 'heroicon-o-bolt';
 
     public static function form(Form $form): Form
     {
@@ -55,7 +57,6 @@ class DiscountResource extends Resource
                     ]),
 
                 Section::make(__('Applies To Settings'))
-                    ->columns(2)
                     ->schema([
                         // Show products if applies_to = product
                         Select::make('products')
@@ -161,7 +162,7 @@ class DiscountResource extends Resource
                             ->columnSpanFull()
                             ->numeric()
                             ->nullable(),
-                        
+
                         DateTimePicker::make('starts_at')
                             ->label(__('Starts At'))
                             ->nullable(),
@@ -217,7 +218,47 @@ class DiscountResource extends Resource
                     ->label(__("Active")),
             ])
             ->defaultSort('starts_at', 'desc')
-            ->filters([])
+            ->filters([
+                // Filter by discount type
+                SelectFilter::make('discount_type')
+                    ->label(__('Discount Type'))
+                    ->options([
+                        'percentage' => __('Percentage'),
+                        'fixed' => __('Fixed Amount'),
+                        'free_shipping' => __('Free Shipping'),
+                    ]),
+
+                // Filter by applies_to
+                SelectFilter::make('applies_to')
+                    ->label(__('Applies To'))
+                    ->options([
+                        'product' => __('Product'),
+                        'category' => __('Category'),
+                        'cart' => __('Cart'),
+                        'collection' => __('Collection'),
+                    ]),
+
+                BooleanFilter::make('is_active')
+                    ->label(__("Active")),
+
+                // Filter by specific collection
+                SelectFilter::make('collections')
+                    ->label(__('Collection'))
+                    ->relationship('collections', 'name'),
+
+                // Filter by date range (e.g. active discounts)
+                Filter::make('active')
+                    ->label(__('Currently Active'))
+                    ->query(fn (Builder $query) =>
+                    $query->where(function ($query) {
+                        $query->whereNull('starts_at')
+                            ->orWhere('starts_at', '<=', now());
+                    })->where(function ($query) {
+                        $query->whereNull('ends_at')
+                            ->orWhere('ends_at', '>=', now());
+                    })
+                    ),
+            ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
@@ -252,6 +293,17 @@ class DiscountResource extends Resource
         return __('Discounts');
     }
 
+
+    public static function getPluralLabel(): ?string
+    {
+        return __('Discounts');
+    }
+
+    public static function getLabel(): ?string
+    {
+        return __('Discount');
+    }
+    
     public static function calculateDiscountPrice(callable $set, callable $get): void {
         $price = $get('price');
         $value = $get('value');

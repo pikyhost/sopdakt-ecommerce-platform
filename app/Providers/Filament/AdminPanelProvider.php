@@ -14,11 +14,13 @@ use App\Filament\Resources\BundleResource;
 use App\Filament\Resources\CategoryResource;
 use App\Filament\Resources\CityResource;
 use App\Filament\Resources\ColorResource;
+use App\Filament\Resources\ContactMessageResource;
 use App\Filament\Resources\ContactResource;
 use App\Filament\Resources\ContactSettingResource;
 use App\Filament\Resources\CountryGroupResource;
 use App\Filament\Resources\CountryResource;
 use App\Filament\Resources\CurrencyResource;
+use App\Filament\Resources\DiscountResource;
 use App\Filament\Resources\GovernorateResource;
 use App\Filament\Resources\HomePageSettingResource;
 use App\Filament\Resources\InventoryResource;
@@ -117,6 +119,7 @@ class AdminPanelProvider extends PanelProvider
                     ...Dashboard::getNavigationItems(),
                     ...MyProfilePage::getNavigationItems(),
                     ...BlockedPhoneNumberResource::getNavigationItems(),
+                    ...ContactMessageResource::getNavigationItems(),
                 ])->groups($this->getCustomNavigationGroups());
             })
             ->renderHook('head.end', function () {
@@ -204,6 +207,14 @@ class AdminPanelProvider extends PanelProvider
                     TransactionResource::getNavigationItems(),
                 ],
             ],
+
+            'offers' => [
+                'label' => __('Offers'),
+                'items' => [
+                   DiscountResource::getNavigationItems(),
+                ],
+            ],
+
             'orders-contacts' => [
                 'label' => __('landing_page_order.orders_contacts'),
                 'items' => [

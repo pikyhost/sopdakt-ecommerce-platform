@@ -20,7 +20,7 @@ class PopupResource extends Resource
 
     protected static ?string $model = Popup::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-arrows-pointing-out';
 
     public static function getNavigationLabel(): string
     {
