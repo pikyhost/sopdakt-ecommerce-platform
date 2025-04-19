@@ -15,7 +15,7 @@ class WheelResource extends Resource
 {
     protected static ?string $model = Wheel::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
+    protected static ?string $navigationIcon = 'heroicon-o-cube-transparent';
 
     protected static ?string $navigationGroup = 'wheel_of_fortune';
 
@@ -102,9 +102,11 @@ class WheelResource extends Resource
             ])
             ->filters([
                 Tables\Filters\Filter::make('active')
+                    ->columnSpanFull()
                     ->query(fn (Builder $query): Builder => $query->where('is_active', true))
                     ->label(__('Only Active')),
                 Tables\Filters\Filter::make('has_ended')
+                    ->columnSpanFull()
                     ->query(fn (Builder $query): Builder => $query->whereNotNull('end_date')->where('end_date', '<', now()))
                     ->label(__('Ended Wheels')),
             ])

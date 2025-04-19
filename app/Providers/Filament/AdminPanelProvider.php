@@ -45,6 +45,10 @@ use App\Filament\Resources\SizeResource;
 use App\Filament\Resources\TopNoticeResource;
 use App\Filament\Resources\TransactionResource;
 use App\Filament\Resources\UserResource;
+use App\Filament\Resources\WheelPrizeResource;
+use App\Filament\Resources\WheelResource;
+use App\Filament\Resources\WheelSpinResource;
+use App\Models\WheelPrize;
 use DragonCode\Support\Facades\Helpers\Str;
 use Filament\Navigation\NavigationBuilder;
 use Filament\Navigation\NavigationGroup;
@@ -220,6 +224,9 @@ class AdminPanelProvider extends PanelProvider
                    DiscountResource::getNavigationItems(),
                     CouponResource::getNavigationItems(),
                     CouponUsageResource::getNavigationItems(),
+                    WheelResource::getNavigationItems(),
+                    WheelSpinResource::getNavigationItems(),
+                    WheelPrizeResource::getNavigationItems(),
                 ],
             ],
 
