@@ -23,21 +23,7 @@ class Discount extends Model
      *
      * @var array
      */
-    protected $fillable = [
-        'name',
-        'description',
-        'discount_type',
-        'applies_to',
-        'value',
-        'price',
-        'after_discount_price',
-        'min_order_value',
-        'starts_at',
-        'ends_at',
-        'usage_limit',
-        'requires_coupon',
-    ];
-
+    protected $guarded = [];
     /**
      * The attributes that should be cast.
      *

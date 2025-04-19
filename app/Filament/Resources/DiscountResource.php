@@ -303,7 +303,7 @@ class DiscountResource extends Resource
     {
         return __('Discount');
     }
-    
+
     public static function calculateDiscountPrice(callable $set, callable $get): void {
         $price = $get('price');
         $value = $get('value');
