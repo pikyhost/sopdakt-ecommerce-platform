@@ -21,6 +21,7 @@ use Filament\Tables\Filters\QueryBuilder;
 use Filament\Tables\Filters\QueryBuilder\Constraints\NumberConstraint;
 use Filament\Tables\Filters\QueryBuilder\Constraints\TextConstraint;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Webbingbrasil\FilamentAdvancedFilter\Filters\BooleanFilter;
@@ -252,18 +253,15 @@ class DiscountResource extends Resource
                 DateFilter::make('ends_at')
                     ->label(__('Ends At')),
 
-                QueryBuilder::make()
-                    ->constraints([
-                        TextConstraint::make('price')
-                            ->label(__('Price')),
-                        NumberConstraint::make('after_discount_price')
-                            ->label(__('After Discount Price')),
-                    ])->columnSpanFull(),
-
-                // Filter by date range (e.g. active discounts)
-                Filter::make('active')
+                TernaryFilter::make('is_active')
+                    ->label(__('Enabled'))
                     ->columnSpanFull()
+                    ->helperText(__('discounts.filters.is_active_help')),
+
+                Filter::make('active')
                     ->label(__('Currently Active'))
+                    ->columnSpanFull()
+                    ->helperText(__('discounts.filters.active_period_help'))
                     ->query(fn (Builder $query) =>
                     $query->where(function ($query) {
                         $query->whereNull('starts_at')
@@ -274,9 +272,13 @@ class DiscountResource extends Resource
                     })
                     ),
 
-                BooleanFilter::make('is_active')
-                    ->columnSpanFull()
-                    ->label(__("Active")),
+                QueryBuilder::make()
+                    ->constraints([
+                        TextConstraint::make('price')
+                            ->label(__('Price')),
+                        NumberConstraint::make('after_discount_price')
+                            ->label(__('After Discount Price')),
+                    ])->columnSpanFull(),
 
             ])
             ->actions([

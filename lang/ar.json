@@ -1,4 +1,7 @@
 {
+    "discounts.filters.is_active_help": "تفعيل أو تعطيل الخصم. هذا الخيار لا يتعلق بفترة البداية والنهاية.",
+    "discounts.filters.active_period_help": "تصفية الخصومات بناءً على التاريخ الحالي (تاريخ البداية والنهاية).",
+    "Enabled": "مفعل",
     "Currently Active": "نشط حاليا",
     "The discount will apply to products under these categories.": "سيتم تطبيق الخصم على المنتجات ضمن هذه الفئات.",
     "Offers": "العروض",

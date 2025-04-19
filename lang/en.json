@@ -1,4 +1,6 @@
 {
+    "discounts.filters.is_active_help": "Toggle whether the discount is enabled. This is not related to the active date range.",
+    "discounts.filters.active_period_help": "Filters discounts based on the current date range (starts_at and ends_at).",
     "discounts.fields.usage_limit_help": "Maximum number of times this discount can be used.",
     "Hide for (days) when closed with \"Don't show again\"": "Hide for (days) when closed with \"Don't show again\"",
     "Popup Order": "Popup Order",
