@@ -1,37 +1,359 @@
-<div class="d-flex flex-column align-items-center justify-content-center py-5">
+<div class="wheel-container d-flex flex-column align-items-center justify-content-center py-5" style="min-height: 90vh; background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);">
 
-    <h2 class="mb-4 fw-bold text-primary h4">🎡 عجلة الحظ: {{ $wheel->name }}</h2>
+    <!-- Header Section -->
+    <div class="text-center mb-5">
+        <div class="wheel-badge mb-3">جولة اليوم</div>
+        <h1 class="fw-bold text-gradient mb-2">عجلة الحظ</h1>
+        <p class="text-muted fs-5">لديك فرصة لربح {{ $wheel->prizes()->where('is_available', true)->count() }} جوائز مختلفة!</p>
+    </div>
 
-    @if(session()->has('error'))
-        <div class="alert alert-danger w-75 text-center">
-            {{ session('error') }}
-        </div>
-    @endif
+    <!-- Messages Section -->
+    <div class="message-container mb-4" style="width: 100%; max-width: 550px;">
+        @if(session()->has('error'))
+            <div class="alert alert-danger alert-elegant text-center py-3">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                {{ session('error') }}
+            </div>
+        @endif
 
-    @if($wonPrize)
-        <div class="alert alert-success w-75 text-center">
-            <h4 class="fw-bold">🎉 مبروك! ربحت:</h4>
-            <p class="mb-0">{{ $wonPrize->name }} (نوع: {{ $wonPrize->type }})</p>
-        </div>
-    @endif
+        @if($wonPrize)
+            <div class="prize-card animate__animated animate__rubberBand">
+                <div class="prize-ribbon">جائزة</div>
+                <div class="d-flex align-items-center justify-content-center mb-2">
+                    <i class="fas fa-trophy prize-icon"></i>
+                    <h3 class="mb-0 mx-2">مبروك!</h3>
+                    <i class="fas fa-gift prize-icon"></i>
+                </div>
+                <h4 class="prize-name">{{ $wonPrize->name }}</h4>
+                <div class="prize-type">{{ $wonPrize->type }}</div>
+                <div class="confetti"></div>
+            </div>
+        @endif
+    </div>
 
+    <!-- Wheel Section -->
     @if($canSpin)
-        <div class="position-relative" style="width: 300px; height: 300px;">
-            <canvas id="wheelCanvas" width="300" height="300"
-                    class="border border-3 border-primary rounded-circle"></canvas>
-            <div class="position-absolute top-0 start-50 translate-middle-x text-danger fs-3" style="z-index: 10;">
-                ▲
+        <div class="wheel-wrapper position-relative mb-5">
+            <div class="wheel-outer-circle"></div>
+            <div class="wheel-inner-circle"></div>
+            <canvas id="wheelCanvas" width="350" height="350" class="wheel-main"></canvas>
+            <div class="wheel-pointer">
+                <div class="pointer-top"></div>
+                <div class="pointer-base"></div>
             </div>
         </div>
 
-        <button class="btn btn-primary mt-4" id="spinBtn">
-            🎯 اضغط للّف
+        <button class="spin-button btn-glow" id="spinBtn">
+            <span class="spin-text">إبدأ التدوير</span>
+            <span class="spin-icon"><i class="fas fa-redo-alt"></i></span>
         </button>
     @else
-        <div class="text-muted mt-3">
-            ⏳ لا يمكنك اللف الآن. يرجى المحاولة لاحقًا.
+        <div class="cooldown-message">
+            <div class="clock-loader"></div>
+            <p>سيتم تجديد المحاولات خلال: <span class="fw-bold">{{ now()->addHours(24)->diffForHumans() }}</span></p>
         </div>
     @endif
+
+    <style>
+        /* Base Styles */
+        .wheel-container {
+            font-family: 'Tajawal', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Text Gradient */
+        .text-gradient {
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-size: 2.5rem;
+        }
+
+        /* Wheel Badge */
+        .wheel-badge {
+            display: inline-block;
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Alert Styling */
+        .alert-elegant {
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #fff, #f8f9fa);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid #dc3545;
+        }
+
+        /* Prize Card */
+        .prize-card {
+            position: relative;
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(245, 245, 245, 0.9));
+            backdrop-filter: blur(10px);
+        }
+
+        .prize-ribbon {
+            position: absolute;
+            top: 10px;
+            right: -30px;
+            background: #3b82f6;
+            color: white;
+            padding: 0.25rem 2rem;
+            transform: rotate(45deg);
+            font-size: 0.8rem;
+            font-weight: bold;
+            width: 120px;
+            text-align: center;
+        }
+
+        .prize-icon {
+            font-size: 1.5rem;
+            color: #f59e0b;
+        }
+
+        .prize-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1e293b;
+            margin: 0.5rem 0;
+        }
+
+        .prize-type {
+            display: inline-block;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 0.25rem 1rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+        }
+
+        /* Wheel Styling */
+        .wheel-wrapper {
+            width: 350px;
+            height: 350px;
+            position: relative;
+        }
+
+        .wheel-outer-circle {
+            position: absolute;
+            width: 110%;
+            height: 110%;
+            top: -5%;
+            left: -5%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            z-index: 1;
+        }
+
+        .wheel-inner-circle {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: white;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 4;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .wheel-main {
+            position: relative;
+            z-index: 2;
+            border-radius: 50%;
+            border: 8px solid white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15),
+            inset 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 3;
+            width: 40px;
+            height: 60px;
+        }
+
+        .pointer-top {
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-bottom: 30px solid #ef4444;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+        }
+
+        .pointer-base {
+            width: 20px;
+            height: 20px;
+            background: #dc2626;
+            margin: 0 auto;
+            border-radius: 50%;
+        }
+
+        /* Spin Button */
+        .spin-button {
+            position: relative;
+            border: none;
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+            color: white;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .spin-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.6);
+        }
+
+        .spin-button:active {
+            transform: translateY(1px);
+        }
+
+        .spin-text {
+            position: relative;
+            z-index: 2;
+        }
+
+        .spin-icon {
+            margin-right: 10px;
+            transition: transform 0.5s;
+        }
+
+        .btn-glow::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, rgba(255,255,255,0.3), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+
+        .btn-glow:hover::before {
+            transform: translateX(100%);
+        }
+
+        /* Cooldown Message */
+        .cooldown-message {
+            text-align: center;
+            background: white;
+            padding: 1.5rem 2rem;
+            border-radius: 16px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .clock-loader {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: inline-block;
+            position: relative;
+            border: 3px solid;
+            border-color: #3b82f6 #3b82f6 transparent transparent;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        .clock-loader::after,
+        .clock-loader::before {
+            content: '';
+            box-sizing: border-box;
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            margin: auto;
+            border: 3px solid;
+            border-color: transparent transparent #8b5cf6 #8b5cf6;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            box-sizing: border-box;
+            animation: rotationBack 0.5s linear infinite;
+            transform-origin: center center;
+        }
+
+        .clock-loader::before {
+            width: 32px;
+            height: 32px;
+            border-color: #3b82f6 #3b82f6 transparent transparent;
+            animation: rotation 1.5s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes rotationBack {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(-360deg); }
+        }
+
+        /* Confetti Effect */
+        .confetti {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .confetti:after, .confetti:before {
+            content: "";
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #f59e0b;
+            top: 10%;
+            left: 50%;
+            opacity: 0;
+            animation: confetti 3s ease-in-out infinite;
+        }
+
+        .confetti:before {
+            background: #3b82f6;
+            left: 30%;
+            animation-delay: 0.5s;
+        }
+
+        @keyframes confetti {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(500px) rotate(360deg); opacity: 0; }
+        }
+    </style>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -40,28 +362,70 @@
 
             const ctx = canvas.getContext("2d");
             const prizes = @json($wheel->prizes()->where('is_available', true)->pluck('name'));
-            const colors = ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40"];
+            const colors = [
+                "#3B82F6", "#8B5CF6", "#EC4899", "#F59E0B",
+                "#10B981", "#EF4444", "#6366F1", "#F97316"
+            ];
             const arcSize = 2 * Math.PI / prizes.length;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = canvas.width / 2 - 10;
+
+            function drawWedge(startAngle, endAngle, color, text) {
+                // Draw wedge
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.closePath();
+                ctx.fillStyle = color;
+                ctx.fill();
+
+                // Add border
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Add text
+                const textAngle = startAngle + (endAngle - startAngle) / 2;
+                const textRadius = radius * 0.7;
+
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(textAngle);
+                ctx.textAlign = "right";
+                ctx.fillStyle = "#fff";
+                ctx.font = "bold 14px 'Tajawal', sans-serif";
+                ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+                ctx.shadowBlur = 3;
+                ctx.fillText(text, textRadius - 10, 5);
+                ctx.restore();
+            }
 
             function drawWheel() {
-                for (let i = 0; i < prizes.length; i++) {
-                    const angle = i * arcSize;
-                    ctx.beginPath();
-                    ctx.fillStyle = colors[i % colors.length];
-                    ctx.moveTo(150, 150);
-                    ctx.arc(150, 150, 150, angle, angle + arcSize);
-                    ctx.lineTo(150, 150);
-                    ctx.fill();
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                    ctx.save();
-                    ctx.translate(150, 150);
-                    ctx.rotate(angle + arcSize / 2);
-                    ctx.textAlign = "right";
-                    ctx.fillStyle = "#fff";
-                    ctx.font = "bold 14px sans-serif";
-                    ctx.fillText(prizes[i], 140, 10);
-                    ctx.restore();
+                // Draw wedges
+                for (let i = 0; i < prizes.length; i++) {
+                    const startAngle = i * arcSize;
+                    const endAngle = (i + 1) * arcSize;
+                    drawWedge(startAngle, endAngle, colors[i % colors.length], prizes[i]);
                 }
+
+                // Draw center circle
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, 20, 0, Math.PI * 2);
+                ctx.fillStyle = "#fff";
+                ctx.fill();
+                ctx.strokeStyle = "#ddd";
+                ctx.lineWidth = 3;
+                ctx.stroke();
+
+                // Draw center dot
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, 5, 0, Math.PI * 2);
+                ctx.fillStyle = "#3b82f6";
+                ctx.fill();
             }
 
             drawWheel();
@@ -70,13 +434,15 @@
             document.getElementById("spinBtn")?.addEventListener("click", function () {
                 if (spinning) return;
                 spinning = true;
-                document.getElementById("spinBtn").disabled = true;
+                const spinBtn = document.getElementById("spinBtn");
+                spinBtn.disabled = true;
+                spinBtn.innerHTML = '<span class="spin-text">جاري التدوير...</span><span class="spin-icon"><i class="fas fa-spinner fa-spin"></i></span>';
 
                 const spins = Math.floor(Math.random() * 5) + 5;
                 const prizeIndex = Math.floor(Math.random() * prizes.length);
                 const finalDeg = (360 * spins) + (360 / prizes.length * prizeIndex) + (360 / (2 * prizes.length));
 
-                canvas.style.transition = 'transform 5s cubic-bezier(0.33, 1, 0.68, 1)';
+                canvas.style.transition = 'transform 5s cubic-bezier(0.17, 0.89, 0.32, 1.28)';
                 canvas.style.transform = `rotate(${finalDeg}deg)`;
 
                 setTimeout(() => {

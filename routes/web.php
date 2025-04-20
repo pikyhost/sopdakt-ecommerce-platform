@@ -38,7 +38,6 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
 
 
     Route::get('/wheel/{wheel}', [HomePageController::class, 'wheel'])
-        ->middleware(['auth'])
         ->name('wheel.spin');
 
     Route::view('/blogs', 'pages.blogs')->name('blogs');
