@@ -78,10 +78,6 @@ class WheelResource extends Resource
                                 ->maxValue(100)
                                 ->label(__('Probability %')),
 
-                            Forms\Components\Toggle::make('is_available')
-                                ->default(true)
-                                ->label(__('Available')),
-
                             Forms\Components\TextInput::make('daily_limit')
                                 ->numeric()
                                 ->label(__('Daily Limit')),
@@ -89,6 +85,11 @@ class WheelResource extends Resource
                             Forms\Components\TextInput::make('total_limit')
                                 ->numeric()
                                 ->label(__('Total Limit')),
+
+                            Forms\Components\Checkbox::make('is_available')
+                                ->columnSpanFull()
+                                ->default(true)
+                                ->label(__('Available')),
                         ])
                         ->columns(2)
                         ->defaultItems(1)

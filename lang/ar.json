@@ -1,5 +1,5 @@
 {
-    "Wheel Prizes": "جوائز العجلة",
+    "Wheel Prizes": "جوائز عجلة الحظ",
     "Available": "متاح",
     "Probability %": "احتمالية %",
     "Prize Name": "اسم الجائزة",
@@ -34,8 +34,8 @@
     "Prizes": "الجوائز",
     "Spins": "المحاولات",
     "Delete selected": "حذف المحدد",
-    "Wheel": "عجلة",
-    "Wheels": "عجلات",
+    "Wheel": "عجلةالحظ",
+    "Wheels": "عجلات الحظ",
     "Spins Per User": "محاولات لكل مستخدم",
     "Cooldown (hours)": "فترة الانتظار (ساعات)",
     "Coupon Usage": "استخدام القسيمة",

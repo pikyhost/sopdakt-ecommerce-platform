@@ -17,4 +17,9 @@ class HomePageController extends Controller
           ->get();
       return view('front.homepage', compact('products'));
   }
+
+  public function wheel()
+  {
+      return view('front.wheel');
+  }
 }
