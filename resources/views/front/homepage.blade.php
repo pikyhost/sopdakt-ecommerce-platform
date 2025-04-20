@@ -1277,8 +1277,17 @@
 </div>
 
 @livewire('popup-component')
-<livewire:wheel-spin-component />
+@livewire('popup-component')
+@php
+    use App\Models\Wheel;
+    $wheel = Wheel::first(); // or any other logic you prefer
+@endphp
 
+@if($wheel)
+    <livewire:wheel-spin-component :wheel="$wheel" />
+@else
+    <p class="text-red-500">No wheel data available.</p>
+@endif
 
 @if (session('message'))
     <div

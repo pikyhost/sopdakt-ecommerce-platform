@@ -1381,7 +1381,17 @@
 </div>
 
 @livewire('popup-component')
-<livewire:wheel-spin-component />
+@php
+    use App\Models\Wheel;
+    $wheel = Wheel::first(); // or any other logic you prefer
+@endphp
+
+@if($wheel)
+    <livewire:wheel-spin-component :wheel="$wheel" />
+@else
+    <p class="text-red-500">No wheel data available.</p>
+@endif
+
 
 <a id="scroll-top" href="#top" title="Top" role="button"><i class="icon-angle-up"></i></a>
 
