@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Imports\CountryImporter;
+use App\Filament\Imports\GovernorateImporter;
 use App\Filament\Resources\GovernorateResource\Pages;
 use App\Filament\Resources\GovernorateResource\RelationManagers\OrdersRelationManager;
 use App\Models\Governorate;
@@ -16,6 +18,7 @@ use Filament\Infolists\Infolist;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\ImportAction;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
 
@@ -114,6 +117,10 @@ class GovernorateResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([
+                ImportAction::make()
+                    ->importer(GovernorateImporter::class)
+            ])
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()

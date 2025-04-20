@@ -69,16 +69,16 @@ class WheelSpinComponent extends Component
             return;
         }
 
-        $availablePrizes = $this->wheel->prizes()->where('is_available', true)->get();
+        // You can use all prizes, no need to filter by is_available
+        $allPrizes = $this->wheel->prizes;
 
-        if ($availablePrizes->isEmpty()) {
+        if ($allPrizes->isEmpty()) {
             session()->flash('error', 'لا توجد جوائز متاحة حالياً.');
             return;
         }
 
-        $this->wonPrize = $availablePrizes->random();
-        $this->wonPrize->is_available = false;
-        $this->wonPrize->save();
+        // Random prize (can be reused)
+        $this->wonPrize = $allPrizes->random();
 
         if (Auth::check()) {
             WheelSpin::create([
@@ -87,7 +87,6 @@ class WheelSpinComponent extends Component
                 'prize_id' => $this->wonPrize->id,
             ]);
         } else {
-            // Store guest spin time in session
             session(["wheel_spin.{$this->wheel->id}" => now()]);
         }
 
@@ -99,6 +98,7 @@ class WheelSpinComponent extends Component
             $this->cooldownTime = now()->addHours($this->wheel->spins_duration);
         }
     }
+
 
     public function render()
     {

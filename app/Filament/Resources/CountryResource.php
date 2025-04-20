@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Imports\CountryImporter;
 use App\Filament\Resources\CountryResource\Pages\ManageCountryOrders;
 use App\Filament\Resources\CountryResource\RelationManagers\OrdersRelationManager;
 use Filament\Infolists\Infolist;
@@ -26,6 +27,7 @@ use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
+use Filament\Tables\Actions\ImportAction;
 
 class CountryResource extends Resource
 {
@@ -121,6 +123,10 @@ class CountryResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([
+                ImportAction::make()
+                    ->importer(CountryImporter::class)
+            ])
             ->recordUrl(false)
             ->columns(self::getTableColumns())
             ->actions(self::getTableActions())
