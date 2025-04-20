@@ -2,85 +2,102 @@
 
 namespace App\Livewire;
 
+use App\Models\Prize;
+use App\Models\Spin;
 use App\Models\Wheel;
-use App\Models\WheelPrize;
 use App\Models\WheelSpin;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class WheelSpinComponent extends Component
 {
     public Wheel $wheel;
-    public ?WheelPrize $wonPrize = null;
-    public bool $canSpin = true;
+    public $wonPrize = null;
+    public $canSpin = true;
+    public $cooldownTime = null;
+    public $userSpinCount = 0;
 
     public function mount(Wheel $wheel)
     {
         $this->wheel = $wheel;
 
-        // تحقق من عدد المرات التي لف فيها المستخدم
-        $lastSpin = WheelSpin::where('user_id', Auth::id())
-            ->where('wheel_id', $wheel->id)
-            ->latest()
-            ->first();
+        if (Auth::check()) {
+            $user = Auth::user();
+            $this->userSpinCount = WheelSpin::where('user_id', $user->id)
+                ->where('wheel_id', $wheel->id)
+                ->count();
 
-        if ($lastSpin && now()->diffInHours($lastSpin->created_at) < $wheel->spins_duration) {
-            $this->canSpin = false;
+            if ($wheel->spins_per_user === 1 && $this->userSpinCount >= 1) {
+                $this->canSpin = false;
+            } elseif ($wheel->spins_per_user > 1) {
+                $lastSpin = WheelSpin::where('user_id', $user->id)
+                    ->where('wheel_id', $wheel->id)
+                    ->latest()
+                    ->first();
+
+                if ($lastSpin) {
+                    $nextAvailableSpin = $lastSpin->created_at->addHours($wheel->spins_duration);
+                    if (now()->lt($nextAvailableSpin)) {
+                        $this->canSpin = false;
+                        $this->cooldownTime = $nextAvailableSpin;
+                    }
+                }
+            }
+        } else {
+            // Guest spin control
+            $guestSpinTime = session("wheel_spin.{$wheel->id}");
+
+            if ($guestSpinTime) {
+                if ($wheel->spins_per_user === 1) {
+                    $this->canSpin = false;
+                } elseif ($wheel->spins_per_user > 1) {
+                    $nextAvailableSpin = Carbon::parse($guestSpinTime)->addHours($wheel->spins_duration);
+                    if (now()->lt($nextAvailableSpin)) {
+                        $this->canSpin = false;
+                        $this->cooldownTime = $nextAvailableSpin;
+                    }
+                }
+            }
         }
     }
 
     public function spin()
     {
         if (!$this->canSpin) {
-            session()->flash('error', 'لا يمكنك اللف الآن. يرجى الانتظار.');
+            session()->flash('error', 'لا يمكنك التدوير حالياً.');
             return;
         }
 
-        $prizes = $this->wheel->prizes()->where('is_available', true)->get();
+        $availablePrizes = $this->wheel->prizes()->where('is_available', true)->get();
 
-        if ($prizes->isEmpty()) {
+        if ($availablePrizes->isEmpty()) {
             session()->flash('error', 'لا توجد جوائز متاحة حالياً.');
             return;
         }
 
-        $selected = $this->getRandomPrize($prizes);
+        $this->wonPrize = $availablePrizes->random();
+        $this->wonPrize->is_available = false;
+        $this->wonPrize->save();
 
-        if (!$selected) {
-            session()->flash('error', 'حدث خطأ أثناء اختيار الجائزة.');
-            return;
+        if (Auth::check()) {
+            WheelSpin::create([
+                'user_id' => Auth::id(),
+                'wheel_id' => $this->wheel->id,
+                'prize_id' => $this->wonPrize->id,
+            ]);
+        } else {
+            // Store guest spin time in session
+            session(["wheel_spin.{$this->wheel->id}" => now()]);
         }
 
-        // تسجيل عملية اللف
-        WheelSpin::create([
-            'user_id' => Auth::id(),
-            'wheel_id' => $this->wheel->id,
-            'wheel_prize_id' => $selected->id,
-            'is_winner' => true,
-        ]);
-
-        $this->wonPrize = $selected;
         $this->canSpin = false;
-    }
 
-    private function getRandomPrize($prizes)
-    {
-        $totalWeight = $prizes->sum('probability');
-
-        if ($totalWeight <= 0) {
-            return null;
+        if ($this->wheel->spins_per_user === 1) {
+            $this->userSpinCount++;
+        } else {
+            $this->cooldownTime = now()->addHours($this->wheel->spins_duration);
         }
-
-        $random = rand(1, $totalWeight);
-        $current = 0;
-
-        foreach ($prizes as $prize) {
-            $current += $prize->probability;
-            if ($random <= $current) {
-                return $prize;
-            }
-        }
-
-        return null;
     }
 
     public function render()
