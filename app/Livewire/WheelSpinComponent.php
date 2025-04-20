@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Livewire;
 
 use App\Models\Wheel;
@@ -44,11 +43,15 @@ class WheelSpinComponent extends Component
             return;
         }
 
-        // تحديد الجائزة بناءً على الاحتمال
-        $selected = $prizes->randomWeighted(fn ($item) => $item->probability);
+        $selected = $this->getRandomPrize($prizes);
+
+        if (!$selected) {
+            session()->flash('error', 'حدث خطأ أثناء اختيار الجائزة.');
+            return;
+        }
 
         // تسجيل عملية اللف
-        $spin = WheelSpin::create([
+        WheelSpin::create([
             'user_id' => Auth::id(),
             'wheel_id' => $this->wheel->id,
             'wheel_prize_id' => $selected->id,
@@ -57,6 +60,27 @@ class WheelSpinComponent extends Component
 
         $this->wonPrize = $selected;
         $this->canSpin = false;
+    }
+
+    private function getRandomPrize($prizes)
+    {
+        $totalWeight = $prizes->sum('probability');
+
+        if ($totalWeight <= 0) {
+            return null;
+        }
+
+        $random = rand(1, $totalWeight);
+        $current = 0;
+
+        foreach ($prizes as $prize) {
+            $current += $prize->probability;
+            if ($random <= $current) {
+                return $prize;
+            }
+        }
+
+        return null;
     }
 
     public function render()
