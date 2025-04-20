@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\WheelResource\Pages;
 use App\Models\Wheel;
 use Filament\Forms;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -30,12 +31,41 @@ class WheelResource extends Resource
                             ->required()
                             ->maxLength(255)
                             ->label(__('Name')),
+                    ])->columns(2),
+
+                Section::make(__('Validity'))
+                    ->schema([
+                        Forms\Components\Select::make('display_rules')
+                            ->label(__('Display Rules'))
+                            ->options([
+                                'all_pages' => 'All Pages',
+                                'specific_pages' => 'Specific Pages',
+                                'page_group' => 'Page Group',
+                                'all_except_specific' => 'All Pages EXCEPT Specific',
+                                'all_except_group' => 'All Pages EXCEPT Group',
+                            ])
+                            ->live()
+                            ->required()
+                            ->helperText(__('display_rules_helper')),
+
+                        Forms\Components\Textarea::make('specific_pages')
+                            ->label(__('Page Rules'))
+                            ->rows(5)
+                            ->helperText(__('specific_pages_helper'))
+                            ->visible(fn ($get) => in_array($get('display_rules'), [
+                                'specific_pages', 'page_group', 'all_except_specific', 'all_except_group'
+                            ]))
+                            ->afterStateHydrated(fn ($state, callable $set) => $set('specific_pages', implode("\n", json_decode($state ?? '[]'))))
+                            ->dehydrateStateUsing(fn ($state) => json_encode(array_map('trim', preg_split("/\r\n|\n|\r/", $state))))
+                            ->nullable()
+                            ->columnSpanFull(),
                         Forms\Components\Checkbox::make('is_active')
                             ->columnSpanFull()
                             ->required()
                             ->default(true)
                             ->label(__('Is Active')),
-                    ])->columns(2),
+                    ])->columns(1),
+
 
                 Forms\Components\Section::make(__('Prizes'))->schema([
                     Forms\Components\Repeater::make('prizes')
