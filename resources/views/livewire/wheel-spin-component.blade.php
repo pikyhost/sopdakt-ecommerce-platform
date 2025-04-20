@@ -1,6 +1,5 @@
 <div class="wheel-container d-flex flex-column align-items-center justify-content-center py-5" style="min-height: 90vh; background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);">
 
-    <!-- Header Section -->
     <div class="text-center mb-5">
         <div class="wheel-badge mb-3">جولة الحظ</div>
         <h1 class="fw-bold text-gradient mb-2">عجلة الجوائز</h1>
@@ -11,7 +10,6 @@
         </p>
     </div>
 
-    <!-- Messages Section -->
     <div class="message-container mb-4" style="width: 100%; max-width: 550px;">
         @if(session()->has('error'))
             <div class="alert alert-danger alert-elegant text-center py-3">
@@ -35,7 +33,6 @@
         @endif
     </div>
 
-    <!-- Wheel Section -->
     @if($canSpin && !$hasReachedSpinLimit)
         <div class="wheel-wrapper position-relative mb-5">
             <div class="wheel-outer-circle"></div>
@@ -65,6 +62,93 @@
             <p>سيتم تجديد المحاولات خلال: <span class="fw-bold">{{ now()->addHours($wheel->spins_duration)->diffForHumans() }}</span></p>
         </div>
     @endif
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const canvas = document.getElementById("wheelCanvas");
+            const spinBtn = document.getElementById("spinBtn");
+
+            if (!canvas || !spinBtn) return;
+
+            const ctx = canvas.getContext("2d");
+
+            const prizes = @json($wheel->prizes()->where('is_available', true)->pluck('name'));
+            const prizeCount = prizes.length;
+
+            const colors = ["#3B82F6", "#8B5CF6", "#EC4899", "#F59E0B", "#10B981", "#EF4444", "#6366F1", "#F97316"];
+
+            const arcSize = 2 * Math.PI / prizeCount;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = canvas.width / 2 - 10;
+
+            function drawWheel(rotation = 0) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                for (let i = 0; i < prizeCount; i++) {
+                    const startAngle = i * arcSize + rotation;
+                    const endAngle = (i + 1) * arcSize + rotation;
+
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY);
+                    ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                    ctx.closePath();
+                    ctx.fillStyle = colors[i % colors.length];
+                    ctx.fill();
+
+                    ctx.save();
+                    ctx.translate(centerX, centerY);
+                    ctx.rotate(startAngle + arcSize / 2);
+                    ctx.textAlign = "right";
+                    ctx.fillStyle = "#fff";
+                    ctx.font = "14px Arial";
+                    ctx.fillText(prizes[i], radius - 10, 5);
+                    ctx.restore();
+                }
+            }
+
+            drawWheel();
+
+            function spinWheel() {
+                const spinAngle = 360 * 5;
+                const winningIndex = Math.floor(Math.random() * prizeCount);
+                const stopAngle = 360 / prizeCount * winningIndex + 360 / prizeCount / 2;
+                const totalRotation = spinAngle + stopAngle;
+                const duration = 4000;
+                const frameRate = 1000 / 60;
+                const totalFrames = duration / frameRate;
+
+                const start = performance.now();
+
+                function animate(timestamp) {
+                    const progress = Math.min((timestamp - start) / duration, 1);
+                    const easing = easeOutCubic(progress);
+                    const angle = (totalRotation * easing * Math.PI / 180) % (2 * Math.PI);
+
+                    drawWheel(angle);
+
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        setTimeout(() => {
+                            Livewire.dispatch('spin');
+                        }, 300);
+                    }
+                }
+
+                requestAnimationFrame(animate);
+            }
+
+            function easeOutCubic(t) {
+                return (--t) * t * t + 1;
+            }
+
+            spinBtn.addEventListener('click', function () {
+                spinBtn.disabled = true;
+                spinWheel();
+            });
+        });
+    </script>
 
     <style>
         /* Base Styles */
@@ -366,108 +450,4 @@
             100% { transform: translateY(500px) rotate(360deg); opacity: 0; }
         }
     </style>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const canvas = document.getElementById("wheelCanvas");
-            const spinBtn = document.getElementById("spinBtn");
-            if (!canvas || !spinBtn) return;
-
-            const ctx = canvas.getContext("2d");
-            const prizes = @json($wheel->prizes()->where('is_available', true)->pluck('name'));
-            const colors = [
-                "#3B82F6", "#8B5CF6", "#EC4899", "#F59E0B",
-                "#10B981", "#EF4444", "#6366F1", "#F97316"
-            ];
-
-            const arcSize = 2 * Math.PI / prizes.length;
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const radius = canvas.width / 2 - 10;
-
-            function drawWedge(startAngle, endAngle, color, text) {
-                ctx.beginPath();
-                ctx.moveTo(centerX, centerY);
-                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-                ctx.closePath();
-                ctx.fillStyle = color;
-                ctx.fill();
-
-                ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
-                ctx.lineWidth = 2;
-                ctx.stroke();
-
-                const textAngle = startAngle + (endAngle - startAngle) / 2;
-                const textRadius = radius * 0.7;
-
-                ctx.save();
-                ctx.translate(centerX, centerY);
-                ctx.rotate(textAngle);
-                ctx.textAlign = "right";
-                ctx.fillStyle = "#fff";
-                ctx.font = "bold 14px 'Tajawal', sans-serif";
-                ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
-                ctx.shadowBlur = 3;
-                ctx.fillText(text, textRadius - 10, 5);
-                ctx.restore();
-            }
-
-            function drawWheel() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                for (let i = 0; i < prizes.length; i++) {
-                    const startAngle = i * arcSize;
-                    const endAngle = (i + 1) * arcSize;
-                    drawWedge(startAngle, endAngle, colors[i % colors.length], prizes[i]);
-                }
-
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, 20, 0, Math.PI * 2);
-                ctx.fillStyle = "#fff";
-                ctx.fill();
-                ctx.strokeStyle = "#ddd";
-                ctx.lineWidth = 3;
-                ctx.stroke();
-
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, 5, 0, Math.PI * 2);
-                ctx.fillStyle = "#3b82f6";
-                ctx.fill();
-            }
-
-            drawWheel();
-
-            let spinning = false;
-
-            spinBtn.addEventListener("click", function () {
-                if (spinning) return;
-
-                spinning = true;
-                spinBtn.disabled = true;
-                spinBtn.innerHTML = '<span class="spin-text">جاري التدوير...</span><span class="spin-icon"><i class="fas fa-spinner fa-spin"></i></span>';
-
-                // Reset rotation
-                canvas.style.transition = 'none';
-                canvas.style.transform = 'rotate(0deg)';
-                void canvas.offsetWidth; // force reflow
-
-                const spins = Math.floor(Math.random() * 5) + 5;
-                const prizeIndex = Math.floor(Math.random() * prizes.length);
-                const rotateDegree = (360 * spins) + (360 / prizes.length * prizeIndex) + (360 / (2 * prizes.length));
-
-                canvas.style.transition = 'transform 5s cubic-bezier(0.17, 0.89, 0.32, 1.28)';
-                canvas.style.transform = `rotate(${rotateDegree}deg)`;
-
-                setTimeout(() => {
-                @this.call('spin');
-                }, 5100);
-
-                // Fallback reset in case Livewire call doesn't re-enable
-                setTimeout(() => {
-                    spinning = false;
-                    spinBtn.disabled = false;
-                    spinBtn.innerHTML = '<span class="spin-text">إبدأ التدوير</span><span class="spin-icon"><i class="fas fa-redo-alt"></i></span>';
-                }, 8000);
-            });
-        });
-    </script>
 </div>

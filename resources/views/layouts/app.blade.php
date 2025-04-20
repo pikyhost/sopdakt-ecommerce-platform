@@ -1383,7 +1383,7 @@
 @livewire('popup-component')
 @php
     use App\Models\Wheel;
-    $wheel = Wheel::first(); // or any other logic you prefer
+    $wheel = Wheel::first();
 @endphp
 
 @if($wheel)
@@ -1391,7 +1391,6 @@
 @else
     <p class="text-red-500">No wheel data available.</p>
 @endif
-
 
 <a id="scroll-top" href="#top" title="Top" role="button"><i class="icon-angle-up"></i></a>
 

@@ -25,49 +25,39 @@ class WheelSpinComponent extends Component
     {
         $this->wheel = Wheel::where('is_active', true)->first();
 
-        if (!$this->wheel) {
+        if (!$this->wheel || !$this->shouldShowOnCurrentPage()) {
             return;
         }
 
-        if (!$this->shouldShowOnCurrentPage()) {
-            return;
+        // Determine user or guest
+        $userId = Auth::id();
+        $sessionId = Cookie::get('guest_session_id');
+
+        if (!$userId && !$sessionId) {
+            $sessionId = (string) Str::uuid();
+            Cookie::queue('guest_session_id', $sessionId, 60 * 24 * 30); // 30 days
         }
 
-        $this->showPopup = $this->isPopupEligible();
+        $query = WheelSpin::where('wheel_id', $this->wheel->id)
+            ->where('created_at', '>=', now()->subHours($this->wheel->spins_duration));
 
-        if (!$this->showPopup) {
-            return;
-        }
-
-        if (Auth::check()) {
-            $userId = Auth::id();
-
-            $spins = WheelSpin::where('user_id', $userId)
-                ->where('wheel_id', $this->wheel->id)
-                ->where('created_at', '>=', now()->subHours($this->wheel->spins_duration))
-                ->get();
-
-            $this->hasWonBefore = $spins->contains('is_winner', true);
-            $this->remainingSpins = max(0, $this->wheel->spins_per_user - $spins->count());
-            $this->canSpin = $this->remainingSpins > 0 && !$this->hasWonBefore;
-            $this->hasReachedSpinLimit = $this->remainingSpins <= 0;
+        if ($userId) {
+            $query->where('user_id', $userId);
         } else {
-            $sessionId = Cookie::get('guest_session_id');
+            $query->where('session_id', $sessionId);
+        }
 
-            if (!$sessionId) {
-                $sessionId = (string) Str::uuid();
-                Cookie::queue('guest_session_id', $sessionId, 60 * 24 * 30); // 30 days
-            }
+        $spins = $query->get();
 
-            $spins = WheelSpin::where('session_id', $sessionId)
-                ->where('wheel_id', $this->wheel->id)
-                ->where('created_at', '>=', now()->subHours($this->wheel->spins_duration))
-                ->get();
+        $this->hasWonBefore = $spins->contains('is_winner', true);
+        $this->remainingSpins = max(0, $this->wheel->spins_per_user - $spins->count());
+        $this->canSpin = $this->remainingSpins > 0 && !$this->hasWonBefore;
+        $this->hasReachedSpinLimit = $this->remainingSpins <= 0;
 
-            $this->hasWonBefore = $spins->contains('is_winner', true);
-            $this->remainingSpins = max(0, $this->wheel->spins_per_user - $spins->count());
-            $this->canSpin = $this->remainingSpins > 0 && !$this->hasWonBefore;
-            $this->hasReachedSpinLimit = $this->remainingSpins <= 0;
+        // Only show popup if eligible
+        if ($this->isPopupEligible()) {
+            $this->showPopup = true;
+            Cookie::queue('last_shown_wheel_' . $this->wheel->id, now()->toDateTimeString(), 60); // 1 hour
         }
     }
 
@@ -150,7 +140,7 @@ class WheelSpinComponent extends Component
     private function isPopupEligible(): bool
     {
         $lastShown = request()->cookie('last_shown_wheel_' . $this->wheel->id);
-        $minutes = 60; // Show interval in minutes
+        $minutes = 60;
 
         return !$lastShown || now()->diffInMinutes(\Carbon\Carbon::parse($lastShown)) >= $minutes;
     }

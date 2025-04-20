@@ -1277,10 +1277,9 @@
 </div>
 
 @livewire('popup-component')
-@livewire('popup-component')
 @php
     use App\Models\Wheel;
-    $wheel = Wheel::first(); // or any other logic you prefer
+    $wheel = Wheel::first();
 @endphp
 
 @if($wheel)
@@ -1288,18 +1287,6 @@
 @else
     <p class="text-red-500">No wheel data available.</p>
 @endif
-
-@if (session('message'))
-    <div
-            x-data="{ show: true }"
-            x-show="show"
-            x-init="setTimeout(() => show = false, 2000)"
-            class="fixed top-5 right-5 bg-green-500 text-white px-4 py-2 rounded shadow-lg z-50"
-    >
-        {{ session('message') }}
-    </div>
-@endif
-
 
 <a id="scroll-top" href="#top" title="Top" role="button"><i class="icon-angle-up"></i></a>
 
