@@ -13,7 +13,12 @@ return new class extends Migration
     {
         Schema::create('wheel_spins', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(\App\Models\Contact::class)
+                ->nullable()
+                ->constrained()
+                ->cascadeOnDelete();
+            $table->uuid('session_id')->nullable();
             $table->foreignId('wheel_id')->constrained()->cascadeOnDelete();
             $table->foreignId('wheel_prize_id')->nullable()->constrained()->nullOnDelete();
             $table->boolean('is_winner')->default(false);

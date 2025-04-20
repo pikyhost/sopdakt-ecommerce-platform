@@ -47,7 +47,7 @@
                             </div>
                         </div>
 
-                        <button class="spin-button btn-glow" id="spinBtn" wire:click="spin" wire:loading.attr="disabled">
+                        <button class="spin-button btn-glow" id="spinBtn"  wire:click="spin" wire:loading.attr="disabled">
                             <span class="spin-text">إبدأ التدوير</span>
                             <span class="spin-icon"><i class="fas fa-redo-alt"></i></span>
                         </button>
@@ -83,110 +83,138 @@
                     popupOverlay.classList.add('active');
                 }, 10);
                 document.body.style.overflow = 'hidden';
-
-                // Dispatch Livewire event when popup is shown
-            @this.dispatch('wheel-popup-shown');
             });
         </script>
     @endif
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const canvas = document.getElementById("wheelCanvas");
-            const spinBtn = document.getElementById("spinBtn");
+        document.addEventListener('livewire:init', function () {
+            let isSpinning = false;
 
-            if (canvas && spinBtn) {
+            Livewire.on('start-wheel-spin', (winningIndex) => {
+                const canvas = document.getElementById("wheelCanvas");
+                const spinBtn = document.getElementById("spinBtn");
+
+                if (!canvas || !spinBtn || isSpinning) return;
+
                 const ctx = canvas.getContext("2d");
-                const prizes = @json($wheel->prizes()->where('is_available', true)->pluck('name'));
+                const prizes = @js($prizes);
                 const prizeCount = prizes.length;
+
+                if (prizeCount === 0) return;
+
                 const colors = ["#3B82F6", "#8B5CF6", "#EC4899", "#F59E0B", "#10B981", "#EF4444", "#6366F1", "#F97316"];
                 const arcSize = 2 * Math.PI / prizeCount;
                 const centerX = canvas.width / 2;
                 const centerY = canvas.height / 2;
                 const radius = canvas.width / 2 - 10;
 
+                let currentRotation = 0;
+
                 function drawWheel(rotation = 0) {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
                     for (let i = 0; i < prizeCount; i++) {
                         const startAngle = i * arcSize + rotation;
-                        const endAngle = (i + 1) * arcSize + rotation;
+                        const endAngle = startAngle + arcSize;
+
                         ctx.beginPath();
                         ctx.moveTo(centerX, centerY);
                         ctx.arc(centerX, centerY, radius, startAngle, endAngle);
                         ctx.closePath();
                         ctx.fillStyle = colors[i % colors.length];
                         ctx.fill();
+
                         ctx.save();
                         ctx.translate(centerX, centerY);
                         ctx.rotate(startAngle + arcSize / 2);
                         ctx.textAlign = "right";
                         ctx.fillStyle = "#fff";
-                        ctx.font = "14px Arial";
+                        ctx.font = "bold 14px Tajawal, Arial";
                         ctx.fillText(prizes[i], radius - 10, 5);
                         ctx.restore();
                     }
                 }
 
-                drawWheel();
-
-                function spinWheel() {
-                    const spinAngle = 360 * 5;
-                    const winningIndex = Math.floor(Math.random() * prizeCount);
-                    const stopAngle = 360 / prizeCount * winningIndex + 360 / prizeCount / 2;
-                    const totalRotation = spinAngle + stopAngle;
+                function spinWheelToIndex(index) {
+                    const fullRotations = 5;
+                    const stopAngleDeg = 360 - (index * (360 / prizeCount) + (360 / prizeCount) / 2);
+                    const totalRotationDeg = fullRotations * 360 + stopAngleDeg;
+                    const totalRotationRad = totalRotationDeg * Math.PI / 180;
                     const duration = 4000;
                     const start = performance.now();
 
                     function animate(timestamp) {
-                        const progress = Math.min((timestamp - start) / duration, 1);
-                        const easing = (--progress) * progress * progress + 1;
-                        const angle = (totalRotation * easing * Math.PI / 180) % (2 * Math.PI);
+                        const elapsed = timestamp - start;
+                        const progress = Math.min(elapsed / duration, 1);
+                        const easing = (--progress) * progress * progress + 1; // cubic ease-out
+
+                        const angle = (totalRotationRad * easing) % (2 * Math.PI);
                         drawWheel(angle);
-                        if (progress < 1) {
+                        currentRotation = angle;
+
+                        if (elapsed < duration) {
                             requestAnimationFrame(animate);
                         } else {
-                            setTimeout(() => {
-                            @this.call('spin');
-                            }, 300);
+                            spinBtn.disabled = false;
+                            isSpinning = false;
+                            Livewire.dispatch('wheel-spin-finished');
                         }
                     }
+
+                    isSpinning = true;
+                    spinBtn.disabled = true;
                     requestAnimationFrame(animate);
                 }
 
-                spinBtn?.addEventListener('click', function() {
-                    spinBtn.disabled = true;
-                    spinWheel();
-                });
-            }
+                drawWheel();
+                spinWheelToIndex(winningIndex);
+            });
 
-            // Popup close functionality
+            document.getElementById('spinBtn')?.addEventListener('click', function () {
+                if (isSpinning) return;
+                Livewire.call('requestSpin');
+            });
+
+            // Close popup
             const popupOverlay = document.querySelector('.wheel-popup-overlay');
             const closeBtn = document.querySelector('.wheel-popup-close');
 
             function hideWheelPopup() {
-                popupOverlay.classList.remove('active');
-                setTimeout(() => {
-                    popupOverlay.style.display = 'none';
-                    document.body.style.overflow = '';
-                }, 300);
-            @this.set('showPopup', false);
+                if (popupOverlay) {
+                    popupOverlay.classList.remove('active');
+                    setTimeout(() => {
+                        popupOverlay.style.display = 'none';
+                        document.body.style.overflow = '';
+                    @this.set('showPopup', false);
+                    }, 300);
+                }
             }
 
             closeBtn?.addEventListener('click', hideWheelPopup);
-            popupOverlay?.addEventListener('click', function(e) {
+            popupOverlay?.addEventListener('click', function (e) {
                 if (e.target === popupOverlay) {
                     hideWheelPopup();
                 }
-            });
-
-            // Listen for Livewire events
-            Livewire.on('prize-won', () => {
-                // You can add any specific handling for when a prize is won
             });
         });
     </script>
 
     <style>
+        .spin-button[disabled] {
+            opacity: 0.7;
+            cursor: not-allowed;
+            background: linear-gradient(45deg, #64748b, #94a3b8);
+        }
+
+        .spin-button .spin-icon {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
         /* Popup Styles */
         .wheel-popup-overlay {
             position: fixed;

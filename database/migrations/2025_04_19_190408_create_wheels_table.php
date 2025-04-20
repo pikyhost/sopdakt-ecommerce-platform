@@ -20,6 +20,16 @@ return new class extends Migration
             $table->integer('spins_per_user')->default(1); // Max spins per user
             $table->integer('spins_duration')->default(24); // Cooldown period in hours
             $table->timestamps();
+
+            $table->enum('display_rules', [
+                'all_pages',
+                'specific_pages',
+                'page_group',
+                'all_except_specific',
+                'all_except_group'
+            ])->default('all_pages');
+
+            $table->json('specific_pages')->nullable();
         });
     }
 
