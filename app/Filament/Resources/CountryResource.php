@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Exports\CountryExporter;
+use App\Filament\Exports\GovernorateExporter;
 use App\Filament\Imports\CountryImporter;
 use App\Filament\Resources\CountryResource\Pages\ManageCountryOrders;
 use App\Filament\Resources\CountryResource\RelationManagers\OrdersRelationManager;
@@ -23,6 +25,7 @@ use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -125,7 +128,9 @@ class CountryResource extends Resource
         return $table
             ->headerActions([
                 ImportAction::make()
-                    ->importer(CountryImporter::class)
+                    ->importer(CountryImporter::class),
+                ExportAction::make()
+                    ->exporter(CountryExporter::class)
             ])
             ->recordUrl(false)
             ->columns(self::getTableColumns())

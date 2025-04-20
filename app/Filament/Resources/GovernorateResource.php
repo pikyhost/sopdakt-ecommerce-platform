@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Exports\GovernorateExporter;
 use App\Filament\Imports\CountryImporter;
 use App\Filament\Imports\GovernorateImporter;
 use App\Filament\Resources\GovernorateResource\Pages;
@@ -21,6 +22,7 @@ use Filament\Tables;
 use Filament\Tables\Actions\ImportAction;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
+use Filament\Tables\Actions\ExportAction;
 
 class GovernorateResource extends Resource
 {
@@ -119,7 +121,9 @@ class GovernorateResource extends Resource
         return $table
             ->headerActions([
                 ImportAction::make()
-                    ->importer(GovernorateImporter::class)
+                    ->importer(GovernorateImporter::class),
+                ExportAction::make()
+                    ->exporter(GovernorateExporter::class)
             ])
             ->columns([
                 Tables\Columns\TextColumn::make('name')
