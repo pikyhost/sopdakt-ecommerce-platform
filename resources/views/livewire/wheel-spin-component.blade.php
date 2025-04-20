@@ -80,7 +80,7 @@
                 canvas.style.transform = `rotate(${finalDeg}deg)`;
 
                 setTimeout(() => {
-                @this.call('spin')
+                @this.call('spin');
                 }, 5100);
             });
         });
