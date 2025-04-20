@@ -2,13 +2,10 @@
 
 namespace App\Livewire;
 
-use App\Models\Contact;
 use App\Models\Wheel;
 use App\Models\WheelPrize;
 use App\Models\WheelSpin;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cookie;
-use Illuminate\Support\Str;
 use Livewire\Component;
 
 class WheelSpinComponent extends Component
@@ -16,150 +13,116 @@ class WheelSpinComponent extends Component
     public Wheel $wheel;
     public ?WheelPrize $wonPrize = null;
     public bool $canSpin = true;
-    public bool $hasWonBefore = false;
-    public bool $hasReachedSpinLimit = false;
-    public int $remainingSpins = 0;
-    public bool $showPopup = false;
+    public bool $isSpinning = false;
+    public int $rotation = 0;
+    public int $finalRotation = 0;
+    public array $wheelSegments = [];
+    public string $spinMessage = '';
 
-    public function mount()
+    public function mount(Wheel $wheel)
     {
-        $this->wheel = Wheel::where('is_active', true)->first();
+        $this->wheel = $wheel->load('prizes');
+        $this->prepareWheelSegments();
+        $this->checkSpinAvailability();
+    }
 
-        if (!$this->wheel || !$this->shouldShowOnCurrentPage()) {
-            return;
-        }
+    protected function prepareWheelSegments()
+    {
+        $this->wheelSegments = $this->wheel->prizes
+            ->where('is_available', true)
+            ->map(function ($prize, $index) {
+                return [
+                    'id' => $prize->id,
+                    'name' => $prize->name,
+                    'color' => $this->getSegmentColor($index),
+                    'textColor' => $this->getTextColor($index),
+                    'angle' => 360 / $this->wheel->prizes->count(),
+                ];
+            })->toArray();
+    }
 
-        // Determine user or guest
-        $userId = Auth::id();
-        $sessionId = Cookie::get('guest_session_id');
+    protected function checkSpinAvailability()
+    {
+        $lastSpin = WheelSpin::where('user_id', Auth::id())
+            ->where('wheel_id', $this->wheel->id)
+            ->latest()
+            ->first();
 
-        if (!$userId && !$sessionId) {
-            $sessionId = (string) Str::uuid();
-            Cookie::queue('guest_session_id', $sessionId, 60 * 24 * 30); // 30 days
-        }
-
-        $query = WheelSpin::where('wheel_id', $this->wheel->id)
-            ->where('created_at', '>=', now()->subHours($this->wheel->spins_duration));
-
-        if ($userId) {
-            $query->where('user_id', $userId);
+        if ($lastSpin && now()->diffInHours($lastSpin->created_at) < $this->wheel->spins_duration) {
+            $this->canSpin = false;
+            $nextSpinTime = $lastSpin->created_at->addHours($this->wheel->spins_duration);
+            $this->spinMessage = __('Next spin available at :time', ['time' => $nextSpinTime->format('h:i A')]);
         } else {
-            $query->where('session_id', $sessionId);
-        }
-
-        $spins = $query->get();
-
-        $this->hasWonBefore = $spins->contains('is_winner', true);
-        $this->remainingSpins = max(0, $this->wheel->spins_per_user - $spins->count());
-        $this->canSpin = $this->remainingSpins > 0 && !$this->hasWonBefore;
-        $this->hasReachedSpinLimit = $this->remainingSpins <= 0;
-
-        // Only show popup if eligible
-        if ($this->isPopupEligible()) {
-            $this->showPopup = true;
-            Cookie::queue('last_shown_wheel_' . $this->wheel->id, now()->toDateTimeString(), 60); // 1 hour
+            $this->spinMessage = __('You have a spin available!');
         }
     }
 
     public function spin()
     {
-        if (!$this->canSpin) {
-            session()->flash('error', 'لا يمكنك اللف الآن. يرجى الانتظار.');
+        if (!$this->canSpin || $this->isSpinning) {
             return;
         }
 
-        $prizes = $this->wheel->prizes()->where('is_available', true)->get();
+        $this->isSpinning = true;
+        $availablePrizes = $this->wheel->prizes->where('is_available', true);
 
-        if ($prizes->isEmpty()) {
-            session()->flash('error', 'لا توجد جوائز متاحة حالياً.');
+        if ($availablePrizes->isEmpty()) {
+            $this->isSpinning = false;
+            $this->dispatch('notify', message: __('No prizes available currently.'), type: 'error');
             return;
         }
 
-        $selected = $this->getRandomPrize($prizes);
+        $selectedPrize = $this->getRandomPrize($availablePrizes);
 
-        if (!$selected) {
-            session()->flash('error', 'حدث خطأ أثناء اختيار الجائزة.');
+        if (!$selectedPrize) {
+            $this->isSpinning = false;
+            $this->dispatch('notify', message: __('Error selecting prize.'), type: 'error');
             return;
         }
 
-        $spinData = [
+        // Calculate final rotation (5 full rotations + segment position)
+        $segmentCount = count($this->wheelSegments);
+        $segmentAngle = 360 / $segmentCount;
+        $prizeIndex = array_search($selectedPrize->id, array_column($this->wheelSegments, 'id'));
+        $this->finalRotation = 1800 + (360 - ($prizeIndex * $segmentAngle + $segmentAngle / 2));
+
+        // Record the spin
+        WheelSpin::create([
+            'user_id' => Auth::id(),
             'wheel_id' => $this->wheel->id,
-            'wheel_prize_id' => $selected->id,
+            'wheel_prize_id' => $selectedPrize->id,
             'is_winner' => true,
-        ];
+        ]);
 
-        if (Auth::check()) {
-            $spinData['user_id'] = Auth::id();
-        } else {
-            $sessionId = Cookie::get('guest_session_id');
-
-            if (!$sessionId) {
-                $sessionId = (string) Str::uuid();
-                Cookie::queue('guest_session_id', $sessionId, 60 * 24 * 30); // 30 days
-            }
-
-            $spinData['session_id'] = $sessionId;
-
-            $contact = Contact::firstOrCreate(
-                ['session_id' => $sessionId],
-                ['created_at' => now(), 'updated_at' => now()]
-            );
-
-            $spinData['contact_id'] = $contact->id;
-        }
-
-        WheelSpin::create($spinData);
-
-        $this->wonPrize = $selected;
-        $this->canSpin = false;
-        $this->hasWonBefore = true;
-        $this->remainingSpins--;
+        // Dispatch event when spinning completes
+        $this->dispatch('spin-complete', prizeId: $selectedPrize->id);
     }
 
     private function getRandomPrize($prizes)
     {
         $totalWeight = $prizes->sum('probability');
-
-        if ($totalWeight <= 0) {
-            return null;
-        }
+        if ($totalWeight <= 0) return null;
 
         $random = rand(1, $totalWeight);
         $current = 0;
 
         foreach ($prizes as $prize) {
             $current += $prize->probability;
-            if ($random <= $current) {
-                return $prize;
-            }
+            if ($random <= $current) return $prize;
         }
 
         return null;
     }
 
-    private function isPopupEligible(): bool
+    protected function getSegmentColor($index)
     {
-        $lastShown = request()->cookie('last_shown_wheel_' . $this->wheel->id);
-        $minutes = 60;
-
-        return !$lastShown || now()->diffInMinutes(\Carbon\Carbon::parse($lastShown)) >= $minutes;
+        $colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+        return $colors[$index % count($colors)];
     }
 
-    private function shouldShowOnCurrentPage(): bool
+    protected function getTextColor($index)
     {
-        $currentPath = request()->path();
-        $pages = collect(is_array($this->wheel->specific_pages) ? $this->wheel->specific_pages : json_decode($this->wheel->specific_pages ?? '[]', true))
-            ->map('trim')
-            ->filter();
-
-        return match ($this->wheel->display_rules) {
-            'all_pages' => true,
-            'specific_pages' => $pages->contains($currentPath),
-            'page_group' => $pages->contains(fn($prefix) => str_starts_with($currentPath, $prefix)),
-            'all_except_specific' => !$pages->contains($currentPath),
-            'all_except_group' => !$pages->contains(fn($prefix) => str_starts_with($currentPath, $prefix)),
-            default => false,
-        };
+        return $index % 2 === 0 ? '#FFFFFF' : '#000000';
     }
 
     public function render()

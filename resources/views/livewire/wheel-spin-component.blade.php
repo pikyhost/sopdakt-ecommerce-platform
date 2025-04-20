@@ -1,606 +1,88 @@
-<div>
-    <div class="wheel-popup-overlay" style="display: none;">
-        <div class="wheel-popup-container">
-            <div class="wheel-popup-content">
-                <div class="wheel-container d-flex flex-column align-items-center justify-content-center py-4" style="background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);">
-                    <div class="text-center mb-4">
-                        <div class="wheel-badge mb-3">جولة الحظ</div>
-                        <h1 class="fw-bold text-gradient mb-2">عجلة الجوائز</h1>
-                        <p class="text-muted fs-5">
-                            @if($remainingSpins > 0)
-                                لديك {{ $remainingSpins }} محاولة متبقية
-                            @endif
-                        </p>
-                    </div>
+<div class="d-flex flex-column align-items-center justify-content-center py-5">
 
-                    <div class="message-container mb-3" style="width: 100%; max-width: 550px;">
-                        @if(session()->has('error'))
-                            <div class="alert alert-danger alert-elegant text-center py-3">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                {{ session('error') }}
-                            </div>
-                        @endif
+    <h2 class="mb-4 fw-bold text-primary h4">🎡 عجلة الحظ: {{ $wheel->name }}</h2>
 
-                        @if($wonPrize)
-                            <div class="prize-card animate__animated animate__rubberBand">
-                                <div class="prize-ribbon">جائزة</div>
-                                <div class="d-flex align-items-center justify-content-center mb-2">
-                                    <i class="fas fa-trophy prize-icon"></i>
-                                    <h3 class="mb-0 mx-2">مبروك!</h3>
-                                    <i class="fas fa-gift prize-icon"></i>
-                                </div>
-                                <h4 class="prize-name">{{ $wonPrize->name }}</h4>
-                                <div class="prize-type">{{ $wonPrize->type }}</div>
-                                <div class="confetti"></div>
-                            </div>
-                        @endif
-                    </div>
+    @if(session()->has('error'))
+        <div class="alert alert-danger w-75 text-center">
+            {{ session('error') }}
+        </div>
+    @endif
 
-                    @if($canSpin && !$hasReachedSpinLimit)
-                        <div class="wheel-wrapper position-relative mb-4">
-                            <div class="wheel-outer-circle"></div>
-                            <div class="wheel-inner-circle"></div>
-                            <canvas id="wheelCanvas" width="300" height="300" class="wheel-main"></canvas>
-                            <div class="wheel-pointer">
-                                <div class="pointer-top"></div>
-                                <div class="pointer-base"></div>
-                            </div>
-                        </div>
+    @if($wonPrize)
+        <div class="alert alert-success w-75 text-center">
+            <h4 class="fw-bold">🎉 مبروك! ربحت:</h4>
+            <p class="mb-0">{{ $wonPrize->name }} (نوع: {{ $wonPrize->type }})</p>
+        </div>
+    @endif
 
-                        <button class="spin-button btn-glow" id="spinBtn" wire:click="spin" wire:loading.attr="disabled" onclick="event.stopPropagation()">
-                            <span class="spin-text">إبدأ التدوير</span>
-                        </button>
-                    @elseif($hasReachedSpinLimit)
-                        <div class="cooldown-message">
-                            <div class="trophy-icon mb-3">
-                                <i class="fas fa-check-circle" style="font-size: 3rem; color: #10B981;"></i>
-                            </div>
-                            <h4 class="mb-3">لقد استنفذت جميع محاولاتك</h4>
-                            <p class="text-muted">شكراً لمشاركتك في هذه العجلة</p>
-                        </div>
-                    @else
-                        <div class="cooldown-message">
-                            <div class="clock-loader"></div>
-                            <p>سيتم تجديد المحاولات خلال: <span class="fw-bold">{{ now()->addHours($wheel->spins_duration)->diffForHumans() }}</span></p>
-                        </div>
-                    @endif
-                </div>
-
-                <button class="wheel-popup-close" wire:click="$set('showPopup', false)">
-                    <i class="fas fa-times"></i>
-                </button>
+    @if($canSpin)
+        <div class="position-relative" style="width: 300px; height: 300px;">
+            <canvas id="wheelCanvas" width="300" height="300"
+                    class="border border-3 border-primary rounded-circle"></canvas>
+            <div class="position-absolute top-0 start-50 translate-middle-x text-danger fs-3" style="z-index: 10;">
+                ▲
             </div>
         </div>
-    </div>
 
-    @if($showPopup)
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const popupOverlay = document.querySelector('.wheel-popup-overlay');
-                popupOverlay.style.display = 'flex';
-                setTimeout(() => {
-                    popupOverlay.classList.add('active');
-                }, 10);
-                document.body.style.overflow = 'hidden';
-            });
-        </script>
+        <button class="btn btn-primary mt-4" id="spinBtn">
+            🎯 اضغط للّف
+        </button>
+    @else
+        <div class="text-muted mt-3">
+            ⏳ لا يمكنك اللف الآن. يرجى المحاولة لاحقًا.
+        </div>
     @endif
 
     <script>
-        document.addEventListener('livewire:init', function () {
-            let isSpinning = false;
-            let wheelAnimationFrame;
+        document.addEventListener('DOMContentLoaded', function () {
+            const canvas = document.getElementById("wheelCanvas");
+            if (!canvas) return;
 
-            Livewire.on('start-wheel-spin', (winningIndex) => {
-                if (isSpinning) return;
+            const ctx = canvas.getContext("2d");
+            const prizes = @json($wheel->prizes()->where('is_available', true)->pluck('name'));
+            const colors = ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40"];
+            const arcSize = 2 * Math.PI / prizes.length;
 
-                const canvas = document.getElementById("wheelCanvas");
-                const spinBtn = document.getElementById("spinBtn");
+            function drawWheel() {
+                for (let i = 0; i < prizes.length; i++) {
+                    const angle = i * arcSize;
+                    ctx.beginPath();
+                    ctx.fillStyle = colors[i % colors.length];
+                    ctx.moveTo(150, 150);
+                    ctx.arc(150, 150, 150, angle, angle + arcSize);
+                    ctx.lineTo(150, 150);
+                    ctx.fill();
 
-                if (!canvas || !spinBtn) return;
-
-                const ctx = canvas.getContext("2d");
-                const prizes = @js($prizes);
-                const prizeCount = prizes.length;
-
-                if (prizeCount === 0) return;
-
-                const colors = ["#3B82F6", "#8B5CF6", "#EC4899", "#F59E0B", "#10B981", "#EF4444", "#6366F1", "#F97316"];
-                const arcSize = 2 * Math.PI / prizeCount;
-                const centerX = canvas.width / 2;
-                const centerY = canvas.height / 2;
-                const radius = canvas.width / 2 - 10;
-
-                let currentRotation = 0;
-
-                function drawWheel(rotation = 0) {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                    for (let i = 0; i < prizeCount; i++) {
-                        const startAngle = i * arcSize + rotation;
-                        const endAngle = startAngle + arcSize;
-
-                        ctx.beginPath();
-                        ctx.moveTo(centerX, centerY);
-                        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-                        ctx.closePath();
-                        ctx.fillStyle = colors[i % colors.length];
-                        ctx.fill();
-
-                        ctx.save();
-                        ctx.translate(centerX, centerY);
-                        ctx.rotate(startAngle + arcSize / 2);
-                        ctx.textAlign = "right";
-                        ctx.fillStyle = "#fff";
-                        ctx.font = "bold 14px Tajawal, Arial";
-                        ctx.fillText(prizes[i].name, radius - 10, 5); // Changed to prizes[i].name
-                        ctx.restore();
-                    }
+                    ctx.save();
+                    ctx.translate(150, 150);
+                    ctx.rotate(angle + arcSize / 2);
+                    ctx.textAlign = "right";
+                    ctx.fillStyle = "#fff";
+                    ctx.font = "bold 14px sans-serif";
+                    ctx.fillText(prizes[i], 140, 10);
+                    ctx.restore();
                 }
+            }
 
-                function spinWheelToIndex(index) {
-                    const fullRotations = 5;
-                    const stopAngleDeg = 360 - (index * (360 / prizeCount) + (360 / prizeCount) / 2);
-                    const totalRotationDeg = fullRotations * 360 + stopAngleDeg;
-                    const totalRotationRad = totalRotationDeg * Math.PI / 180;
-                    const duration = 5000; // Increased duration
-                    const start = performance.now();
+            drawWheel();
 
-                    function animate(timestamp) {
-                        const elapsed = timestamp - start;
-                        const progress = Math.min(elapsed / duration, 1);
-                        const easing = progress < 0.5
-                            ? 2 * progress * progress
-                            : 1 - Math.pow(-2 * progress + 2, 2) / 2; // smoother easing
+            let spinning = false;
+            document.getElementById("spinBtn")?.addEventListener("click", function () {
+                if (spinning) return;
+                spinning = true;
+                document.getElementById("spinBtn").disabled = true;
 
-                        const angle = (totalRotationRad * easing) % (2 * Math.PI);
-                        drawWheel(angle);
-                        currentRotation = angle;
+                const spins = Math.floor(Math.random() * 5) + 5;
+                const prizeIndex = Math.floor(Math.random() * prizes.length);
+                const finalDeg = (360 * spins) + (360 / prizes.length * prizeIndex) + (360 / (2 * prizes.length));
 
-                        if (elapsed < duration) {
-                            wheelAnimationFrame = requestAnimationFrame(animate);
-                        } else {
-                            isSpinning = false;
-                            spinBtn.disabled = false;
-                            Livewire.dispatch('wheel-spin-finished');
-                        }
-                    }
+                canvas.style.transition = 'transform 5s cubic-bezier(0.33, 1, 0.68, 1)';
+                canvas.style.transform = `rotate(${finalDeg}deg)`;
 
-                    isSpinning = true;
-                    spinBtn.disabled = true;
-                    drawWheel(); // Initial draw
-                    wheelAnimationFrame = requestAnimationFrame(animate);
-                }
-
-                // Cancel any existing animation
-                if (wheelAnimationFrame) {
-                    cancelAnimationFrame(wheelAnimationFrame);
-                }
-
-                spinWheelToIndex(winningIndex);
-            });
-
-            // Initialize wheel on first load
-            Livewire.hook('element.initialized', (el) => {
-                if (el.id === 'wheelCanvas') {
-                    const canvas = document.getElementById("wheelCanvas");
-                    const ctx = canvas.getContext("2d");
-                    const prizes = @js($prizes);
-                    const prizeCount = prizes.length;
-
-                    if (prizeCount > 0) {
-                        const colors = ["#3B82F6", "#8B5CF6", "#EC4899", "#F59E0B", "#10B981", "#EF4444", "#6366F1", "#F97316"];
-                        const arcSize = 2 * Math.PI / prizeCount;
-                        const centerX = canvas.width / 2;
-                        const centerY = canvas.height / 2;
-                        const radius = canvas.width / 2 - 10;
-
-                        for (let i = 0; i < prizeCount; i++) {
-                            const startAngle = i * arcSize;
-                            const endAngle = startAngle + arcSize;
-
-                            ctx.beginPath();
-                            ctx.moveTo(centerX, centerY);
-                            ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-                            ctx.closePath();
-                            ctx.fillStyle = colors[i % colors.length];
-                            ctx.fill();
-
-                            ctx.save();
-                            ctx.translate(centerX, centerY);
-                            ctx.rotate(startAngle + arcSize / 2);
-                            ctx.textAlign = "right";
-                            ctx.fillStyle = "#fff";
-                            ctx.font = "bold 14px Tajawal, Arial";
-                            ctx.fillText(prizes[i].name, radius - 10, 5);
-                            ctx.restore();
-                        }
-                    }
-                }
+                setTimeout(() => {
+                @this.call('spin');
+                }, 5100);
             });
         });
     </script>
-
-    <style>
-        .spin-button[disabled] {
-            opacity: 0.7;
-            cursor: not-allowed;
-            background: linear-gradient(45deg, #64748b, #94a3b8);
-        }
-
-        .spin-button .spin-icon {
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        /* Popup Styles */
-        .wheel-popup-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.7);
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .wheel-popup-overlay.active {
-            opacity: 1;
-        }
-
-        .wheel-popup-container {
-            position: relative;
-            max-width: 95%;
-            width: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
-            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .wheel-popup-content {
-            position: relative;
-            background: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        .wheel-popup-close {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.9);
-            border: none;
-            color: #333;
-            font-size: 1.2rem;
-            cursor: pointer;
-            z-index: 10;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-
-        .wheel-popup-close:hover {
-            background: #ef4444;
-            color: white;
-            transform: rotate(90deg);
-        }
-
-        @keyframes popIn {
-            0% { transform: scale(0.8); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        /* Adjust wheel container for popup */
-        .wheel-popup-container .wheel-container {
-            min-height: auto;
-            padding: 2rem 1rem;
-        }
-
-        .wheel-popup-container .wheel-wrapper {
-            width: 300px;
-            height: 300px;
-        }
-
-        .wheel-popup-container .wheel-main {
-            width: 300px;
-            height: 300px;
-        }
-
-        /* Original Wheel Styles (preserved) */
-        .wheel-container {
-            font-family: 'Tajawal', sans-serif;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .text-gradient {
-            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            font-size: 2rem;
-        }
-
-        .wheel-badge {
-            display: inline-block;
-            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
-            color: white;
-            padding: 0.5rem 1.5rem;
-            border-radius: 50px;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-        }
-
-        .alert-elegant {
-            border: none;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #fff, #f8f9fa);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            border-left: 4px solid #dc3545;
-        }
-
-        .prize-card {
-            position: relative;
-            background: white;
-            border-radius: 16px;
-            padding: 2rem;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(245, 245, 245, 0.9));
-            backdrop-filter: blur(10px);
-        }
-
-        .prize-ribbon {
-            position: absolute;
-            top: 10px;
-            right: -30px;
-            background: #3b82f6;
-            color: white;
-            padding: 0.25rem 2rem;
-            transform: rotate(45deg);
-            font-size: 0.8rem;
-            font-weight: bold;
-            width: 120px;
-            text-align: center;
-        }
-
-        .prize-icon {
-            font-size: 1.5rem;
-            color: #f59e0b;
-        }
-
-        .prize-name {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #1e293b;
-            margin: 0.5rem 0;
-        }
-
-        .prize-type {
-            display: inline-block;
-            background: #e0f2fe;
-            color: #0369a1;
-            padding: 0.25rem 1rem;
-            border-radius: 50px;
-            font-size: 0.9rem;
-        }
-
-        .wheel-outer-circle {
-            position: absolute;
-            width: 110%;
-            height: 110%;
-            top: -5%;
-            left: -5%;
-            border-radius: 50%;
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
-            z-index: 1;
-        }
-
-        .wheel-inner-circle {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            background: white;
-            border-radius: 50%;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 4;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-        }
-
-        .wheel-main {
-            position: relative;
-            z-index: 2;
-            border-radius: 50%;
-            border: 8px solid white;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), inset 0 0 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .wheel-pointer {
-            position: absolute;
-            top: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 3;
-            width: 40px;
-            height: 60px;
-        }
-
-        .pointer-top {
-            width: 0;
-            height: 0;
-            border-left: 20px solid transparent;
-            border-right: 20px solid transparent;
-            border-bottom: 30px solid #ef4444;
-            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
-        }
-
-        .pointer-base {
-            width: 20px;
-            height: 20px;
-            background: #dc2626;
-            margin: 0 auto;
-            border-radius: 50%;
-        }
-
-        .spin-button {
-            position: relative;
-            border: none;
-            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
-            color: white;
-            padding: 1rem 2.5rem;
-            font-size: 1.1rem;
-            border-radius: 50px;
-            font-weight: bold;
-            cursor: pointer;
-            overflow: hidden;
-            transition: all 0.3s;
-            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .spin-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.6);
-        }
-
-        .spin-button:active {
-            transform: translateY(1px);
-        }
-
-        .spin-text {
-            position: relative;
-            z-index: 2;
-        }
-
-        .spin-icon {
-            margin-right: 10px;
-            transition: transform 0.5s;
-        }
-
-        .btn-glow::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, rgba(255,255,255,0.3), transparent);
-            transform: translateX(-100%);
-            transition: transform 0.6s;
-        }
-
-        .btn-glow:hover::before {
-            transform: translateX(100%);
-        }
-
-        .cooldown-message {
-            text-align: center;
-            background: white;
-            padding: 1.5rem 2rem;
-            border-radius: 16px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-        }
-
-        .clock-loader {
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            display: inline-block;
-            position: relative;
-            border: 3px solid;
-            border-color: #3b82f6 #3b82f6 transparent transparent;
-            box-sizing: border-box;
-            animation: rotation 1s linear infinite;
-            margin-bottom: 1rem;
-        }
-
-        .clock-loader::after,
-        .clock-loader::before {
-            content: '';
-            box-sizing: border-box;
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: 0;
-            bottom: 0;
-            margin: auto;
-            border: 3px solid;
-            border-color: transparent transparent #8b5cf6 #8b5cf6;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            box-sizing: border-box;
-            animation: rotationBack 0.5s linear infinite;
-            transform-origin: center center;
-        }
-
-        .clock-loader::before {
-            width: 32px;
-            height: 32px;
-            border-color: #3b82f6 #3b82f6 transparent transparent;
-            animation: rotation 1.5s linear infinite;
-        }
-
-        @keyframes rotation {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @keyframes rotationBack {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(-360deg); }
-        }
-
-        .confetti {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            z-index: 1;
-            overflow: hidden;
-        }
-
-        .confetti:after, .confetti:before {
-            content: "";
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background: #f59e0b;
-            top: 10%;
-            left: 50%;
-            opacity: 0;
-            animation: confetti 3s ease-in-out infinite;
-        }
-
-        .confetti:before {
-            background: #3b82f6;
-            left: 30%;
-            animation-delay: 0.5s;
-        }
-
-        @keyframes confetti {
-            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(500px) rotate(360deg); opacity: 0; }
-        }
-    </style>
 </div>
