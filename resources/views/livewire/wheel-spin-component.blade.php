@@ -1,66 +1,93 @@
-<div class="wheel-container d-flex flex-column align-items-center justify-content-center py-5" style="min-height: 90vh; background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);">
+<div>
+    <div class="wheel-popup-overlay" style="display: none;">
+        <div class="wheel-popup-container">
+            <div class="wheel-popup-content">
+                <div class="wheel-container d-flex flex-column align-items-center justify-content-center py-4" style="background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);">
+                    <div class="text-center mb-4">
+                        <div class="wheel-badge mb-3">جولة الحظ</div>
+                        <h1 class="fw-bold text-gradient mb-2">عجلة الجوائز</h1>
+                        <p class="text-muted fs-5">
+                            @if($remainingSpins > 0)
+                                لديك {{ $remainingSpins }} محاولة متبقية
+                            @endif
+                        </p>
+                    </div>
 
-    <div class="text-center mb-5">
-        <div class="wheel-badge mb-3">جولة الحظ</div>
-        <h1 class="fw-bold text-gradient mb-2">عجلة الجوائز</h1>
-        <p class="text-muted fs-5">
-            @if($remainingSpins > 0)
-                لديك {{ $remainingSpins }} محاولة متبقية
-            @endif
-        </p>
-    </div>
+                    <div class="message-container mb-3" style="width: 100%; max-width: 550px;">
+                        @if(session()->has('error'))
+                            <div class="alert alert-danger alert-elegant text-center py-3">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                {{ session('error') }}
+                            </div>
+                        @endif
 
-    <div class="message-container mb-4" style="width: 100%; max-width: 550px;">
-        @if(session()->has('error'))
-            <div class="alert alert-danger alert-elegant text-center py-3">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                {{ session('error') }}
-            </div>
-        @endif
+                        @if($wonPrize)
+                            <div class="prize-card animate__animated animate__rubberBand">
+                                <div class="prize-ribbon">جائزة</div>
+                                <div class="d-flex align-items-center justify-content-center mb-2">
+                                    <i class="fas fa-trophy prize-icon"></i>
+                                    <h3 class="mb-0 mx-2">مبروك!</h3>
+                                    <i class="fas fa-gift prize-icon"></i>
+                                </div>
+                                <h4 class="prize-name">{{ $wonPrize->name }}</h4>
+                                <div class="prize-type">{{ $wonPrize->type }}</div>
+                                <div class="confetti"></div>
+                            </div>
+                        @endif
+                    </div>
 
-        @if($wonPrize)
-            <div class="prize-card animate__animated animate__rubberBand">
-                <div class="prize-ribbon">جائزة</div>
-                <div class="d-flex align-items-center justify-content-center mb-2">
-                    <i class="fas fa-trophy prize-icon"></i>
-                    <h3 class="mb-0 mx-2">مبروك!</h3>
-                    <i class="fas fa-gift prize-icon"></i>
+                    @if($canSpin && !$hasReachedSpinLimit)
+                        <div class="wheel-wrapper position-relative mb-4">
+                            <div class="wheel-outer-circle"></div>
+                            <div class="wheel-inner-circle"></div>
+                            <canvas id="wheelCanvas" width="300" height="300" class="wheel-main"></canvas>
+                            <div class="wheel-pointer">
+                                <div class="pointer-top"></div>
+                                <div class="pointer-base"></div>
+                            </div>
+                        </div>
+
+                        <button class="spin-button btn-glow" id="spinBtn" wire:click="spin" wire:loading.attr="disabled">
+                            <span class="spin-text">إبدأ التدوير</span>
+                            <span class="spin-icon"><i class="fas fa-redo-alt"></i></span>
+                        </button>
+                    @elseif($hasReachedSpinLimit)
+                        <div class="cooldown-message">
+                            <div class="trophy-icon mb-3">
+                                <i class="fas fa-check-circle" style="font-size: 3rem; color: #10B981;"></i>
+                            </div>
+                            <h4 class="mb-3">لقد استنفذت جميع محاولاتك</h4>
+                            <p class="text-muted">شكراً لمشاركتك في هذه العجلة</p>
+                        </div>
+                    @else
+                        <div class="cooldown-message">
+                            <div class="clock-loader"></div>
+                            <p>سيتم تجديد المحاولات خلال: <span class="fw-bold">{{ now()->addHours($wheel->spins_duration)->diffForHumans() }}</span></p>
+                        </div>
+                    @endif
                 </div>
-                <h4 class="prize-name">{{ $wonPrize->name }}</h4>
-                <div class="prize-type">{{ $wonPrize->type }}</div>
-                <div class="confetti"></div>
+
+                <button class="wheel-popup-close" wire:click="$set('showPopup', false)">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-        @endif
+        </div>
     </div>
 
-    @if($canSpin && !$hasReachedSpinLimit)
-        <div class="wheel-wrapper position-relative mb-5">
-            <div class="wheel-outer-circle"></div>
-            <div class="wheel-inner-circle"></div>
-            <canvas id="wheelCanvas" width="350" height="350" class="wheel-main"></canvas>
-            <div class="wheel-pointer">
-                <div class="pointer-top"></div>
-                <div class="pointer-base"></div>
-            </div>
-        </div>
+    @if($showPopup)
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const popupOverlay = document.querySelector('.wheel-popup-overlay');
+                popupOverlay.style.display = 'flex';
+                setTimeout(() => {
+                    popupOverlay.classList.add('active');
+                }, 10);
+                document.body.style.overflow = 'hidden';
 
-        <button class="spin-button btn-glow" id="spinBtn">
-            <span class="spin-text">إبدأ التدوير</span>
-            <span class="spin-icon"><i class="fas fa-redo-alt"></i></span>
-        </button>
-    @elseif($hasReachedSpinLimit)
-        <div class="cooldown-message">
-            <div class="trophy-icon mb-3">
-                <i class="fas fa-check-circle" style="font-size: 3rem; color: #10B981;"></i>
-            </div>
-            <h4 class="mb-3">لقد استنفذت جميع محاولاتك</h4>
-            <p class="text-muted">شكراً لمشاركتك في هذه العجلة</p>
-        </div>
-    @else
-        <div class="cooldown-message">
-            <div class="clock-loader"></div>
-            <p>سيتم تجديد المحاولات خلال: <span class="fw-bold">{{ now()->addHours($wheel->spins_duration)->diffForHumans() }}</span></p>
-        </div>
+                // Dispatch Livewire event when popup is shown
+            @this.dispatch('wheel-popup-shown');
+            });
+        </script>
     @endif
 
     <script>
@@ -68,106 +95,196 @@
             const canvas = document.getElementById("wheelCanvas");
             const spinBtn = document.getElementById("spinBtn");
 
-            if (!canvas || !spinBtn) return;
+            if (canvas && spinBtn) {
+                const ctx = canvas.getContext("2d");
+                const prizes = @json($wheel->prizes()->where('is_available', true)->pluck('name'));
+                const prizeCount = prizes.length;
+                const colors = ["#3B82F6", "#8B5CF6", "#EC4899", "#F59E0B", "#10B981", "#EF4444", "#6366F1", "#F97316"];
+                const arcSize = 2 * Math.PI / prizeCount;
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+                const radius = canvas.width / 2 - 10;
 
-            const ctx = canvas.getContext("2d");
-
-            const prizes = @json($wheel->prizes()->where('is_available', true)->pluck('name'));
-            const prizeCount = prizes.length;
-
-            const colors = ["#3B82F6", "#8B5CF6", "#EC4899", "#F59E0B", "#10B981", "#EF4444", "#6366F1", "#F97316"];
-
-            const arcSize = 2 * Math.PI / prizeCount;
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const radius = canvas.width / 2 - 10;
-
-            function drawWheel(rotation = 0) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                for (let i = 0; i < prizeCount; i++) {
-                    const startAngle = i * arcSize + rotation;
-                    const endAngle = (i + 1) * arcSize + rotation;
-
-                    ctx.beginPath();
-                    ctx.moveTo(centerX, centerY);
-                    ctx.arc(centerX, centerY, radius, startAngle, endAngle);
-                    ctx.closePath();
-                    ctx.fillStyle = colors[i % colors.length];
-                    ctx.fill();
-
-                    ctx.save();
-                    ctx.translate(centerX, centerY);
-                    ctx.rotate(startAngle + arcSize / 2);
-                    ctx.textAlign = "right";
-                    ctx.fillStyle = "#fff";
-                    ctx.font = "14px Arial";
-                    ctx.fillText(prizes[i], radius - 10, 5);
-                    ctx.restore();
-                }
-            }
-
-            drawWheel();
-
-            function spinWheel() {
-                const spinAngle = 360 * 5;
-                const winningIndex = Math.floor(Math.random() * prizeCount);
-                const stopAngle = 360 / prizeCount * winningIndex + 360 / prizeCount / 2;
-                const totalRotation = spinAngle + stopAngle;
-                const duration = 4000;
-                const frameRate = 1000 / 60;
-                const totalFrames = duration / frameRate;
-
-                const start = performance.now();
-
-                function animate(timestamp) {
-                    const progress = Math.min((timestamp - start) / duration, 1);
-                    const easing = easeOutCubic(progress);
-                    const angle = (totalRotation * easing * Math.PI / 180) % (2 * Math.PI);
-
-                    drawWheel(angle);
-
-                    if (progress < 1) {
-                        requestAnimationFrame(animate);
-                    } else {
-                        setTimeout(() => {
-                            Livewire.dispatch('spin');
-                        }, 300);
+                function drawWheel(rotation = 0) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    for (let i = 0; i < prizeCount; i++) {
+                        const startAngle = i * arcSize + rotation;
+                        const endAngle = (i + 1) * arcSize + rotation;
+                        ctx.beginPath();
+                        ctx.moveTo(centerX, centerY);
+                        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                        ctx.closePath();
+                        ctx.fillStyle = colors[i % colors.length];
+                        ctx.fill();
+                        ctx.save();
+                        ctx.translate(centerX, centerY);
+                        ctx.rotate(startAngle + arcSize / 2);
+                        ctx.textAlign = "right";
+                        ctx.fillStyle = "#fff";
+                        ctx.font = "14px Arial";
+                        ctx.fillText(prizes[i], radius - 10, 5);
+                        ctx.restore();
                     }
                 }
 
-                requestAnimationFrame(animate);
+                drawWheel();
+
+                function spinWheel() {
+                    const spinAngle = 360 * 5;
+                    const winningIndex = Math.floor(Math.random() * prizeCount);
+                    const stopAngle = 360 / prizeCount * winningIndex + 360 / prizeCount / 2;
+                    const totalRotation = spinAngle + stopAngle;
+                    const duration = 4000;
+                    const start = performance.now();
+
+                    function animate(timestamp) {
+                        const progress = Math.min((timestamp - start) / duration, 1);
+                        const easing = (--progress) * progress * progress + 1;
+                        const angle = (totalRotation * easing * Math.PI / 180) % (2 * Math.PI);
+                        drawWheel(angle);
+                        if (progress < 1) {
+                            requestAnimationFrame(animate);
+                        } else {
+                            setTimeout(() => {
+                            @this.call('spin');
+                            }, 300);
+                        }
+                    }
+                    requestAnimationFrame(animate);
+                }
+
+                spinBtn?.addEventListener('click', function() {
+                    spinBtn.disabled = true;
+                    spinWheel();
+                });
             }
 
-            function easeOutCubic(t) {
-                return (--t) * t * t + 1;
+            // Popup close functionality
+            const popupOverlay = document.querySelector('.wheel-popup-overlay');
+            const closeBtn = document.querySelector('.wheel-popup-close');
+
+            function hideWheelPopup() {
+                popupOverlay.classList.remove('active');
+                setTimeout(() => {
+                    popupOverlay.style.display = 'none';
+                    document.body.style.overflow = '';
+                }, 300);
+            @this.set('showPopup', false);
             }
 
-            spinBtn.addEventListener('click', function () {
-                spinBtn.disabled = true;
-                spinWheel();
+            closeBtn?.addEventListener('click', hideWheelPopup);
+            popupOverlay?.addEventListener('click', function(e) {
+                if (e.target === popupOverlay) {
+                    hideWheelPopup();
+                }
+            });
+
+            // Listen for Livewire events
+            Livewire.on('prize-won', () => {
+                // You can add any specific handling for when a prize is won
             });
         });
     </script>
 
     <style>
-        /* Base Styles */
+        /* Popup Styles */
+        .wheel-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .wheel-popup-overlay.active {
+            opacity: 1;
+        }
+
+        .wheel-popup-container {
+            position: relative;
+            max-width: 95%;
+            width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .wheel-popup-content {
+            position: relative;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .wheel-popup-close {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            color: #333;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .wheel-popup-close:hover {
+            background: #ef4444;
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Adjust wheel container for popup */
+        .wheel-popup-container .wheel-container {
+            min-height: auto;
+            padding: 2rem 1rem;
+        }
+
+        .wheel-popup-container .wheel-wrapper {
+            width: 300px;
+            height: 300px;
+        }
+
+        .wheel-popup-container .wheel-main {
+            width: 300px;
+            height: 300px;
+        }
+
+        /* Original Wheel Styles (preserved) */
         .wheel-container {
             font-family: 'Tajawal', sans-serif;
             position: relative;
             overflow: hidden;
         }
 
-        /* Text Gradient */
         .text-gradient {
             background: linear-gradient(45deg, #3b82f6, #8b5cf6);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            font-size: 2.5rem;
+            font-size: 2rem;
         }
 
-        /* Wheel Badge */
         .wheel-badge {
             display: inline-block;
             background: linear-gradient(45deg, #3b82f6, #8b5cf6);
@@ -178,7 +295,6 @@
             box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
         }
 
-        /* Alert Styling */
         .alert-elegant {
             border: none;
             border-radius: 12px;
@@ -187,7 +303,6 @@
             border-left: 4px solid #dc3545;
         }
 
-        /* Prize Card */
         .prize-card {
             position: relative;
             background: white;
@@ -236,13 +351,6 @@
             font-size: 0.9rem;
         }
 
-        /* Wheel Styling */
-        .wheel-wrapper {
-            width: 350px;
-            height: 350px;
-            position: relative;
-        }
-
         .wheel-outer-circle {
             position: absolute;
             width: 110%;
@@ -272,8 +380,7 @@
             z-index: 2;
             border-radius: 50%;
             border: 8px solid white;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15),
-            inset 0 0 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), inset 0 0 15px rgba(0, 0, 0, 0.1);
         }
 
         .wheel-pointer {
@@ -303,7 +410,6 @@
             border-radius: 50%;
         }
 
-        /* Spin Button */
         .spin-button {
             position: relative;
             border: none;
@@ -357,7 +463,6 @@
             transform: translateX(100%);
         }
 
-        /* Cooldown Message */
         .cooldown-message {
             text-align: center;
             background: white;
@@ -416,7 +521,6 @@
             100% { transform: rotate(-360deg); }
         }
 
-        /* Confetti Effect */
         .confetti {
             position: absolute;
             width: 100%;

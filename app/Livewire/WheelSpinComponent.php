@@ -147,6 +147,7 @@ class WheelSpinComponent extends Component
 
     private function shouldShowOnCurrentPage(): bool
     {
+        return true;
         $currentPath = request()->path();
         $pages = collect(is_array($this->wheel->specific_pages) ? $this->wheel->specific_pages : json_decode($this->wheel->specific_pages ?? '[]', true))
             ->map('trim')
