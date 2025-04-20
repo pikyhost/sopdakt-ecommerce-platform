@@ -15,13 +15,13 @@ class CountryExporter extends Exporter
     {
         return [
             ExportColumn::make('id')
-                ->label('ID'),
-            ExportColumn::make('name'),
-            ExportColumn::make('code'),
-            ExportColumn::make('cost'),
-            ExportColumn::make('shipping_estimate_time'),
-            ExportColumn::make('created_at'),
-            ExportColumn::make('updated_at'),
+             ,
+            ExportColumn::make('name')    ->label(__('name')),
+            ExportColumn::make('code') ->label(__('code')),
+            ExportColumn::make('cost')    ->label(__('Shipping Cost')),
+            ExportColumn::make('shipping_estimate_time')  ->label(__('shipping_cost.shipping_estimate_time')),
+            ExportColumn::make('created_at')   ->label(__('Created At')),
+            ExportColumn::make('updated_at')->label(__('Updated At')),
         ];
     }
 

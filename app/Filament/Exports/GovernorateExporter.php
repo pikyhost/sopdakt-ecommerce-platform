@@ -14,14 +14,13 @@ class GovernorateExporter extends Exporter
     public static function getColumns(): array
     {
         return [
-            ExportColumn::make('id')
-                ->label('ID'),
-            ExportColumn::make('name'),
-            ExportColumn::make('country_id'),
-            ExportColumn::make('cost'),
-            ExportColumn::make('shipping_estimate_time'),
-            ExportColumn::make('created_at'),
-            ExportColumn::make('updated_at'),
+            ExportColumn::make('id')   ->label(__('id')),
+            ExportColumn::make('name') ->label(__('name')),
+            ExportColumn::make('country_id')   ->label(__('Country')),
+            ExportColumn::make('cost')  ->label(__('Shipping Cost')),
+            ExportColumn::make('shipping_estimate_time')->label(__('shipping_cost.shipping_estimate_time')),
+            ExportColumn::make('created_at')   ->label(__('Created At')),
+            ExportColumn::make('updated_at')->label(__('Updated At')),
         ];
     }
 

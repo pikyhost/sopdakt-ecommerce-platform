@@ -3,7 +3,6 @@
 namespace App\Filament\Imports;
 
 use App\Models\Governorate;
-use App\Models\Country;
 use Filament\Actions\Imports\ImportColumn;
 use Filament\Actions\Imports\Importer;
 use Filament\Actions\Imports\Models\Import;
@@ -15,53 +14,35 @@ class GovernorateImporter extends Importer
     public static function getColumns(): array
     {
         return [
-            ImportColumn::make('name_en')
-                ->label('Name (English)')
-                ->required(),
-
-            ImportColumn::make('name_ar')
-                ->label('Name (Arabic)')
-                ->required(),
-
-            ImportColumn::make('country_code')
-                ->label('Country Code')
-                ->helperText('ISO code like EG or SA')
-                ->required(),
-
-            ImportColumn::make('cost')
-                ->label('Shipping Cost')
+            ImportColumn::make('name')
+                ->label(__('name'))
+                ->requiredMapping()
+                ->rules(['required', 'max:255']),
+            ImportColumn::make('country_id')
+                ->label(__('Country'))
+                ->requiredMapping()
                 ->numeric()
-                ->required(),
+                ->rules(['required', 'integer']),
+            ImportColumn::make('cost')
+                ->label(__('Shipping Cost'))
+                ->requiredMapping()
+                ->numeric()
+                ->rules(['required', 'integer']),
+            ImportColumn::make('shipping_estimate_time')
+                ->label(__('shipping_cost.shipping_estimate_time'))
+                ->requiredMapping()
+                ->rules(['required', 'max:255']),
         ];
     }
 
     public function resolveRecord(): ?Governorate
     {
-        $country = Country::where('code', $this->data['country_code'])->first();
+        // return Governorate::firstOrNew([
+        //     // Update existing records, matching them by `$this->data['column_name']`
+        //     'email' => $this->data['email'],
+        // ]);
 
-        if (! $country) {
-            $this->fail('Country with code "' . $this->data['country_code'] . '" not found.');
-            return null;
-        }
-
-        return Governorate::firstOrNew([
-            // You can adjust uniqueness check here (e.g., by name + country)
-            'name->en' => $this->data['name_en'],
-            'country_id' => $country->id,
-        ]);
-    }
-
-    public function fillRecord(): void
-    {
-        $country = Country::where('code', $this->data['country_code'])->first();
-
-        $this->record->setTranslations('name', [
-            'en' => $this->data['name_en'],
-            'ar' => $this->data['name_ar'],
-        ]);
-
-        $this->record->cost = $this->data['cost'];
-        $this->record->country()->associate($country);
+        return new Governorate();
     }
 
     public static function getCompletedNotificationBody(Import $import): string
