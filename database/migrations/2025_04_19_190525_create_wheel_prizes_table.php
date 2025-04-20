@@ -21,8 +21,6 @@ return new class extends Migration
             $table->foreignId('discount_id')->nullable()->constrained()->nullOnDelete();
             $table->integer('probability')->default(10); // Weight of winning this prize
             $table->boolean('is_available')->default(true);
-            $table->integer('daily_limit')->nullable();
-            $table->integer('total_limit')->nullable();
             $table->timestamps();
         });
     }

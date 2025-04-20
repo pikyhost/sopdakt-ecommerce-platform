@@ -83,20 +83,6 @@ class WheelPrizeResource extends Resource
                             ->default(true)
                             ->label(__('Is Available')),
                     ])->columns(2),
-
-                Forms\Components\Section::make(__('Limits'))
-                    ->schema([
-                        Forms\Components\TextInput::make('daily_limit')
-                            ->numeric()
-                            ->minValue(1)
-                            ->nullable()
-                            ->label(__('Daily Limit')),
-                        Forms\Components\TextInput::make('total_limit')
-                            ->numeric()
-                            ->minValue(1)
-                            ->nullable()
-                            ->label(__('Total Limit')),
-                    ])->columns(2),
             ]);
     }
 
@@ -105,12 +91,14 @@ class WheelPrizeResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('wheel.name')
+                    ->searchable()
                     ->sortable()
                     ->label(__('Wheel')),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->label(__('Name')),
                 Tables\Columns\TextColumn::make('type')
+                    ->searchable()
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'discount' => 'success',

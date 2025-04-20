@@ -7,13 +7,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Wheel extends Model
 {
-    protected $fillable = [
-        'name',
-        'is_active',
-        'start_date',
-        'end_date',
-        'spins_per_user',
-        'spins_duration',
+    protected $guarded = [];
+
+    /**
+     * The attributes that should be cast to native types.
+     */
+    protected $casts = [
+        'is_active' => 'boolean',
+        'delay_seconds' => 'integer',
+        'specific_pages' => 'array', // Cast JSON string to array
     ];
 
     public function prizes()

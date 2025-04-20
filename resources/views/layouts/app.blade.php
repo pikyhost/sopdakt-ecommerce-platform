@@ -1381,6 +1381,7 @@
 </div>
 
 @livewire('popup-component')
+<livewire:wheel-spin-component :wheel="$wheel" />
 
 <a id="scroll-top" href="#top" title="Top" role="button"><i class="icon-angle-up"></i></a>
 
