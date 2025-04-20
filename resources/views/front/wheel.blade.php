@@ -7,5 +7,5 @@
 @endphp
 
 @section('content')
-    @livewire('wheel-spin-component')
+    <livewire:wheel-spin-component :wheel="$wheel" />
 @endsection

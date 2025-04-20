@@ -16,7 +16,7 @@ class Wheel extends Model
         'spins_duration',
     ];
 
-    public function prizes(): HasMany
+    public function prizes()
     {
         return $this->hasMany(WheelPrize::class);
     }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Wheel;
 
 class HomePageController extends Controller
 {
@@ -18,8 +19,9 @@ class HomePageController extends Controller
       return view('front.homepage', compact('products'));
   }
 
-  public function wheel()
-  {
-      return view('front.wheel');
-  }
+    public function wheel(Wheel $wheel)
+    {
+        return view('front.wheel', compact('wheel'));
+    }
+
 }
