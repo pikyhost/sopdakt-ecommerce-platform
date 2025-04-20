@@ -47,9 +47,8 @@
                             </div>
                         </div>
 
-                        <button class="spin-button btn-glow" id="spinBtn"  wire:click="spin" wire:loading.attr="disabled">
+                        <button class="spin-button btn-glow" id="spinBtn" wire:click="spin" wire:loading.attr="disabled" onclick="event.stopPropagation()">
                             <span class="spin-text">إبدأ التدوير</span>
-                            <span class="spin-icon"><i class="fas fa-redo-alt"></i></span>
                         </button>
                     @elseif($hasReachedSpinLimit)
                         <div class="cooldown-message">
@@ -90,12 +89,15 @@
     <script>
         document.addEventListener('livewire:init', function () {
             let isSpinning = false;
+            let wheelAnimationFrame;
 
             Livewire.on('start-wheel-spin', (winningIndex) => {
+                if (isSpinning) return;
+
                 const canvas = document.getElementById("wheelCanvas");
                 const spinBtn = document.getElementById("spinBtn");
 
-                if (!canvas || !spinBtn || isSpinning) return;
+                if (!canvas || !spinBtn) return;
 
                 const ctx = canvas.getContext("2d");
                 const prizes = @js($prizes);
@@ -131,7 +133,7 @@
                         ctx.textAlign = "right";
                         ctx.fillStyle = "#fff";
                         ctx.font = "bold 14px Tajawal, Arial";
-                        ctx.fillText(prizes[i], radius - 10, 5);
+                        ctx.fillText(prizes[i].name, radius - 10, 5); // Changed to prizes[i].name
                         ctx.restore();
                     }
                 }
@@ -141,60 +143,79 @@
                     const stopAngleDeg = 360 - (index * (360 / prizeCount) + (360 / prizeCount) / 2);
                     const totalRotationDeg = fullRotations * 360 + stopAngleDeg;
                     const totalRotationRad = totalRotationDeg * Math.PI / 180;
-                    const duration = 4000;
+                    const duration = 5000; // Increased duration
                     const start = performance.now();
 
                     function animate(timestamp) {
                         const elapsed = timestamp - start;
                         const progress = Math.min(elapsed / duration, 1);
-                        const easing = (--progress) * progress * progress + 1; // cubic ease-out
+                        const easing = progress < 0.5
+                            ? 2 * progress * progress
+                            : 1 - Math.pow(-2 * progress + 2, 2) / 2; // smoother easing
 
                         const angle = (totalRotationRad * easing) % (2 * Math.PI);
                         drawWheel(angle);
                         currentRotation = angle;
 
                         if (elapsed < duration) {
-                            requestAnimationFrame(animate);
+                            wheelAnimationFrame = requestAnimationFrame(animate);
                         } else {
-                            spinBtn.disabled = false;
                             isSpinning = false;
+                            spinBtn.disabled = false;
                             Livewire.dispatch('wheel-spin-finished');
                         }
                     }
 
                     isSpinning = true;
                     spinBtn.disabled = true;
-                    requestAnimationFrame(animate);
+                    drawWheel(); // Initial draw
+                    wheelAnimationFrame = requestAnimationFrame(animate);
                 }
 
-                drawWheel();
+                // Cancel any existing animation
+                if (wheelAnimationFrame) {
+                    cancelAnimationFrame(wheelAnimationFrame);
+                }
+
                 spinWheelToIndex(winningIndex);
             });
 
-            document.getElementById('spinBtn')?.addEventListener('click', function () {
-                if (isSpinning) return;
-                Livewire.call('requestSpin');
-            });
+            // Initialize wheel on first load
+            Livewire.hook('element.initialized', (el) => {
+                if (el.id === 'wheelCanvas') {
+                    const canvas = document.getElementById("wheelCanvas");
+                    const ctx = canvas.getContext("2d");
+                    const prizes = @js($prizes);
+                    const prizeCount = prizes.length;
 
-            // Close popup
-            const popupOverlay = document.querySelector('.wheel-popup-overlay');
-            const closeBtn = document.querySelector('.wheel-popup-close');
+                    if (prizeCount > 0) {
+                        const colors = ["#3B82F6", "#8B5CF6", "#EC4899", "#F59E0B", "#10B981", "#EF4444", "#6366F1", "#F97316"];
+                        const arcSize = 2 * Math.PI / prizeCount;
+                        const centerX = canvas.width / 2;
+                        const centerY = canvas.height / 2;
+                        const radius = canvas.width / 2 - 10;
 
-            function hideWheelPopup() {
-                if (popupOverlay) {
-                    popupOverlay.classList.remove('active');
-                    setTimeout(() => {
-                        popupOverlay.style.display = 'none';
-                        document.body.style.overflow = '';
-                    @this.set('showPopup', false);
-                    }, 300);
-                }
-            }
+                        for (let i = 0; i < prizeCount; i++) {
+                            const startAngle = i * arcSize;
+                            const endAngle = startAngle + arcSize;
 
-            closeBtn?.addEventListener('click', hideWheelPopup);
-            popupOverlay?.addEventListener('click', function (e) {
-                if (e.target === popupOverlay) {
-                    hideWheelPopup();
+                            ctx.beginPath();
+                            ctx.moveTo(centerX, centerY);
+                            ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                            ctx.closePath();
+                            ctx.fillStyle = colors[i % colors.length];
+                            ctx.fill();
+
+                            ctx.save();
+                            ctx.translate(centerX, centerY);
+                            ctx.rotate(startAngle + arcSize / 2);
+                            ctx.textAlign = "right";
+                            ctx.fillStyle = "#fff";
+                            ctx.font = "bold 14px Tajawal, Arial";
+                            ctx.fillText(prizes[i].name, radius - 10, 5);
+                            ctx.restore();
+                        }
+                    }
                 }
             });
         });

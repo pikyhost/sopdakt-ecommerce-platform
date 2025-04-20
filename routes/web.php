@@ -36,6 +36,11 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
 
     Route::get('/', [HomePageController::class, 'index'])->name('homepage');
 
+
+    Route::get('/wheel/{wheel}', [HomePageController::class, 'wheel'])
+        ->middleware(['auth'])
+        ->name('wheel.spin');
+
     Route::view('/blogs', 'pages.blogs')->name('blogs');
     Route::view('/products', 'pages.products')->name('products');
     Route::view('/categories', 'pages.categories')->name('categories');

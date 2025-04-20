@@ -7,5 +7,9 @@
 @endphp
 
 @section('content')
-    <livewire:wheel-spin-component :wheel="$wheel" />
+    @if($wheel)
+        <livewire:wheel-spin-component :wheel="$wheel" />
+    @else
+        <p class="text-red-500">No wheel data available.</p>
+    @endif
 @endsection

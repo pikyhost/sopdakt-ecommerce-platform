@@ -13,8 +13,6 @@ use Livewire\Component;
 
 class WheelSpinComponent extends Component
 {
-    public $prizes; // array of prize names or objects
-
     public Wheel $wheel;
     public ?WheelPrize $wonPrize = null;
     public bool $canSpin = true;
@@ -25,8 +23,6 @@ class WheelSpinComponent extends Component
 
     public function mount()
     {
-        $this->prizes = WheelPrize::pluck('name')->toArray();
-
         $this->wheel = Wheel::where('is_active', true)->first();
 
         if (!$this->wheel || !$this->shouldShowOnCurrentPage()) {
@@ -168,42 +164,6 @@ class WheelSpinComponent extends Component
 
     public function render()
     {
-        $prizes = $this->wheel?->prizes()->where('is_available', true)->get() ?? collect();
-
-        return view('livewire.wheel-spin-component', [
-            'prizes' => $prizes,
-        ]);
+        return view('livewire.wheel-spin-component');
     }
-
-    public function requestSpin()
-    {
-        if (! $this->canSpin || $this->hasReachedSpinLimit) {
-            session()->flash('error', 'لا يمكنك التدوير الآن.');
-            return;
-        }
-
-        // Pick a prize from available list (ensure it’s passed to Blade)
-        $prizeIndex = rand(0, count($this->prizes) - 1);
-
-        // Save the prize logic here (if needed, after animation you can finalize it)
-        $this->pendingPrize = $this->prizes[$prizeIndex]; // Store temporarily
-
-        $this->dispatch('start-wheel-spin', $prizeIndex);
-    }
-
-    public function wheelSpinFinished()
-    {
-        // Finalize prize assignment here
-        $this->wonPrize = $this->pendingPrize;
-
-        // Save to DB if needed
-        Spin::create([
-            'user_id' => auth()->id(),
-            'prize_id' => $this->wonPrize->id,
-        ]);
-
-        $this->remainingSpins--;
-        $this->pendingPrize = null;
-    }
-
 }
