@@ -20,7 +20,13 @@ class Wheel extends Model
 
     public function prizes()
     {
-        return $this->hasMany(WheelPrize::class);
+        return $this->hasMany(WheelPrize::class); //wheelPrizes
+    }
+
+
+    public function wheelPrizes()
+    {
+        return $this->hasMany(WheelPrize::class); //wheelPrizes
     }
 
     public function spins(): HasMany

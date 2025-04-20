@@ -4,7 +4,6 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Models\Wheel;
-use App\Models\WheelPrize;
 use App\Models\WheelSpin;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;

@@ -1,96 +1,82 @@
 <div>
-    <div>
-        <!-- Button to trigger modal -->
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#wheelModal">
-            🎁 جرب حظك
-        </button>
+    @if ($wheel)
+        <!-- Trigger button or automatic show (optional) -->
+        {{-- You can auto-show or use a button to trigger this modal --}}
 
-        <!-- Bootstrap Modal -->
-        <div wire:ignore.self class="modal fade" id="wheelModal" tabindex="-1" aria-labelledby="wheelModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content text-center p-4">
-                    <div class="modal-header border-0">
-                        <h5 class="modal-title w-100" id="wheelModalLabel">عجلة الحظ</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <!-- Modal -->
+        <div class="modal fade show d-block" id="wheelModal" tabindex="-1" style="background-color: rgba(0,0,0,0.4); animation: slideInUp 0.5s;" aria-modal="true" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
+                <div class="modal-content rounded-4 p-4 text-center">
+                    <h4 class="mb-3">🎁 عجلة الحظ 🎉</h4>
+
+                    <!-- Wheel Image / Spinner -->
+                    <div class="position-relative mb-4">
+                        <img src="{{ asset('images/wheel.png') }}" alt="Wheel" id="wheel" style="width: 300px; transition: transform 3s cubic-bezier(0.33, 1, 0.68, 1);" class="mx-auto">
+                        <img src="{{ asset('images/pointer.png') }}" alt="Pointer" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -140%); width: 40px;">
                     </div>
 
-                    <div class="modal-body">
-                        <div id="wheel" style="width: 300px; height: 300px; margin: 0 auto; border: 10px solid #ccc; border-radius: 50%;">
-                            <!-- Placeholder canvas for drawing wheel (via JS) -->
-                            <canvas id="wheelCanvas" width="300" height="300"></canvas>
+                    <!-- Spin Button -->
+                    <button wire:click="spin" wire:loading.attr="disabled" class="btn btn-primary btn-lg">
+                        🎯 جرّب حظك الآن
+                    </button>
+
+                    <!-- Result -->
+                    @if ($winnerPrize)
+                        <div class="alert alert-success mt-4 animate__animated animate__fadeIn">
+                            فزت بـ: <strong>{{ $winnerPrize->name }}</strong>
                         </div>
+                    @endif
 
-                        <button wire:click="spin" class="btn btn-success mt-4" id="spinBtn" @disabled($spinning)>
-                            اضغط للدوران
-                        </button>
+                    @error('spin')
+                    <div class="alert alert-warning mt-3">{{ $message }}</div>
+                    @enderror
 
-                        @if ($showResult && $winnerPrize)
-                            <div class="mt-3 alert alert-success">
-                                مبروك! ربحت: <strong>{{ $winnerPrize->name }}</strong>
-                            </div>
-                        @endif
-                    </div>
+                    <!-- Close Button -->
+                    <button class="btn btn-link mt-2" onclick="closePopup()">❌ إغلاق</button>
                 </div>
             </div>
         </div>
-    </div>
-
-    @push('scripts')
-        <script>
-            document.addEventListener('livewire:load', () => {
-                const canvas = document.getElementById('wheelCanvas');
-                const ctx = canvas.getContext('2d');
-                let rotation = 0;
-
-                function drawWheel(prizes) {
-                    const num = prizes.length;
-                    const angle = 2 * Math.PI / num;
-                    prizes.forEach((prize, i) => {
-                        ctx.beginPath();
-                        ctx.fillStyle = i % 2 === 0 ? '#f8b400' : '#4caf50';
-                        ctx.moveTo(150, 150);
-                        ctx.arc(150, 150, 150, i * angle, (i + 1) * angle);
-                        ctx.fill();
-
-                        // Text
-                        ctx.save();
-                        ctx.translate(150, 150);
-                        ctx.rotate(i * angle + angle / 2);
-                        ctx.fillStyle = '#fff';
-                        ctx.font = 'bold 14px sans-serif';
-                        ctx.fillText(prize.name, 60, 0);
-                        ctx.restore();
-                    });
-                }
-
-                Livewire.on('spin-start', ({ prizeId }) => {
-                    const prizes = @json(\App\Models\WheelPrize::where('is_available', true)->get(['id', 'name'])->toArray());
-
-                    const index = prizes.findIndex(p => p.id == prizeId);
-                    const sliceAngle = 360 / prizes.length;
-                    const finalAngle = 360 * 5 + (360 - (index * sliceAngle + sliceAngle / 2)); // spin 5 full rotations then land on prize
-
-                    let current = 0;
-                    const interval = setInterval(() => {
-                        rotation += 10;
-                        canvas.style.transform = `rotate(${rotation}deg)`;
-                        current += 10;
-                        if (current >= finalAngle) {
-                            clearInterval(interval);
-                            Livewire.dispatch('show-result');
-                        }
-                    }, 10);
-                });
-
-                Livewire.on('spin-finished', ({ prizeId }) => {
-                    setTimeout(() => {
-                        Livewire.find(document.querySelector('[wire\\:id]').getAttribute('wire:id')).showResult = true;
-                    }, 1000);
-                });
-
-                drawWheel(@json(\App\Models\WheelPrize::where('is_available', true)->get(['id', 'name'])->toArray()));
-            });
-        </script>
-    @endpush
-    
+    @endif
 </div>
+
+@push('styles')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <style>
+        @keyframes slideInUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        #wheelModal {
+            z-index: 1055;
+        }
+
+        .modal-content {
+            animation: animate__fadeInUp 0.5s ease;
+        }
+    </style>
+@endpush
+
+@push('scripts')
+    <script>
+        Livewire.on('spin-start', () => {
+            const wheel = document.getElementById('wheel');
+            const angle = Math.floor(Math.random() * 360) + 720; // Random 2+ full rotations
+            wheel.style.transform = `rotate(${angle}deg)`;
+        });
+
+        function closePopup() {
+            const modal = document.getElementById('wheelModal');
+            modal.classList.add('animate__fadeOutDown');
+            setTimeout(() => {
+                modal.remove();
+            }, 500);
+        }
+    </script>
+@endpush
