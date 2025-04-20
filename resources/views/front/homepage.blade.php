@@ -1277,6 +1277,8 @@
 </div>
 
 @livewire('popup-component')
+<livewire:wheel-spin-component />
+
 
 @if (session('message'))
     <div
