@@ -8,6 +8,7 @@ use App\Http\Controllers\{CartController,
     CheckoutController,
     HomePageController,
     OrderCompleteController,
+    PaymentController,
     ProductComparisonController,
     ProductController,
     LandingPageController,
@@ -23,7 +24,6 @@ use Spatie\Analytics\Period;
 //Route::get('{any}', function () {
 //    abort(404);
 //})->where('any', '^(?!admin|client).*$');
-
 
 
 Route::get('/payment-success', [PaymentController::class, 'success'])->name('payment.success');

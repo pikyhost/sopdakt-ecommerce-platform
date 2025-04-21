@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PaymentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ShippingController;
@@ -10,3 +11,5 @@ Route::get('/categories/art', function (Request $request) {
 
 Route::post('jt-express-webhook', [ShippingController::class, 'handleWebhook']);
 
+Route::post('/payment/process', [PaymentController::class, 'paymentProcess']);
+Route::match(['GET','POST'],'/payment/callback', [PaymentController::class, 'callBack']);
