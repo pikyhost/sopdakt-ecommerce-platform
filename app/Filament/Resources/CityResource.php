@@ -2,6 +2,10 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Exports\CityExporter;
+use App\Filament\Exports\GovernorateExporter;
+use App\Filament\Imports\CityImporter;
+use App\Filament\Imports\GovernorateImporter;
 use App\Filament\Resources\CityResource\Pages;
 use App\Filament\Resources\CityResource\Pages\ManageCityOrders;
 use App\Filament\Resources\CountryResource\RelationManagers\OrdersRelationManager;
@@ -19,6 +23,8 @@ use Filament\Resources\Resource;
 use Filament\Support\Enums\FontFamily;
 use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ImportAction;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
@@ -118,6 +124,12 @@ class CityResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([
+                ImportAction::make()
+                    ->importer(CityImporter::class),
+                ExportAction::make()
+                    ->exporter(CityExporter::class)
+            ])
             ->recordUrl(false)
             ->columns([
                 Tables\Columns\TextColumn::make('name')
