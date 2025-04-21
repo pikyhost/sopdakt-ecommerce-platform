@@ -16,7 +16,7 @@ class GovernorateExporter extends Exporter
         return [
             ExportColumn::make('id')   ->label(__('id')),
             ExportColumn::make('name') ->label(__('name')),
-            ExportColumn::make('country_id')   ->label(__('Country')),
+            ExportColumn::make('country.name')   ->label(__('Country')),
             ExportColumn::make('cost')  ->label(__('Shipping Cost')),
             ExportColumn::make('shipping_estimate_time')->label(__('shipping_cost.shipping_estimate_time')),
             ExportColumn::make('created_at')   ->label(__('Created At')),
