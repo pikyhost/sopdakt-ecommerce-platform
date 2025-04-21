@@ -26,6 +26,7 @@ use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Actions\ExportBulkAction;
 use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -128,8 +129,12 @@ class CountryResource extends Resource
         return $table
             ->headerActions([
                 ImportAction::make()
+                    ->icon('heroicon-o-arrow-up-tray')
+                    ->color('danger')
                     ->importer(CountryImporter::class),
                 ExportAction::make()
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
                     ->exporter(CountryExporter::class)
             ])
             ->recordUrl(false)
@@ -223,6 +228,9 @@ class CountryResource extends Resource
             BulkActionGroup::make([
                 DeleteBulkAction::make(),
                 self::makeCostZeroBulkAction(),
+                ExportBulkAction::make()
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
             ]),
         ];
     }
