@@ -24,6 +24,12 @@ use Spatie\Analytics\Period;
 //    abort(404);
 //})->where('any', '^(?!admin|client).*$');
 
+
+
+Route::get('/payment-success', [PaymentController::class, 'success'])->name('payment.success');
+Route::get('/payment-failed', [PaymentController::class, 'failed'])->name('payment.failed');
+
+
 Route::middleware('signed')
     ->get('invitation/{invitation}/accept', AcceptInvitation::class)
     ->name('invitation.accept');

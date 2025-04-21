@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Http\Responses\LogoutResponse;
+use App\Interfaces\PaymentGatewayInterface;
+use App\Services\PaymobPaymentService;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
@@ -35,6 +37,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(PaymentGatewayInterface::class, PaymobPaymentService::class);
+
         $this->app->bind(LogoutResponseContract::class, LogoutResponse::class);
 
         $this->app->singleton(JtExpressService::class, function ($app) {
@@ -47,9 +51,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        FilamentAsset::register([
-            Js::make('custom-js', __DIR__ . '/../../resources/js/custom.js'),
-        ]);
 //        $this->configureDatePicker();
 //        $this->configureDateTimePicker();
         ProfileContactDetails::setSort(10);
