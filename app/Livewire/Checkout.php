@@ -2,6 +2,10 @@
 
 namespace App\Livewire;
 
+use App\Models\Transaction;
+use App\Services\StockLevelNotifier;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Session;
 use App\Enums\OrderStatus;
 use App\Enums\UserRole;
 use App\Helpers\GeneralHelper;
@@ -12,10 +16,10 @@ use App\Models\Country;
 use App\Models\Invitation;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\PaymentMethod;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
@@ -28,6 +32,7 @@ use Spatie\Permission\Models\Role;
 
 class Checkout extends Component
 {
+    public $payment_method_id;
     public string $checkoutToken;
     public $currentRoute;
     public $name;
@@ -44,6 +49,7 @@ class Checkout extends Component
     protected function rules()
     {
         return [
+            'payment_method_id' => 'required|exists:payment_methods,id',
             'name' => 'required|string|max:255',
             'address' => 'required|string|max:500',
             'email' => [
@@ -335,15 +341,10 @@ class Checkout extends Component
     {
         if (Auth::check() && !Auth::user()->is_active) {
             $contactUrl = route('contact.us');
-
-            $this->addError('auth', __('Your account is not active. Please <a href=":url" class="underline text-blue-500 hover:text-blue-700">contact support</a>.', [
-                'url' => $contactUrl,
-            ]));
-
+            $this->addError('auth', __('Your account is not active. Please <a href=":url" class="underline text-blue-500 hover:text-blue-700">contact support</a>.', ['url' => $contactUrl]));
             return;
         }
 
-        //  Prevent duplicate submission
         if (Order::where('checkout_token', $this->checkoutToken)->exists()) {
             $this->addError('duplicate', __('Your order is already being processed. Please wait.'));
             return;
@@ -351,29 +352,67 @@ class Checkout extends Component
 
         $this->validate();
 
-        DB::beginTransaction();
-        try {
-            $cart = Cart::where(function ($query) {
-                if (Auth::check()) {
-                    $query->where('user_id', Auth::id());
-                } else {
-                    $query->where('session_id', session()->getId());
-                }
-            })->with('items')->first();
+        $cart = Cart::where(function ($query) {
+            if (Auth::check()) {
+                $query->where('user_id', Auth::id());
+            } else {
+                $query->where('session_id', session()->getId());
+            }
+        })->with('items')->first();
 
-            if (!$cart || $cart->items->isEmpty()) {
-                return redirect()->route('cart.index')->with('error', __('Your cart is empty. Please add items before proceeding.'));
+        if (!$cart || $cart->items->isEmpty()) {
+            return redirect()->route('cart.index')->with('error', __('Your cart is empty.'));
+        }
+
+        $contact = $this->save(); // Store contact if guest
+
+        session([
+            'pending_checkout' => [
+                'user_id' => Auth::id(),
+                'contact_id' => Auth::check() ? null : $contact->id,
+                'cart_id' => $cart->id,
+                'notes' => $this->notes,
+                'checkout_token' => $this->checkoutToken,
+                'payment_method_id' => $this->payment_method_id,
+            ]
+        ]);
+
+        if ($this->payment_method_id == 2) {
+            $response = Http::post(route('payment.process'), [
+                'amount_cents' => $cart->total * 100,
+                'currency' => 'EGP',
+                'cart_id' => $cart->id,
+                'user_id' => Auth::id(),
+                'contact_email' => $contact->email ?? Auth::user()?->email,
+                'name' => $contact->name ?? Auth::user()?->name,
+                'integrations' => [5059981],
+                'api_source' => 'INVOICE',
+            ]);
+
+            $data = $response->json();
+
+            if ($data['success'] && isset($data['url'])) {
+                return redirect()->to($data['url']);
             }
 
-            $contact = $this->save();
-            $orderStatus = OrderStatus::Pending;
+            $this->addError('payment', __('Failed to initiate payment. Please try again.'));
+            return;
+        }
 
+        return $this->createOrderManually($cart, $contact);
+    }
+
+    public function createOrderManually($cart, $contact = null)
+    {
+        DB::beginTransaction();
+
+        try {
             $order = Order::create([
-                'user_id' => Auth::check() ? Auth::id() : null,
-                'contact_id' => Auth::check() ? null : $contact->id,
+                'payment_method_id' => $this->payment_method_id,
+                'user_id' => Auth::id(),
+                'contact_id' => $contact?->id,
                 'shipping_type_id' => $cart->shipping_type_id,
-                'payment_method_id' => 1,
-                'coupon_id' => $cart->coupon_id ?? null,
+                'coupon_id' => $cart->coupon_id,
                 'shipping_cost' => $cart->shipping_cost,
                 'country_id' => $cart->country_id,
                 'governorate_id' => $cart->governorate_id,
@@ -382,29 +421,23 @@ class Checkout extends Component
                 'tax_amount' => $cart->tax_amount,
                 'subtotal' => $cart->subtotal,
                 'total' => $cart->total,
-                'status' => $orderStatus->value,
+                'status' => \App\Enums\OrderStatus::Shipping,
                 'notes' => $this->notes,
                 'checkout_token' => $this->checkoutToken,
             ]);
 
-            if (!$order || !$order->id) {
-                throw new \Exception('Order was not created successfully.');
-            }
-
-            foreach ($cart->items as $cartItem) {
+            foreach ($cart->items as $item) {
                 OrderItem::create([
                     'order_id' => $order->id,
-                    'product_id' => $cartItem->product_id,
-                    'bundle_id' => $cartItem->bundle_id,
-                    'size_id' => $cartItem->size_id,
-                    'color_id' => $cartItem->color_id,
-                    'quantity' => $cartItem->quantity,
-                    'price_per_unit' => $cartItem->price_per_unit,
-                    'subtotal' => $cartItem->subtotal,
+                    'product_id' => $item->product_id,
+                    'bundle_id' => $item->bundle_id,
+                    'size_id' => $item->size_id,
+                    'color_id' => $item->color_id,
+                    'quantity' => $item->quantity,
+                    'price_per_unit' => $item->price_per_unit,
+                    'subtotal' => $item->subtotal,
                 ]);
-            }
 
-            foreach ($order->items as $item) {
                 if ($item->product_id) {
                     $product = \App\Models\Product::find($item->product_id);
 
@@ -424,11 +457,11 @@ class Checkout extends Component
 
                         $product->inventory()?->decrement('quantity', $item->quantity);
 
-                        \App\Models\Transaction::create([
+                        Transaction::create([
                             'product_id' => $item->product_id,
-                            'type'       => \App\Enums\TransactionType::SALE,
-                            'quantity'   => $item->quantity,
-                            'notes'      => "Sale of {$item->quantity} units for Order #{$order->id}",
+                            'type' => \App\Enums\TransactionType::SALE,
+                            'quantity' => $item->quantity,
+                            'notes' => "Sale of {$item->quantity} units for Order #{$order->id}",
                         ]);
                     }
                 }
@@ -436,21 +469,16 @@ class Checkout extends Component
 
             $productIds = $order->items->pluck('product_id')->filter()->unique();
             $products = \App\Models\Product::whereIn('id', $productIds)->get();
-
-            \App\Services\StockLevelNotifier::notifyAdminsForLowStock($products);
+            StockLevelNotifier::notifyAdminsForLowStock($products);
 
             $cart->items()->delete();
             $cart->delete();
 
             $recipientEmail = Auth::check() ? Auth::user()->email : ($contact->email ?? null);
-            $language = Auth::check()
-                ? auth()->user()->preferred_language
-                : (request()->getPreferredLanguage(['en', 'ar']) ?? 'en');
+            $language = Auth::check() ? auth()->user()->preferred_language : (request()->getPreferredLanguage(['en', 'ar']) ?? 'en');
 
             if ($recipientEmail) {
-                Mail::to($recipientEmail)
-                    ->locale($language)
-                    ->send(new OrderStatusMail($order, $orderStatus));
+                Mail::to($recipientEmail)->locale($language)->send(new OrderStatusMail($order, $order->status));
             }
 
             if (!Auth::check() && $contact) {
@@ -464,24 +492,20 @@ class Checkout extends Component
                     'role_id' => Role::where('name', UserRole::Client->value)->first()->id,
                 ]);
 
-                Mail::to($contact->email)
-                    ->locale($locale)
-                    ->send(new GuestInvitationMail($invitation));
+                Mail::to($contact->email)->locale($locale)->send(new GuestInvitationMail($invitation));
             }
 
             DB::commit();
 
-            // Reset the token to prevent reuse
             $this->checkoutToken = (string) Str::uuid();
-
-            session()->flash('success', __('Your order has been placed successfully! You will receive a confirmation email shortly.'));
-
+            session()->flash('success', __('Order placed successfully!'));
             return redirect()->route('order.complete')->with('order_success', true);
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->addError('order', __('We encountered an issue while placing your order. Please try again later. Error: :error', ['error' => $e->getMessage()]));
+            $this->addError('order', __('We encountered an issue: :error', ['error' => $e->getMessage()]));
         }
     }
+
 
     public function getIsCheckoutReadyProperty()
     {
@@ -497,6 +521,7 @@ class Checkout extends Component
             'countries' => Country::all(),
             'currentRoute' => $this->currentRoute,
             'isCheckoutReady' => $this->isCheckoutReady,
+            'paymentMethods' => PaymentMethod::all(),
         ]);
     }
 

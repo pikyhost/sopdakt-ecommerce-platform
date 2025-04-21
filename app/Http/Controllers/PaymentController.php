@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Interfaces\PaymentGatewayInterface;
+use App\Models\OrderItem;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
@@ -22,16 +23,26 @@ class PaymentController extends Controller
         return $this->paymentGateway->sendPayment($request);
     }
 
-    public function callBack(Request $request): \Illuminate\Http\RedirectResponse
+    public function callback(Request $request)
     {
-        $response = $this->paymentGateway->callBack($request);
-        if ($response) {
+        $checkout = session('pending_checkout');
 
-            return redirect()->route('payment.success');
+        if (!$checkout || $request->input('success') != 'true') {
+            return redirect()->route('cart.index')->with('error', __('Payment failed or canceled.'));
         }
-        return redirect()->route('payment.failed');
-    }
 
+        $cart = \App\Models\Cart::with('items')->find($checkout['cart_id']);
+        $contact = $checkout['contact_id'] ? \App\Models\Contact::find($checkout['contact_id']) : null;
+
+        app()->call([$this, 'createOrderManually'], [
+            'cart' => $cart,
+            'contact' => $contact,
+        ]);
+
+        session()->forget('pending_checkout');
+
+        return redirect()->route('order.complete')->with('order_success', true);
+    }
 
     public function success()
     {

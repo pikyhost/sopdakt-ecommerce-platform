@@ -236,17 +236,34 @@
                     @endif
                 </table>
                 @if ($isCheckoutReady)
-                <div class="payment-methods">
-                    <h4 class="">Payment methods</h4>
-                    <div class="info-box with-icon p-0">
-                        <p>
-                            Sorry, only Cash On Delivery is the available now.
-                        </p>
+                    <div class="payment-methods mb-6">
+                        <h4 class="text-xl font-semibold mb-4">Select a Payment Method</h4>
+
+                        <div class="mb-4">
+                            <label for="payment_method_id" class="block text-sm font-medium text-gray-700 mb-2">
+                                Payment Method
+                            </label>
+
+                            <select wire:model="payment_method_id"
+                                    id="payment_method_id"
+                                    class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                                <option value="">-- Select Payment Method --</option>
+
+                                @foreach ($paymentMethods as $method)
+                                    <option value="{{ $method->id }}">
+                                        {{ $method->name }} - {{ $method->description }}
+                                    </option>
+                                @endforeach
+                            </select>
+
+                            @error('payment_method_id')
+                            <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
                     </div>
-                </div>
                 @endif
 
-                @if ($errors->has('order'))
+            @if ($errors->has('order'))
                     <div class="alert alert-danger">
                         {{ $errors->first('order') }}
                     </div>

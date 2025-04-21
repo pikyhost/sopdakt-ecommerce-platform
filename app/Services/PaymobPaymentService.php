@@ -23,7 +23,7 @@ class PaymobPaymentService extends BasePaymentService implements PaymentGatewayI
             'Content-Type' => 'application/json',
         ];
 
-        $this->integrations_id = [4865052, 4864845];
+        $this->integrations_id = [5059981, 5059766];
     }
 
 //first generate token to access api

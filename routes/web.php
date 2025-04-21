@@ -29,6 +29,7 @@ use Spatie\Analytics\Period;
 Route::get('/payment-success', [PaymentController::class, 'success'])->name('payment.success');
 Route::get('/payment-failed', [PaymentController::class, 'failed'])->name('payment.failed');
 
+Route::post('/payment/callback', [App\Http\Controllers\PaymentController::class, 'callback'])->name('payment.callback');
 
 Route::middleware('signed')
     ->get('invitation/{invitation}/accept', AcceptInvitation::class)
