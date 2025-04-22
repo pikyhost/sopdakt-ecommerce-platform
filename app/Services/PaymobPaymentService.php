@@ -45,6 +45,7 @@ class PaymobPaymentService extends BasePaymentService implements PaymentGatewayI
             'amount_cents' => $request->input('amount_cents'),
             'items' => [],
         ];
+
         $orderResponse = $this->buildRequest('POST', '/api/ecommerce/orders', $orderData);
         $orderId = $orderResponse->getData(true)['data']['id'] ?? null;
 
@@ -68,13 +69,17 @@ class PaymobPaymentService extends BasePaymentService implements PaymentGatewayI
             return ['success' => false, 'message' => 'Failed to generate payment key.'];
         }
 
-        // 4. Return iframe URL
-        $iframeUrl = "{$this->base_url}/api/acceptance/iframes/" . env('PAYMOB_IFRAME_ID') . "?payment_token=" . $paymentToken;
+        // 4. Generate correct iframe URL using iframe_id from .env
+        $iframeId = env('PAYMOB_IFRAME_ID'); // Make sure this is set in .env like: PAYMOB_IFRAME_ID=915448
 
-        return ['success' => true, 'iframe_url' => $iframeUrl];
+        $iframeUrl = "{$this->base_url}/api/acceptance/iframes/{$iframeId}?payment_token={$paymentToken}";
+
+        return [
+            'success' => true,
+            'iframe_url' => $iframeUrl,
+        ];
     }
-
-
+    
     public function callBack(Request $request): bool
     {
         $response = $request->all();

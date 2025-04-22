@@ -340,19 +340,25 @@ class Checkout extends Component
 
     public function placeOrder()
     {
+        // Block inactive users
         if (Auth::check() && !Auth::user()->is_active) {
             $contactUrl = route('contact.us');
-            $this->addError('auth', __('Your account is not active. Please <a href=":url" class="underline text-blue-500 hover:text-blue-700">contact support</a>.', ['url' => $contactUrl]));
+            $this->addError('auth', __('Your account is not active. Please <a href=":url" class="underline text-blue-500 hover:text-blue-700">contact support</a>.', [
+                'url' => $contactUrl
+            ]));
             return;
         }
 
+        // Prevent double submission
         if (Order::where('checkout_token', $this->checkoutToken)->exists()) {
             $this->addError('duplicate', __('Your order is already being processed. Please wait.'));
             return;
         }
 
+        // Validate input fields
         $this->validate();
 
+        // Get cart for logged-in user or guest
         $cart = Cart::where(function ($query) {
             if (Auth::check()) {
                 $query->where('user_id', Auth::id());
@@ -361,12 +367,15 @@ class Checkout extends Component
             }
         })->with('items')->first();
 
+        // Redirect if cart is empty
         if (!$cart || $cart->items->isEmpty()) {
             return redirect()->route('cart.index')->with('error', __('Your cart is empty.'));
         }
 
+        // Save contact data (guest)
         $contact = $this->save();
 
+        // Store checkout session data
         session([
             'pending_checkout' => [
                 'user_id' => Auth::id(),
@@ -378,6 +387,7 @@ class Checkout extends Component
             ]
         ]);
 
+        // If Paymob selected (payment_method_id == 2)
         if ($this->payment_method_id == 2) {
             try {
                 $response = Http::post(url('/api/payment/process'), [
@@ -387,38 +397,42 @@ class Checkout extends Component
                     'user_id' => Auth::id(),
                     'contact_email' => $contact->email ?? Auth::user()?->email,
                     'name' => $contact->name ?? Auth::user()?->name,
-                    'integrations' => [5059981, 5059766],
+                    'integrations' => [915447], // use only the correct integration_id
                     'api_source' => 'INVOICE',
                 ]);
 
-                Log::info('Payment Response', [
+                Log::info('Payment API response', [
                     'status' => $response->status(),
                     'body' => $response->body(),
                 ]);
 
                 $data = $response->json();
 
-                if (is_array($data) && !empty($data['success'])) {
-                    if (isset($data['iframe_url'])) {
-                        $this->paymentUrl = html_entity_decode($data['iframe_url']);
-                        return;
-                    }
+                if (isset($data['success']) && $data['success'] === true && isset($data['payment_token'])) {
+                    $iframeId = 915448; // or use 915447 if you want the Installment Iframe
+                    $paymentToken = $data['payment_token'];
 
-                    Log::warning('Payment response missing iframe_url key', $data);
-                    $this->addError('payment', __('Failed to initiate payment. Please try again.'));
+                    $this->paymentUrl = "https://accept.paymob.com/api/acceptance/iframes/{$iframeId}?payment_token={$paymentToken}";
                     return;
                 }
 
+
                 $this->addError('payment', __('Failed to initiate payment. Please try again.'));
                 return;
+
             } catch (\Exception $e) {
-                $this->addError('payment', __('Unexpected error during payment: :msg', ['msg' => $e->getMessage()]));
+                Log::error('Payment Exception', ['error' => $e->getMessage()]);
+                $this->addError('payment', __('Unexpected error during payment: :msg', [
+                    'msg' => $e->getMessage()
+                ]));
                 return;
             }
         }
 
+        // Fallback for Cash on Delivery or others
         return $this->createOrderManually($cart, $contact);
     }
+
 
     public function createOrderManually($cart, $contact = null)
     {
