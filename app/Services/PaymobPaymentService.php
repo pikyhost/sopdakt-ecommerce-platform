@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Interfaces\PaymentGatewayInterface;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class PaymobPaymentService extends BasePaymentService implements PaymentGatewayInterface
