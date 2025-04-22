@@ -357,12 +357,22 @@
                         }
                     </style>
                 @endif
-                
+
                 @if ($paymentUrl)
                     <div class="mt-4">
+                        <p>Payment URL: {{ $paymentUrl }}</p> <!-- Debug line -->
                         <iframe src="{!! $paymentUrl !!}" width="100%" height="600" frameborder="0"></iframe>
                     </div>
+                @else
+                    <p>No payment URL set.</p> <!-- Debug line -->
                 @endif
+
+                <script>
+                    window.addEventListener('payment-url-updated', () => {
+                        // Optionally, you can perform additional actions here
+                        console.log('Payment URL updated, iframe should render');
+                    });
+                </script>
 
 
             @if ($errors->has('order'))

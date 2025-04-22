@@ -36,24 +36,26 @@ class PaymobPaymentService extends BasePaymentService implements PaymentGatewayI
     public function sendPayment(Request $request): array
     {
         $authToken = $this->generateToken();
+        Log::info('Auth Token Generated', ['token' => $authToken]);
         $this->header['Authorization'] = 'Bearer ' . $authToken;
 
-        // 1. Create Order
+        // Create Order
         $orderData = [
             'auth_token' => $authToken,
             'delivery_needed' => false,
             'amount_cents' => $request->input('amount_cents'),
             'items' => [],
         ];
-
         $orderResponse = $this->buildRequest('POST', '/api/ecommerce/orders', $orderData);
+        Log::info('Order Creation Response', ['response' => $orderResponse->getData(true)]);
         $orderId = $orderResponse->getData(true)['data']['id'] ?? null;
 
         if (!$orderId) {
+            Log::error('Order creation failed', ['response' => $orderResponse->getData(true)]);
             return ['success' => false, 'message' => 'Order creation failed.'];
         }
 
-        // 2. Prepare billing data
+        // Billing Data
         $billingData = [
             "apartment" => "NA", "email" => $request->input('contact_email'),
             "floor" => "NA", "first_name" => $request->input('name'),
@@ -62,24 +64,25 @@ class PaymobPaymentService extends BasePaymentService implements PaymentGatewayI
             "city" => "NA", "country" => "NA", "last_name" => "NA", "state" => "NA",
         ];
 
-        // 3. Generate Payment Key
+        // Generate Payment Key
         $paymentToken = $this->generatePaymentKey($authToken, $orderId, $request->input('amount_cents'), $billingData);
+        Log::info('Payment Key Response', ['token' => $paymentToken]);
 
         if (!$paymentToken) {
+            Log::error('Payment key generation failed');
             return ['success' => false, 'message' => 'Failed to generate payment key.'];
         }
 
-        // 4. Generate correct iframe URL using iframe_id from .env
-        $iframeId = env('PAYMOB_IFRAME_ID'); // Make sure this is set in .env like: PAYMOB_IFRAME_ID=915448
-
+        $iframeId = env('PAYMOB_IFRAME_ID');
         $iframeUrl = "{$this->base_url}/api/acceptance/iframes/{$iframeId}?payment_token={$paymentToken}";
+        Log::info('Iframe URL Generated', ['url' => $iframeUrl]);
 
         return [
             'success' => true,
             'iframe_url' => $iframeUrl,
         ];
     }
-    
+
     public function callBack(Request $request): bool
     {
         $response = $request->all();
