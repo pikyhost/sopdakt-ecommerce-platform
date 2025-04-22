@@ -35,4 +35,7 @@ return [
         ],
     ],
 
+    'paymob' => [
+        'iframe_id' => env('PAYMOB_IFRAME_ID'),
+    ],
 ];

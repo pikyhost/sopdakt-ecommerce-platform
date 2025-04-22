@@ -99,3 +99,16 @@ Route::get('/test-analytics', function () {
         return response()->json(['error' => $e->getMessage()]);
     }
 });
+
+Route::get('/payment/frame', function () {
+    if (!session()->has('paymob_payment_token')) {
+        return redirect()->route('cart.index')->with('error', 'Missing payment session.');
+    }
+
+    $iframeId = config('services.paymob.iframe_id');
+    $token = session('paymob_payment_token');
+    $iframeUrl = "https://accept.paymob.com/api/acceptance/iframes/{$iframeId}?payment_token={$token}";
+
+    return view('payment.iframe', compact('iframeUrl'));
+})->name('payment.frame');
+

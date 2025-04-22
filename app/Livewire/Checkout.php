@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Transaction;
 use App\Services\StockLevelNotifier;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use App\Enums\OrderStatus;
 use App\Enums\UserRole;
@@ -364,7 +365,7 @@ class Checkout extends Component
             return redirect()->route('cart.index')->with('error', __('Your cart is empty.'));
         }
 
-        $contact = $this->save(); // Store contact if guest
+        $contact = $this->save();
 
         session([
             'pending_checkout' => [
@@ -378,28 +379,76 @@ class Checkout extends Component
         ]);
 
         if ($this->payment_method_id == 2) {
-            $response = Http::post(route('payment.process'), [
+            try {
+                $response = Http::post(url('/api/payment/process'), [
+                    'amount_cents' => $cart->total * 100,
+                    'currency' => 'EGP',
+                    'cart_id' => $cart->id,
+                    'user_id' => Auth::id(),
+                    'contact_email' => $contact->email ?? Auth::user()?->email,
+                    'name' => $contact->name ?? Auth::user()?->name,
+                    'integrations' => [5059981, 5059766],
+                    'api_source' => 'IFRAME',
+                ]);
+
+                Log::info('Payment Response', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+
+                $data = $response->json();
+
+                if (is_array($data) && !empty($data['success']) && isset($data['payment_token'])) {
+                    // Save payment token to session for iframe
+                    session(['paymob_payment_token' => $data['payment_token']]);
+
+                    // Redirect to page that renders iframe
+                    return redirect()->route('payment.frame');
+                }
+
+                $this->addError('payment', __('Failed to initiate payment. Please try again.'));
+                return;
+            } catch (\Exception $e) {
+                $this->addError('payment', __('Unexpected error during payment: :msg', ['msg' => $e->getMessage()]));
+                return;
+            }
+        }
+
+        return $this->createOrderManually($cart, $contact);
+    }
+
+
+    protected function initiateOnlinePayment($cart, $contact)
+    {
+        try {
+            $response = Http::post(url('/api/payment/process'), [
                 'amount_cents' => $cart->total * 100,
                 'currency' => 'EGP',
                 'cart_id' => $cart->id,
                 'user_id' => Auth::id(),
                 'contact_email' => $contact->email ?? Auth::user()?->email,
                 'name' => $contact->name ?? Auth::user()?->name,
-                'integrations' => [5059981],
+                'integrations' => [5059981, 5059766],
                 'api_source' => 'INVOICE',
+            ]);
+
+            Log::info('Payment Response', [
+                'status' => $response->status(),
+                'body' => $response->body(),
             ]);
 
             $data = $response->json();
 
-            if ($data['success'] && isset($data['url'])) {
+            if (is_array($data) && !empty($data['success']) && isset($data['url'])) {
                 return redirect()->to($data['url']);
             }
 
             $this->addError('payment', __('Failed to initiate payment. Please try again.'));
-            return;
+        } catch (\Exception $e) {
+            $this->addError('payment', __('Unexpected error during payment: :msg', ['msg' => $e->getMessage()]));
         }
 
-        return $this->createOrderManually($cart, $contact);
+        return null;
     }
 
     public function createOrderManually($cart, $contact = null)
@@ -451,9 +500,7 @@ class Checkout extends Component
                             ->where('size_id', $item->size_id)
                             ->first();
 
-                        if ($variant) {
-                            $variant->decrement('quantity', $item->quantity);
-                        }
+                        $variant?->decrement('quantity', $item->quantity);
 
                         $product->inventory()?->decrement('quantity', $item->quantity);
 
@@ -475,7 +522,7 @@ class Checkout extends Component
             $cart->delete();
 
             $recipientEmail = Auth::check() ? Auth::user()->email : ($contact->email ?? null);
-            $language = Auth::check() ? auth()->user()->preferred_language : (request()->getPreferredLanguage(['en', 'ar']) ?? 'en');
+            $language = Auth::check() ? Auth::user()->preferred_language : (request()->getPreferredLanguage(['en', 'ar']) ?? 'en');
 
             if ($recipientEmail) {
                 Mail::to($recipientEmail)->locale($language)->send(new OrderStatusMail($order, $order->status));
@@ -486,8 +533,8 @@ class Checkout extends Component
 
                 $invitation = Invitation::create([
                     'email' => $contact->email,
-                    'name' => $contact->name ?? null,
-                    'phone' => $contact->phone ?? null,
+                    'name' => $contact->name,
+                    'phone' => $contact->phone,
                     'preferred_language' => $locale,
                     'role_id' => Role::where('name', UserRole::Client->value)->first()->id,
                 ]);
@@ -503,8 +550,10 @@ class Checkout extends Component
         } catch (\Exception $e) {
             DB::rollBack();
             $this->addError('order', __('We encountered an issue: :error', ['error' => $e->getMessage()]));
+            return null;
         }
     }
+
 
 
     public function getIsCheckoutReadyProperty()
