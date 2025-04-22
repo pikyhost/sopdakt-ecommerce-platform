@@ -271,11 +271,6 @@
                                     </div>
                                 @endif
                             </div>
-
-                            <div class="cash-on-delivery-note">
-                                <i class="icon-info-circle"></i>
-                                <span>Cash on delivery: Pay when order arrives</span>
-                            </div>
                         </div>
 
                         <style>
@@ -364,6 +359,13 @@
                         </style>
                     @endif
                 @endif
+
+                @if ($paymentUrl)
+                    <div class="mt-4">
+                        <iframe src="{{ $paymentUrl }}" width="100%" height="600" frameborder="0"></iframe>
+                    </div>
+                @endif
+
 
             @if ($errors->has('order'))
                     <div class="alert alert-danger">

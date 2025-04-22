@@ -25,12 +25,6 @@ use Spatie\Analytics\Period;
 //    abort(404);
 //})->where('any', '^(?!admin|client).*$');
 
-
-Route::get('/payment-success', [PaymentController::class, 'success'])->name('payment.success');
-Route::get('/payment-failed', [PaymentController::class, 'failed'])->name('payment.failed');
-
-Route::post('/payment/callback', [App\Http\Controllers\PaymentController::class, 'callback'])->name('payment.callback');
-
 Route::middleware('signed')
     ->get('invitation/{invitation}/accept', AcceptInvitation::class)
     ->name('invitation.accept');
@@ -99,6 +93,12 @@ Route::get('/test-analytics', function () {
         return response()->json(['error' => $e->getMessage()]);
     }
 });
+
+Route::get('/payment-success', [PaymentController::class, 'success'])->name('payment.success');
+Route::get('/payment-failed', [PaymentController::class, 'failed'])->name('payment.failed');
+
+Route::post('/payment/callback', [App\Http\Controllers\PaymentController::class, 'callback'])->name('payment.callback');
+
 
 Route::get('/payment/frame', function () {
     if (!session()->has('paymob_payment_token')) {

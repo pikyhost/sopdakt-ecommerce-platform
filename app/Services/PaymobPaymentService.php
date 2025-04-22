@@ -33,24 +33,47 @@ class PaymobPaymentService extends BasePaymentService implements PaymentGatewayI
         return $response->getData(true)['data']['token'];
     }
 
-    public function sendPayment(Request $request):array
+    public function sendPayment(Request $request): array
     {
-        $this->header['Authorization'] = 'Bearer ' . $this->generateToken();
-        //validate data before sending it
-        $data = $request->all();
-        $data['api_source'] = "INVOICE";
-        $data['integrations'] = $this->integrations_id;
+        $authToken = $this->generateToken();
+        $this->header['Authorization'] = 'Bearer ' . $authToken;
 
-        $response = $this->buildRequest('POST', '/api/ecommerce/orders', $data);
-        //handel payment response data and return it
-        if ($response->getData(true)['success']) {
+        // 1. Create Order
+        $orderData = [
+            'auth_token' => $authToken,
+            'delivery_needed' => false,
+            'amount_cents' => $request->input('amount_cents'),
+            'items' => [],
+        ];
+        $orderResponse = $this->buildRequest('POST', '/api/ecommerce/orders', $orderData);
+        $orderId = $orderResponse->getData(true)['data']['id'] ?? null;
 
-
-            return ['success' => true, 'url' => $response->getData(true)['data']['url']];
+        if (!$orderId) {
+            return ['success' => false, 'message' => 'Order creation failed.'];
         }
 
-        return ['success' => false, 'url' => route('payment.failed')];
+        // 2. Prepare billing data
+        $billingData = [
+            "apartment" => "NA", "email" => $request->input('contact_email'),
+            "floor" => "NA", "first_name" => $request->input('name'),
+            "street" => "NA", "building" => "NA", "phone_number" => "0123456789",
+            "shipping_method" => "NA", "postal_code" => "NA",
+            "city" => "NA", "country" => "NA", "last_name" => "NA", "state" => "NA",
+        ];
+
+        // 3. Generate Payment Key
+        $paymentToken = $this->generatePaymentKey($authToken, $orderId, $request->input('amount_cents'), $billingData);
+
+        if (!$paymentToken) {
+            return ['success' => false, 'message' => 'Failed to generate payment key.'];
+        }
+
+        // 4. Return iframe URL
+        $iframeUrl = "{$this->base_url}/api/acceptance/iframes/" . env('PAYMOB_IFRAME_ID') . "?payment_token=" . $paymentToken;
+
+        return ['success' => true, 'iframe_url' => $iframeUrl];
     }
+
 
     public function callBack(Request $request): bool
     {
@@ -65,5 +88,21 @@ class PaymobPaymentService extends BasePaymentService implements PaymentGatewayI
 
     }
 
+    protected function generatePaymentKey($authToken, $orderId, $amountCents, $billingData)
+    {
+        $data = [
+            'auth_token' => $authToken,
+            'amount_cents' => $amountCents,
+            'expiration' => 3600,
+            'order_id' => $orderId,
+            'billing_data' => $billingData,
+            'currency' => 'EGP',
+            'integration_id' => $this->integrations_id[0], // use iframe integration id
+        ];
+
+        $response = $this->buildRequest('POST', '/api/acceptance/payment_keys', $data);
+
+        return $response->getData(true)['data']['token'] ?? null;
+    }
 
 }

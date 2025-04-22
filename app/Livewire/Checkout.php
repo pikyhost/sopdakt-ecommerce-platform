@@ -33,6 +33,7 @@ use Spatie\Permission\Models\Role;
 
 class Checkout extends Component
 {
+    public $paymentUrl;
     public $payment_method_id;
     public string $checkoutToken;
     public $currentRoute;
@@ -388,7 +389,7 @@ class Checkout extends Component
                     'contact_email' => $contact->email ?? Auth::user()?->email,
                     'name' => $contact->name ?? Auth::user()?->name,
                     'integrations' => [5059981, 5059766],
-                    'api_source' => 'IFRAME',
+                    'api_source' => 'INVOICE',
                 ]);
 
                 Log::info('Payment Response', [
@@ -398,12 +399,10 @@ class Checkout extends Component
 
                 $data = $response->json();
 
-                if (is_array($data) && !empty($data['success']) && isset($data['payment_token'])) {
-                    // Save payment token to session for iframe
-                    session(['paymob_payment_token' => $data['payment_token']]);
-
-                    // Redirect to page that renders iframe
-                    return redirect()->route('payment.frame');
+                if (is_array($data) && !empty($data['success']) && isset($data['url'])) {
+                    // Store the payment URL to use in frontend iframe
+                    $this->paymentUrl = $data['url'];
+                    return;
                 }
 
                 $this->addError('payment', __('Failed to initiate payment. Please try again.'));
@@ -417,39 +416,6 @@ class Checkout extends Component
         return $this->createOrderManually($cart, $contact);
     }
 
-
-    protected function initiateOnlinePayment($cart, $contact)
-    {
-        try {
-            $response = Http::post(url('/api/payment/process'), [
-                'amount_cents' => $cart->total * 100,
-                'currency' => 'EGP',
-                'cart_id' => $cart->id,
-                'user_id' => Auth::id(),
-                'contact_email' => $contact->email ?? Auth::user()?->email,
-                'name' => $contact->name ?? Auth::user()?->name,
-                'integrations' => [5059981, 5059766],
-                'api_source' => 'INVOICE',
-            ]);
-
-            Log::info('Payment Response', [
-                'status' => $response->status(),
-                'body' => $response->body(),
-            ]);
-
-            $data = $response->json();
-
-            if (is_array($data) && !empty($data['success']) && isset($data['url'])) {
-                return redirect()->to($data['url']);
-            }
-
-            $this->addError('payment', __('Failed to initiate payment. Please try again.'));
-        } catch (\Exception $e) {
-            $this->addError('payment', __('Unexpected error during payment: :msg', ['msg' => $e->getMessage()]));
-        }
-
-        return null;
-    }
 
     public function createOrderManually($cart, $contact = null)
     {
@@ -500,7 +466,9 @@ class Checkout extends Component
                             ->where('size_id', $item->size_id)
                             ->first();
 
-                        $variant?->decrement('quantity', $item->quantity);
+                        if ($variant) {
+                            $variant->decrement('quantity', $item->quantity);
+                        }
 
                         $product->inventory()?->decrement('quantity', $item->quantity);
 
@@ -522,7 +490,7 @@ class Checkout extends Component
             $cart->delete();
 
             $recipientEmail = Auth::check() ? Auth::user()->email : ($contact->email ?? null);
-            $language = Auth::check() ? Auth::user()->preferred_language : (request()->getPreferredLanguage(['en', 'ar']) ?? 'en');
+            $language = Auth::check() ? auth()->user()->preferred_language : (request()->getPreferredLanguage(['en', 'ar']) ?? 'en');
 
             if ($recipientEmail) {
                 Mail::to($recipientEmail)->locale($language)->send(new OrderStatusMail($order, $order->status));
@@ -533,8 +501,8 @@ class Checkout extends Component
 
                 $invitation = Invitation::create([
                     'email' => $contact->email,
-                    'name' => $contact->name,
-                    'phone' => $contact->phone,
+                    'name' => $contact->name ?? null,
+                    'phone' => $contact->phone ?? null,
                     'preferred_language' => $locale,
                     'role_id' => Role::where('name', UserRole::Client->value)->first()->id,
                 ]);
@@ -550,11 +518,8 @@ class Checkout extends Component
         } catch (\Exception $e) {
             DB::rollBack();
             $this->addError('order', __('We encountered an issue: :error', ['error' => $e->getMessage()]));
-            return null;
         }
     }
-
-
 
     public function getIsCheckoutReadyProperty()
     {
