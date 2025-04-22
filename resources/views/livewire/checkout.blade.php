@@ -237,132 +237,130 @@
                 </table>
 
                 @if ($isCheckoutReady)
-                    @if ($isCheckoutReady)
-                        <div class="payment-method-section">
-                            <h2 class="step-title mb-3">Payment Method</h2>
+                    <div class="payment-method-section">
+                        <h2 class="step-title mb-3">Payment Method</h2>
 
-                            <div class="form-group mb-4">
-                                <label class="h6 mb-2">Select Payment Method <abbr class="required" title="required">*</abbr></label>
+                        <div class="form-group mb-4">
+                            <label class="h6 mb-2">Select Payment Method <abbr class="required" title="required">*</abbr></label>
 
-                                <div class="payment-options">
-                                    @foreach($paymentMethods as $method)
-                                        <div class="payment-option mb-2">
-                                            <input type="radio"
-                                                   id="payment-method-{{ $method->id }}"
-                                                   name="payment_method"
-                                                   wire:model="payment_method_id"
-                                                   value="{{ $method->id }}"
-                                                   class="custom-control-input">
-                                            <label for="payment-method-{{ $method->id }}" class="payment-label">
-                                                <span class="payment-name h6">{{ $method->name }}</span>
-                                                <span class="payment-desc">{{ $method->description }}</span>
-                                            </label>
-                                        </div>
-                                    @endforeach
-                                </div>
-
-                                @error('payment_method_id')
-                                <span class="text-danger">{{ $message }}</span>
-                                @enderror
-
-                                @if($errors->has('payment'))
-                                    <div class="alert alert-danger mt-2">
-                                        {{ $errors->first('payment') }}
+                            <div class="payment-options">
+                                @foreach($paymentMethods as $method)
+                                    <div class="payment-option mb-2">
+                                        <input type="radio"
+                                               id="payment-method-{{ $method->id }}"
+                                               name="payment_method"
+                                               wire:model="payment_method_id"
+                                               value="{{ $method->id }}"
+                                               class="custom-control-input">
+                                        <label for="payment-method-{{ $method->id }}" class="payment-label">
+                                            <span class="payment-name h6">{{ $method->name }}</span>
+                                            <span class="payment-desc">{{ $method->description }}</span>
+                                        </label>
                                     </div>
-                                @endif
+                                @endforeach
                             </div>
+
+                            @error('payment_method_id')
+                            <span class="text-danger">{{ $message }}</span>
+                            @enderror
+
+                            @if($errors->has('payment'))
+                                <div class="alert alert-danger mt-2">
+                                    {{ $errors->first('payment') }}
+                                </div>
+                            @endif
                         </div>
+                    </div>
 
-                        <style>
-                            .payment-method-section {
-                                margin-bottom: 2rem;
-                                padding: 1.5rem;
-                                background: #fff;
-                                border-radius: 5px;
-                                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                            }
+                    <style>
+                        .payment-method-section {
+                            margin-bottom: 2rem;
+                            padding: 1.5rem;
+                            background: #fff;
+                            border-radius: 5px;
+                            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                        }
 
-                            .step-title {
-                                font-size: 1.25rem;
-                                font-weight: 600;
-                                color: #333;
-                            }
+                        .step-title {
+                            font-size: 1.25rem;
+                            font-weight: 600;
+                            color: #333;
+                        }
 
-                            .payment-options {
-                                display: flex;
-                                flex-direction: column;
-                                gap: 0.75rem;
-                            }
+                        .payment-options {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 0.75rem;
+                        }
 
-                            .payment-option {
-                                position: relative;
-                            }
+                        .payment-option {
+                            position: relative;
+                        }
 
-                            .payment-option input[type="radio"] {
-                                position: absolute;
-                                opacity: 0;
-                            }
+                        .payment-option input[type="radio"] {
+                            position: absolute;
+                            opacity: 0;
+                        }
 
-                            .payment-label {
-                                display: block;
-                                padding: 1rem 1rem 1rem 2.5rem;
-                                border: 1px solid #ddd;
-                                border-radius: 4px;
-                                cursor: pointer;
-                                transition: all 0.3s ease;
-                            }
+                        .payment-label {
+                            display: block;
+                            padding: 1rem 1rem 1rem 2.5rem;
+                            border: 1px solid #ddd;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                        }
 
-                            .payment-option input[type="radio"]:checked + .payment-label {
-                                border-color: #333;
-                                background-color: #f9f9f9;
-                            }
+                        .payment-option input[type="radio"]:checked + .payment-label {
+                            border-color: #333;
+                            background-color: #f9f9f9;
+                        }
 
-                            .payment-name {
-                                display: block;
-                                font-weight: 600;
-                                color: #333;
-                                font-size: 1rem;
-                            }
+                        .payment-name {
+                            display: block;
+                            font-weight: 600;
+                            color: #333;
+                            font-size: 1rem;
+                        }
 
-                            .payment-desc {
-                                display: block;
-                                font-size: 0.9rem;
-                                color: #777;
-                                margin-top: 0.25rem;
-                            }
+                        .payment-desc {
+                            display: block;
+                            font-size: 0.9rem;
+                            color: #777;
+                            margin-top: 0.25rem;
+                        }
 
-                            .cash-on-delivery-note {
-                                margin-top: 1.5rem;
-                                padding: 0.75rem;
-                                background-color: #f8f9fa;
-                                border-left: 3px solid #ffb900;
-                                font-size: 0.9rem;
-                                display: flex;
-                                align-items: center;
-                                gap: 0.5rem;
-                            }
+                        .cash-on-delivery-note {
+                            margin-top: 1.5rem;
+                            padding: 0.75rem;
+                            background-color: #f8f9fa;
+                            border-left: 3px solid #ffb900;
+                            font-size: 0.9rem;
+                            display: flex;
+                            align-items: center;
+                            gap: 0.5rem;
+                        }
 
-                            .cash-on-delivery-note i {
-                                color: #ffb900;
-                                font-size: 1rem;
-                            }
+                        .cash-on-delivery-note i {
+                            color: #ffb900;
+                            font-size: 1rem;
+                        }
 
-                            .required {
-                                color: #e02b27;
-                                font-size: 1.2em;
-                            }
+                        .required {
+                            color: #e02b27;
+                            font-size: 1.2em;
+                        }
 
-                            .h6 {
-                                font-size: 1rem;
-                                font-weight: 600;
-                            }
-                        </style>
-                    @endif
+                        .h6 {
+                            font-size: 1rem;
+                            font-weight: 600;
+                        }
+                    </style>
                 @endif
-
+                
                 @if ($paymentUrl)
                     <div class="mt-4">
-                        <iframe src="{{ $paymentUrl }}" width="100%" height="600" frameborder="0"></iframe>
+                        <iframe src="{!! $paymentUrl !!}" width="100%" height="600" frameborder="0"></iframe>
                     </div>
                 @endif
 
@@ -388,7 +386,6 @@
                         <br><br>
                         Click <a href="{{ route('cart.index') }}" class="alert-link"><strong>here</strong></a> to review your cart and complete your purchase steps.
                     </div>
-
                 @endif
             </div>
         <!-- End .col-lg-4 -->

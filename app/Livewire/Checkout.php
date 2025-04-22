@@ -33,7 +33,7 @@ use Spatie\Permission\Models\Role;
 
 class Checkout extends Component
 {
-    public $paymentUrl;
+    public string|null $paymentUrl = null; // Add this at the top of your Livewire component class
     public $payment_method_id;
     public string $checkoutToken;
     public $currentRoute;
@@ -231,7 +231,6 @@ class Checkout extends Component
         $this->taxAmount = ($this->taxPercentage > 0) ? ($this->subTotal * $this->taxPercentage / 100) : 0;
     }
 
-
     public function save()
     {
         if (Auth::check()) {
@@ -399,9 +398,14 @@ class Checkout extends Component
 
                 $data = $response->json();
 
-                if (is_array($data) && !empty($data['success']) && isset($data['url'])) {
-                    // Store the payment URL to use in frontend iframe
-                    $this->paymentUrl = $data['url'];
+                if (is_array($data) && !empty($data['success'])) {
+                    if (isset($data['iframe_url'])) {
+                        $this->paymentUrl = html_entity_decode($data['iframe_url']);
+                        return;
+                    }
+
+                    Log::warning('Payment response missing iframe_url key', $data);
+                    $this->addError('payment', __('Failed to initiate payment. Please try again.'));
                     return;
                 }
 
@@ -415,7 +419,6 @@ class Checkout extends Component
 
         return $this->createOrderManually($cart, $contact);
     }
-
 
     public function createOrderManually($cart, $contact = null)
     {
@@ -525,8 +528,7 @@ class Checkout extends Component
     {
         return count($this->cartItems) > 0 // Ensure cart is not empty
             && $this->cart->country_id // Ensure country is selected
-            && $this->cart->governorate_id // Ensure governorate is selected
-            ;
+            && $this->cart->governorate_id; // Ensure governorate is selected
     }
 
     public function render()
