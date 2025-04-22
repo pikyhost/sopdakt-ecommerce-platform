@@ -1,10 +1,10 @@
 <div class="container checkout-container">
     @include('order-wizard')
     <div class="login-form-container">
-      @guest
-        <h4>Returning customer?
-            <button data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne" class="btn btn-link btn-toggle">Login</button>
-        </h4>
+        @guest
+            <h4>Returning customer?
+                <button data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne" class="btn btn-link btn-toggle">Login</button>
+            </h4>
         @endguest
 
         <div id="collapseOne" class="collapse">
@@ -140,20 +140,20 @@
 
                         @guest
 
-                        <div class="form-group mb-1">
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" id="create-account" wire:model.live="create_account" />
-                                <label class="custom-control-label" for="create-account">Create an account?</label>
+                            <div class="form-group mb-1">
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="create-account" wire:model.live="create_account" />
+                                    <label class="custom-control-label" for="create-account">Create an account?</label>
+                                </div>
                             </div>
-                        </div>
 
-                        @if($create_account)
-                            <div class="form-group">
-                                <label>Create account password <abbr class="required" title="required">*</abbr></label>
-                                <input type="password" placeholder="Password" class="form-control" wire:model.defer="password" required />
-                                @error('password') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
-                        @endif
+                            @if($create_account)
+                                <div class="form-group">
+                                    <label>Create account password <abbr class="required" title="required">*</abbr></label>
+                                    <input type="password" placeholder="Password" class="form-control" wire:model.defer="password" required />
+                                    @error('password') <span class="text-danger">{{ $message }}</span> @enderror
+                                </div>
+                            @endif
 
                         @endguest
 
@@ -162,8 +162,8 @@
                             <textarea class="form-control" wire:model.defer="notes" placeholder="Notes about your order, e.g. special notes for delivery."></textarea>
                         </div>
 
-                    @if (session()->has('success'))
-                        <div class="alert alert-success">{{ session('success') }}</div>
+                        @if (session()->has('success'))
+                            <div class="alert alert-success">{{ session('success') }}</div>
                     @endif
                 </li>
             </ul>
@@ -200,39 +200,39 @@
                     @endforelse
                     </tbody>
                     @if ($isCheckoutReady)
-                    <tfoot>
-                    <tr class="cart-subtotal">
-                        <td><h4>Subtotal</h4></td>
-                        <td class="price-col">
-                            <span>{{ number_format($subTotal, 2) }}</span>
-                        </td>
-                    </tr>
+                        <tfoot>
+                        <tr class="cart-subtotal">
+                            <td><h4>Subtotal</h4></td>
+                            <td class="price-col">
+                                <span>{{ number_format($subTotal, 2) }}</span>
+                            </td>
+                        </tr>
 
-                    <tr>
-                        <td>
-                            <h4>
-                              Shipping Cost
-                            </h4>
-                        </td>
-                        <td class="text-end">
-                            <span>{{ number_format($shippingCost, 2) }}</span>
-                        </td>
-                    </tr>
-                    <tr class="cart-subtotal">
-                        <td><h4>Tax ({{ $taxPercentage }}%)</h4></td>
-                        <td class="price-col">
+                        <tr>
+                            <td>
+                                <h4>
+                                    Shipping Cost
+                                </h4>
+                            </td>
+                            <td class="text-end">
+                                <span>{{ number_format($shippingCost, 2) }}</span>
+                            </td>
+                        </tr>
+                        <tr class="cart-subtotal">
+                            <td><h4>Tax ({{ $taxPercentage }}%)</h4></td>
+                            <td class="price-col">
                               <span>
                                   {{ $taxAmount }}
                               </span>
-                        </td>
-                    </tr>
-                    <tr class="order-total">
-                        <td><h4>Total</h4></td>
-                        <td><b class="total-price">
-                                <span>{{ number_format($total, 2) }}</span>
-                            </b></td>
-                    </tr>
-                    </tfoot>
+                            </td>
+                        </tr>
+                        <tr class="order-total">
+                            <td><h4>Total</h4></td>
+                            <td><b class="total-price">
+                                    <span>{{ number_format($total, 2) }}</span>
+                                </b></td>
+                        </tr>
+                        </tfoot>
                     @endif
                 </table>
 
@@ -358,13 +358,19 @@
                     </style>
                 @endif
 
+                @if ($paymentUrl)
+                    <div class="mt-4">
+                        <iframe src="{!! $paymentUrl !!}" width="100%" height="600" frameborder="0"></iframe>
+                    </div>
+                @endif
+
                 <script>
                     window.addEventListener('payment-url-updated', () => {
                         console.log('Payment URL updated, iframe should render');
                     });
                 </script>
 
-            @if ($errors->has('order'))
+                @if ($errors->has('order'))
                     <div class="alert alert-danger">
                         {{ $errors->first('order') }}
                     </div>
@@ -387,8 +393,8 @@
                     </div>
                 @endif
             </div>
-        <!-- End .col-lg-4 -->
-    </div>
+            <!-- End .col-lg-4 -->
+        </div>
     </div>
     <!-- End .row -->
 </div>

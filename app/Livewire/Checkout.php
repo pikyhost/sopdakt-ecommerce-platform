@@ -420,7 +420,7 @@ class Checkout extends Component
 
                     if (isset($data['success']) && $data['success'] === true && isset($data['iframe_url'])) {
                         $this->paymentUrl = $data['iframe_url'];
-                        $this->dispatch('payment-url-updated');
+                        $this->dispatchBrowserEvent('payment-url-updated');
                         Log::info('Payment URL generated successfully', ['payment_url' => $this->paymentUrl]);
                         return;
                     }
