@@ -14,6 +14,7 @@ use App\Models\Setting;
 use App\Models\ShippingCost;
 use App\Services\ProductActionsService;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
+use Filament\Actions\Exports\Enums\ExportFormat;
 use Filament\Forms;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DateTimePicker;
@@ -255,7 +256,6 @@ class ProductResource extends Resource
                             ->icon('heroicon-o-table-cells')
                             ->schema([
                                 Select::make('labels')
-                                    ->columnSpanFull()
                                     ->label(__('labels.plural_label'))
                                     ->createOptionForm([
                                         Forms\Components\TextInput::make('title')
@@ -272,6 +272,23 @@ class ProductResource extends Resource
                                     ->searchable()
                                     ->preload()
                                     ->nullable(),
+
+                                Select::make('size_guide_id')
+                                    ->label(__('Size Guide'))
+                                    ->createOptionForm([
+                                        TextInput::make('title')
+                                            ->label(__('Title'))
+                                            ->required()
+                                            ->maxLength(255),
+                                        Textarea::make('description')
+                                            ->label(__('Description'))
+                                            ->required()
+                                            ->columnSpanFull(),
+                                        FileUpload::make('image')
+                                            ->label(__('Image'))
+                                            ->image()
+                                            ->required(),
+                                    ]),
 
                                 Repeater::make('productColors')
                                     ->relationship('productColors')
@@ -781,6 +798,9 @@ class ProductResource extends Resource
             ])
             ->headerActions([
                 ExportAction::make()
+                    ->formats([
+                        ExportFormat::Xlsx,
+                    ])
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('success')
                     ->exporter(ProductExporter::class),

@@ -41,6 +41,7 @@ use App\Filament\Resources\SettingResource;
 use App\Filament\Resources\ShippingCostResource;
 use App\Filament\Resources\ShippingTypeResource;
 use App\Filament\Resources\ShippingZoneResource;
+use App\Filament\Resources\SizeGuideResource;
 use App\Filament\Resources\SizeResource;
 use App\Filament\Resources\TopNoticeResource;
 use App\Filament\Resources\TransactionResource;
@@ -207,6 +208,7 @@ class AdminPanelProvider extends PanelProvider
                     AttributeResource::getNavigationItems(),
                     ColorResource::getNavigationItems(),
                     SizeResource::getNavigationItems(),
+                    SizeGuideResource::getNavigationItems(),
                     CategoryResource::getNavigationItems()
                 ],
             ],
