@@ -27,6 +27,7 @@ use Filament\Pages\SubNavigationPosition;
 use Filament\Resources\Pages\Page;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\ActionSize;
+use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\IconPosition;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
@@ -266,10 +267,17 @@ class UserResource extends Resource
                     ->grow(false),
 
                 TextColumn::make('id')
+                    ->weight(FontWeight::Bold)
+                    ->formatStateUsing(fn($state) => '#'.$state)
                     ->label(__('ID'))
-                    ->badge()
-                    ->color('info')
                     ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('orders_count')
+                    ->badge()
+                    ->color('success')
+                    ->label(__('Orders Count'))
+                    ->counts('orders')
                     ->sortable(),
 
                 TextColumn::make('name')
@@ -452,7 +460,7 @@ class UserResource extends Resource
                     ])
             ])
             ->recordUrl(fn () => '')
-            ->defaultSort('id', 'desc');
+            ->defaultSort('orders_count', 'desc'); //order_items_count
     }
 
     private static function activeUser(User $record)

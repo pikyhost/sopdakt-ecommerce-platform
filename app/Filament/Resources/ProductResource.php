@@ -32,9 +32,11 @@ use Filament\Forms\Set;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\ActionSize;
+use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\IconPosition;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -610,7 +612,20 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')->label(__('id')),
+                TextColumn::make('id')
+                    ->weight(FontWeight::Bold)
+                    ->formatStateUsing(fn($state) => '#'.$state)
+                    ->label(__('ID'))
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('name')
+                    ->label(__('products.Product Name'))
+                    ->searchable(),
+
+                TextColumn::make('order_items_count')
+                    ->label('Times Ordered')
+                    ->sortable(),
 
                 Tables\Columns\SpatieMediaLibraryImageColumn::make('feature_product_image')
                     ->toggleable(true, false)
@@ -646,10 +661,6 @@ class ProductResource extends Resource
 
                 Tables\Columns\TextColumn::make('label.title')
                     ->label(__('label')),
-
-                Tables\Columns\TextColumn::make('name')
-                    ->label(__('products.Product Name'))
-                    ->searchable(),
 
                 Tables\Columns\TextColumn::make('summary')
                     ->placeholder('-')
@@ -798,13 +809,14 @@ class ProductResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('order_items_count', 'desc'); //order_items_count
     }
 
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
-            ->withCount('media'); // Count media instead of loading full records
+            ->withCount('media')->withCount('orderItems'); // Count media instead of loading full records
     }
 
     public static function getRelations(): array
