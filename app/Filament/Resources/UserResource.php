@@ -11,6 +11,7 @@ use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\Pages\ManageUserOrders;
 use App\Traits\HasCreatedAtFilter;
 use App\Traits\HasTimestampSection;
+use Filament\Actions\Exports\Enums\ExportFormat;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Set;
 use Filament\Events\Auth\Registered;
@@ -248,6 +249,13 @@ class UserResource extends Resource
     {
         return $table
             ->headerActions([
+                ExportAction::make()
+                    ->formats([
+                        ExportFormat::Xlsx,
+                    ])
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->exporter(UserExporter::class),
                 Action::make('back')
                     ->label(__('Back to previous page'))
                     ->icon(app()->getLocale() == 'en' ? 'heroicon-m-arrow-right' : 'heroicon-m-arrow-left')
@@ -255,10 +263,6 @@ class UserResource extends Resource
                     ->color('gray')
                     ->url(url()->previous())
                     ->hidden(fn () => url()->previous() === url()->current()),
-                ExportAction::make()
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('success')
-                    ->exporter(UserExporter::class)
             ])
             ->columns([
                 ImageColumn::make('avatar_url')

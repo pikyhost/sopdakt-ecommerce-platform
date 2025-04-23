@@ -19,8 +19,10 @@ class UserExporter extends Exporter
             ExportColumn::make('name')
                 ->label(__('Name')),
             ExportColumn::make('orders_count')
-                ->counts('orders')
-                ->label(__('Orders Count')), // New column added
+                ->label('Orders Count')
+                ->state(function (User $user) {
+                    return $user->orders()->count();
+                }),
             ExportColumn::make('email')
                 ->label(__('Email')),
             ExportColumn::make('preferred_language')
