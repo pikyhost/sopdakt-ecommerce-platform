@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Exports\ProductExporter;
-use App\Filament\Exports\UserExporter;
 use Closure;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers\BundlesRelationManager;
@@ -42,14 +41,11 @@ use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Mokhosh\FilamentRating\Columns\RatingColumn;
 use Mokhosh\FilamentRating\Components\Rating;
-use Spatie\Permission\Models\Role;
 use Webbingbrasil\FilamentAdvancedFilter\Filters\DateFilter;
 
 class ProductResource extends Resource
@@ -372,17 +368,9 @@ class ProductResource extends Resource
                                     ->image()
                                     ->maxSize(5120),
 
-                                SpatieMediaLibraryFileUpload::make('sizes_image')
-                                    ->label(__('Size Guide Image'))
-
-                                    ->collection('sizes_image')
-                                    ->image()
-                                    ->maxSize(5120),
-
                                 SpatieMediaLibraryFileUpload::make('more_product_images_and_videos')
                                     ->maxFiles(20)
                                     ->label(__('Extra Images and Videos'))
-
                                     ->collection('more_product_images_and_videos')
                                     ->multiple()
                                     ->acceptedFileTypes(['video/mp4', 'video/mpeg', 'video/quicktime',
@@ -666,12 +654,10 @@ class ProductResource extends Resource
                     ->collection('second_feature_product_image')
                     ->label(__('Second Feature Image')),
 
-                Tables\Columns\SpatieMediaLibraryImageColumn::make('sizes_image')
-                    ->toggleable(true, false)
+                Tables\Columns\ImageColumn::make('sizeGuide.image_path')
                     ->circular()
                     ->simpleLightbox()
                     ->placeholder('-')
-                    ->collection('sizes_image')
                     ->label(__('Sizes Image')),
 
                 Tables\Columns\TextColumn::make('user.name')

@@ -77,6 +77,11 @@ class Product extends Model implements HasMedia
         return $this->hasMany(ProductColor::class);
     }
 
+    public function sizeGuide()
+    {
+        return $this->belongsTo(SizeGuide::class);
+    }
+
     /**
      * Get all colors available for the product.
      */
