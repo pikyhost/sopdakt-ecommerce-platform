@@ -2,7 +2,10 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Exports\OrderExporter;
+use App\Filament\Exports\ProductExporter;
 use Filament\Forms\Components\Select;
+use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\Indicator;
 use Illuminate\Database\Eloquent\Builder;
@@ -92,6 +95,11 @@ class OrderResource extends Resource
                     ->color('gray')
                     ->url(url()->previous())
                     ->hidden(fn () => url()->previous() === url()->current()),
+
+                ExportAction::make()
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->exporter(OrderExporter::class)
             ])
             ->columns([
                 Tables\Columns\TextColumn::make('id')

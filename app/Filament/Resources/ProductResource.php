@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Exports\ProductExporter;
+use App\Filament\Exports\UserExporter;
 use Closure;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers\BundlesRelationManager;
@@ -36,6 +38,7 @@ use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\IconPosition;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -784,6 +787,11 @@ class ProductResource extends Resource
                     ->color('gray')
                     ->url(url()->previous())
                     ->hidden(fn () => url()->previous() === url()->current()),
+
+                ExportAction::make()
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->exporter(ProductExporter::class)
             ])
             ->filters([
                 DateFilter::make('created_at')

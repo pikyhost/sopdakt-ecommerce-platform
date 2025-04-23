@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Exports\CountryExporter;
+use App\Filament\Exports\UserExporter;
 use App\Models\User;
 use Closure;
 use App\Enums\UserRole;
@@ -36,6 +38,7 @@ use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
 use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -252,6 +255,10 @@ class UserResource extends Resource
                     ->color('gray')
                     ->url(url()->previous())
                     ->hidden(fn () => url()->previous() === url()->current()),
+                ExportAction::make()
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->exporter(UserExporter::class)
             ])
             ->columns([
                 ImageColumn::make('avatar_url')
