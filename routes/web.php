@@ -37,16 +37,12 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
 
     Route::get('/', [HomePageController::class, 'index'])->name('homepage');
 
-
     Route::get('/wheel/{wheel}', [HomePageController::class, 'wheel'])
         ->name('wheel.spin');
 
     Route::view('/blogs', 'pages.blogs')->name('blogs');
     Route::view('/products', 'pages.products')->name('products');
     Route::view('/categories', 'pages.categories')->name('categories');
-
-    Route::view('test-about-us', 'front.front_about');
-    Route::view('test-front', 'front.test-front');
 
     Route::get('landing-page/{slug}', [LandingPageController::class, 'show'])->name('landing-page.show-by-slug');
     Route::get('/products/{slug}', [ProductController::class, 'show'])->name('product.show');
@@ -84,31 +80,8 @@ Route::get('/analytics', function () {
     return response()->json($analyticsData);
 });
 
-Route::get('/test-analytics', function () {
-    try {
-        $analyticsData = Analytics::fetchVisitorsAndPageViews(Period::days(7));
-
-        return response()->json($analyticsData);
-    } catch (\Exception $e) {
-        return response()->json(['error' => $e->getMessage()]);
-    }
-});
-
 Route::get('/payment-success', [PaymentController::class, 'success'])->name('payment.success');
 Route::get('/payment-failed', [PaymentController::class, 'failed'])->name('payment.failed');
 
 Route::post('/payment/callback', [App\Http\Controllers\PaymentController::class, 'callback'])->name('payment.callback');
-
-
-Route::get('/payment/frame', function () {
-    if (!session()->has('paymob_payment_token')) {
-        return redirect()->route('cart.index')->with('error', 'Missing payment session.');
-    }
-
-    $iframeId = config('services.paymob.iframe_id');
-    $token = session('paymob_payment_token');
-    $iframeUrl = "https://accept.paymob.com/api/acceptance/iframes/{$iframeId}?payment_token={$token}";
-
-    return view('payment.iframe', compact('iframeUrl'));
-})->name('payment.frame');
 

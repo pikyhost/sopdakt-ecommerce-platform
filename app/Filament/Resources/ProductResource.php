@@ -270,6 +270,7 @@ class ProductResource extends Resource
                                     ->nullable(),
 
                                 Select::make('size_guide_id')
+                                    ->relationship('sizeGuide', 'title')
                                     ->label(__('Size Guide'))
                                     ->createOptionForm([
                                         TextInput::make('title')

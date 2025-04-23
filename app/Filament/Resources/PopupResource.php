@@ -3,16 +3,16 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PopupResource\Pages;
-use App\Helpers\PageSuggestion;
 use App\Models\Popup;
 use Filament\Forms;
-use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Route;
 
 class PopupResource extends Resource
 {
@@ -136,17 +136,49 @@ class PopupResource extends Resource
                         ->required()
                         ->helperText(__('display_rules_helper')),
 
-                    Forms\Components\Textarea::make('specific_pages')
+
+                    Select::make('specific_pages')
                         ->label(__('Page Rules'))
-                        ->rows(5)
-                        ->helperText(__('specific_pages_helper'))
+                        ->multiple()
+                        ->searchable()
                         ->visible(fn ($get) => in_array($get('display_rules'), [
                             'specific_pages', 'page_group', 'all_except_specific', 'all_except_group'
                         ]))
-                        ->afterStateHydrated(fn ($state, callable $set) => $set('specific_pages', implode("\n", json_decode($state ?? '[]'))))
-                        ->dehydrateStateUsing(fn ($state) => json_encode(array_map('trim', preg_split("/\r\n|\n|\r/", $state))))
+                        ->options(function () {
+                            return collect(Route::getRoutes())
+                                ->filter(fn ($route) =>
+                                    in_array('GET', $route->methods()) &&
+                                    !str_contains($route->uri(), '{') && // Exclude dynamic routes
+                                    $route->uri() !== '/' && // Exclude homepage
+                                    !preg_match('#^(admin|client|api|_debugbar|livewire|sanctum|storage)#', $route->uri())
+                                )
+                                ->mapWithKeys(fn ($route) => [$route->uri() => '/' . $route->uri()])
+                                ->sort()
+                                ->toArray();
+                        })
+                        ->getSearchResultsUsing(function (string $search): array {
+                            return collect(Route::getRoutes())
+                                ->filter(fn ($route) =>
+                                    in_array('GET', $route->methods()) &&
+                                    !str_contains($route->uri(), '{') &&
+                                    $route->uri() !== '/' &&
+                                    str_contains($route->uri(), $search) &&
+                                    !preg_match('#^(admin|client|api|_debugbar|livewire|sanctum|storage)#', $route->uri())
+                                )
+                                ->mapWithKeys(fn ($route) => [$route->uri() => '/' . $route->uri()])
+                                ->sort()
+                                ->toArray();
+                        })
+                        ->getOptionLabelsUsing(function (array $values): array {
+                            return collect($values)
+                                ->mapWithKeys(fn ($uri) => [$uri => '/' . $uri])
+                                ->toArray();
+                        })
+                        ->dehydrateStateUsing(fn ($state) => json_encode($state))
+                        ->afterStateHydrated(fn ($state, callable $set) => $set('specific_pages', json_decode($state ?? '[]')))
                         ->nullable()
-                        ->columnSpanFull(),
+                        ->columnSpanFull()
+                        ->helperText(__('specific_pages_helper')),
 
                     Forms\Components\Checkbox::make('email_needed')
                         ->label(__('Email needed'))
@@ -157,6 +189,21 @@ class PopupResource extends Resource
                         ->helperText(__('is_active_helper')),
                 ])->columns(2)
             ]);
+    }
+
+    public static function getPublicPageOptions(): array
+    {
+        return collect(Route::getRoutes())
+            ->filter(fn ($route) =>
+                $route->methods() === ['GET'] &&
+                $route->uri() !== '/' &&
+                !str_starts_with($route->uri(), 'admin') &&
+                !str_starts_with($route->uri(), 'client') &&
+                !str_contains($route->uri(), '{') // skip dynamic segments like {id}
+            )
+            ->mapWithKeys(fn ($route) => [$route->uri() => '/' . $route->uri()])
+            ->sort()
+            ->all();
     }
 
     public static function table(Table $table): Table
