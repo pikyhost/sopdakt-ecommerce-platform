@@ -3,7 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Exports\OrderExporter;
-use App\Filament\Exports\ProductExporter;
+use Filament\Actions\Exports\Enums\ExportFormat;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Filters\Filter;
@@ -97,6 +97,9 @@ class OrderResource extends Resource
                     ->hidden(fn () => url()->previous() === url()->current()),
 
                 ExportAction::make()
+                    ->formats([
+                        ExportFormat::Xlsx,
+                    ])
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('success')
                     ->exporter(OrderExporter::class)

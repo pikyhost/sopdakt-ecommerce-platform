@@ -19,6 +19,7 @@ class UserExporter extends Exporter
             ExportColumn::make('name')
                 ->label(__('Name')),
             ExportColumn::make('orders_count')
+                ->counts('orders')
                 ->label(__('Orders Count')), // New column added
             ExportColumn::make('email')
                 ->label(__('Email')),

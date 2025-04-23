@@ -69,6 +69,7 @@ class ProductExporter extends Exporter
             ExportColumn::make('is_free_shipping')
                 ->label(__('Is Free Shipping')),
             ExportColumn::make('order_items_count')
+                ->counts('orderItems')
                 ->label(__('Times Ordered')),
         ];
     }
