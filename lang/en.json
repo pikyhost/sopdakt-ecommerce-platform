@@ -68,7 +68,7 @@
     "popup_order_helper": "Lower numbers are shown before higher numbers if multiple popups exist.",
     "show_interval_minutes_helper": "Minimum time between displaying popups to the same user.",
     "display_rules_helper": "Control on which pages this popup will appear.",
-    "specific_pages_helper": "Enter each page link on a new line (e.g., contact or blog/news).",
+    "specific_pages_helper": "Select pages from the dropdown list. Available routes are loaded automatically, and you can search to find specific pages easily.",
     "email_needed_helper": "Require user to submit their email to interact with the popup.",
     "is_active_helper": "Enable or disable this popup. Inactive popups are never shown.",
     "Popups": "Popups",
