@@ -88,6 +88,13 @@ class OrderResource extends Resource
     {
         return $table
             ->headerActions([
+                ExportAction::make()
+                    ->formats([
+                        ExportFormat::Xlsx,
+                    ])
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->exporter(OrderExporter::class),
                 Action::make('back')
                     ->label(__('Back to previous page'))
                     ->icon(app()->getLocale() == 'en' ? 'heroicon-m-arrow-right' : 'heroicon-m-arrow-left')
@@ -95,14 +102,6 @@ class OrderResource extends Resource
                     ->color('gray')
                     ->url(url()->previous())
                     ->hidden(fn () => url()->previous() === url()->current()),
-
-                ExportAction::make()
-                    ->formats([
-                        ExportFormat::Xlsx,
-                    ])
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('success')
-                    ->exporter(OrderExporter::class)
             ])
             ->columns([
                 Tables\Columns\TextColumn::make('id')

@@ -780,6 +780,10 @@ class ProductResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->headerActions([
+                ExportAction::make()
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->exporter(ProductExporter::class),
                 Action::make('back')
                     ->label(__('Back to previous page'))
                     ->icon(app()->getLocale() == 'en' ? 'heroicon-m-arrow-right' : 'heroicon-m-arrow-left')
@@ -787,11 +791,6 @@ class ProductResource extends Resource
                     ->color('gray')
                     ->url(url()->previous())
                     ->hidden(fn () => url()->previous() === url()->current()),
-
-                ExportAction::make()
-                    ->icon('heroicon-o-arrow-down-tray')
-                    ->color('success')
-                    ->exporter(ProductExporter::class)
             ])
             ->filters([
                 DateFilter::make('created_at')

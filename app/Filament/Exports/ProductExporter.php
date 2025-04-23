@@ -16,6 +16,9 @@ class ProductExporter extends Exporter
         return [
             ExportColumn::make('id')
                 ->label(__('ID')),
+            ExportColumn::make('order_items_count')
+                ->counts('orderItems')
+                ->label(__('Times Ordered')),
             ExportColumn::make('user_id')
                 ->label(__('User ID')),
             ExportColumn::make('category_id')
@@ -68,9 +71,6 @@ class ProductExporter extends Exporter
                 ->label(__('Updated At')),
             ExportColumn::make('is_free_shipping')
                 ->label(__('Is Free Shipping')),
-            ExportColumn::make('order_items_count')
-                ->counts('orderItems')
-                ->label(__('Times Ordered')),
         ];
     }
 

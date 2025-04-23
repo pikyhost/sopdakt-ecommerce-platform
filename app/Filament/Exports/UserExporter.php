@@ -33,12 +33,12 @@ class UserExporter extends Exporter
                 ->label(__('Phone')),
             ExportColumn::make('second_phone')
                 ->label(__('Second Phone')),
+            ExportColumn::make('is_active')
+                ->label(__('Is Active')),
             ExportColumn::make('created_at')
                 ->label(__('Created At')),
             ExportColumn::make('updated_at')
                 ->label(__('Updated At')),
-            ExportColumn::make('is_active')
-                ->label(__('Is Active')),
         ];
     }
 
