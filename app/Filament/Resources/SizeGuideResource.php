@@ -20,37 +20,37 @@ class SizeGuideResource extends Resource
 
     protected static ?string $model = SizeGuide::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-numbered-list';
+    protected static ?string $navigationIcon = 'heroicon-o-photo';
 
-    protected static ?string $modelLabel = 'Size Guide';
+    protected static ?string $modelLabel = 'Size Guide Images';
 
-    protected static ?string $pluralModelLabel = 'Size Guides';
+    protected static ?string $pluralModelLabel = 'Size Guides Images';
 
-    protected static ?string $navigationLabel = 'Size Guides';
+    protected static ?string $navigationLabel = 'Size Guides Images';
 
     public static function getNavigationLabel(): string
     {
-        return __('Size Guides');
+        return __('Size Guides Images');
     }
 
     public static function getModelLabel(): string
     {
-        return __('Size Guide');
+        return __('Size Guide Images');
     }
 
     public static function getPluralLabel(): ?string
     {
-        return __('Size Guides');
+        return __('Size Guides Images');
     }
 
     public static function getLabel(): ?string
     {
-        return __('Size Guide');
+        return __('Size Guide Images');
     }
 
     public static function getPluralModelLabel(): string
     {
-        return __('Size Guides');
+        return __('Size Guides Images');
     }
 
     public static function form(Form $form): Form
@@ -66,7 +66,7 @@ class SizeGuideResource extends Resource
                         ->label(__('Description'))
                         ->required()
                         ->columnSpanFull(),
-                    FileUpload::make('image')
+                    FileUpload::make('image_path')
                         ->label(__('Image'))
                         ->image()
                         ->required(),
@@ -78,7 +78,7 @@ class SizeGuideResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('image')
+                Tables\Columns\ImageColumn::make('image_path')
                     ->simpleLightbox()
                     ->label('Image')
                     ->circular(),
