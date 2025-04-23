@@ -567,7 +567,7 @@ class UserResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        $query = parent::getEloquentQuery();
+        $query = parent::getEloquentQuery()->withCount('orders');
 
         // Only super_admins can see super_admins
         if (!auth()->user()->hasRole('super_admin')) {
