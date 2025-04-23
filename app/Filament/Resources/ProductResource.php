@@ -624,7 +624,10 @@ class ProductResource extends Resource
                     ->searchable(),
 
                 TextColumn::make('order_items_count')
-                    ->label('Times Ordered')
+                    ->badge()
+                    ->color('success')
+                    ->label(__('Times Ordered'))
+                    ->counts('orders')
                     ->sortable(),
 
                 Tables\Columns\SpatieMediaLibraryImageColumn::make('feature_product_image')
