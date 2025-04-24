@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Exports\OrderExporter;
+use App\Services\AramexService;
 use Filament\Actions\Exports\Enums\ExportFormat;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Actions\ExportAction;
@@ -353,6 +354,81 @@ class OrderResource extends Resource
                     }),
             ], Tables\Enums\FiltersLayout::Modal)
             ->actions([
+                // Ship with Aramex action
+                Action::make('shipWithAramex')
+                    ->label('Ship with Aramex')
+                    ->icon('heroicon-m-truck')
+                    ->color('primary')
+                    ->visible(fn ($record) => $record->status === 'preparing')
+                    ->action(function ($record, AramexService $aramexService) {
+                        try {
+                            $result = $aramexService->createShipment($record);
+
+                            if ($result['success']) {
+                                $record->update([
+                                    'status' => 'shipping',
+                                    'aramex_shipment_id' => $result['shipment_id'],
+                                    'aramex_tracking_number' => $result['tracking_number'],
+                                    'aramex_tracking_url' => $result['tracking_url'],
+                                    'aramex_response' => $result['response'],
+                                ]);
+
+                                Notification::make()
+                                    ->title('Aramex Shipment Created')
+                                    ->body("Shipment ID: {$result['tracking_number']}")
+                                    ->success()
+                                    ->send();
+                            } else {
+                                throw new \Exception($result['error'] ?? 'Failed to create Aramex shipment');
+                            }
+                        } catch (\Exception $e) {
+                            Notification::make()
+                                ->title('Aramex Shipment Failed')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+
+                            throw $e;
+                        }
+                    }),
+
+                // Track Aramex shipment action
+                Action::make('trackAramex')
+                    ->label('Track Shipment')
+                    ->icon('heroicon-m-magnifying-glass')
+                    ->color('info')
+                    ->visible(fn ($record) => !empty($record->aramex_shipment_id))
+                    ->action(function ($record, AramexService $aramexService) {
+                        try {
+                            $result = $aramexService->trackShipment($record->aramex_shipment_id);
+
+                            if ($result['success']) {
+                                $status = $result['status'];
+                                $newStatus = $aramexService->mapAramexStatusToOrderStatus($status);
+
+                                if ($newStatus && $record->status !== $newStatus) {
+                                    $record->update(['status' => $newStatus]);
+                                }
+
+                                Notification::make()
+                                    ->title('Shipment Tracking')
+                                    ->body("Current status: {$status}")
+                                    ->info()
+                                    ->send();
+                            } else {
+                                throw new \Exception($result['error'] ?? 'Failed to track Aramex shipment');
+                            }
+                        } catch (\Exception $e) {
+                            Notification::make()
+                                ->title('Tracking Failed')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+
+                            throw $e;
+                        }
+                    }),
+
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),

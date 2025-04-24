@@ -28,6 +28,7 @@
         "livewire/livewire": "^3.5",
         "mcamara/laravel-localization": "^2.2",
         "mokhosh/filament-rating": "^1.4",
+        "octw/aramex": "*",
         "pxlrbt/filament-excel": "^2.4",
         "solution-forest/filament-simplelightbox": "^0.0.10",
         "spatie/laravel-analytics": "^5.5",

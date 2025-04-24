@@ -2,19 +2,81 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\OrderStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
-use App\Models\{LandingPage, Region, ShippingType};
+use App\Models\{LandingPage, Order, Region, ShippingType};
 use App\Http\Requests\Shipping\CalculateShippingRequest;
 
 class ShippingController extends Controller
 {
     public function handleWebhook(Request $request)
     {
-        $data = $request->all();
-        Log::info('JT Express Webhook', $data);
-        return response()->json(['message' => 'Webhook received successfully.']);
+        try {
+            $data = $request->all();
+            Log::info('JT Express Webhook Received', ['payload' => $data]);
+
+            // Extract relevant fields (adjust based on actual payload structure)
+            $trackingNumber = $data['billCode'] ?? $data['txlogisticId'] ?? null;
+            $newStatus = $data['status'] ?? $data['deliveryStatus'] ?? null;
+
+            if (!$trackingNumber || !$newStatus) {
+                Log::error('JT Express Webhook: Missing tracking number or status', ['payload' => $data]);
+                return response()->json(['message' => 'Invalid webhook data'], 400);
+            }
+
+            // Find the order by tracking number
+            $order = Order::where('tracking_number', $trackingNumber)->first();
+
+            if (!$order) {
+                Log::error('JT Express Webhook: Order not found', ['tracking_number' => $trackingNumber]);
+                return response()->json(['message' => 'Order not found'], 404);
+            }
+
+            // Update order with new status and response
+            $order->update([
+                'shipping_status' => $newStatus,
+                'shipping_response' => json_encode($data),
+            ]);
+
+            // Optionally map J&T status to your OrderStatus enum
+            $mappedStatus = $this->mapJtExpressStatusToOrderStatus($newStatus);
+            if ($mappedStatus) {
+                $order->status = $mappedStatus;
+                $order->save();
+            }
+
+            Log::info('JT Express Webhook: Order updated successfully', [
+                'order_id' => $order->id,
+                'tracking_number' => $trackingNumber,
+                'new_status' => $newStatus,
+            ]);
+
+            return response()->json(['message' => 'Webhook processed successfully']);
+        } catch (\Exception $e) {
+            Log::error('JT Express Webhook Error', [
+                'error' => $e->getMessage(),
+                'payload' => $data,
+            ]);
+            return response()->json(['message' => 'Error processing webhook'], 500);
+        }
+    }
+
+    private function mapJtExpressStatusToOrderStatus(string $jtStatus): ?string
+    {
+        // Map J&T Express statuses to your OrderStatus enum
+        $statusMap = [
+            'created' => OrderStatus::Pending->value,
+            'picked_up' => OrderStatus::Preparing->value,
+            'in_transit' => OrderStatus::Shipping->value,
+            'delivered' => OrderStatus::Completed->value,
+            'cancelled' => OrderStatus::Cancelled->value,
+            'returned' => OrderStatus::Refund->value,
+            'delayed' => OrderStatus::Delayed->value,
+            // Add more mappings based on J&T Express status codes
+        ];
+
+        return $statusMap[strtolower($jtStatus)] ?? null;
     }
 
     function calculateShipping(CalculateShippingRequest $request)
