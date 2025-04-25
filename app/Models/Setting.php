@@ -28,7 +28,14 @@ class Setting extends Model
         'tiktok',
         'shipping_type_enabled',
         'shipping_locations_enabled',
-        'minimum_stock_level'
+        'minimum_stock_level',
+
+        // New fields
+        'primary_color',
+        'secondary_color',
+        'enable_aramex',
+        'enable_bosta',
+        'enable_jnt',
     ];
 
     protected static string $cacheKey = 'app_settings';
@@ -201,4 +208,45 @@ class Setting extends Model
     {
         return (int) self::getSetting('minimum_stock_level');
     }
+
+    /**
+     * Check if Aramex integration is enabled.
+     */
+    public static function isAramexEnabled(): bool
+    {
+        return (bool) self::getSetting('enable_aramex');
+    }
+
+    /**
+     * Check if Bosta integration is enabled.
+     */
+    public static function isBostaEnabled(): bool
+    {
+        return (bool) self::getSetting('enable_baosta');
+    }
+
+    /**
+     * Check if J&T integration is enabled.
+     */
+    public static function isJntEnabled(): bool
+    {
+        return (bool) self::getSetting('enable_jnt');
+    }
+
+    /**
+     * Get the theme color settings.
+     */
+    public static function getThemeColors(): array
+    {
+        return [
+            'primary' => self::getSetting('primary_color'),
+            'secondary' => self::getSetting('secondary_color'),
+        ];
+    }
+
+    public static function isEnabled(string $key): bool
+    {
+        return self::where('key', $key)->value('value') == '1';
+    }
+
 }

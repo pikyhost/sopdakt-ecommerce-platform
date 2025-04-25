@@ -356,11 +356,171 @@ class OrderResource extends Resource
                     }),
             ], Tables\Enums\FiltersLayout::Modal)
             ->actions([
+                // J&T EXPRESS ACTIONS
+                Tables\Actions\Action::make('trackOrder')
+                    ->label(__('actions.track_order'))
+                    ->icon('heroicon-o-map')
+                    ->color('success')
+                    ->visible(fn (Order $record): bool =>
+                        Setting::first()?->enable_jnt &&
+                        !is_null($record->tracking_number) &&
+                        !is_null($record->shipping_status)
+                    )
+                    ->action(function (Order $record): void {
+                        $shipping_response = json_decode($record->shipping_response);
+                        $trackingInfo = app(JtExpressService::class)->trackLogistics($shipping_response->data);
+
+                        if ($trackingInfo['code'] ?? null === 1) {
+                            Notification::make()
+                                ->title('Tracking Information')
+                                ->body('Tracking details retrieved successfully: ' . ($trackingInfo['data']['billCode'] ?? $record->tracking_number))
+                                ->success()
+                                ->send();
+                        } else {
+                            Notification::make()
+                                ->title('Tracking Error')
+                                ->body($trackingInfo['msg'] ?? 'Unable to retrieve tracking information')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
+
+                Tables\Actions\Action::make('checkOrder')
+                    ->label(__('actions.check_order'))
+                    ->icon('heroicon-o-check-circle')
+                    ->color('primary')
+                    ->visible(fn (Order $record): bool =>
+                        Setting::first()?->enable_jnt &&
+                        !is_null($record->tracking_number)
+                    )
+                    ->action(function (Order $record): void {
+                        $shipping_response = json_decode($record->shipping_response);
+                        $orderInfo = app(JtExpressService::class)->checkingOrder($shipping_response->data);
+
+                        if ($orderInfo['code'] ?? null === 1) {
+                            Notification::make()
+                                ->title('Order Status')
+                                ->body('Order exists: ' . ($orderInfo['data']['isExist'] ?? 'Unknown'))
+                                ->success()
+                                ->send();
+                        } else {
+                            Notification::make()
+                                ->title('Check Error')
+                                ->body($orderInfo['msg'] ?? 'Unable to check order status')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
+
+                Tables\Actions\Action::make('getOrderStatus')
+                    ->label(__('actions.get_order_status'))
+                    ->icon('heroicon-o-clipboard-document-list')
+                    ->color('info')
+                    ->visible(fn (Order $record): bool =>
+                        Setting::first()?->enable_jnt &&
+                        !is_null($record->tracking_number)
+                    )
+                    ->action(function (Order $record): void {
+                        $shipping_response = json_decode($record->shipping_response);
+                        $statusInfo = app(JtExpressService::class)->getOrderStatus($shipping_response->data);
+
+                        if ($statusInfo['code'] ?? null === 1) {
+                            $status = $statusInfo['data']['deliveryStatus'] ?? 'Unknown';
+
+                            $record->update([
+                                'shipping_status' => $status,
+                                'shipping_response' => json_encode($statusInfo)
+                            ]);
+
+                            Notification::make()
+                                ->title('Order Status Updated')
+                                ->body('Current status: ' . $status)
+                                ->success()
+                                ->send();
+                        } else {
+                            Notification::make()
+                                ->title('Status Error')
+                                ->body($statusInfo['msg'] ?? 'Unable to get order status')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
+
+                Tables\Actions\Action::make('getTrajectory')
+                    ->label(__('actions.get_trajectory'))
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('gray')
+                    ->visible(fn (Order $record): bool =>
+                        Setting::first()?->enable_jnt &&
+                        !is_null($record->tracking_number)
+                    )
+                    ->action(function (Order $record): void {
+                        $shipping_response = json_decode($record->shipping_response);
+                        $trajectoryInfo = app(JtExpressService::class)->getLogisticsTrajectory($shipping_response->data);
+
+                        if ($trajectoryInfo['code'] ?? null === 1) {
+                            $steps = count($trajectoryInfo['data']['details'] ?? []);
+
+                            Notification::make()
+                                ->title('Delivery Trajectory')
+                                ->body("Retrieved {$steps} tracking events for this shipment.")
+                                ->success()
+                                ->send();
+                        } else {
+                            Notification::make()
+                                ->title('Trajectory Error')
+                                ->body($trajectoryInfo['msg'] ?? 'Unable to get trajectory information')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
+
+                Tables\Actions\Action::make('cancelOrder')
+                    ->label(__('actions.cancel_order'))
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->visible(fn (Order $record): bool =>
+                        Setting::first()?->enable_jnt &&
+                        !is_null($record->tracking_number) &&
+                        $record->shipping_status !== 'delivered' &&
+                        $record->shipping_status !== 'cancelled'
+                    )
+                    ->action(function (Order $record): void {
+                        $shipping_response = json_decode($record->shipping_response);
+                        $cancelResult = app(JtExpressService::class)->cancelOrder($shipping_response->data);
+
+                        if ($cancelResult['code'] ?? null === 1) {
+                            $record->update([
+                                'status'            => OrderStatus::Cancelled,
+                                'shipping_status'   => 'cancelled',
+                                'shipping_response' => json_encode($cancelResult)
+                            ]);
+
+                            Notification::make()
+                                ->title('Order Cancelled')
+                                ->body('The order has been successfully cancelled.')
+                                ->success()
+                                ->send();
+                        } else {
+                            Notification::make()
+                                ->title('Cancellation Error')
+                                ->body($cancelResult['msg'] ?? 'Unable to cancel the order')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
+
+                // BOSTA ACTION
                 Action::make('send_to_bosta')
                     ->label('Send to Bosta')
                     ->icon('heroicon-o-truck')
                     ->color('primary')
-                    ->visible(fn (Order $record): bool => $record->status === OrderStatus::Preparing && !$record->bosta_delivery_id)
+                    ->visible(fn (Order $record): bool =>
+                        Setting::first()?->enable_bosta &&
+                        $record->status === OrderStatus::Preparing &&
+                        !$record->bosta_delivery_id
+                    )
                     ->requiresConfirmation()
                     ->modalHeading('Send Order to Bosta')
                     ->modalDescription('This will create a delivery in Bosta and set the order status to Shipping.')
@@ -374,24 +534,28 @@ class OrderResource extends Resource
                                 'status' => OrderStatus::Shipping,
                                 'bosta_delivery_id' => $response['deliveryId'],
                             ]);
-                            \Filament\Notifications\Notification::make()
+                            Notification::make()
                                 ->title('Order sent to Bosta')
                                 ->success()
                                 ->send();
                         } else {
-                            \Filament\Notifications\Notification::make()
+                            Notification::make()
                                 ->title('Failed to send order to Bosta')
                                 ->danger()
                                 ->send();
                             Log::error('Failed to create Bosta delivery for order.', ['order_id' => $record->id]);
                         }
                     }),
-                // Ship with Aramex action
+
+                // ARAMEX ACTIONS
                 Action::make('shipWithAramex')
                     ->label('Ship with Aramex')
                     ->icon('heroicon-m-truck')
                     ->color('primary')
-                    ->visible(fn ($record) => $record->status === 'preparing')
+                    ->visible(fn ($record) =>
+                        Setting::first()?->enable_aramex &&
+                        $record->status === 'preparing'
+                    )
                     ->action(function ($record, AramexService $aramexService) {
                         try {
                             $result = $aramexService->createShipment($record);
@@ -424,12 +588,14 @@ class OrderResource extends Resource
                         }
                     }),
 
-                // Track Aramex shipment action
                 Action::make('trackAramex')
                     ->label('Track Shipment')
                     ->icon('heroicon-m-magnifying-glass')
                     ->color('info')
-                    ->visible(fn ($record) => !empty($record->aramex_shipment_id))
+                    ->visible(fn ($record) =>
+                        Setting::first()?->enable_aramex &&
+                        !empty($record->aramex_shipment_id)
+                    )
                     ->action(function ($record, AramexService $aramexService) {
                         try {
                             $result = $aramexService->trackShipment($record->aramex_shipment_id);
@@ -460,7 +626,6 @@ class OrderResource extends Resource
                             throw $e;
                         }
                     }),
-
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
@@ -473,168 +638,6 @@ class OrderResource extends Resource
                     )->toArray(),
 
                     Tables\Actions\DeleteAction::make(),
-
-                    Tables\Actions\Action::make('trackOrder')
-                        ->label(__('actions.track_order'))
-                        ->visible(fn (Order $record): bool =>
-                        !is_null($record->tracking_number)
-                        )
-                        ->icon('heroicon-o-map')
-                        ->color('success')
-                        ->visible(fn (Order $record): bool =>
-                            !is_null($record->tracking_number) &&
-                            !is_null($record->shipping_status)
-                        )
-                        ->action(function (Order $record): void {
-                            $shipping_response = json_decode($record->shipping_response);
-                            $trackingInfo = app(JtExpressService::class)->trackLogistics($shipping_response->data);
-
-                            if (isset($trackingInfo['code']) && $trackingInfo['code'] == 1) {
-                                Notification::make()
-                                    ->title('Tracking Information')
-                                    ->body('Tracking details retrieved successfully: ' . ($trackingInfo['data']['billCode'] ?? $record->tracking_number))
-                                    ->success()
-                                    ->send();
-                            } else {
-                                Notification::make()
-                                    ->title('Tracking Error')
-                                    ->body($trackingInfo['msg'] ?? 'Unable to retrieve tracking information')
-                                    ->danger()
-                                    ->send();
-                            }
-                        }),
-                    Tables\Actions\Action::make('checkOrder')
-                        ->label(__('actions.check_order'))
-                        ->visible(fn (Order $record): bool =>
-                        !is_null($record->tracking_number)
-                        )
-                        ->icon('heroicon-o-check-circle')
-                        ->color('primary')
-                        ->visible(fn (Order $record): bool =>
-                        !is_null($record->tracking_number)
-                        )
-                        ->action(function (Order $record): void {
-                            $shipping_response = json_decode($record->shipping_response);
-                            $orderInfo = app(JtExpressService::class)->checkingOrder($shipping_response->data);
-
-                            if (isset($orderInfo['code']) && $orderInfo['code'] == 1) {
-                                Notification::make()
-                                    ->title('Order Status')
-                                    ->body('Order exists: ' . ($orderInfo['data']['isExist'] ?? 'Unknown'))
-                                    ->success()
-                                    ->send();
-                            } else {
-                                Notification::make()
-                                    ->title('Check Error')
-                                    ->body($orderInfo['msg'] ?? 'Unable to check order status')
-                                    ->danger()
-                                    ->send();
-                            }
-                        }),
-                    Tables\Actions\Action::make('getOrderStatus')
-                        ->label(__('actions.get_order_status'))
-                        ->visible(fn (Order $record): bool =>
-                        !is_null($record->tracking_number)
-                        )
-                        ->icon('heroicon-o-clipboard-document-list')
-                        ->color('info')
-                        ->visible(fn (Order $record): bool =>
-                        !is_null($record->tracking_number)
-                        )
-                        ->action(function (Order $record): void {
-                            $shipping_response = json_decode($record->shipping_response);
-                            $statusInfo = app(JtExpressService::class)->getOrderStatus($shipping_response->data);
-
-                            if (isset($statusInfo['code']) && $statusInfo['code'] == 1) {
-                                $status = $statusInfo['data']['deliveryStatus'] ?? 'Unknown';
-
-                                $record->update([
-                                    'shipping_status' => $status,
-                                    'shipping_response' => json_encode($statusInfo)
-                                ]);
-
-                                Notification::make()
-                                    ->title('Order Status Updated')
-                                    ->body('Current status: ' . $status)
-                                    ->success()
-                                    ->send();
-                            } else {
-                                Notification::make()
-                                    ->title('Status Error')
-                                    ->body($statusInfo['msg'] ?? 'Unable to get order status')
-                                    ->danger()
-                                    ->send();
-                            }
-                        }),
-                    Tables\Actions\Action::make('getTrajectory')
-                        ->label(__('actions.get_trajectory'))
-                        ->visible(fn (Order $record): bool =>
-                        !is_null($record->tracking_number)
-                        )
-                        ->icon('heroicon-o-arrow-path')
-                        ->color('gray')
-                        ->visible(fn (Order $record): bool =>
-                        !is_null($record->tracking_number)
-                        )
-                        ->action(function (Order $record): void {
-                            $shipping_response = json_decode($record->shipping_response);
-                            $trajectoryInfo = app(JtExpressService::class)->getLogisticsTrajectory($shipping_response->data);
-
-                            if (isset($trajectoryInfo['code']) && $trajectoryInfo['code'] == 1) {
-                                $steps = count($trajectoryInfo['data']['details'] ?? []);
-
-                                Notification::make()
-                                    ->title('Delivery Trajectory')
-                                    ->body("Retrieved {$steps} tracking events for this shipment.")
-                                    ->success()
-                                    ->send();
-
-                                // You could store this information or display it in a modal
-                            } else {
-                                Notification::make()
-                                    ->title('Trajectory Error')
-                                    ->body($trajectoryInfo['msg'] ?? 'Unable to get trajectory information')
-                                    ->danger()
-                                    ->send();
-                            }
-                        }),
-                    Tables\Actions\Action::make('cancelOrder')
-                        ->label(__('actions.cancel_order'))
-                        ->visible(fn (Order $record): bool =>
-                        !is_null($record->tracking_number)
-                        )
-                        ->icon('heroicon-o-x-circle')
-                        ->color('danger')
-                        ->visible(fn (Order $record): bool =>
-                            !is_null($record->tracking_number) &&
-                            $record->shipping_status !== 'delivered' &&
-                            $record->shipping_status !== 'cancelled'
-                        )
-                        ->requiresConfirmation()
-                        ->action(function (Order $record): void {
-                            $shipping_response = json_decode($record->shipping_response);
-                            $cancelResult = app(JtExpressService::class)->cancelOrder($shipping_response->data);
-
-                            if (isset($cancelResult['code']) && $cancelResult['code'] == 1) {
-                                $record->update([
-                                    'status'            => OrderStatus::Cancelled,
-                                    'shipping_status'   => 'cancelled',
-                                    'shipping_response' => json_encode($cancelResult)
-                                ]);
-
-                                Notification::make()
-                                    ->title('Order Cancelled')
-                                    ->body('The order has been successfully cancelled.')
-                                    ->success()
-                                    ->send();
-                            } else {
-                                Notification::make()
-                                    ->title('Cancellation Error')
-                                    ->body($cancelResult['msg'] ?? 'Unable to cancel the order')
-                                    ->danger()
-                                    ->send();
-                            }
-                        }),
                 ])->label(__('Actions'))
                     ->icon('heroicon-m-ellipsis-vertical')
                     ->size(ActionSize::Small)

@@ -125,11 +125,6 @@ class ProductResource extends Resource
                             ->columns(2)
                             ->icon('heroicon-o-currency-dollar')
                             ->schema([
-                                BarcodeInput::make('barcode')
-                                    ->columnSpanFull()
-                                    ->label('Scan or Enter Barcode')
-                                    ->icon('heroicon-o-qr-code')
-                                    ->required(),
                                 TextInput::make('sku')
                                     ->label(__('SKU'))
                                     ->unique(ignoreRecord: true)

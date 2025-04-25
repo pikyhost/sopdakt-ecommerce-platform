@@ -169,6 +169,21 @@ class SettingResource extends Resource
 
                     ])->columns(2),
 
+                Forms\Components\Section::make(__('Brand Colors'))
+                    ->description(__('These colors will be applied throughout the frontend design'))
+                    ->schema([
+                        Forms\Components\ColorPicker::make('primary_color')
+                            ->label(__('Primary Brand Color'))
+                            ->nullable()
+                            ->helperText(__('Applied to: Primary buttons, headers, main CTAs, and key interactive elements (Hex code)')),
+
+                        Forms\Components\ColorPicker::make('secondary_color')
+                            ->label(__('Secondary Brand Color'))
+                            ->nullable()
+                            ->helperText(__('Applied to: Secondary buttons, accents, borders, and complementary design elements (Hex code)')),
+                    ])
+                    ->columns(2),
+
                 Forms\Components\Section::make(__('Logos'))
                      ->collapsed(true)
                     ->description(__('Upload logos for different languages'))
@@ -275,6 +290,25 @@ class SettingResource extends Resource
                             ->default(true)
                             ->helperText(__('Enable or disable shipping locations selection on checkout.')),
                     ])->columns(3),
+
+                Forms\Components\Section::make(__('Shipping Providers'))
+                    ->schema([
+                        Forms\Components\Checkbox::make('enable_aramex')
+                            ->label(__('Enable Aramex'))
+                            ->default(false)
+                            ->helperText(__('Enable Aramex as a shipping option for customers.')),
+
+                        Forms\Components\Checkbox::make('enable_bosta')
+                            ->label(__('Enable Bosta'))
+                            ->default(false)
+                            ->helperText(__('Enable Bosta as a shipping option for customers.')),
+
+                        Forms\Components\Checkbox::make('enable_jnt')
+                            ->label(__('Enable J&T'))
+                            ->default(false)
+                            ->helperText(__('Enable J&T Express as a shipping option for customers.')),
+                    ])
+                    ->columns(3)
             ]);
     }
 
