@@ -170,6 +170,7 @@ class SettingResource extends Resource
                     ])->columns(2),
 
                 Forms\Components\Section::make(__('Brand Colors'))
+                    ->collapsed(true)
                     ->description(__('These colors will be applied throughout the frontend design'))
                     ->schema([
                         Forms\Components\ColorPicker::make('primary_color')
@@ -292,7 +293,12 @@ class SettingResource extends Resource
                     ])->columns(3),
 
                 Forms\Components\Section::make(__('Shipping Providers'))
+                    ->collapsed(true)
                     ->schema([
+                        Forms\Components\Checkbox::make('enable_jnt')
+                            ->label(__('Enable J&T'))
+                            ->default(false)
+                            ->helperText(__('Enable J&T Express as a shipping option for customers.')),
                         Forms\Components\Checkbox::make('enable_aramex')
                             ->label(__('Enable Aramex'))
                             ->default(false)
@@ -302,11 +308,6 @@ class SettingResource extends Resource
                             ->label(__('Enable Bosta'))
                             ->default(false)
                             ->helperText(__('Enable Bosta as a shipping option for customers.')),
-
-                        Forms\Components\Checkbox::make('enable_jnt')
-                            ->label(__('Enable J&T'))
-                            ->default(false)
-                            ->helperText(__('Enable J&T Express as a shipping option for customers.')),
                     ])
                     ->columns(3)
             ]);
