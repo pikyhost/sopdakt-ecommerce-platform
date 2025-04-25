@@ -293,6 +293,7 @@ class SettingResource extends Resource
                     ])->columns(3),
 
                 Forms\Components\Section::make(__('Shipping Providers'))
+                    ->description(__('Enable/disable available shipping partners and configure their visibility at checkout'))
                     ->collapsed(true)
                     ->schema([
                         Forms\Components\Checkbox::make('enable_jnt')
