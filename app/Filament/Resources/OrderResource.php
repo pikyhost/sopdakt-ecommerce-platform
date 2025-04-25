@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Exports\OrderExporter;
 use App\Services\AramexService;
+use App\Services\BostaService;
 use Filament\Actions\Exports\Enums\ExportFormat;
 use Filament\Forms\Components\Select;
 use Filament\Tables\Actions\ExportAction;
@@ -43,6 +44,7 @@ use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -354,6 +356,36 @@ class OrderResource extends Resource
                     }),
             ], Tables\Enums\FiltersLayout::Modal)
             ->actions([
+                Action::make('send_to_bosta')
+                    ->label('Send to Bosta')
+                    ->icon('heroicon-o-truck')
+                    ->color('primary')
+                    ->visible(fn (Order $record): bool => $record->status === OrderStatus::Preparing && !$record->bosta_delivery_id)
+                    ->requiresConfirmation()
+                    ->modalHeading('Send Order to Bosta')
+                    ->modalDescription('This will create a delivery in Bosta and set the order status to Shipping.')
+                    ->modalSubmitActionLabel('Confirm')
+                    ->action(function (Order $record) {
+                        $bostaService = new BostaService();
+                        $response = $bostaService->createDelivery($record);
+
+                        if ($response && isset($response['deliveryId'])) {
+                            $record->update([
+                                'status' => OrderStatus::Shipping,
+                                'bosta_delivery_id' => $response['deliveryId'],
+                            ]);
+                            \Filament\Notifications\Notification::make()
+                                ->title('Order sent to Bosta')
+                                ->success()
+                                ->send();
+                        } else {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Failed to send order to Bosta')
+                                ->danger()
+                                ->send();
+                            Log::error('Failed to create Bosta delivery for order.', ['order_id' => $record->id]);
+                        }
+                    }),
                 // Ship with Aramex action
                 Action::make('shipWithAramex')
                     ->label('Ship with Aramex')

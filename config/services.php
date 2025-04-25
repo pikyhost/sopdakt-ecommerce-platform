@@ -38,4 +38,10 @@ return [
     'paymob' => [
         'iframe_id' => env('PAYMOB_IFRAME_ID'),
     ],
+
+    'bosta' => [
+        'api_key' => env('BOSTA_API_KEY'),
+        'api_url' => env('BOSTA_API_URL', 'https://api.bosta.co/api/v2'),
+        'webhook_secret' => env('BOSTA_WEBHOOK_SECRET'),
+    ],
 ];

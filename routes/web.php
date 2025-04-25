@@ -5,6 +5,7 @@ use App\Livewire\AcceptInvitation;
 use Illuminate\Support\Facades\Route;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use App\Http\Controllers\{AramexWebhookController,
+    BostaWebhookController,
     CartController,
     CheckoutController,
     HomePageController,
@@ -87,3 +88,5 @@ Route::get('/payment-failed', [PaymentController::class, 'failed'])->name('payme
 Route::post('/payment/callback', [App\Http\Controllers\PaymentController::class, 'callback'])->name('payment.callback');
 
 Route::post('/aramex/webhook', [AramexWebhookController::class, 'handle'])->name('aramex.webhook');
+
+Route::post('/webhooks/bosta', [BostaWebhookController::class, 'handle'])->name('bosta.webhook');
