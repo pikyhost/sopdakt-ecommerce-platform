@@ -92,6 +92,7 @@ class CategoryResource extends Resource
                     ->maxLength(255),
 
                 TextInput::make('slug')
+                    ->required()
                     ->label(__('category.slug'))
                     ->unique(ignoreRecord: true)
                     ->maxLength(255),

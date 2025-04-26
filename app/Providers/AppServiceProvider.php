@@ -32,7 +32,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(PaymentGatewayInterface::class, PaymobPaymentService::class);
 
-        $this->app->bind(LogoutResponseContract::class, LogoutResponse::class);
+//        $this->app->bind(LogoutResponseContract::class, LogoutResponse::class);
 
         $this->app->singleton(JtExpressService::class, function ($app) {
             return new JtExpressService();
