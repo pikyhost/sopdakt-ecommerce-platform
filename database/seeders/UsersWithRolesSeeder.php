@@ -18,23 +18,9 @@ class UsersWithRolesSeeder extends Seeder
         $users = [
             [
                 'name' => 'Super Admin User',
-                'email' => 'super@gmail.com',
+                'email' => 'mo.mostafa@pikyhost.com',
                 'password' => Hash::make('password'),
                 'role' => UserRole::SuperAdmin,
-                'email_verified_at' => now(),
-            ],
-            [
-                'name' => 'Admin User',
-                'email' => 'admin@gmail.com',
-                'password' => Hash::make('password'),
-                'role' => UserRole::Admin,
-                'email_verified_at' => now(),
-            ],
-            [
-                'name' => 'Client User',
-                'email' => 'client@gmail.com',
-                'password' => Hash::make('password'),
-                'role' => UserRole::Client,
                 'email_verified_at' => now(),
             ],
         ];
@@ -45,7 +31,7 @@ class UsersWithRolesSeeder extends Seeder
                 [
                     'name' => $userData['name'], // Ensure this is a plain string
                     'password' => $userData['password'],
-                    'email_verified_at' => $userData['email_verified_at'],
+                    'email_verified_at' => true,
                 ]
             );
 

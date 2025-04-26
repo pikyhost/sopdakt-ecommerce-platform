@@ -125,10 +125,6 @@ class ClientRegister extends BaseRegister
             ->required()
             ->rules([
                 'max:20',
-                Rule::unique('users')->where(function ($query) {
-                    $query->where('phone', request('phone'))
-                        ->orWhere('second_phone', request('phone'));
-                }),
             ])
             ->label(__('profile.phone'))
             ->columnSpanFull();

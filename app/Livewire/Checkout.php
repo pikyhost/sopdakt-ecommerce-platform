@@ -452,15 +452,14 @@ class Checkout extends Component
         }
     }
 
-    public function createOrderManually($cart, WAPilotWhatsAppService $whatsAppService, $contact = null)
+    public function createOrderManually($cart, $contact = null)
     {
         DB::beginTransaction();
 
         try {
-            $order = Order::create([
+            $orderData = [
                 'payment_method_id' => $this->payment_method_id,
                 'user_id' => Auth::id(),
-                'contact_id' => $contact?->id,
                 'shipping_type_id' => $cart->shipping_type_id,
                 'coupon_id' => $cart->coupon_id,
                 'shipping_cost' => $cart->shipping_cost,
@@ -474,7 +473,14 @@ class Checkout extends Component
                 'status' => \App\Enums\OrderStatus::Shipping,
                 'notes' => $this->notes,
                 'checkout_token' => $this->checkoutToken,
-            ]);
+            ];
+
+            // Only add contact_id if guest (not authenticated)
+            if (!Auth::check() && $contact) {
+                $orderData['contact_id'] = $contact->id;
+            }
+
+            $order = Order::create($orderData);
 
             foreach ($cart->items as $item) {
                 OrderItem::create([
@@ -545,7 +551,7 @@ class Checkout extends Component
                 Mail::to($contact->email)->locale($locale)->send(new GuestInvitationMail($invitation));
             }
 
-            // Send WhatsApp message
+            $whatsAppService = new WAPilotWhatsAppService();
             $message = "Thank you for your order #{$order->id}! Your order for {$order->total} is being processed.";
             $whatsAppService->sendMessage($this->phone, $message);
 
