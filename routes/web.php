@@ -37,17 +37,7 @@ Route::get('/invitation/guest/{invitation}', AcceptGuestInvitation::class)
 
 Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['localeSessionRedirect', 'localizationRedirect', 'localeViewPath']], function () {
 
-    Route::get('/', [HomePageController::class, 'index'])->name('homepage');
-
-    Route::get('/wheel/{wheel}', [HomePageController::class, 'wheel'])
-        ->name('wheel.spin');
-
-    Route::view('/blogs', 'pages.blogs')->name('blogs');
-    Route::view('/products', 'pages.products')->name('products');
-    Route::view('/categories', 'pages.categories')->name('categories');
-
     Route::get('landing-page/{slug}', [LandingPageController::class, 'show'])->name('landing-page.show-by-slug');
-    Route::get('/products/{slug}', [ProductController::class, 'show'])->name('product.show');
     Route::get('/category/{slug}', [CategoryProductController::class, 'show'])->name('category.products');
     Route::get('/regions', [RegionsController::class, 'index'])->name('regions.index');
     Route::post('/calculate-shipping', [ShippingController::class, 'calculateShipping'])->name('shipping.calculate');
@@ -58,21 +48,6 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
     Route::post('landing-pages/{id}/order', [LandingPageController::class, 'saveOrder'])->name('landing-page.purchase-form.order');
     Route::get('landing-pages/{slug}/thanks', [LandingPageController::class, 'thanks'])->name('landing-pages.thanks');
 
-    Route::get('wishlist', [WishlistController::class, 'index'])->name('wishlist');
-    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
-    Route::get('/order-success', [OrderCompleteController::class, 'index'])->name('order.complete');
-
-    Route::view('/privacy-policy', 'pages.privacy-policy')->name('privacy.policy');
-    Route::view('/about-us', 'pages.about-us')->name('about.us');
-    Route::view('/contact-us', 'pages.contact-us')->name('contact.us');
-    Route::view('/refund-policy', 'pages.refund-policy')->name('refund.policy');
-    Route::view('/terms-of-service', 'pages.terms-of-service')->name('terms.of.service');
-    Route::get('/compare-products/{ids}', [ProductComparisonController::class, 'index'])->name('compare.products');
-
-    Route::get('/search/{query}', function ($query) {
-        return view('search-results', ['query' => $query]);
-    })->name('search.results');
 });
 Route::post('/jt-express-webhook', [ShippingController::class, 'handleWebhook']);
 
@@ -90,3 +65,6 @@ Route::post('/payment/callback', [App\Http\Controllers\PaymentController::class,
 Route::post('/aramex/webhook', [AramexWebhookController::class, 'handle'])->name('aramex.webhook');
 
 Route::post('/webhooks/bosta', [BostaWebhookController::class, 'handle'])->name('bosta.webhook');
+
+
+Route::get('test', fn() => 'Hello sopdakt');
