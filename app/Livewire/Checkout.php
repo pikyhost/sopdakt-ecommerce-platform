@@ -4,6 +4,8 @@ namespace App\Livewire;
 
 use App\Models\Transaction;
 use App\Services\StockLevelNotifier;
+use App\Services\WAPilotWhatsAppService;
+use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
@@ -118,8 +120,6 @@ class Checkout extends Component
             '+20' . $withoutZero,         // +201025263865
         ]);
     }
-
-
 
     public function mount()
     {
@@ -452,7 +452,7 @@ class Checkout extends Component
         }
     }
 
-    public function createOrderManually($cart, $contact = null)
+    public function createOrderManually($cart, WAPilotWhatsAppService $whatsAppService, $contact = null)
     {
         DB::beginTransaction();
 
@@ -544,6 +544,10 @@ class Checkout extends Component
 
                 Mail::to($contact->email)->locale($locale)->send(new GuestInvitationMail($invitation));
             }
+
+            // Send WhatsApp message
+            $message = "Thank you for your order #{$order->id}! Your order for {$order->total} is being processed.";
+            $whatsAppService->sendMessage($this->phone, $message);
 
             DB::commit();
 
