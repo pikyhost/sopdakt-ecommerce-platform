@@ -6,21 +6,11 @@ use Illuminate\Support\Facades\Route;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use App\Http\Controllers\{AramexWebhookController,
     BostaWebhookController,
-    CartController,
-    CheckoutController,
-    HomePageController,
-    OrderCompleteController,
-    PaymentController,
-    ProductComparisonController,
-    ProductController,
     LandingPageController,
     RegionsController,
     ShippingController,
     CategoryProductController,
-    WishlistController};
-
-use Spatie\Analytics\Facades\Analytics;
-use Spatie\Analytics\Period;
+    };
 
 // This route catches everything except `admin/*` and `client/*`
 Route::get('{any}', function () {
@@ -30,7 +20,6 @@ Route::get('{any}', function () {
 Route::middleware('signed')
     ->get('invitation/{invitation}/accept', AcceptInvitation::class)
     ->name('invitation.accept');
-
 
 Route::get('/invitation/guest/{invitation}', AcceptGuestInvitation::class)
     ->name('guest.invitation.accept');
@@ -51,20 +40,8 @@ Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['lo
 });
 Route::post('/jt-express-webhook', [ShippingController::class, 'handleWebhook']);
 
-Route::get('/analytics', function () {
-    $analyticsData = Analytics::fetchTotalVisitorsAndPageViews(Period::days(7));
-
-    return response()->json($analyticsData);
-});
-
-Route::get('/payment-success', [PaymentController::class, 'success'])->name('payment.success');
-Route::get('/payment-failed', [PaymentController::class, 'failed'])->name('payment.failed');
-
 Route::post('/payment/callback', [App\Http\Controllers\PaymentController::class, 'callback'])->name('payment.callback');
 
 Route::post('/aramex/webhook', [AramexWebhookController::class, 'handle'])->name('aramex.webhook');
 
 Route::post('/webhooks/bosta', [BostaWebhookController::class, 'handle'])->name('bosta.webhook');
-
-
-Route::get('test', fn() => 'Hello sopdakt');
