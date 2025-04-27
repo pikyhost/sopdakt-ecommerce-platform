@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
-use App\Models\ProductColor;
 use App\Models\ProductColorSize;
 use App\Models\Setting;
 use Illuminate\Http\Request;

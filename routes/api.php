@@ -43,3 +43,12 @@ Route::get('/products/{slug}', [ProductController::class, 'showBySlug'])->name('
 Route::get('/products/featured', [ProductController::class, 'featured']);
 
 Route::get('/homepage/slider', [HomeController::class, 'sliderWithCta']);
+
+
+Route::prefix('cart')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\CartListController::class, 'index'])->name('api.cart.index');
+    Route::post('/shipping', [\App\Http\Controllers\Api\CartListController::class, 'updateShipping'])->name('api.cart.updateShipping');
+    Route::post('/item/{cartItemId}/quantity', [\App\Http\Controllers\Api\CartListController::class, 'updateQuantity'])->name('api.cart.updateQuantity');
+    Route::delete('/item/{cartItemId}', [\App\Http\Controllers\Api\CartListController::class, 'removeItem'])->name('api.cart.removeItem');
+    Route::post('/checkout', [\App\Http\Controllers\Api\CartListController::class, 'checkout'])->name('api.cart.checkout');
+});
