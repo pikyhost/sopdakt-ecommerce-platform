@@ -9,8 +9,8 @@ class ProtectDocs
 {
     public function handle(Request $request, Closure $next)
     {
-        $username = 'frontend'; // يوزر نيم للفرونت إند ديفيلوبر
-        $password = 'yourStrongPassword'; // باسورد تحطه انت
+        $username = 'frontend';
+        $password = 'Strong-Password-yourStrong-Password-123';
 
         if ($request->getUser() !== $username || $request->getPassword() !== $password) {
             $headers = ['WWW-Authenticate' => 'Basic'];

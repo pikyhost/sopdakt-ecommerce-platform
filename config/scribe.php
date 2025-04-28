@@ -70,7 +70,9 @@ return [
         'assets_directory' => null,
 
         // Middleware to attach to the docs endpoint (if `add_routes` is true).
-        'middleware' => [],
+        'middleware' => [
+            \App\Http\Middleware\ProtectDocs::class,
+        ],
     ],
 
     'external' => [
