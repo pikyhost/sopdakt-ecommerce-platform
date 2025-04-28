@@ -20,6 +20,11 @@ use App\Http\Controllers\{CartController,
 use Spatie\Analytics\Facades\Analytics;
 use Spatie\Analytics\Period;
 
+Route::middleware('protect.docs')->group(function () {
+    Route::get('/docs', '\Knuckles\Scribe\Http\Controller@webpage');
+    Route::get('/docs.json', '\Knuckles\Scribe\Http\Controller@json');
+});
+
 // This route catches everything except `admin/*` and `client/*`
 Route::get('{any}', function () {
     abort(404);

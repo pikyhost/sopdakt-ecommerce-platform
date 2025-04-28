@@ -10,7 +10,34 @@ use Illuminate\Support\Facades\DB;
 class WishlistController extends Controller
 {
     /**
-     * Toggle wishlist (add/remove product)
+     * Toggle Product in Wishlist
+     *
+     * @group Wishlist
+     * @authenticated
+     *
+     * Adds or removes a product from the authenticated user's wishlist.
+     *
+     * @bodyParam product_id integer required The ID of the product to toggle. Example: 42
+     *
+     * @response 200 {
+     *   "status": "added",
+     *   "message": "Product added to wishlist."
+     * }
+     * @response 200 {
+     *   "status": "removed",
+     *   "message": "Product removed from wishlist."
+     * }
+     * @response 401 {
+     *   "message": "Unauthorized"
+     * }
+     * @response 422 {
+     *   "message": "The given data was invalid.",
+     *   "errors": {
+     *     "product_id": [
+     *       "The selected product id is invalid."
+     *     ]
+     *   }
+     * }
      */
     public function toggle(Request $request)
     {
@@ -58,7 +85,35 @@ class WishlistController extends Controller
     }
 
     /**
-     * Get the wishlist for the authenticated user
+     * Get User Wishlist
+     *
+     * @group Wishlist
+     * @authenticated
+     *
+     * Retrieves all products in the authenticated user's wishlist,
+     * ordered by most recently added first.
+     *
+     * @response 200 {
+     *   "wishlist": [
+     *     {
+     *       "id": 1,
+     *       "name": "Premium Headphones",
+     *       "price": 199.99,
+     *       "slug": "premium-headphones",
+     *       "saved_at": "2023-05-15 10:30:00"
+     *     },
+     *     {
+     *       "id": 2,
+     *       "name": "Wireless Mouse",
+     *       "price": 29.99,
+     *       "slug": "wireless-mouse",
+     *       "saved_at": "2023-05-10 14:15:00"
+     *     }
+     *   ]
+     * }
+     * @response 401 {
+     *   "message": "Unauthorized"
+     * }
      */
     public function index()
     {
@@ -75,7 +130,24 @@ class WishlistController extends Controller
     }
 
     /**
-     * Check if a product is wishlisted
+     * Check if Product is in Wishlist
+     *
+     * @group Wishlist
+     * @authenticated
+     *
+     * Checks whether a specific product exists in the authenticated user's wishlist.
+     *
+     * @urlParam productId integer required The ID of the product to check. Example: 42
+     *
+     * @response 200 {
+     *   "isWishlisted": true
+     * }
+     * @response 200 {
+     *   "isWishlisted": false
+     * }
+     * @response 401 {
+     *   "message": "Unauthorized"
+     * }
      */
     public function isWishlisted($productId)
     {

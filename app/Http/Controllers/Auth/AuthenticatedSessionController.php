@@ -10,10 +10,47 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\RateLimiter;
 use Exception;
 
+/**
+ * @group Authentication
+ *
+ * APIs for handling user authentication, including login and logout operations.
+ */
 class AuthenticatedSessionController extends Controller
 {
     /**
-     * Handle an incoming authentication request.
+     * Handle an incoming authentication request
+     *
+     * Authenticates a user with the provided credentials. If successful, regenerates the session and returns user data. Returns an error if the user is already logged in or if credentials are invalid.
+     *
+     * @bodyParam email string required The user's email address. Example: user@example.com
+     * @bodyParam password string required The user's password. Example: password123
+     * @response 200 {
+     *   "message": "Login successful",
+     *   "user": {
+     *     "id": 1,
+     *     "name": "John Doe",
+     *     "email": "user@example.com"
+     *   }
+     * }
+     * @response 409 {
+     *   "message": "User is already logged in",
+     *   "user": {
+     *     "id": 1,
+     *     "name": "John Doe",
+     *     "email": "user@example.com"
+     *   }
+     * }
+     * @response 422 {
+     *   "message": "Validation failed",
+     *   "errors": {
+     *     "email": ["The email field is required."],
+     *     "password": ["The password field is required."]
+     *   }
+     * }
+     * @response 401 {
+     *   "message": "Authentication failed",
+     *   "error": "Invalid credentials"
+     * }
      */
     public function store(LoginRequest $request)
     {
@@ -52,7 +89,29 @@ class AuthenticatedSessionController extends Controller
     }
 
     /**
-     * Destroy an authenticated session.
+     * Destroy an authenticated session
+     *
+     * Logs out the authenticated Rectangular user, invalidates the session, and regenerates the CSRF token. Returns an error if no active session is found or if logout attempts are rate-limited.
+     *
+     * @authenticated
+     * @response 200 {
+     *   "message": "Logout successful",
+     *   "user": {
+     *     "id": 1,
+     *     "name": "John Doe",
+     *     "email": "user@example.com"
+     *   }
+     * }
+     * @response 401 {
+     *   "message": "No active session found"
+     * }
+     * @response 429 {
+     *   "message": "Too many logout attempts. Please try again later."
+     * }
+     * @response 500 {
+     *   "message": "Logout failed",
+     *   "error": "An unexpected error occurred"
+     * }
      */
     public function destroy(Request $request)
     {

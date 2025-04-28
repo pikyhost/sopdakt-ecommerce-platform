@@ -12,7 +12,29 @@ use Illuminate\Http\JsonResponse;
 class HomeController extends Controller
 {
     /**
-     * Get featured categories for homepage (optimized query)
+     * Get Featured Categories
+     *
+     * @group Homepage
+     *
+     * Retrieves a list of featured categories for the homepage with their images.
+     *
+     * @response 200 {
+     *   "success": true,
+     *   "data": [
+     *     {
+     *       "name": "Electronics",
+     *       "image_url": "https://example.com/media/categories/electronics.jpg"
+     *     },
+     *     {
+     *       "name": "Fashion",
+     *       "image_url": "https://example.com/media/categories/fashion.jpg"
+     *     }
+     *   ]
+     * }
+     * @response 500 {
+     *   "success": false,
+     *   "message": "Server Error"
+     * }
      */
     public function featuredCategories(): JsonResponse
     {
@@ -20,10 +42,10 @@ class HomeController extends Controller
         $categories = Category::with(['media' => function ($query) {
             $query->where('collection_name', 'main_category_image');
         }])
-            ->select('id', 'name') // Only select what we need
-            ->where('is_published', true) // Only published categories
-            ->whereNull('parent_id') // Only parent categories if you want
-            ->orderBy('created_at', 'desc') // Or any other relevant order
+            ->select('id', 'name')
+            ->where('is_published', true)
+            ->whereNull('parent_id')
+            ->orderBy('created_at', 'desc')
             ->limit(8)
             ->get()
             ->map(function ($category) {
@@ -40,15 +62,60 @@ class HomeController extends Controller
     }
 
     /**
-     * Get top 10 best-selling products (ordered by sales)
+     * Get Best Selling Products
+     *
+     * @group Homepage
+     *
+     * Retrieves top 10 best-selling products with complete details including:
+     * - Product information
+     * - Available colors with sizes
+     * - Action links
+     *
+     * @response 200 {
+     *   "success": true,
+     *   "data": [
+     *     {
+     *       "id": 1,
+     *       "name": "Premium Headphones",
+     *       "price": 199.99,
+     *       "after_discount_price": 179.99,
+     *       "sales": 150,
+     *       "slug": "premium-headphones",
+     *       "image_url": "https://example.com/media/products/headphones.jpg",
+     *       "category": {
+     *         "name": "Electronics",
+     *         "slug": "electronics"
+     *       },
+     *       "colors_with_sizes": [
+     *         {
+     *           "color_name": "Black",
+     *           "color_code": "#000000",
+     *           "color_image": null,
+     *           "sizes": [
+     *             {
+     *               "size_name": "One Size",
+     *               "quantity": 50
+     *             }
+     *           ]
+     *         }
+     *       ],
+     *       "actions": {
+     *         "add_to_cart": "http://example.com/api/cart/1",
+     *         "toggle_love": "http://example.com/api/wishlist/toggle/1",
+     *         "compare": "http://example.com/api/compare/1",
+     *         "view": "http://example.com/products/premium-headphones"
+     *       }
+     *     }
+     *   ]
+     * }
      */
     public function bestSellers(): JsonResponse
     {
         $products = Product::with([
             'media',
             'category',
-            'productColors.color', // Eager load color relation inside productColors
-            'productColors.productColorSizes.size', // Eager load sizes through productColorSizes
+            'productColors.color',
+            'productColors.productColorSizes.size',
         ])
             ->select([
                 'id',
@@ -101,7 +168,34 @@ class HomeController extends Controller
         ]);
     }
 
-
+    /**
+     * Get Homepage Slider with CTA
+     *
+     * @group Homepage
+     *
+     * Retrieves configured slider images and call-to-action data for the homepage.
+     *
+     * @response 200 {
+     *   "data": {
+     *     "slider_images": [
+     *       {
+     *         "url": "http://example.com/media/slider/slide1.jpg",
+     *         "link": "/products/summer-collection",
+     *         "text": "Summer Sale"
+     *       }
+     *     ],
+     *     "cta": {
+     *       "title": "New Arrivals",
+     *       "description": "Check out our latest products",
+     *       "button_text": "Shop Now",
+     *       "button_link": "/new-arrivals"
+     *     }
+     *   }
+     * }
+     * @response 404 {
+     *   "message": "Homepage settings not found."
+     * }
+     */
     public function sliderWithCta()
     {
         $homePageSetting = HomePageSetting::getCached();

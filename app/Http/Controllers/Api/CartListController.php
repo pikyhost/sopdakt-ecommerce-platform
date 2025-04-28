@@ -20,10 +20,84 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
+/**
+ * @group Cart Management
+ *
+ * APIs for managing the shopping cart, including viewing cart contents, updating shipping details, modifying item quantities, removing items, and proceeding to checkout.
+ */
 class CartListController extends Controller
 {
     /**
-     * Get the user's cart.
+     * Get the user's cart
+     *
+     * Retrieves the current user's cart or a session-based cart if the user is not authenticated. Includes cart items, totals, shipping options, and complementary products.
+     *
+     * @authenticated
+     * @response 200 {
+     *   "cart": {
+     *     "id": 1,
+     *     "user_id": 1,
+     *     "session_id": null,
+     *     "subtotal": 99.99,
+     *     "total": 109.99,
+     *     "tax_percentage": 5,
+     *     "tax_amount": 5.00,
+     *     "shipping_cost": 5.00,
+     *     "country_id": 1,
+     *     "governorate_id": 1,
+     *     "city_id": 1,
+     *     "shipping_type_id": 1
+     *   },
+     *   "cartItems": [
+     *     {
+     *       "id": 1,
+     *       "cart_id": 1,
+     *       "product_id": 1,
+     *       "quantity": 2,
+     *       "subtotal": 49.98,
+     *       "product": {
+     *         "id": 1,
+     *         "name": "Sample Product",
+     *         "slug": "sample-product",
+     *         "discount_price_for_current_country": "24.99 USD"
+     *       }
+     *     }
+     *   ],
+     *   "totals": {
+     *     "subtotal": 99.99,
+     *     "shipping_cost": 5.00,
+     *     "tax": 5.00,
+     *     "total": 109.99,
+     *     "currency": "USD"
+     *   },
+     *   "countries": [
+     *     {"id": 1, "name": "USA", "cost": 5.00},
+     *     {"id": 2, "name": "Canada", "cost": 7.00}
+     *   ],
+     *   "governorates": [
+     *     {"id": 1, "name": "California", "country_id": 1},
+     *     {"id": 2, "name": "Ontario", "country_id": 2}
+     *   ],
+     *   "cities": [
+     *     {"id": 1, "name": "Los Angeles", "governorate_id": 1},
+     *     {"id": 2, "name": "Toronto", "governorate_id": 2}
+     *   ],
+     *   "shipping_types": [
+     *     {"id": 1, "name": "Standard Shipping", "cost": 5.00, "status": true},
+     *     {"id": 2, "name": "Express Shipping", "cost": 10.00, "status": true}
+     *   ],
+     *   "complementary_products": [
+     *     {
+     *       "id": 2,
+     *       "name": "Complementary Product",
+     *       "slug": "complementary-product",
+     *       "discount_price_for_current_country": "19.99 USD"
+     *     }
+     *   ]
+     * }
+     * @response 401 {
+     *   "message": "Unauthenticated."
+     * }
      */
     public function index(Request $request): JsonResponse
     {
@@ -58,7 +132,67 @@ class CartListController extends Controller
     }
 
     /**
-     * Update cart shipping and location details.
+     * Update cart shipping and location details
+     *
+     * Updates the cart's shipping and location details (country, governorate, city, and shipping type). Returns updated cart details and dependent location data.
+     *
+     * @authenticated
+     * @bodyParam country_id integer nullable The ID of the country. Example: 1
+     * @bodyParam governorate_id integer nullable The ID of the governorate. Example: 1
+     * @bodyParam city_id integer nullable The ID of the city. Example: 1
+     * @bodyParam shipping_type_id integer nullable The ID of the shipping type. Example: 1
+     * @response 200 {
+     *   "cart": {
+     *     "id": 1,
+     *     "user_id": 1,
+     *     "session_id": null,
+     *     "subtotal": 99.99,
+     *     "total": 109.99,
+     *     "tax_percentage": 5,
+     *     "tax_amount": 5.00,
+     *     "shipping_cost": 5.00,
+     *     "country_id": 1,
+     *     "governorate_id": 1,
+     *     "city_id": 1,
+     *     "shipping_type_id": 1
+     *   },
+     *   "cartItems": [
+     *     {
+     *       "id": 1,
+     *       "cart_id": 1,
+     *       "product_id": 1,
+     *       "quantity": 2,
+     *       "subtotal": 49.98,
+     *       "product": {
+     *         "id": 1,
+     *         "name": "Sample Product",
+     *         "slug": "sample-product",
+     *         "discount_price_for_current_country": "24.99 USD"
+     *       }
+     *     }
+     *   ],
+     *   "totals": {
+     *     "subtotal": 99.99,
+     *     "shipping_cost": 5.00,
+     *     "tax": 5.00,
+     *     "total": 109.99,
+     *     "currency": "USD"
+     *   },
+     *   "governorates": [
+     *     {"id": 1, "name": "California", "country_id": 1}
+     *   ],
+     *   "cities": [
+     *     {"id": 1, "name": "Los Angeles", "governorate_id": 1}
+     *   ]
+     * }
+     * @response 422 {
+     *   "errors": {
+     *     "country_id": ["The selected country id is invalid."]
+     *   }
+     * }
+     * @response 401 {
+     *   "message": "Unauthenticated."
+     * }
      */
     public function updateShipping(Request $request): JsonResponse
     {
@@ -94,7 +228,58 @@ class CartListController extends Controller
     }
 
     /**
-     * Update cart item quantity.
+     * Update cart item quantity
+     *
+     * Increases or decreases the quantity of a specific cart item. If the quantity reaches 0, the item is removed.
+     *
+     * @authenticated
+     * @urlParam cartItemId integer required The ID of the cart item. Example: 1
+     * @bodyParam action string required Must be "increase" or "decrease". Example: increase
+     * @response 200 {
+     *   "cart": {
+     *     "id": 1,
+     *     "user_id": 1,
+     *     "session_id": null,
+     *     "subtotal": 74.97,
+     *     "total": 82.47,
+     *     "tax_percentage": 5,
+     *     "tax_amount": 3.75,
+     *     "shipping_cost": 5.00
+     *   },
+     *   "cartItems": [
+     *     {
+     *       "id": 1,
+     *       "cart_id": 1,
+     *       "product_id": 1,
+     *       "quantity": 3,
+     *       "subtotal": 74.97,
+     *       "product": {
+     *         "id": 1,
+     *         "name": "Sample Product",
+     *         "slug": "sample-product",
+     *         "discount_price_for_current_country": "24.99 USD"
+     *       }
+     *     }
+     *   ],
+     *   "totals": {
+     *     "subtotal": 74.97,
+     *     "shipping_cost": 5.00,
+     *     "tax": 3.75,
+     *     "total": 82.47,
+     *     "currency": "USD"
+     *   }
+     * }
+     * @response 404 {
+     *   "error": "Cart item not found"
+     * }
+     * @response 422 {
+     *   "errors": {
+     *     "action": ["The action must be increase or decrease."]
+     *   }
+     * }
+     * @response 401 {
+     *   "message": "Unauthenticated."
+     * }
      */
     public function updateQuantity(Request $request, $cartItemId): JsonResponse
     {
@@ -136,7 +321,38 @@ class CartListController extends Controller
     }
 
     /**
-     * Remove a cart item.
+     * Remove a cart item
+     *
+     * Removes a specific cart item from the cart. If the item is part of a bundle, the entire bundle is removed.
+     *
+     * @authenticated
+     * @urlParam cartItemId integer required The ID of the cart item to remove. Example: 1
+     * @response 200 {
+     *   "cart": {
+     *     "id": 1,
+     *     "user_id": 1,
+     *     "session_id": null,
+     *     "subtotal": 0.00,
+     *     "total": 0.00,
+     *     "tax_percentage": 5,
+     *     "tax_amount": 0.00,
+     *     "shipping_cost": 0.00
+     *   },
+     *   "cartItems": [],
+     *   "totals": {
+     *     "subtotal": 0.00,
+     *     "shipping_cost": 0.00,
+     *     "tax": 0.00,
+     *     "total": 0.00,
+     *     "currency": "USD"
+     *   }
+     * }
+     * @response 404 {
+     *   "error": "Cart item not found"
+     * }
+     * @response 401 {
+     *   "message": "Unauthenticated."
+     * }
      */
     public function removeItem($cartItemId): JsonResponse
     {
@@ -164,7 +380,41 @@ class CartListController extends Controller
     }
 
     /**
-     * Proceed to checkout.
+     * Proceed to checkout
+     *
+     * Validates the cart and prepares it for checkout. Ensures valid quantities and shipping details, then returns a checkout URL.
+     *
+     * @authenticated
+     * @response 200 {
+     *   "message": "Cart ready for checkout",
+     *   "checkout_url": "http://example.com/checkout",
+     *   "cart": {
+     *     "id": 1,
+     *     "user_id": 1,
+     *     "session_id": null,
+     *     "subtotal": 99.99,
+     *     "total": 109.99,
+     *     "tax_percentage": 5,
+     *     "tax_amount": 5.00,
+     *     "shipping_cost": 5.00,
+     *     "country_id": 1,
+     *     "governorate_id": 1,
+     *     "city_id": 1,
+     *     "shipping_type_id": 1
+     *   }
+     * }
+     * @response 422 {
+     *   "error": "The maximum quantity allowed per product is 10. Need more? Contact us via our support page.",
+     *   "support_link": "http://example.com/contact"
+     * }
+     * @response 422 {
+     *   "errors": {
+     *     "country_id": ["The country id field is required."]
+     *   }
+     * }
+     * @response 401 {
+     *   "message": "Unauthenticated."
+     * }
      */
     public function checkout(Request $request): JsonResponse
     {

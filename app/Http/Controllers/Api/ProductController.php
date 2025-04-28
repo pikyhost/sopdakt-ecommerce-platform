@@ -12,6 +12,39 @@ use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
+    /**
+     * Get Product Colors and Sizes
+     *
+     * @group Products
+     *
+     * Retrieves all available colors and sizes for a specific product.
+     *
+     * @urlParam product integer required The ID of the product. Example: 42
+     *
+     * @response 200 {
+     *   "colors": [
+     *     {
+     *       "color": {
+     *         "id": 1,
+     *         "name": "Red"
+     *       },
+     *       "sizes": [
+     *         {
+     *           "id": 1,
+     *           "name": "S"
+     *         },
+     *         {
+     *           "id": 2,
+     *           "name": "M"
+     *         }
+     *       ]
+     *     }
+     *   ]
+     * }
+     * @response 404 {
+     *   "message": "Product not found."
+     * }
+     */
     public function colorsSizes(Product $product)
     {
         // Get all product colors with their related sizes
@@ -40,7 +73,27 @@ class ProductController extends Controller
     }
 
     /**
-     * Show product by slug
+     * Get Product by Slug
+     *
+     * @group Products
+     *
+     * Retrieves product details using its slug.
+     *
+     * @urlParam slug string required The slug of the product. Example: premium-headphones
+     *
+     * @response 200 {
+     *   "product": {
+     *     "id": 1,
+     *     "name": "Premium Headphones",
+     *     "slug": "premium-headphones",
+     *     "price": 199.99,
+     *     "description": "High-quality noise-cancelling headphones",
+     *     "is_published": true
+     *   }
+     * }
+     * @response 404 {
+     *   "message": "Product not found."
+     * }
      */
     public function showBySlug($slug)
     {
@@ -61,7 +114,34 @@ class ProductController extends Controller
     }
 
     /**
-     * Get 3 featured products
+     * Get Featured Products
+     *
+     * @group Products
+     *
+     * Retrieves a list of 3 featured products with their basic information,
+     * available colors, sizes, and action links.
+     *
+     * @response 200 {
+     *   "products": [
+     *     {
+     *       "id": 1,
+     *       "name": "Premium Headphones",
+     *       "category": "Electronics",
+     *       "slug": "premium-headphones",
+     *       "colors": ["Black", "White"],
+     *       "sizes": {
+     *         "Black": ["One Size"],
+     *         "White": ["One Size"]
+     *       },
+     *       "actions": {
+     *         "add_to_cart": "http://example.com/api/cart/1",
+     *         "toggle_love": "http://example.com/api/wishlist/toggle/1",
+     *         "compare": "http://example.com/api/compare/1",
+     *         "view": "http://example.com/products/premium-headphones"
+     *       }
+     *     }
+     *   ]
+     * }
      */
     public function featured()
     {

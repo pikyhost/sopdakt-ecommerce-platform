@@ -14,6 +14,33 @@ use Illuminate\Support\Facades\Session;
 
 class CartController extends Controller
 {
+    /**
+     * Get Cart Contents
+     *
+     * @group Cart
+     *
+     * Retrieves the current cart contents for authenticated user or session.
+     *
+     * @response 200 {
+     *   "cart": {
+     *     "id": 1,
+     *     "user_id": 1,
+     *     "items": [
+     *       {
+     *         "id": 1,
+     *         "product": {
+     *           "id": 1,
+     *           "name": "Premium Headphones",
+     *           "price": 199.99
+     *         },
+     *         "quantity": 2,
+     *         "subtotal": 399.98
+     *       }
+     *     ],
+     *     "total": 399.98
+     *   }
+     * }
+     */
     public function index(Request $request)
     {
         $cart = Cart::where(function ($query) {
@@ -29,6 +56,37 @@ class CartController extends Controller
         ]);
     }
 
+    /**
+     * Add Item to Cart
+     *
+     * @group Cart
+     *
+     * Adds a product to the cart with optional color/size selection.
+     *
+     * @bodyParam product_id integer required The ID of the product to add. Example: 1
+     * @bodyParam quantity integer required Quantity (1-10). Example: 2
+     * @bodyParam color_id integer nullable ID of selected color (required if product has colors). Example: 3
+     * @bodyParam size_id integer nullable ID of selected size (required if product has sizes for selected color). Example: 5
+     *
+     * @response 200 {
+     *   "message": "Product added to cart successfully."
+     * }
+     * @response 422 {
+     *   "message": "Please select a color."
+     * }
+     * @response 422 {
+     *   "message": "Please select a size."
+     * }
+     * @response 422 {
+     *   "message": "Selected variant not available."
+     * }
+     * @response 422 {
+     *   "message": "This product is out of stock!"
+     * }
+     * @response 422 {
+     *   "message": "Requested quantity exceeds stock!"
+     * }
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -112,6 +170,27 @@ class CartController extends Controller
         return response()->json(['message' => 'Product added to cart successfully.']);
     }
 
+
+    /**
+     * Update Cart Item Quantity
+     *
+     * @group Cart
+     *
+     * Updates the quantity of a specific cart item.
+     *
+     * @urlParam itemId integer required The ID of the cart item to update. Example: 1
+     * @bodyParam quantity integer required New quantity (1-10). Example: 3
+     *
+     * @response 200 {
+     *   "message": "Cart item updated successfully."
+     * }
+     * @response 404 {
+     *   "message": "Item not found."
+     * }
+     * @response 422 {
+     *   "message": "Requested quantity exceeds stock!"
+     * }
+     */
     public function updateQuantity(Request $request, $itemId)
     {
         $request->validate([
@@ -143,6 +222,22 @@ class CartController extends Controller
         return response()->json(['message' => 'Cart item updated successfully.']);
     }
 
+    /**
+     * Remove Item from Cart
+     *
+     * @group Cart
+     *
+     * Removes a specific item from the cart.
+     *
+     * @urlParam itemId integer required The ID of the cart item to remove. Example: 1
+     *
+     * @response 200 {
+     *   "message": "Item removed from cart."
+     * }
+     * @response 404 {
+     *   "message": "Item not found."
+     * }
+     */
     public function destroy($itemId)
     {
         $item = CartItem::findOrFail($itemId);
