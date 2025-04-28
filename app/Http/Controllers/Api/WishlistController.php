@@ -17,7 +17,7 @@ class WishlistController extends Controller
         if (!Auth::check()) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
-        
+
         $request->validate([
             'product_id' => 'required|exists:products,id',
         ]);

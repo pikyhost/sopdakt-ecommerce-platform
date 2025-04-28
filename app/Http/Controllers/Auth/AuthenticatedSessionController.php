@@ -43,11 +43,17 @@ class AuthenticatedSessionController extends Controller
     {
         $user = $request->user();
 
-        // Revoke the token that was used to authenticate the current request
+        if (! $user || ! $user->currentAccessToken()) {
+            return response()->json([
+                'message' => 'No active token found.'
+            ], 400);
+        }
+
         $user->currentAccessToken()->delete();
 
         return response()->json([
             'message' => 'Logged out successfully.'
         ]);
     }
+
 }
