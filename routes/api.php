@@ -85,4 +85,4 @@ Route::prefix('cart')->group(function () {
     Route::post('/item/{cartItemId}/quantity', [\App\Http\Controllers\Api\CartListController::class, 'updateQuantity'])->name('api.cart.updateQuantity');
     Route::delete('/item/{cartItemId}', [\App\Http\Controllers\Api\CartListController::class, 'removeItem'])->name('api.cart.removeItem');
     Route::post('/checkout', [\App\Http\Controllers\Api\CartListController::class, 'checkout'])->name('api.cart.checkout');
-});
+})->middleware('auth:sanctum');
