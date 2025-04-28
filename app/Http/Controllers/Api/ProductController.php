@@ -14,21 +14,28 @@ class ProductController extends Controller
 {
     public function colorsSizes(Product $product)
     {
-        $colors = ProductColor::where('product_id', $product->id)
-            ->pluck('color_id')
-            ->unique();
+        // Get all product colors with their related sizes
+        $productColors = ProductColor::with(['color', 'sizes'])
+            ->where('product_id', $product->id)
+            ->get();
 
-        $sizes = collect();
-        if (request()->has('color_id')) {
-            $sizes = ProductColorSize::whereHas('productColor', function ($query) use ($product) {
-                $query->where('product_id', $product->id)
-                    ->where('color_id', request('color_id'));
-            })->pluck('size_id')->unique();
-        }
+        $colorsWithSizes = $productColors->map(function ($productColor) {
+            return [
+                'color' => [
+                    'id' => $productColor->color->id,
+                    'name' => $productColor->color->name,
+                ],
+                'sizes' => $productColor->sizes->map(function ($size) {
+                    return [
+                        'id' => $size->id,
+                        'name' => $size->name,
+                    ];
+                }),
+            ];
+        });
 
         return response()->json([
-            'colors' => Color::whereIn('id', $colors)->get(),
-            'sizes' => Size::whereIn('id', $sizes)->get(),
+            'colors' => $colorsWithSizes,
         ]);
     }
 

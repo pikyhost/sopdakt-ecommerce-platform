@@ -2,7 +2,8 @@
 
 namespace App\Filament\Exports;
 
-use App\Models\City;
+use App\Models\City;;
+
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
@@ -14,13 +15,21 @@ class CityExporter extends Exporter
     public static function getColumns(): array
     {
         return [
-            ExportColumn::make('id')   ->label(__('id')),
-            ExportColumn::make('name') ->label(__('name')),
-            ExportColumn::make('governorat.name')->label(__('governorate_name')),
-            ExportColumn::make('cost')    ->label(__('Shipping Cost')),
-            ExportColumn::make('shipping_estimate_time')  ->label(__('shipping_cost.shipping_estimate_time')),
-            ExportColumn::make('created_at')   ->label(__('Created At')),
-            ExportColumn::make('updated_at')->label(__('Updated At')),
+            ExportColumn::make('name')
+                ->label('Name'),
+
+            ExportColumn::make('governorate.name')
+                ->label('Governorate Name')
+                ->getStateUsing(function (City $record) {
+                    // Explicitly get the governorate name in the current locale
+                    return $record->governorate ? $record->governorate->getTranslation('name', app()->getLocale()) : null;
+                }),
+
+            ExportColumn::make('cost')
+                ->label('Shipping Cost'),
+
+            ExportColumn::make('shipping_estimate_time')
+                ->label('Shipping Estimate Time'),
         ];
     }
 

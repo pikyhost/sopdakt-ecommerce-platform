@@ -3,9 +3,11 @@
 namespace App\Filament\Imports;
 
 use App\Models\City;
+use App\Models\Governorate;
 use Filament\Actions\Imports\ImportColumn;
 use Filament\Actions\Imports\Importer;
 use Filament\Actions\Imports\Models\Import;
+use Illuminate\Support\Facades\Log;
 
 class CityImporter extends Importer
 {
@@ -15,33 +17,66 @@ class CityImporter extends Importer
     {
         return [
             ImportColumn::make('name')
-                ->label(__('name'))
+                ->label('Name')
                 ->requiredMapping()
-                ->rules(['required', 'max:255']),
-            ImportColumn::make('governorate_id')
-                ->label(__('governorate_name'))
+                ->rules(['required', 'string', 'max:255']),
+
+            ImportColumn::make('governorate')
+                ->label('Governorate Name')
+                ->relationship(
+                    resolveUsing: function ($state) {
+                        if (!is_string($state) || empty(trim($state))) {
+                            Log::error('Invalid governorate name value: ' . json_encode($state));
+                            return null;
+                        }
+
+                        $governorateName = trim($state);
+
+                        // Try to match in English or Arabic fields (case-insensitive)
+                        $governorate = Governorate::whereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.en"))) = ?', [strtolower($governorateName)])
+                            ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.ar"))) = ?', [strtolower($governorateName)])
+                            ->first();
+
+                        if (!$governorate) {
+                            Log::warning('Governorate not found for name: ' . $governorateName);
+
+                            try {
+                                $governorate = Governorate::create([
+                                    'name' => [
+                                        'en' => $governorateName,
+                                        'ar' => $governorateName, // You can set empty '' if needed
+                                    ],
+                                ]);
+                                Log::info('Created new governorate: ' . $governorateName);
+                            } catch (\Exception $e) {
+                                Log::error('Failed to create governorate: ' . $governorateName . ' - ' . $e->getMessage());
+                                return null;
+                            }
+                        }
+
+                        return $governorate;
+                    }
+                )
+
                 ->requiredMapping()
-                ->numeric()
-                ->rules(['required', 'integer']),
+                ->rules(['required']),
+
             ImportColumn::make('cost')
-                ->label(__('Shipping Cost'))
+                ->label('Shipping Cost')
                 ->requiredMapping()
                 ->numeric()
-                ->rules(['required', 'integer']),
+                ->rules(['required', 'integer', 'min:0']),
+
             ImportColumn::make('shipping_estimate_time')
-                ->label(__('shipping_cost.shipping_estimate_time'))
+                ->label('Shipping Estimate Time')
                 ->requiredMapping()
-                ->rules(['required', 'max:255']),
+                ->rules(['required', 'string', 'max:255']),
         ];
     }
 
     public function resolveRecord(): ?City
     {
-        // return City::firstOrNew([
-        //     // Update existing records, matching them by `$this->data['column_name']`
-        //     'email' => $this->data['email'],
-        // ]);
-
+        Log::info('Processing city import row: ', $this->data);
         return new City();
     }
 
