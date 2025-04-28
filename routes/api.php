@@ -1,8 +1,88 @@
 <?php
 
+use App\Http\Controllers\Api\CompareController;
+use App\Http\Controllers\Api\HomeController;
+use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\WishlistController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ShippingController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\EmailVerificationNotificationController;
+use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\VerifyEmailController;
 
-Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
+
+Route::get('/user', function (Request $request) {
     return $request->user();
+})->middleware('auth:sanctum');
+
+Route::post('/register', [RegisteredUserController::class, 'store'])
+    ->middleware('guest')
+    ->name('register');
+
+Route::post('/login', [AuthenticatedSessionController::class, 'store'])
+    ->middleware('guest')
+    ->name('login');
+
+Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
+    ->middleware('guest')
+    ->name('password.email');
+
+Route::post('/reset-password', [NewPasswordController::class, 'store'])
+    ->middleware('guest')
+    ->name('password.store');
+
+Route::get('/verify-email/{id}/{hash}', VerifyEmailController::class)
+    ->middleware(['auth', 'signed', 'throttle:6,1'])
+    ->name('verification.verify');
+// this is test
+
+Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
+    ->middleware(['auth', 'throttle:6,1'])
+    ->name('verification.send');
+
+Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
+    ->middleware('auth')
+    ->name('logout');
+
+
+Route::post('jt-express-webhook', [ShippingController::class, 'handleWebhook']);
+
+Route::post('/payment/process', [PaymentController::class, 'paymentProcess']);
+Route::match(['GET','POST'],'/payment/callback', [PaymentController::class, 'callBack']);
+
+Route::get('/home/featured-categories', [HomeController::class, 'featuredCategories']);
+
+Route::get('products/{product}/colors-sizes', [\App\Http\Controllers\Api\ProductController::class, 'colorsSizes']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/wishlist/toggle', [WishlistController::class, 'toggle']);
+    Route::get('/wishlist', [WishlistController::class, 'index']);
+    Route::get('/wishlist/{productId}', [WishlistController::class, 'isWishlisted']);
+});
+
+Route::post('/compare', [CompareController::class, 'compare']);
+
+Route::get('/products/{slug}', [ProductController::class, 'showBySlug'])->name('products.show');
+
+Route::get('/products/featured', [ProductController::class, 'featured']);
+
+Route::get('/homepage/slider', [HomeController::class, 'sliderWithCta']);
+
+Route::prefix('cart')->controller(\App\Http\Controllers\Api\CartController::class)->group(function () {
+    Route::post('/', 'store'); // Add to cart
+    Route::put('/{itemId}', 'updateQuantity'); // Update quantity
+    Route::delete('/{itemId}', 'destroy'); // Remove from cart
+});
+
+Route::prefix('cart')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\CartListController::class, 'index'])->name('api.cart.index');
+    Route::post('/shipping', [\App\Http\Controllers\Api\CartListController::class, 'updateShipping'])->name('api.cart.updateShipping');
+    Route::post('/item/{cartItemId}/quantity', [\App\Http\Controllers\Api\CartListController::class, 'updateQuantity'])->name('api.cart.updateQuantity');
+    Route::delete('/item/{cartItemId}', [\App\Http\Controllers\Api\CartListController::class, 'removeItem'])->name('api.cart.removeItem');
+    Route::post('/checkout', [\App\Http\Controllers\Api\CartListController::class, 'checkout'])->name('api.cart.checkout');
 });
