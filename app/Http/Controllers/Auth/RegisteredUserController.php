@@ -79,7 +79,11 @@ class RegisteredUserController extends Controller
         ]);
 
         event(new Registered($user));
+
         Auth::login($user);
+
+        // Generate API token using Sanctum
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
             'status' => 'success',
@@ -97,7 +101,9 @@ class RegisteredUserController extends Controller
                 'city_id' => $user->city_id,
                 'is_active' => $user->is_active,
                 'created_at' => $user->created_at,
-            ]
+            ],
+            'token' => $token
         ], 201);
     }
+
 }

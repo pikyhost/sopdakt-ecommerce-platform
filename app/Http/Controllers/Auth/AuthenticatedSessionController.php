@@ -55,24 +55,31 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request)
     {
         try {
-            // Check if user is already authenticated
+            // Check if user is already authenticated (optional for APIs)
             if (Auth::check()) {
                 return response()->json([
                     'message' => 'User is already logged in',
-                    'user' => Auth::user()
+                    'user' => Auth::user(),
+                    'token' => Auth::user()->currentAccessToken()?->plainTextToken ?? null
                 ], 409);
             }
 
-            // Attempt authentication
+            // Attempt login
             $request->authenticate();
 
-            // Regenerate session
-            $request->session()->regenerate();
+            // Get authenticated user
+            $user = Auth::user();
 
-            // Return success response with user data
+            // Revoke previous tokens if you want to allow only one session per user
+            $user->tokens()->delete();
+
+            // Create a new token
+            $token = $user->createToken('auth_token')->plainTextToken;
+
             return response()->json([
                 'message' => 'Login successful',
-                'user' => Auth::user()
+                'user' => $user,
+                'token' => $token
             ], 200);
 
         } catch (ValidationException $e) {
