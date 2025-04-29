@@ -51,13 +51,10 @@ class NewsletterSubscriberResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('email')
+                    ->columnSpanFull()
                     ->label(__('Email'))
                     ->email()
                     ->required(),
-
-                Forms\Components\TextInput::make('ip_address')
-                    ->label(__('IP Address'))
-                    ->disabled(), // usually auto-filled, no need to edit
             ]);
     }
 
@@ -77,7 +74,6 @@ class NewsletterSubscriberResource extends Resource
                     ->label(__('Created At'))
                     ->dateTime(),
             ])
-            ->filters([])
             ->actions([
                 Tables\Actions\EditAction::make()->label(__('Edit')),
                 Tables\Actions\DeleteAction::make()->label(__('Delete')),

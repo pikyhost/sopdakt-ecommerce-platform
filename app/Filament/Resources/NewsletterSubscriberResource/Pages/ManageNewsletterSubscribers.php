@@ -13,7 +13,11 @@ class ManageNewsletterSubscribers extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make() ->mutateFormDataUsing(function (array $data): array {
+                $data['ip_address'] = request()->ip();
+
+                return $data;
+            }),
         ];
     }
 }
