@@ -30,6 +30,7 @@ use App\Filament\Resources\LabelResource;
 use App\Filament\Resources\LandingPageOrderResource;
 use App\Filament\Resources\LandingPageResource;
 use App\Filament\Resources\LandingPageSettingResource;
+use App\Filament\Resources\NewsletterSubscriberResource;
 use App\Filament\Resources\OrderResource;
 use App\Filament\Resources\PaymentMethodResource;
 use App\Filament\Resources\PolicyResource;
@@ -130,6 +131,7 @@ class AdminPanelProvider extends PanelProvider
                     ...MyProfilePage::getNavigationItems(),
                     ...BlockedPhoneNumberResource::getNavigationItems(),
                     ...ContactMessageResource::getNavigationItems(),
+                    ...NewsletterSubscriberResource::getNavigationItems()
                 ])->groups($this->getCustomNavigationGroups());
             })
 //            ->renderHook('head.end', function () {
