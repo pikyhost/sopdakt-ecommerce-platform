@@ -1,4 +1,10 @@
 {
+    "Newsletter Subscriber": "مشترك النشرة البريدية",
+    "Newsletter Subscribers": "مشتركي النشرة البريدية",
+    "IP Address": "عنوان IP",
+    "Newsletter": "النشرة الإخبارية",
+    "newsletter_emails": "عناوين النشرة الإخبارية",
+    "newsletter_email": "عنوان النشرة الإخبارية",
     "Enable/disable available shipping partners and configure their visibility at checkout": "تمكين/تعطيل شركات الشحن المتاحة وتكوين ظهورها عند الدفع",
     "Brand Colors": "ألوان العلامة التجارية",
     "These colors will be applied throughout the frontend design": "سيتم تطبيق هذه الألوان عبر واجهة الموقع الأمامية",
