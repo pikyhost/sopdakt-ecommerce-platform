@@ -51,6 +51,7 @@ class NewsletterSubscriberResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('email')
+                    ->unique(ignoreRecord: true)
                     ->columnSpanFull()
                     ->label(__('Email'))
                     ->email()
