@@ -29,24 +29,13 @@ return new class extends Migration
             $table->string('facebook')->nullable();
             $table->string('youtube')->nullable();
             $table->string('instagram')->nullable();
-            $table->string('x')->nullable(); // Twitter is now X
+            $table->string('x')->nullable();
             $table->string('snapchat')->nullable();
             $table->string('tiktok')->nullable();
             $table->boolean('shipping_type_enabled')->default(true);
             $table->boolean('shipping_locations_enabled')->default(true);
             $table->foreignId('country_id')->nullable();
         });
-
-        // Insert default settings record
-        DB::table('settings')->insert([
-            'logo_en'     => 'assets/images/clients/client1.png',
-            'logo_ar'     => 'assets/images/clients/client1.png',
-            'favicon'  => 'assets/images/clients/client1.png',
-            'site_name' => 'My E-Commerce',
-            'currency_id' => null, // You can update this with a default currency ID if needed
-            'created_at'  => now(),
-            'updated_at'  => now(),
-        ]);
     }
 
     /**

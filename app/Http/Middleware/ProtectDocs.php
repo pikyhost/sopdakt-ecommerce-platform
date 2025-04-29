@@ -10,7 +10,7 @@ class ProtectDocs
     public function handle(Request $request, Closure $next)
     {
         $username = 'frontend';
-        $password = 'Strong-Password-yourStrong-Password-123';
+        $password = '99^w+uY0x1Ir';
 
         if ($request->getUser() !== $username || $request->getPassword() !== $password) {
             $headers = ['WWW-Authenticate' => 'Basic'];

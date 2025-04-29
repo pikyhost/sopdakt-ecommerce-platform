@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Middleware\HandleCors;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -33,7 +34,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->prependToGroup('api', \App\Http\Middleware\AlwaysAcceptJson::class);
         $middleware->appendToGroup('api', \Illuminate\Session\Middleware\StartSession::class);
-        $middleware->appendToGroup('api', \App\Http\Middleware\ApiKeyMiddleware::class);
+        $middleware->appendToGroup('api', \App\Http\Middleware\ApiKeyMiddleware::class); // \Fruitcake\Cors\HandleCors::class,
+        $middleware->appendToGroup('api', HandleCors::class); // \Fruitcake\Cors\HandleCors::class,
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->renderable(function (NotFoundHttpException $e) {
