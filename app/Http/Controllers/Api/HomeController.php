@@ -389,7 +389,6 @@ class HomeController extends Controller
                 ]
             ],
             'latest_section' => [
-                'image_url' => $homePageSetting->getLatestImageUrl(),
                 'heading' => $homePageSetting->getTranslation('latest_heading', $locale),
                 'button_text' => $homePageSetting->getTranslation('latest_button_text', $locale),
                 'button_url' => $homePageSetting->latest_button_url,
@@ -398,6 +397,4 @@ class HomeController extends Controller
 
         return response()->json(['data' => $data]);
     }
-
-
 }

@@ -24,7 +24,7 @@ Route::match(['GET','POST'],'/payment/callback', [PaymentController::class, 'cal
 
 Route::get('/home/featured-categories', [HomeController::class, 'featuredCategories']);
 
-Route::get('products/{product}/colors-sizes', [\App\Http\Controllers\Api\ProductController::class, 'colorsSizes']);
+Route::get('products/{product}/colors-sizes', [ProductController::class, 'colorsSizes']);
 
 Route::post('/compare', [CompareController::class, 'compare'])->name('compare.add');
 

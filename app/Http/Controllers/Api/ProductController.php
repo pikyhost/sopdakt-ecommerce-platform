@@ -15,64 +15,75 @@ use Illuminate\Support\Facades\DB;
 class ProductController extends Controller
 {
     /**
-     * Get Product Colors and Sizes
+     * Get all color and size variants for a product.
+     *
+     * This endpoint returns all color variants for a given product, each including:
+     * - Color information (ID, name)
+     * - Associated image (if available)
+     * - Size variants under each color, including:
+     *   - Size ID
+     *   - Size name
+     *   - Available quantity
+     *
+     * This structure matches the `variants` format used in the product detail endpoint.
      *
      * @group Products
      *
-     * Retrieves all available colors and sizes for a specific product.
-     *
-     * @urlParam product integer required The ID of the product. Example: 42
+     * @urlParam product int required The ID of the product. Example: 1
      *
      * @response 200 {
-     *   "colors": [
+     *   "variants": [
      *     {
-     *       "color": {
-     *         "id": 1,
-     *         "name": "Red"
-     *       },
+     *       "id": 1,
+     *       "color_id": 3,
+     *       "color_name": "Red",
+     *       "image_url": "https://example.com/storage/variant1.jpg",
      *       "sizes": [
      *         {
-     *           "id": 1,
-     *           "name": "S"
+     *           "id": 5,
+     *           "size_id": 2,
+     *           "size_name": "L",
+     *           "quantity": 8
      *         },
      *         {
-     *           "id": 2,
-     *           "name": "M"
+     *           "id": 6,
+     *           "size_id": 3,
+     *           "size_name": "XL",
+     *           "quantity": 4
      *         }
      *       ]
      *     }
      *   ]
      * }
-     * @response 404 {
-     *   "message": "Product not found."
-     * }
      */
-    public function colorsSizes(Product $product)
+    public function colorsSizes(Product $product): JsonResponse
     {
-        // Get all product colors with their related sizes
-        $productColors = ProductColor::with(['color', 'sizes'])
-            ->where('product_id', $product->id)
-            ->get();
+        // Re-fetch with correct and fresh relationships
+        $product = Product::with([
+            'productColors.color',
+            'productColors.productColorSizes.size',
+        ])->findOrFail($product->id);
 
-        $colorsWithSizes = $productColors->map(function ($productColor) {
+        $variants = $product->productColors->map(function ($variant) {
             return [
-                'color' => [
-                    'id' => $productColor->color->id,
-                    'name' => $productColor->color->name,
-                ],
-                'sizes' => $productColor->sizes->map(function ($size) {
+                'id' => $variant->id,
+                'color_id' => $variant->color_id,
+                'color_name' => optional($variant->color)->name,
+                'image_url' => $variant->image ? asset('storage/' . $variant->image) : null,
+                'sizes' => $variant->productColorSizes->map(function ($pcs) {
                     return [
-                        'id' => $size->id,
-                        'name' => $size->name,
+                        'id' => $pcs->id,
+                        'size_id' => $pcs->size_id,
+                        'size_name' => optional($pcs->size)->name,
+                        'quantity' => $pcs->quantity,
                     ];
                 }),
             ];
         });
 
-        return response()->json([
-            'colors' => $colorsWithSizes,
-        ]);
+        return response()->json(['variants' => $variants]);
     }
+
 
     /**
      * Get a single published product by its slug.
