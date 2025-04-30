@@ -103,33 +103,50 @@ class CartListController extends Controller
     {
         $cart = $this->getOrCreateCart();
         $cartItems = $this->loadCartItems($cart);
-        $totals = $this->calculateTotals($cart, $cartItems);
 
-        // Load complementary products
+        if ($cartItems->isEmpty()) {
+            return response()->json([
+                'message' => __('Cart is empty'),
+            ]);
+        }
+
+        $totals = $this->calculateTotals($cart, $cartItems);
         $productIds = collect($cartItems)->pluck('product.id')->filter()->unique();
+
         $complementaryProductIds = Product::whereIn('id', $productIds)
             ->with('complementaryProducts:id')
             ->get()
             ->pluck('complementaryProducts.*.id')
             ->flatten()
             ->unique();
+
         $complementaryProducts = Product::whereIn('id', $complementaryProductIds)
             ->whereNotIn('id', $productIds)
             ->inRandomOrder()
             ->limit(6)
             ->get();
 
+        $locale = app()->getLocale();
+        $nameField = 'name_' . $locale;
+
         return response()->json([
             'cart' => new CartResource($cart),
             'cartItems' => CartItemResource::collection($cartItems),
             'totals' => $totals,
-            'countries' => Country::all(),
-            'governorates' => $cart->country_id ? Governorate::where('country_id', $cart->country_id)->get() : [],
-            'cities' => $cart->governorate_id ? City::where('governorate_id', $cart->governorate_id)->get() : [],
-            'shipping_types' => Setting::isShippingEnabled() ? ShippingType::where('status', true)->get() : [],
+            'countries' => Country::select(['id', "$nameField as name"])->get(),
+            'governorates' => $cart->country_id
+                ? Governorate::where('country_id', $cart->country_id)->select(['id', "$nameField as name"])->get()
+                : [],
+            'cities' => $cart->governorate_id
+                ? City::where('governorate_id', $cart->governorate_id)->select(['id', "$nameField as name"])->get()
+                : [],
+            'shipping_types' => Setting::isShippingEnabled()
+                ? ShippingType::where('status', true)->select(['id', "$nameField as name"])->get()
+                : [],
             'complementary_products' => ComplementaryProductResource::collection($complementaryProducts),
         ]);
     }
+
 
     /**
      * Update cart shipping and location details

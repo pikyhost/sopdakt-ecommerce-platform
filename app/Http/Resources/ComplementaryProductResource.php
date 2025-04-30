@@ -16,7 +16,7 @@ class ComplementaryProductResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' => $this->name,
+            'name' => $this->getTranslation('name', app()->getLocale()), // localized name
             'slug' => $this->slug,
             'feature_product_image_url' => $this->getFeatureProductImageUrl() ?? '',
             'price' => $this->discount_price_for_current_country ?? 0,
