@@ -34,8 +34,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::post('/compare', [CompareController::class, 'compare'])->name('compare.add');
 
-Route::get('/products/{slug}', [ProductController::class, 'showBySlug'])->name('products.show');
 Route::get('/products/featured', [ProductController::class, 'featured']);
+Route::get('/products/{slug}', [ProductController::class, 'showBySlug'])->name('products.show');
 Route::get('/homepage/slider', [HomeController::class, 'sliderWithCta']);
 
 // Wishlist
