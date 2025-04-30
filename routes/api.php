@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AboutUsController;
+use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CartListController;
 use App\Http\Controllers\Api\CompareController;
@@ -74,4 +75,9 @@ Route::prefix('policies')->group(function () {
     Route::get('/privacy', [App\Http\Controllers\Api\PolicyController::class, 'privacy'])->name('policies.privacy');
     Route::get('/refund', [App\Http\Controllers\Api\PolicyController::class, 'refund'])->name('policies.refund');
     Route::get('/terms', [App\Http\Controllers\Api\PolicyController::class, 'terms'])->name('policies.terms');
+});
+
+Route::prefix('banners')->group(function () {
+    Route::get('/product', [App\Http\Controllers\Api\BannerController::class, 'product'])->name('banners.product');
+    Route::get('/category', [App\Http\Controllers\Api\BannerController::class, 'category'])->name('banners.category');
 });
