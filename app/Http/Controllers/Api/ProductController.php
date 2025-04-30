@@ -210,10 +210,11 @@ class ProductController extends Controller
     protected function buildProductActions(Product $product): array
     {
         return [
-            'add_to_cart' => route('cart.add', ['product_id' => $product->id]),
-            'toggle_love' => route('wishlist.toggle', ['product_id' => $product->id]),
-            'compare' => route('compare.add', ['product_id' => $product->id]),
+            'add_to_cart' => route('cart.add'), // No parameter passed
+            'toggle_love' => route('wishlist.toggle'), // Also doesn't accept params in URL
+            'compare' => route('compare.add'), // Same here
             'view' => route('products.show', ['slug' => $product->slug]),
         ];
     }
+
 }

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Api\CartController;
+use App\Http\Controllers\Api\CartListController;
 use App\Http\Controllers\Api\CompareController;
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\ProductController;
@@ -30,24 +32,30 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/wishlist/{productId}', [WishlistController::class, 'isWishlisted']);
 });
 
-Route::post('/compare', [CompareController::class, 'compare']);
+Route::post('/compare', [CompareController::class, 'compare'])->name('compare.add');
 
 Route::get('/products/{slug}', [ProductController::class, 'showBySlug'])->name('products.show');
-
 Route::get('/products/featured', [ProductController::class, 'featured']);
-
 Route::get('/homepage/slider', [HomeController::class, 'sliderWithCta']);
 
-Route::prefix('cart')->controller(\App\Http\Controllers\Api\CartController::class)->group(function () {
-    Route::post('/', 'store')->name('cart.add'); // Add to cart
-    Route::put('/{itemId}', 'updateQuantity'); // Update quantity
-    Route::delete('/{itemId}', 'destroy'); // Remove from cart
+// Wishlist
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
+    Route::get('/wishlist', [WishlistController::class, 'index']);
+    Route::get('/wishlist/{productId}', [WishlistController::class, 'isWishlisted']);
 });
 
+
+// Cart (Add to cart and operations)
 Route::prefix('cart')->group(function () {
-    Route::get('/', [\App\Http\Controllers\Api\CartListController::class, 'index'])->name('api.cart.index');
-    Route::post('/shipping', [\App\Http\Controllers\Api\CartListController::class, 'updateShipping'])->name('api.cart.updateShipping');
-    Route::post('/item/{cartItemId}/quantity', [\App\Http\Controllers\Api\CartListController::class, 'updateQuantity'])->name('api.cart.updateQuantity');
-    Route::delete('/item/{cartItemId}', [\App\Http\Controllers\Api\CartListController::class, 'removeItem'])->name('api.cart.removeItem');
-    Route::post('/checkout', [\App\Http\Controllers\Api\CartListController::class, 'checkout'])->name('api.cart.checkout');
+    Route::post('/', [CartController::class, 'store'])->name('cart.add');
+    Route::put('/{itemId}', [CartController::class, 'updateQuantity']);
+    Route::delete('/{itemId}', [CartController::class, 'destroy']);
+
+    // Cart list and checkout
+    Route::get('/', [CartListController::class, 'index'])->name('api.cart.index');
+    Route::post('/shipping', [CartListController::class, 'updateShipping'])->name('api.cart.updateShipping');
+    Route::post('/item/{cartItemId}/quantity', [CartListController::class, 'updateQuantity'])->name('api.cart.updateQuantity');
+    Route::delete('/item/{cartItemId}', [CartListController::class, 'removeItem'])->name('api.cart.removeItem');
+    Route::post('/checkout', [CartListController::class, 'checkout'])->name('api.cart.checkout');
 });
