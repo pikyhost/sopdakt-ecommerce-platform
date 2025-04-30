@@ -134,7 +134,6 @@ class Product extends Model implements HasMedia
     {
         $this->addMediaCollection('feature_product_image')->singleFile()->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
         $this->addMediaCollection('second_feature_product_image')->singleFile()->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
-        $this->addMediaCollection('sizes_image')->singleFile();
         $this->addMediaCollection('more_product_images_and_videos')->acceptsMimeTypes(['video/mp4', 'video/mpeg', 'video/quicktime', 'image/jpeg', 'image/png', 'image/webp']);
     }
 
@@ -146,11 +145,6 @@ class Product extends Model implements HasMedia
     public function getSecondFeatureProductImageUrl(): ?string
     {
         return $this->getFirstMediaUrl('second_feature_product_image') ?: null;
-    }
-
-    public function getProductSizeImageUrl(): ?string
-    {
-        return $this->getFirstMediaUrl('sizes_image') ?: null;
     }
 
     public function getMoreProductImagesAndVideosUrls(string $conversion = null): array

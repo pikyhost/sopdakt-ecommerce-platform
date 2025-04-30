@@ -8,6 +8,7 @@ use App\Models\ProductColorSize;
 use App\Models\Product;
 use App\Models\Color;
 use App\Models\Size;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 
@@ -74,79 +75,191 @@ class ProductController extends Controller
     }
 
     /**
-     * Get Product by Slug
+     * Get a single published product by its slug.
      *
-     * This endpoint returns a complete product record based on its slug. It includes all fields from the database
-     * such as price, stock, rating, discount, metadata, and dynamic custom attributes. It also provides
-     * action URLs for frontend interaction (e.g., add to cart, wishlist toggle).
+     * This endpoint retrieves a product using its unique slug. The response includes:
+     * - Localized fields (`name`, `description`, `summary`, `meta_title`, etc.) based on the `Accept-Language` header.
+     * - Associated user and category names.
+     * - Media including feature image, secondary image, sizes image, and more images/videos.
+     * - Size guide (if any) with title, description, and image URL.
+     * - Variants (product colors) with nested sizes and quantity.
+     * - Labels (with localized titles and color codes).
+     * - Bundles the product is part of (optional).
+     * - Real average rating based on reviews.
+     * - Action endpoints with methods for cart, wishlist, and comparison.
      *
      * @group Products
      *
-     * @urlParam slug string required The unique slug of the product. Example: premium-headphones
+     * @urlParam slug string required The unique slug of the product. Example: "smartphone-2025"
      *
      * @response 200 {
      *   "product": {
      *     "id": 1,
-     *     "user_id": 3,
-     *     "category_id": 2,
-     *     "name": "Premium Headphones",
-     *     "sku": "PH-2023",
-     *     "price": 199,
-     *     "after_discount_price": 149,
-     *     "cost": 120,
-     *     "shipping_estimate_time": "2-4 days",
-     *     "description": "High-quality headphones with noise cancellation.",
-     *     "slug": "premium-headphones",
-     *     "meta_title": "Best Headphones 2023",
-     *     "meta_description": "Wireless and durable audio gear",
-     *     "discount_start": "2025-01-01T00:00:00",
-     *     "discount_end": "2025-01-10T23:59:59",
-     *     "views": 100,
-     *     "sales": 30,
-     *     "fake_average_rating": 5,
-     *     "label_id": 1,
-     *     "summary": "Best-in-class wireless headphones",
-     *     "quantity": 20,
-     *     "custom_attributes": {
-     *       "Bluetooth": "5.0",
-     *       "Battery Life": "30 hours"
+     *     "user_name": "Admin",
+     *     "category_name": "Accessories",
+     *     "name": "Localized Product Name",
+     *     ...
+     *     "media": {
+     *       "feature_product_image": "https://example.com/storage/feature.jpg",
+     *       "second_feature_product_image": "https://example.com/storage/feature2.jpg",
+     *       "sizes_image": "https://example.com/storage/sizes.jpg",
+     *       "more_product_images_and_videos": [...]
      *     },
-     *     "is_published": true,
-     *     "is_featured": true,
-     *     "is_free_shipping": false,
-     *     "created_at": "2025-01-01T10:00:00",
-     *     "updated_at": "2025-01-02T10:00:00",
+     *     "size_guide": {
+     *       "title": "Size Chart",
+     *       "description": "Details...",
+     *       "image_url": "https://example.com/storage/size_guide.jpg"
+     *     },
+     *     "variants": [...],
+     *     "labels": [...],
+     *     "bundles": [...],
+     *     "average_rating": 4.3,
      *     "actions": {
-     *       "add_to_cart": "http://yourdomain.com/api/cart/1",
-     *       "toggle_love": "http://yourdomain.com/api/wishlist/toggle/1",
-     *       "compare": "http://yourdomain.com/api/compare/1",
-     *       "view": "http://yourdomain.com/products/premium-headphones"
+     *       "add_to_cart": { "method": "POST", "url": "/api/cart" },
+     *       ...
      *     }
      *   }
      * }
-     * @response 404 {
-     *   "message": "Product not found."
-     * }
      */
-    public function showBySlug(string $slug)
+    public function showBySlug(string $slug): JsonResponse
     {
-        $product = Product::where('slug', $slug)
+        $locale = app()->getLocale();
+
+        $product = Product::with([
+            'user',
+            'category',
+            'sizeGuide',
+            'productColors.color',
+            'productColors.productColorSizes.size',
+            'labels',
+            'bundles',
+            'ratings',
+        ])
+            ->where('slug', $slug)
             ->where('is_published', true)
             ->first();
 
         if (!$product) {
-            return response()->json([
-                'message' => 'Product not found.',
-            ], 404);
+            return response()->json(['message' => 'Product not found.'], 404);
         }
 
         return response()->json([
-            'product' => array_merge(
-                $product->toArray(),
-                ['actions' => $this->buildProductActions($product)]
-            ),
+            'product' => [
+                'id' => $product->id,
+                'user_id' => $product->user_id,
+                'user_name' => optional($product->user)->name,
+                'category_id' => $product->category_id,
+                'category_name' => optional($product->category)?->getTranslation('name', $locale),
+                'name' => $product->getTranslation('name', $locale),
+                'sku' => $product->sku,
+                'price' => $product->price,
+                'after_discount_price' => $product->after_discount_price,
+                'cost' => $product->cost,
+                'shipping_estimate_time' => $product->shipping_estimate_time,
+                'description' => $product->getTranslation('description', $locale),
+                'slug' => $product->slug,
+                'meta_title' => $product->getTranslation('meta_title', $locale),
+                'meta_description' => $product->getTranslation('meta_description', $locale),
+                'discount_start' => $product->discount_start,
+                'discount_end' => $product->discount_end,
+                'views' => $product->views,
+                'sales' => $product->sales,
+                'fake_average_rating' => $product->fake_average_rating,
+                'label_id' => $product->label_id,
+                'summary' => $product->getTranslation('summary', $locale),
+                'quantity' => $product->quantity,
+                'custom_attributes' => $product->getTranslation('custom_attributes', $locale),
+                'is_published' => $product->is_published,
+                'is_featured' => $product->is_featured,
+                'is_free_shipping' => $product->is_free_shipping,
+                'created_at' => $product->created_at,
+                'updated_at' => $product->updated_at,
+
+                // Media section
+                'media' => [
+                    'feature_product_image' => $product->getFeatureProductImageUrl(),
+                    'second_feature_product_image' => $product->getSecondFeatureProductImageUrl(),
+                    'more_product_images_and_videos' => $product->getMoreProductImagesAndVideosUrls(),
+                ],
+
+                // Size guide section
+                'size_guide' => $product->sizeGuide ? [
+                    'title' => $product->sizeGuide->title,
+                    'description' => $product->sizeGuide->description,
+                    'image_url' => asset('storage/' . $product->sizeGuide->image_path),
+                ] : null,
+
+                // Labels
+                'labels' => $product->labels->map(function ($label) use ($locale) {
+                    return [
+                        'id' => $label->id,
+                        'title' => $label->getTranslation('title', $locale),
+                        'color_code' => $label->color_code,
+                        'background_color_code' => $label->background_color_code,
+                    ];
+                }),
+
+                // Variants with color and sizes
+                'variants' => $product->productColors->map(function ($variant) {
+                    return [
+                        'id' => $variant->id,
+                        'color_id' => $variant->color_id,
+                        'color_name' => optional($variant->color)->name,
+                        'image_url' => asset('storage/' . $variant->image),
+                        'sizes' => $variant->productColorSizes->map(function ($pcs) {
+                            return [
+                                'id' => $pcs->id,
+                                'size_id' => $pcs->size_id,
+                                'size_name' => optional($pcs->size)->name,
+                                'quantity' => $pcs->quantity,
+                            ];
+                        }),
+                    ];
+                }),
+
+                // Bundles (if needed)
+                'bundles' => $product->bundles->map(fn($bundle) => [
+                    'id' => $bundle->id,
+                    'name' => $bundle->getTranslation('name', $locale),
+                    'type' => $bundle->bundle_type,
+                    'discount_price' => $bundle->discount_price,
+                    'formatted_price' => $bundle->formatPrice(),
+                    'buy_x' => $bundle->buy_x,
+                    'get_y' => $bundle->get_y,
+                ]),
+
+                // Real average rating
+                'real_average_rating' => round($product->ratings->avg('rating'), 1),
+
+                // Actions for UI
+                'actions' => $this->buildProductActionsWithMethods($product),
+            ]
         ]);
     }
+
+
+    protected function buildProductActionsWithMethods(Product $product): array
+    {
+        return [
+            'add_to_cart' => [
+                'method' => 'POST',
+                'url' => route('cart.add'),
+            ],
+            'toggle_love' => [
+                'method' => 'POST',
+                'url' => route('wishlist.toggle'),
+            ],
+            'compare' => [
+                'method' => 'POST',
+                'url' => route('compare.add'),
+            ],
+            'view' => [
+                'method' => 'GET',
+                'url' => route('products.show', ['slug' => $product->slug]),
+            ],
+        ];
+    }
+
 
     /**
      * Get Featured Products
