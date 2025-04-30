@@ -39,7 +39,7 @@ Route::get('/products/featured', [ProductController::class, 'featured']);
 Route::get('/homepage/slider', [HomeController::class, 'sliderWithCta']);
 
 Route::prefix('cart')->controller(\App\Http\Controllers\Api\CartController::class)->group(function () {
-    Route::post('/', 'store'); // Add to cart
+    Route::post('/', 'store')->name('cart.add'); // Add to cart
     Route::put('/{itemId}', 'updateQuantity'); // Update quantity
     Route::delete('/{itemId}', 'destroy'); // Remove from cart
 });
