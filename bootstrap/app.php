@@ -2,10 +2,12 @@
 
 use App\Http\Middleware\SetLocaleFromHeader;
 use App\Http\Middleware\SetRequestLocale;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\HandleCors;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -42,6 +44,16 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->renderable(function (NotFoundHttpException $e) {
-            return response()->json(['message' => 'Object not found'], 404);
+            return response()->json(['message' => 'Page not found'], 404);
         });
+
+        $exceptions->renderable(function (MethodNotAllowedHttpException $e) {
+            return response()->json([
+                'message' => 'The method is not allowed for this endpoint.',
+            ], 405);
+        });
+
+         $exceptions->renderable(function (ModelNotFoundException $e) {
+             return response()->json(['message' => 'Object not found.'], 404);
+         });
     })->create();

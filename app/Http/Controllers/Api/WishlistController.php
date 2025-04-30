@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -99,6 +100,7 @@ class WishlistController extends Controller
      *       "id": 1,
      *       "name": "Premium Headphones",
      *       "price": 199.99,
+     *       "after_discount_price": 99.99,
      *       "slug": "premium-headphones",
      *       "saved_at": "2023-05-15 10:30:00"
      *     },
@@ -106,6 +108,7 @@ class WishlistController extends Controller
      *       "id": 2,
      *       "name": "Wireless Mouse",
      *       "price": 29.99,
+     *       "after_discount_price": 20.99,
      *       "slug": "wireless-mouse",
      *       "saved_at": "2023-05-10 14:15:00"
      *     }
@@ -117,10 +120,19 @@ class WishlistController extends Controller
      */
     public function index()
     {
+        $locale = App::getLocale();
+
         $wishlist = DB::table('saved_products')
             ->join('products', 'products.id', '=', 'saved_products.product_id')
             ->where('saved_products.user_id', Auth::id())
-            ->select('products.*', 'saved_products.created_at as saved_at')
+            ->select([
+                'products.id',
+                DB::raw("JSON_UNQUOTE(JSON_EXTRACT(products.name, '$.\"$locale\"')) as name"),
+                'products.price',
+                'products.after_discount_price',
+                'products.slug',
+                'saved_products.created_at as saved_at',
+            ])
             ->orderBy('saved_products.created_at', 'desc')
             ->get();
 

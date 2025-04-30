@@ -8,6 +8,7 @@ use App\Models\ProductColorSize;
 use App\Models\Product;
 use App\Models\Color;
 use App\Models\Size;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
@@ -75,30 +76,61 @@ class ProductController extends Controller
     /**
      * Get Product by Slug
      *
+     * This endpoint returns a complete product record based on its slug. It includes all fields from the database
+     * such as price, stock, rating, discount, metadata, and dynamic custom attributes. It also provides
+     * action URLs for frontend interaction (e.g., add to cart, wishlist toggle).
+     *
      * @group Products
      *
-     * Retrieves product details using its slug.
-     *
-     * @urlParam slug string required The slug of the product. Example: premium-headphones
+     * @urlParam slug string required The unique slug of the product. Example: premium-headphones
      *
      * @response 200 {
      *   "product": {
      *     "id": 1,
+     *     "user_id": 3,
+     *     "category_id": 2,
      *     "name": "Premium Headphones",
+     *     "sku": "PH-2023",
+     *     "price": 199,
+     *     "after_discount_price": 149,
+     *     "cost": 120,
+     *     "shipping_estimate_time": "2-4 days",
+     *     "description": "High-quality headphones with noise cancellation.",
      *     "slug": "premium-headphones",
-     *     "price": 199.99,
-     *     "description": "High-quality noise-cancelling headphones",
-     *     "is_published": true
+     *     "meta_title": "Best Headphones 2023",
+     *     "meta_description": "Wireless and durable audio gear",
+     *     "discount_start": "2025-01-01T00:00:00",
+     *     "discount_end": "2025-01-10T23:59:59",
+     *     "views": 100,
+     *     "sales": 30,
+     *     "fake_average_rating": 5,
+     *     "label_id": 1,
+     *     "summary": "Best-in-class wireless headphones",
+     *     "quantity": 20,
+     *     "custom_attributes": {
+     *       "Bluetooth": "5.0",
+     *       "Battery Life": "30 hours"
+     *     },
+     *     "is_published": true,
+     *     "is_featured": true,
+     *     "is_free_shipping": false,
+     *     "created_at": "2025-01-01T10:00:00",
+     *     "updated_at": "2025-01-02T10:00:00",
+     *     "actions": {
+     *       "add_to_cart": "http://yourdomain.com/api/cart/1",
+     *       "toggle_love": "http://yourdomain.com/api/wishlist/toggle/1",
+     *       "compare": "http://yourdomain.com/api/compare/1",
+     *       "view": "http://yourdomain.com/products/premium-headphones"
+     *     }
      *   }
      * }
      * @response 404 {
      *   "message": "Product not found."
      * }
      */
-    public function showBySlug($slug)
+    public function showBySlug(string $slug)
     {
-        $product = DB::table('products')
-            ->where('slug', $slug)
+        $product = Product::where('slug', $slug)
             ->where('is_published', true)
             ->first();
 
@@ -109,35 +141,49 @@ class ProductController extends Controller
         }
 
         return response()->json([
-            'product' => $product,
+            'product' => array_merge(
+                $product->toArray(),
+                ['actions' => $this->buildProductActions($product)]
+            ),
         ]);
     }
 
     /**
      * Get Featured Products
      *
-     * @group Products
+     * Returns a maximum of 3 published products marked as featured. Each product includes all database fields
+     * and dynamic action URLs (e.g., add to cart, toggle wishlist, compare, view).
      *
-     * Retrieves a list of 3 featured products with their basic information,
-     * available colors, sizes, and action links.
+     * @group Products
      *
      * @response 200 {
      *   "products": [
      *     {
      *       "id": 1,
      *       "name": "Premium Headphones",
-     *       "category": "Electronics",
-     *       "slug": "premium-headphones",
-     *       "colors": ["Black", "White"],
-     *       "sizes": {
-     *         "Black": ["One Size"],
-     *         "White": ["One Size"]
-     *       },
+     *       "price": 199,
+     *       "after_discount_price": 149,
+     *       "quantity": 20,
+     *       "is_featured": true,
+     *       "...": "... other fields ...",
      *       "actions": {
-     *         "add_to_cart": "http://example.com/api/cart/1",
-     *         "toggle_love": "http://example.com/api/wishlist/toggle/1",
-     *         "compare": "http://example.com/api/compare/1",
-     *         "view": "http://example.com/products/premium-headphones"
+     *         "add_to_cart": "http://yourdomain.com/api/cart/1",
+     *         "toggle_love": "http://yourdomain.com/api/wishlist/toggle/1",
+     *         "compare": "http://yourdomain.com/api/compare/1",
+     *         "view": "http://yourdomain.com/products/premium-headphones"
+     *       }
+     *     },
+     *     {
+     *       "id": 2,
+     *       "name": "Wireless Earbuds",
+     *       "price": 129,
+     *       "is_featured": true,
+     *       "...": "... other fields ...",
+     *       "actions": {
+     *         "add_to_cart": "http://yourdomain.com/api/cart/2",
+     *         "toggle_love": "http://yourdomain.com/api/wishlist/toggle/2",
+     *         "compare": "http://yourdomain.com/api/compare/2",
+     *         "view": "http://yourdomain.com/products/wireless-earbuds"
      *       }
      *     }
      *   ]
@@ -145,48 +191,29 @@ class ProductController extends Controller
      */
     public function featured()
     {
-        $products = DB::table('products')
-            ->join('categories', 'products.category_id', '=', 'categories.id')
-            ->where('products.is_published', true)
-            ->where('products.is_featured', true)
-            ->select(
-                'products.id',
-                'products.name as product_name',
-                'categories.name as category_name',
-                'products.slug'
-            )
+        $products = Product::where('is_published', true)
+            ->where('is_featured', true)
             ->limit(3)
             ->get()
-            ->map(function ($product) {
-                $colors = DB::table('product_colors')
-                    ->where('product_id', $product->id)
-                    ->pluck('color');
-
-                $sizesByColor = DB::table('product_sizes')
-                    ->where('product_id', $product->id)
-                    ->get()
-                    ->groupBy('color');
-
-                return [
-                    'id' => $product->id,
-                    'name' => $product->product_name,
-                    'category' => $product->category_name,
-                    'slug' => $product->slug,
-                    'colors' => $colors,
-                    'sizes' => $sizesByColor->map(function ($sizes) {
-                        return $sizes->pluck('size');
-                    }),
-                    'actions' => [
-                        'add_to_cart' => route('cart.add', ['product_id' => $product->id]),
-                        'toggle_love' => route('wishlist.toggle', ['product_id' => $product->id]),
-                        'compare' => route('compare.add', ['product_id' => $product->id]),
-                        'view' => route('products.show', ['slug' => $product->slug]),
-                    ],
-                ];
+            ->map(function (Product $product) {
+                return array_merge(
+                    $product->toArray(),
+                    ['actions' => $this->buildProductActions($product)]
+                );
             });
 
         return response()->json([
             'products' => $products,
         ]);
+    }
+
+    protected function buildProductActions(Product $product): array
+    {
+        return [
+            'add_to_cart' => route('cart.add', ['product_id' => $product->id]),
+            'toggle_love' => route('wishlist.toggle', ['product_id' => $product->id]),
+            'compare' => route('compare.add', ['product_id' => $product->id]),
+            'view' => route('products.show', ['slug' => $product->slug]),
+        ];
     }
 }
