@@ -170,9 +170,74 @@ class HomeController extends Controller
         ]);
     }
 
+    /**
+     * Get the real top 10 best-selling products based on the total quantity sold.
+     *
+     * This method retrieves products that have been ordered at least once,
+     * calculates the total quantity sold (`total_sold`) via the `orderItems` relationship,
+     * and returns the top 10 products sorted by the highest sales.
+     *
+     * Each product includes:
+     * - Basic info: id, name (translated), price, discounted price, sales count, slug, image URL
+     * - Category (with name and slug)
+     * - Available color variants with:
+     *     - Color name, code, and image
+     *     - Sizes available for that color with quantity > 0
+     * - Action URLs:
+     *     - Add to cart
+     *     - Toggle wishlist
+     *     - Compare
+     *     - View product details
+     *
+     * Translation is handled automatically via Spatie Laravel Translatable package.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * Example Response:
+     * {
+     *     "message": "Best selling products retrieved successfully.",
+     *     "products": [
+     *         {
+     *             "id": 1,
+     *             "name": "Stylish Shirt",
+     *             "price": 100,
+     *             "after_discount_price": 80,
+     *             "sales": 50,
+     *             "slug": "stylish-shirt",
+     *             "image_url": "https://example.com/storage/media/filename.jpg",
+     *             "category": {
+     *                 "name": "Men",
+     *                 "slug": "men"
+     *             },
+     *             "colors_with_sizes": [
+     *                 {
+     *                     "color_name": "Red",
+     *                     "color_code": "#FF0000",
+     *                     "color_image": "https://example.com/storage/colors/red.png",
+     *                     "sizes": [
+     *                         {
+     *                             "size_name": "M",
+     *                             "quantity": 5
+     *                         },
+     *                         ...
+     *                     ]
+     *                 },
+     *                 ...
+     *             ],
+     *             "actions": {
+     *                 "add_to_cart": "https://yourdomain.com/cart",
+     *                 "toggle_love": "https://yourdomain.com/wishlist/toggle",
+     *                 "compare": "https://yourdomain.com/compare/add",
+     *                 "view": "https://yourdomain.com/products/stylish-shirt"
+     *             }
+     *         },
+     *         ...
+     *     ]
+     * }
+     */
     public function realBestSellers()
     {
-        $bestSellers = Product::withTranslation()
+        $bestSellers = Product::query()
             ->withCount(['orderItems as total_sold' => function ($query) {
                 $query->select(DB::raw("SUM(quantity)"));
             }])
@@ -219,32 +284,59 @@ class HomeController extends Controller
     }
 
     /**
-     * Get Homepage Slider with CTA
+     * Get homepage slider and CTA content.
      *
-     * @group Homepage
+     * This endpoint returns the main slider, second slider, center section,
+     * last sections, and latest section based on the current app locale
+     * (either English or Arabic).
      *
-     * Retrieves configured slider images and call-to-action data for the homepage.
+     * @route GET /api/homepage/slider-with-cta
      *
-     * @response 200 {
+     * @queryParam locale string Optional. Language code ('en' or 'ar').
+     *
+     * @response {
      *   "data": {
-     *     "slider_images": [
+     *     "main_slider": {
+     *       "image_url": "string",
+     *       "thumbnail_url": "string",
+     *       "heading": "string",
+     *       "discount_text": "string",
+     *       "discount_value": "string",
+     *       "starting_price": "string",
+     *       "currency_symbol": "string",
+     *       "button_text": "string",
+     *       "button_url": "string"
+     *     },
+     *     "second_slider": {
+     *       "image_url": "string",
+     *       "thumbnail_url": "string"
+     *     },
+     *     "center_section": {
+     *       "image_url": "string",
+     *       "heading": "string",
+     *       "button_text": "string",
+     *       "button_url": "string"
+     *     },
+     *     "last_sections": [
      *       {
-     *         "url": "http://example.com/media/slider/slide1.jpg",
-     *         "link": "/products/summer-collection",
-     *         "text": "Summer Sale"
-     *       }
+     *         "image_url": "string",
+     *         "heading": "string",
+     *         "subheading": "string",
+     *         "button_text": "string",
+     *         "button_url": "string"
+     *       },
+     *       ...
      *     ],
-     *     "cta": {
-     *       "title": "New Arrivals",
-     *       "description": "Check out our latest products",
-     *       "button_text": "Shop Now",
-     *       "button_link": "/new-arrivals"
+     *     "latest_section": {
+     *       "image_url": "string",
+     *       "heading": "string",
+     *       "button_text": "string",
+     *       "button_url": "string"
      *     }
      *   }
      * }
-     * @response 404 {
-     *   "message": "Homepage settings not found."
-     * }
+     *
+     * @return \Illuminate\Http\JsonResponse|\App\Http\Resources\HomePageSettingResource
      */
     public function sliderWithCta()
     {
@@ -256,6 +348,48 @@ class HomeController extends Controller
             ], 404);
         }
 
-        return new HomePageSettingResource($homePageSetting);
+        $locale = app()->getLocale();
+
+        $data = [
+            'main_slider' => [
+                'image_url' => $homePageSetting->main_slider['image_url'] ?? '',
+                'thumbnail_url' => $homePageSetting->main_slider['thumbnail_url'] ?? '',
+                'heading' => $homePageSetting->main_slider['heading'][$locale] ?? '',
+                'discount_text' => $homePageSetting->main_slider['discount_text'][$locale] ?? '',
+                'discount_value' => $homePageSetting->main_slider['discount_value'][$locale] ?? '',
+                'starting_price' => $homePageSetting->main_slider['starting_price'] ?? '',
+                'currency_symbol' => $homePageSetting->main_slider['currency_symbol'] ?? '',
+                'button_text' => $homePageSetting->main_slider['button_text'][$locale] ?? '',
+                'button_url' => $homePageSetting->main_slider['button_url'] ?? '',
+            ],
+            'second_slider' => [
+                'image_url' => $homePageSetting->second_slider['image_url'] ?? '',
+                'thumbnail_url' => $homePageSetting->second_slider['thumbnail_url'] ?? '',
+            ],
+            'center_section' => [
+                'image_url' => $homePageSetting->center_section['image_url'] ?? '',
+                'heading' => $homePageSetting->center_section['heading'][$locale] ?? '',
+                'button_text' => $homePageSetting->center_section['button_text'][$locale] ?? '',
+                'button_url' => $homePageSetting->center_section['button_url'] ?? '',
+            ],
+            'last_sections' => collect($homePageSetting->last_sections ?? [])->map(function ($section) use ($locale) {
+                return [
+                    'image_url' => $section['image_url'] ?? '',
+                    'heading' => $section['heading'][$locale] ?? '',
+                    'subheading' => $section['subheading'][$locale] ?? '',
+                    'button_text' => $section['button_text'][$locale] ?? '',
+                    'button_url' => $section['button_url'] ?? '',
+                ];
+            }),
+            'latest_section' => [
+                'image_url' => $homePageSetting->latest_section['image_url'] ?? '',
+                'heading' => $homePageSetting->latest_section['heading'][$locale] ?? '',
+                'button_text' => $homePageSetting->latest_section['button_text'][$locale] ?? '',
+                'button_url' => $homePageSetting->latest_section['button_url'] ?? '',
+            ],
+        ];
+
+        return response()->json(['data' => $data]);
     }
+
 }

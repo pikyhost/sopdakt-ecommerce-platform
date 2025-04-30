@@ -28,9 +28,9 @@ Route::get('products/{product}/colors-sizes', [\App\Http\Controllers\Api\Product
 
 Route::post('/compare', [CompareController::class, 'compare'])->name('compare.add');
 
-Route::get('/products/featured', [ProductController::class, 'featured']); //bestSellers
-Route::get('/products/fakeBestSellers', [HomeController::class, 'fakeBestSellers']); //bestSellers
-Route::get('/products/realBestSellers', [HomeController::class, 'realBestSellers']); //bestSellers
+Route::get('/products/featured', [ProductController::class, 'featured']);
+Route::get('/products/fakeBestSellers', [HomeController::class, 'fakeBestSellers']);
+Route::get('/products/realBestSellers', [HomeController::class, 'realBestSellers']);
 Route::get('/products/{slug}', [ProductController::class, 'showBySlug'])->name('products.show');
 Route::get('/homepage/slider', [HomeController::class, 'sliderWithCta']);
 
