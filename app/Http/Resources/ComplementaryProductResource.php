@@ -20,6 +20,7 @@ class ComplementaryProductResource extends JsonResource
             'slug' => $this->slug,
             'feature_product_image_url' => $this->getFeatureProductImageUrl() ?? '',
             'price' => $this->discount_price_for_current_country ?? 0,
+            'after_discount_price' => $this->after_discount_price ?? 0,
         ];
     }
 }

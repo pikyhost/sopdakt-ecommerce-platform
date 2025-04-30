@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AboutUsController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CartListController;
 use App\Http\Controllers\Api\CompareController;
@@ -50,9 +51,11 @@ Route::prefix('cart')->group(function () {
     Route::delete('/{itemId}', [CartController::class, 'destroy']);
 
     // Cart list and checkout
-    Route::get('/', [CartListController::class, 'index'])->name('api.cart.index');
-    Route::post('/shipping', [CartListController::class, 'updateShipping'])->name('api.cart.updateShipping');
-    Route::post('/item/{cartItemId}/quantity', [CartListController::class, 'updateQuantity'])->name('api.cart.updateQuantity');
-    Route::delete('/item/{cartItemId}', [CartListController::class, 'removeItem'])->name('api.cart.removeItem');
-    Route::post('/checkout', [CartListController::class, 'checkout'])->name('api.cart.checkout');
+    Route::get('/', [CartListController::class, 'index'])->name('cart.index');
+    Route::post('/shipping', [CartListController::class, 'updateShipping'])->name('cart.updateShipping');
+    Route::post('/item/{cartItemId}/quantity', [CartListController::class, 'updateQuantity'])->name('cart.updateQuantity');
+    Route::delete('/item/{cartItemId}', [CartListController::class, 'removeItem'])->name('cart.removeItem');
+    Route::post('/checkout', [CartListController::class, 'checkout'])->name('checkout');
 });
+
+Route::get('/about-us', [AboutUsController::class, 'index'])->name('about-us.index');

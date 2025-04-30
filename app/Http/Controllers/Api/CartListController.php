@@ -16,6 +16,8 @@ use App\Models\Setting;
 use App\Models\ShippingType;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -113,6 +115,7 @@ class CartListController extends Controller
         $totals = $this->calculateTotals($cart, $cartItems);
         $productIds = collect($cartItems)->pluck('product.id')->filter()->unique();
 
+        // Fetch complementary product IDs from related products
         $complementaryProductIds = Product::whereIn('id', $productIds)
             ->with('complementaryProducts:id')
             ->get()
@@ -120,6 +123,7 @@ class CartListController extends Controller
             ->flatten()
             ->unique();
 
+        // Fetch actual complementary products
         $complementaryProducts = Product::whereIn('id', $complementaryProductIds)
             ->whereNotIn('id', $productIds)
             ->inRandomOrder()
@@ -127,25 +131,43 @@ class CartListController extends Controller
             ->get();
 
         $locale = app()->getLocale();
-        $nameField = 'name_' . $locale;
 
         return response()->json([
             'cart' => new CartResource($cart),
             'cartItems' => CartItemResource::collection($cartItems),
             'totals' => $totals,
-            'countries' => Country::select(['id', "$nameField as name"])->get(),
+            'countries' => Country::all()->map(fn ($country) => [
+                'id' => $country->id,
+                'name' => $country->getTranslation('name', $locale),
+            ]),
             'governorates' => $cart->country_id
-                ? Governorate::where('country_id', $cart->country_id)->select(['id', "$nameField as name"])->get()
+                ? Governorate::where('country_id', $cart->country_id)
+                    ->get()
+                    ->map(fn ($gov) => [
+                        'id' => $gov->id,
+                        'name' => $gov->getTranslation('name', $locale),
+                    ])
                 : [],
             'cities' => $cart->governorate_id
-                ? City::where('governorate_id', $cart->governorate_id)->select(['id', "$nameField as name"])->get()
+                ? City::where('governorate_id', $cart->governorate_id)
+                    ->get()
+                    ->map(fn ($city) => [
+                        'id' => $city->id,
+                        'name' => $city->getTranslation('name', $locale),
+                    ])
                 : [],
             'shipping_types' => Setting::isShippingEnabled()
-                ? ShippingType::where('status', true)->select(['id', "$nameField as name"])->get()
+                ? ShippingType::where('status', true)
+                    ->get()
+                    ->map(fn ($type) => [
+                        'id' => $type->id,
+                        'name' => $type->getTranslation('name', $locale),
+                    ])
                 : [],
             'complementary_products' => ComplementaryProductResource::collection($complementaryProducts),
         ]);
     }
+
 
 
     /**
@@ -308,24 +330,34 @@ class CartListController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $cartItem = CartItem::find($cartItemId);
+        $cartItem = CartItem::with('product')->find($cartItemId);
+
         if (!$cartItem) {
-            return response()->json(['error' => 'Cart item not found'], 404);
+            return response()->json(['error' => __('Cart item not found')], 404);
         }
 
         if ($request->action === 'increase') {
             $cartItem->increment('quantity');
-        } elseif ($request->action === 'decrease' && $cartItem->quantity > 1) {
+        } elseif ($request->action === 'decrease') {
+            if ($cartItem->quantity <= 1) {
+                return response()->json([
+                    'error' => __('Quantity cannot be less than 1'),
+                    'cartItemId' => $cartItem->id,
+                    'quantity' => $cartItem->quantity,
+                ], 422);
+            }
+
             $cartItem->decrement('quantity');
-        } else {
-            $cartItem->delete();
         }
 
-        $priceString = $cartItem->product ? $cartItem->product->discount_price_for_current_country : '0 USD';
+        // Recalculate subtotal
+        $priceString = $cartItem->product?->discount_price_for_current_country ?? '0 USD';
         $price = $this->extractPrice($priceString);
         $subtotal = $price * $cartItem->quantity;
+
         $cartItem->update(['subtotal' => $subtotal]);
 
+        // Reload cart and totals
         $cart = $this->getOrCreateCart();
         $cartItems = $this->loadCartItems($cart);
         $totals = $this->calculateTotals($cart, $cartItems);
@@ -336,6 +368,7 @@ class CartListController extends Controller
             'totals' => $totals,
         ]);
     }
+
 
     /**
      * Remove a cart item
@@ -433,92 +466,285 @@ class CartListController extends Controller
      *   "message": "Unauthenticated."
      * }
      */
+    /**
+     * Handle the checkout process
+     */
+    /**
+     * Handle the checkout process
+     */
+    /**
+     * Handle the checkout process
+     */
+    /**
+     * Handle the checkout process
+     */
+    /**
+     * Handle the checkout process
+     */
     public function checkout(Request $request): JsonResponse
     {
-        $cart = $this->getOrCreateCart();
-        $cartItems = $this->loadCartItems($cart);
+        DB::beginTransaction();
+        try {
+            $cart = $this->getOrCreateCart();
+            $cartItems = $this->loadCartItems($cart);
 
-        // Validate cart items
-        foreach ($cartItems as $item) {
-            if ($item->quantity < 1) {
+            // Validate cart is not empty
+            if ($cartItems->isEmpty()) {
+                DB::rollBack();
                 return response()->json([
-                    'error' => 'Please enter a valid quantity for all products. For help, visit our support page.',
-                    'support_link' => route('contact.us'),
+                    'error' => 'Your cart is empty. Please add products before checkout.',
+                    'cart_url' => route('cart.index'),
                 ], 422);
             }
-            if ($item->quantity > 10) {
+
+            // Validate cart items (quantity checks from Livewire)
+            foreach ($cartItems as $item) {
+                if ($item->quantity < 1) {
+                    DB::rollBack();
+                    return response()->json([
+                        'error' => 'Please enter a valid quantity for all products.',
+                        'support_link' => route('contact.us'),
+                    ], 422);
+                }
+
+                if ($item->quantity > 10) {
+                    DB::rollBack();
+                    return response()->json([
+                        'error' => 'The maximum quantity allowed per product is 10. Contact us via our support page.',
+                        'support_link' => route('contact.us'),
+                    ], 422);
+                }
+            }
+
+            // Validate shipping and location data
+            $validator = Validator::make($request->all(), [
+                'selected_shipping' => Setting::isShippingEnabled() ? 'required|exists:shipping_types,id' : 'nullable',
+                'country_id' => 'required|exists:countries,id',
+                'governorate_id' => 'required|exists:governorates,id',
+                'city_id' => 'nullable|exists:cities,id',
+            ]);
+
+            if ($validator->fails()) {
+                DB::rollBack();
                 return response()->json([
-                    'error' => 'The maximum quantity allowed per product is 10. Need more? Contact us via our support page.',
-                    'support_link' => route('contact.us'),
+                    'error' => 'Validation failed',
+                    'errors' => $validator->errors(),
+                    'request_data' => $request->all(),
                 ], 422);
             }
+
+            // Validate all cart items (using existing method)
+            $validationErrors = $this->validateCartItems($cartItems);
+            if ($validationErrors) {
+                DB::rollBack();
+                return $validationErrors;
+            }
+
+            // Process shipping information
+            $shippingValidation = $this->validateAndProcessShipping($request, $cart);
+            if ($shippingValidation instanceof JsonResponse) {
+                DB::rollBack();
+                return $shippingValidation;
+            }
+
+            // Calculate totals
+            $totals = $this->calculateTotals($cart, $cartItems);
+            if (!is_numeric($totals['subtotal']) || !is_numeric($totals['total'])) {
+                DB::rollBack();
+                throw new \Exception('Invalid totals calculation');
+            }
+
+            // Apply tax calculation
+            $taxPercentage = Setting::first()?->tax_percentage ?? 0;
+            $taxAmount = ($taxPercentage > 0) ? ($totals['subtotal'] * $taxPercentage / 100) : 0;
+
+            // Update cart with final details
+            $cart->update([
+                'subtotal' => $totals['subtotal'],
+                'total' => $totals['total'],
+                'tax_percentage' => $taxPercentage,
+                'tax_amount' => $taxAmount,
+                'shipping_cost' => $totals['shipping_cost'],
+                'shipping_type_id' => $request->selected_shipping ?? null,
+                'country_id' => $request->country_id,
+                'governorate_id' => $request->governorate_id,
+                'city_id' => $request->city_id,
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Cart ready for checkout',
+                'checkout_url' => route('checkout.index'),
+                'cart' => new CartResource($cart),
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Checkout error: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'An unexpected error occurred during checkout. Please try again.',
+                'support_link' => route('contact.us'),
+            ], 500);
         }
-
-        // Validate shipping and location
-        $validator = Validator::make([
-            'selected_shipping' => $cart->shipping_type_id,
-            'country_id' => $cart->country_id,
-            'governorate_id' => $cart->governorate_id,
-            'city_id' => $cart->city_id,
-        ], [
-            'selected_shipping' => Setting::isShippingEnabled() ? 'required' : 'nullable',
-            'country_id' => 'required|exists:countries,id',
-            'governorate_id' => 'required|exists:governorates,id',
-            'city_id' => 'nullable|exists:cities,id',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        // Calculate totals
-        $totals = $this->calculateTotals($cart, $cartItems);
-        $taxPercentage = Setting::first()?->tax_percentage ?? 0;
-        $taxAmount = ($taxPercentage > 0) ? ($totals['subtotal'] * $taxPercentage / 100) : 0;
-
-        // Update cart
-        $cart->update([
-            'subtotal' => $totals['subtotal'],
-            'total' => $totals['total'],
-            'tax_percentage' => $taxPercentage,
-            'tax_amount' => $taxAmount,
-            'shipping_cost' => $totals['shipping_cost'],
-        ]);
-
-        // Return checkout URL or data
-        return response()->json([
-            'message' => 'Cart ready for checkout',
-            'checkout_url' => route('checkout.index'),
-            'cart' => new CartResource($cart),
-        ]);
     }
 
     /**
-     * Get or create cart for the user or session.
+     * Validate all cart items
+     */
+    private function validateCartItems($cartItems): ?JsonResponse
+    {
+        foreach ($cartItems as $item) {
+            // Validate product availability
+            if (!$item->product && !$item->bundle) {
+                return response()->json([
+                    'error' => 'Some items in your cart are no longer available.',
+                    'cart_url' => route('cart.index'),
+                ], 422);
+            }
+
+            // Validate product price
+            if ($item->product) {
+                $priceString = $item->product->discount_price_for_current_country ?? '0 USD';
+                $price = $this->extractPrice($priceString);
+                if ($price <= 0) {
+                    return response()->json([
+                        'error' => 'Invalid price for product: ' . ($item->product->name ?? ''),
+                        'cart_url' => route('cart.index'),
+                    ], 422);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Validate and process shipping information
+     */
+    private function validateAndProcessShipping(Request $request, Cart $cart): ?JsonResponse
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'selected_shipping' => Setting::isShippingEnabled() ? 'required|exists:shipping_types,id' : 'nullable',
+                'country_id' => 'required|exists:countries,id',
+                'governorate_id' => 'required|exists:governorates,id',
+                'city_id' => 'nullable|exists:cities,id',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'error' => 'Validation failed',
+                    'errors' => $validator->errors(),
+                    'request_data' => $request->all()
+                ], 422);
+            }
+
+            if (Setting::isShippingEnabled() && $request->selected_shipping) {
+                $shippingType = ShippingType::where('id', $request->selected_shipping)
+                    ->where('status', true) // Changed from 'is_active' to 'status'
+                    ->first();
+
+                if (!$shippingType) {
+                    $availableMethods = ShippingType::where('status', true) // Changed from active() to where('status', true)
+                    ->get()
+                        ->map(function ($method) {
+                            return [
+                                'id' => $method->id,
+                                'name' => $method->name,
+                                'cost' => $method->cost,
+                                'supported_countries' => $method->countries->pluck('id')
+                            ];
+                        });
+
+                    return response()->json([
+                        'error' => 'Shipping method unavailable',
+                        'details' => [
+                            'selected_id' => $request->selected_shipping,
+                            'available_methods' => $availableMethods,
+                            'your_country_id' => $request->country_id
+                        ],
+                        'support_link' => route('contact.us')
+                    ], 422);
+                }
+            }
+
+            $updateResult = $cart->update([
+                'shipping_type_id' => $request->selected_shipping,
+                'country_id' => $request->country_id,
+                'governorate_id' => $request->governorate_id,
+                'city_id' => $request->city_id,
+            ]);
+
+            if (!$updateResult) {
+                throw new \Exception("Failed to update cart shipping information");
+            }
+
+            return null;
+
+        } catch (\Exception $e) {
+            Log::error('Shipping Processing Error', [
+                'error' => $e->getMessage(),
+                'cart_id' => $cart->id,
+                'request' => $request->all()
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Get or create cart with enhanced validation
      */
     private function getOrCreateCart(): Cart
     {
         if (Auth::check()) {
-            return Cart::firstOrCreate(['user_id' => Auth::id()], ['session_id' => null]);
+            return Cart::firstOrCreate(
+                ['user_id' => Auth::id()],
+                [
+                    'session_id' => null,
+                    'country_id' => request('country_id'),
+                    'governorate_id' => request('governorate_id'),
+                ]
+            );
         }
 
         $sessionId = Session::get('cart_session', Session::getId());
         Session::put('cart_session', $sessionId);
-        return Cart::firstOrCreate(['session_id' => $sessionId], ['user_id' => null]);
+
+        return Cart::firstOrCreate(
+            ['session_id' => $sessionId],
+            [
+                'user_id' => null,
+                'country_id' => request('country_id'),
+                'governorate_id' => request('governorate_id'),
+            ]
+        );
     }
 
     /**
-     * Load cart items with necessary data.
+     * Load cart items with necessary data
      */
     private function loadCartItems(Cart $cart): \Illuminate\Database\Eloquent\Collection
     {
-        return CartItem::where('cart_id', $cart->id)
+        // Verify the cart belongs to the current user/session
+        if (Auth::check()) {
+            if ($cart->user_id !== Auth::id()) {
+                return new \Illuminate\Database\Eloquent\Collection();
+            }
+        } else {
+            $sessionId = Session::get('cart_session');
+            if ($cart->session_id !== $sessionId) {
+                return new \Illuminate\Database\Eloquent\Collection();
+            }
+        }
+
+        return $cart->items()
             ->with(['product', 'bundle', 'size', 'color'])
             ->get();
     }
 
     /**
-     * Calculate totals (subtotal, shipping, tax, total).
+     * Calculate totals (subtotal, shipping, tax, total)
      */
     private function calculateTotals(Cart $cart, $cartItems): array
     {
@@ -580,7 +806,7 @@ class CartListController extends Controller
     }
 
     /**
-     * Extract numeric price from string.
+     * Extract numeric price from string
      */
     private function extractPrice($priceString): float
     {
@@ -588,7 +814,7 @@ class CartListController extends Controller
     }
 
     /**
-     * Extract currency from price string.
+     * Extract currency from price string
      */
     private function extractCurrency($priceString): string
     {
@@ -596,7 +822,7 @@ class CartListController extends Controller
     }
 
     /**
-     * Calculate product shipping cost.
+     * Calculate product shipping cost
      */
     private function calculateProductShippingCost(Product $product, Cart $cart): float
     {
@@ -646,7 +872,7 @@ class CartListController extends Controller
     }
 
     /**
-     * Get fallback location-based cost.
+     * Get fallback location-based cost
      */
     private function getFallbackLocationBasedCost(Cart $cart): float
     {
