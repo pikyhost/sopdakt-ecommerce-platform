@@ -26,15 +26,10 @@ Route::get('/home/featured-categories', [HomeController::class, 'featuredCategor
 
 Route::get('products/{product}/colors-sizes', [\App\Http\Controllers\Api\ProductController::class, 'colorsSizes']);
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/wishlist/toggle', [WishlistController::class, 'toggle']);
-    Route::get('/wishlist', [WishlistController::class, 'index']);
-    Route::get('/wishlist/{productId}', [WishlistController::class, 'isWishlisted']);
-});
-
 Route::post('/compare', [CompareController::class, 'compare'])->name('compare.add');
 
-Route::get('/products/featured', [ProductController::class, 'featured']);
+Route::get('/products/featured', [ProductController::class, 'featured']); //bestSellers
+Route::get('/products/bestSellers', [HomeController::class, 'bestSellers']); //bestSellers
 Route::get('/products/{slug}', [ProductController::class, 'showBySlug'])->name('products.show');
 Route::get('/homepage/slider', [HomeController::class, 'sliderWithCta']);
 

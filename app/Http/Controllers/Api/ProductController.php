@@ -262,10 +262,14 @@ class ProductController extends Controller
 
 
     /**
-     * Get Featured Products
+     * Get up to 3 featured published products.
      *
-     * Returns a maximum of 3 published products marked as featured. Each product includes all database fields
-     * and dynamic action URLs (e.g., add to cart, toggle wishlist, compare, view).
+     * This endpoint retrieves a limited list of featured and published products.
+     * It returns localized fields based on the `Accept-Language` header and includes:
+     * - Localized fields (`name`, `description`, `summary`, `meta_title`, etc.)
+     * - Related user and category names
+     * - Product media (feature image, secondary image, and more)
+     * - Frontend action URLs (e.g., add to cart, wishlist)
      *
      * @group Products
      *
@@ -273,30 +277,23 @@ class ProductController extends Controller
      *   "products": [
      *     {
      *       "id": 1,
-     *       "name": "Premium Headphones",
-     *       "price": 199,
-     *       "after_discount_price": 149,
-     *       "quantity": 20,
-     *       "is_featured": true,
-     *       "...": "... other fields ...",
+     *       "name": "Localized name",
+     *       "description": "Localized description...",
+     *       ...
+     *       "media": {
+     *         "feature_product_image": "https://example.com/storage/feature.jpg",
+     *         "second_feature_product_image": "https://example.com/storage/feature2.jpg",
+     *         "more_product_images_and_videos": [
+     *           "https://example.com/storage/image1.jpg",
+     *           "https://example.com/storage/video1.mp4"
+     *         ]
+     *       },
      *       "actions": {
-     *         "add_to_cart": "http://yourdomain.com/api/cart/1",
-     *         "toggle_love": "http://yourdomain.com/api/wishlist/toggle/1",
-     *         "compare": "http://yourdomain.com/api/compare/1",
-     *         "view": "http://yourdomain.com/products/premium-headphones"
-     *       }
-     *     },
-     *     {
-     *       "id": 2,
-     *       "name": "Wireless Earbuds",
-     *       "price": 129,
-     *       "is_featured": true,
-     *       "...": "... other fields ...",
-     *       "actions": {
-     *         "add_to_cart": "http://yourdomain.com/api/cart/2",
-     *         "toggle_love": "http://yourdomain.com/api/wishlist/toggle/2",
-     *         "compare": "http://yourdomain.com/api/compare/2",
-     *         "view": "http://yourdomain.com/products/wireless-earbuds"
+     *         "add_to_cart": {
+     *           "method": "POST",
+     *           "url": "https://example.com/api/cart"
+     *         },
+     *         ...
      *       }
      *     }
      *   ]
@@ -304,15 +301,46 @@ class ProductController extends Controller
      */
     public function featured()
     {
+        $locale = app()->getLocale();
+
         $products = Product::where('is_published', true)
             ->where('is_featured', true)
             ->limit(3)
             ->get()
-            ->map(function (Product $product) {
-                return array_merge(
-                    $product->toArray(),
-                    ['actions' => $this->buildProductActions($product)]
-                );
+            ->map(function (Product $product) use ($locale) {
+                return [
+                    'id' => $product->id,
+                    'category_id' => $product->category_id,
+                    'category_name' => optional($product->category)?->getTranslation('name', $locale),
+                    'name' => $product->getTranslation('name', $locale),
+                    'sku' => $product->sku,
+                    'price' => $product->price,
+                    'after_discount_price' => $product->after_discount_price,
+                    'description' => $product->getTranslation('description', $locale),
+                    'slug' => $product->slug,
+                    'meta_title' => $product->getTranslation('meta_title', $locale),
+                    'meta_description' => $product->getTranslation('meta_description', $locale),
+                    'discount_start' => $product->discount_start,
+                    'discount_end' => $product->discount_end,
+                    'views' => $product->views,
+                    'sales' => $product->sales,
+                    'fake_average_rating' => $product->fake_average_rating,
+                    'summary' => $product->getTranslation('summary', $locale),
+                    'quantity' => $product->quantity,
+                    'custom_attributes' => $product->getTranslation('custom_attributes', $locale),
+                    'is_published' => $product->is_published,
+                    'is_featured' => $product->is_featured,
+                    'is_free_shipping' => $product->is_free_shipping,
+                    'created_at' => $product->created_at,
+                    'updated_at' => $product->updated_at,
+
+                    'media' => [
+                        'feature_product_image' => $product->getFeatureProductImageUrl(),
+                        'second_feature_product_image' => $product->getSecondFeatureProductImageUrl(),
+                    ],
+
+                    'actions' => $this->buildProductActions($product),
+                ];
             });
 
         return response()->json([
