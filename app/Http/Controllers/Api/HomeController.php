@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\HomePageSetting;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
@@ -109,7 +110,7 @@ class HomeController extends Controller
      *   ]
      * }
      */
-    public function bestSellers(): JsonResponse
+    public function fakeBestSellers(): JsonResponse
     {
         $products = Product::with([
             'media',
@@ -125,6 +126,7 @@ class HomeController extends Controller
                 'sales',
                 'slug',
                 'category_id',
+                'fake_average_rating'
             ])
             ->where('is_published', true)
             ->orderBy('sales', 'desc')
@@ -154,9 +156,9 @@ class HomeController extends Controller
                         ];
                     }),
                     'actions' => [
-                        'add_to_cart' => route('cart.add', ['product_id' => $product->id]),
-                        'toggle_love' => route('wishlist.toggle', ['product_id' => $product->id]),
-                        'compare' => route('compare.add', ['product_id' => $product->id]),
+                        'add_to_cart' => route('cart.add'), // No parameter passed
+                        'toggle_love' => route('wishlist.toggle'), // Also doesn't accept params in URL
+                        'compare' => route('compare.add'), // Same here
                         'view' => route('products.show', ['slug' => $product->slug]),
                     ],
                 ];
@@ -165,6 +167,54 @@ class HomeController extends Controller
         return response()->json([
             'success' => true,
             'data' => $products,
+        ]);
+    }
+
+    public function realBestSellers()
+    {
+        $bestSellers = Product::withTranslation()
+            ->withCount(['orderItems as total_sold' => function ($query) {
+                $query->select(DB::raw("SUM(quantity)"));
+            }])
+            ->orderByDesc('total_sold')
+            ->whereHas('orderItems') // Only products that were ordered
+            ->take(10)
+            ->get()
+            ->map(function ($product) {
+                return [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'price' => $product->price,
+                    'after_discount_price' => $product->after_discount_price,
+                    'sales' => $product->sales,
+                    'slug' => $product->slug,
+                    'image_url' => $product->getFirstMediaUrl(),
+                    'category' => $product->category?->only(['name', 'slug']),
+                    'colors_with_sizes' => $product->productColors->map(function ($productColor) {
+                        return [
+                            'color_name' => $productColor->color->name ?? null,
+                            'color_code' => $productColor->color->code ?? null,
+                            'color_image' => $productColor->image ? asset('storage/' . $productColor->image) : null,
+                            'sizes' => $productColor->productColorSizes->map(function ($productColorSize) {
+                                return [
+                                    'size_name' => $productColorSize->size->name ?? null,
+                                    'quantity' => $productColorSize->quantity,
+                                ];
+                            })->filter(fn ($size) => $size['quantity'] > 0)->values(),
+                        ];
+                    }),
+                    'actions' => [
+                        'add_to_cart' => route('cart.add'), // No parameter passed
+                        'toggle_love' => route('wishlist.toggle'), // Also doesn't accept params in URL
+                        'compare' => route('compare.add'), // Same here
+                        'view' => route('products.show', ['slug' => $product->slug]),
+                    ],
+                ];
+            });
+
+        return response()->json([
+            'message' => __('Best selling products retrieved successfully.'),
+            'products' => $bestSellers,
         ]);
     }
 

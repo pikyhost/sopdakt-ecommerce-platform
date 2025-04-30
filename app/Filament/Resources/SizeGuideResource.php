@@ -21,13 +21,7 @@ class SizeGuideResource extends Resource
     protected static ?string $model = SizeGuide::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-photo';
-
-    protected static ?string $modelLabel = 'Size Guide Images';
-
-    protected static ?string $pluralModelLabel = 'Size Guides Images';
-
-    protected static ?string $navigationLabel = 'Size Guides Images';
-
+    
     public static function getNavigationLabel(): string
     {
         return __('Size Guides Images');
