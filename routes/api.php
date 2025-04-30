@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\WishlistController;
 use App\Http\Controllers\PaymentController;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ShippingController;
@@ -54,4 +55,31 @@ Route::prefix('cart')->group(function () {
     Route::post('/item/{cartItemId}/quantity', [CartListController::class, 'updateQuantity'])->name('api.cart.updateQuantity');
     Route::delete('/item/{cartItemId}', [CartListController::class, 'removeItem'])->name('api.cart.removeItem');
     Route::post('/checkout', [CartListController::class, 'checkout'])->name('api.cart.checkout');
+});
+
+
+Route::get('/debug/product/{id}/colors-sizes', function ($id) {
+    $product = Product::with([
+        'productColors.color',
+        'productColors.productColorSizes.size',
+    ])->findOrFail($id);
+
+    $variants = $product->productColors->map(function ($variant) {
+        return [
+            'id' => $variant->id,
+            'color_id' => $variant->color_id,
+            'color_name' => optional($variant->color)->name,
+            'image_url' => $variant->image ? asset('storage/' . $variant->image) : null,
+            'sizes' => $variant->productColorSizes->map(function ($pcs) {
+                return [
+                    'id' => $pcs->id,
+                    'size_id' => $pcs->size_id,
+                    'size_name' => optional($pcs->size)->name,
+                    'quantity' => $pcs->quantity,
+                ];
+            }),
+        ];
+    });
+
+    return response()->json(['variants' => $variants]);
 });
