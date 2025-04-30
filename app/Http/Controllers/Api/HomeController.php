@@ -352,44 +352,52 @@ class HomeController extends Controller
 
         $data = [
             'main_slider' => [
-                'image_url' => $homePageSetting->main_slider['image_url'] ?? '',
-                'thumbnail_url' => $homePageSetting->main_slider['thumbnail_url'] ?? '',
-                'heading' => $homePageSetting->main_slider['heading'][$locale] ?? '',
-                'discount_text' => $homePageSetting->main_slider['discount_text'][$locale] ?? '',
-                'discount_value' => $homePageSetting->main_slider['discount_value'][$locale] ?? '',
-                'starting_price' => $homePageSetting->main_slider['starting_price'] ?? '',
-                'currency_symbol' => $homePageSetting->main_slider['currency_symbol'] ?? '',
-                'button_text' => $homePageSetting->main_slider['button_text'][$locale] ?? '',
-                'button_url' => $homePageSetting->main_slider['button_url'] ?? '',
+                'image_url' => $homePageSetting->getSlider1ImageUrl(),
+                'thumbnail_url' => $homePageSetting->getSlider1ThumbnailUrl(),
+                'heading' => $homePageSetting->getTranslation('main_heading', $locale),
+                'discount_text' => $homePageSetting->getTranslation('discount_text', $locale),
+                'discount_value' => $homePageSetting->getTranslation('discount_value', $locale),
+                'starting_price' => $homePageSetting->starting_price,
+                'currency_symbol' => $homePageSetting->currency_symbol,
+                'button_text' => $homePageSetting->getTranslation('button_text', $locale),
+                'button_url' => $homePageSetting->button_url,
             ],
             'second_slider' => [
-                'image_url' => $homePageSetting->second_slider['image_url'] ?? '',
-                'thumbnail_url' => $homePageSetting->second_slider['thumbnail_url'] ?? '',
+                'image_url' => $homePageSetting->getSlider2ImageUrl(),
+                'thumbnail_url' => $homePageSetting->getSlider2ThumbnailUrl(),
             ],
             'center_section' => [
-                'image_url' => $homePageSetting->center_section['image_url'] ?? '',
-                'heading' => $homePageSetting->center_section['heading'][$locale] ?? '',
-                'button_text' => $homePageSetting->center_section['button_text'][$locale] ?? '',
-                'button_url' => $homePageSetting->center_section['button_url'] ?? '',
+                'image_url' => $homePageSetting->getCenterImageUrl(),
+                'heading' => $homePageSetting->getTranslation('center_main_heading', $locale),
+                'button_text' => $homePageSetting->getTranslation('center_button_text', $locale),
+                'button_url' => $homePageSetting->center_button_url,
             ],
-            'last_sections' => collect($homePageSetting->last_sections ?? [])->map(function ($section) use ($locale) {
-                return [
-                    'image_url' => $section['image_url'] ?? '',
-                    'heading' => $section['heading'][$locale] ?? '',
-                    'subheading' => $section['subheading'][$locale] ?? '',
-                    'button_text' => $section['button_text'][$locale] ?? '',
-                    'button_url' => $section['button_url'] ?? '',
-                ];
-            }),
+            'last_sections' => [
+                [
+                    'image_url' => $homePageSetting->getLast1ImageUrl(),
+                    'heading' => $homePageSetting->getTranslation('last1_heading', $locale),
+                    'subheading' => $homePageSetting->getTranslation('last1_subheading', $locale),
+                    'button_text' => $homePageSetting->getTranslation('last1_button_text', $locale),
+                    'button_url' => $homePageSetting->last1_button_url,
+                ],
+                [
+                    'image_url' => $homePageSetting->getLast2ImageUrl(),
+                    'heading' => $homePageSetting->getTranslation('last2_heading', $locale),
+                    'subheading' => $homePageSetting->getTranslation('last2_subheading', $locale),
+                    'button_text' => $homePageSetting->getTranslation('last2_button_text', $locale),
+                    'button_url' => $homePageSetting->last2_button_url,
+                ]
+            ],
             'latest_section' => [
-                'image_url' => $homePageSetting->latest_section['image_url'] ?? '',
-                'heading' => $homePageSetting->latest_section['heading'][$locale] ?? '',
-                'button_text' => $homePageSetting->latest_section['button_text'][$locale] ?? '',
-                'button_url' => $homePageSetting->latest_section['button_url'] ?? '',
+                'image_url' => $homePageSetting->getLatestImageUrl(),
+                'heading' => $homePageSetting->getTranslation('latest_heading', $locale),
+                'button_text' => $homePageSetting->getTranslation('latest_button_text', $locale),
+                'button_url' => $homePageSetting->latest_button_url,
             ],
         ];
 
         return response()->json(['data' => $data]);
     }
+
 
 }
