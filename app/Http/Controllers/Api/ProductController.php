@@ -56,13 +56,13 @@ class ProductController extends Controller
      *   ]
      * }
      */
-    public function colorsSizes(Product $product): JsonResponse
+    public function colorsSizes($id): JsonResponse
     {
         // Re-fetch with correct and fresh relationships
         $product = Product::with([
             'productColors.color',
             'productColors.productColorSizes.size',
-        ])->findOrFail($product->id);
+        ])->findOrFail($id);
 
         $variants = $product->productColors->map(function ($variant) {
             return [
