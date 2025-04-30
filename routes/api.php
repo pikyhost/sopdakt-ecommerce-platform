@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AboutUsController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CartListController;
 use App\Http\Controllers\Api\CompareController;
+use App\Http\Controllers\Api\ContactMessageController;
 use App\Http\Controllers\Api\ContactSettingController;
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\ProductController;
@@ -61,3 +62,4 @@ Route::prefix('cart')->group(function () {
 
 Route::get('/about-us', [AboutUsController::class, 'index'])->name('about-us.index');
 Route::get('/contact-settings', [ContactSettingController::class, 'index'])->name('contact-settings.index');
+Route::post('/contact', [ContactMessageController::class, 'store']);
