@@ -150,7 +150,6 @@ class PolicyController extends Controller
             return response()->json([
                 'data' => [
                     'content' => $content,
-                    'locale' => $locale,
                 ],
                 'message' => ucwords(str_replace('_', ' ', $policyType)) . ' retrieved successfully',
             ], 200);
