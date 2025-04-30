@@ -69,3 +69,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/orders/{order}', [OrderController::class, 'update']); // Edit own order
     Route::delete('/orders/{order}', [OrderController::class, 'destroy']); // Delete own order
 });
+
+Route::prefix('policies')->group(function () {
+    Route::get('/privacy', [App\Http\Controllers\Api\PolicyController::class, 'privacy'])->name('policies.privacy');
+    Route::get('/refund', [App\Http\Controllers\Api\PolicyController::class, 'refund'])->name('policies.refund');
+    Route::get('/terms', [App\Http\Controllers\Api\PolicyController::class, 'terms'])->name('policies.terms');
+});

@@ -5,17 +5,29 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
-    // List the authenticated user's orders
+    /**
+     * List all orders for the authenticated user.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * Response:
+     * {
+     *   "success": true,
+     *   "orders": [ { order_object }, ... ]
+     * }
+     */
     public function index()
     {
         $orders = Order::where('user_id', Auth::id())
-            ->with(['contact', 'paymentMethod', 'coupon', 'shippingType', 'country', 'governorate', 'city'])
+            ->with(['user', 'contact', 'paymentMethod', 'coupon', 'shippingType', 'country', 'governorate', 'city'])
             ->latest()
-            ->get();
+            ->get()
+            ->map(fn ($order) => $this->transformOrder($order));
 
         return response()->json([
             'success' => true,
@@ -23,7 +35,26 @@ class OrderController extends Controller
         ]);
     }
 
-    // Track an order by tracking number
+    /**
+     * Track a specific order by its tracking number.
+     *
+     * @param string $trackingNumber
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * Response (Success):
+     * {
+     *   "success": true,
+     *   "status": "shipping",
+     *   "shipping_status": "out_for_delivery",
+     *   "shipping_response": { ... }
+     * }
+     *
+     * Response (Not Found):
+     * {
+     *   "success": false,
+     *   "message": "Order not found."
+     * }
+     */
     public function track($trackingNumber)
     {
         $order = Order::where('tracking_number', $trackingNumber)->first();
@@ -43,7 +74,26 @@ class OrderController extends Controller
         ]);
     }
 
-    // Update an order (only if belongs to user)
+    /**
+     * Update the order (only if it belongs to the authenticated user).
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Order $order
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * Request:
+     * {
+     *   "notes": "optional string",
+     *   "status": "pending|preparing|shipping|delayed|refund|cancelled|completed"
+     * }
+     *
+     * Response:
+     * {
+     *   "success": true,
+     *   "message": "Order updated successfully.",
+     *   "order": { order_object }
+     * }
+     */
     public function update(Request $request, Order $order)
     {
         if ($order->user_id !== Auth::id()) {
@@ -63,11 +113,24 @@ class OrderController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Order updated successfully.',
-            'order' => $order,
+            'order' => $this->transformOrder($order->load([
+                'user', 'contact', 'paymentMethod', 'coupon', 'shippingType', 'country', 'governorate', 'city'
+            ])),
         ]);
     }
 
-    // Delete an order (only if belongs to user)
+    /**
+     * Delete the order (only if it belongs to the authenticated user).
+     *
+     * @param \App\Models\Order $order
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * Response:
+     * {
+     *   "success": true,
+     *   "message": "Order deleted successfully."
+     * }
+     */
     public function destroy(Order $order)
     {
         if ($order->user_id !== Auth::id()) {
@@ -83,5 +146,53 @@ class OrderController extends Controller
             'success' => true,
             'message' => 'Order deleted successfully.',
         ]);
+    }
+
+    /**
+     * Transform an Order model into a consistent array format.
+     *
+     * @param \App\Models\Order $order
+     * @return array
+     */
+    protected function transformOrder(Order $order)
+    {
+        return [
+            'id' => $order->id,
+            'user_id' => $order->user_id,
+            'user_name' => $order->user->name ?? null,
+
+            'payment_method_id' => $order->payment_method_id,
+            'payment_method_name' => $order->paymentMethod->name ?? null,
+
+            'coupon_id' => $order->coupon_id,
+
+            'shipping_cost' => $order->shipping_cost,
+            'tax_percentage' => $order->tax_percentage,
+            'tax_amount' => $order->tax_amount,
+            'subtotal' => $order->subtotal,
+            'total' => $order->total,
+
+            'shipping_type_id' => $order->shipping_type_id,
+            'shipping_type_name' => $order->shippingType->name ?? null,
+
+            'country_id' => $order->country_id,
+            'country_name' => $order->country->name ?? null,
+
+            'governorate_id' => $order->governorate_id,
+            'governorate_name' => $order->governorate->name ?? null,
+
+            'city_id' => $order->city_id,
+            'city_name' => $order->city?->name ?? null,
+
+            'status' => $order->status,
+            'notes' => $order->notes,
+            'tracking_number' => $order->tracking_number,
+            'shipping_status' => $order->shipping_status,
+            'shipping_response' => $order->shipping_response,
+            'checkout_token' => $order->checkout_token,
+
+            'created_at' => $order->created_at,
+            'updated_at' => $order->updated_at,
+        ];
     }
 }
