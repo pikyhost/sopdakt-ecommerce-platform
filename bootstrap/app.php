@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\SetLocaleFromHeader;
+use App\Http\Middleware\SetRequestLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -37,7 +38,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('api', \Illuminate\Session\Middleware\StartSession::class);
         $middleware->appendToGroup('api', \App\Http\Middleware\ApiKeyMiddleware::class);
         $middleware->appendToGroup('api', HandleCors::class);
-        $middleware->appendToGroup('api', SetLocaleFromHeader::class);
+        $middleware->appendToGroup('api', SetRequestLocale::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->renderable(function (NotFoundHttpException $e) {
