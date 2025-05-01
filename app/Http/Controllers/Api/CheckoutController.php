@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Enums\OrderStatus;
 use App\Enums\TransactionType;
 use App\Enums\UserRole;
+use App\Helpers\GeneralHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCheckoutRequest;
 use App\Mail\GuestInvitationMail;
 use App\Mail\OrderStatusMail;
 use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\Contact;
 use App\Models\Invitation;
 use App\Models\Order;
@@ -136,7 +138,7 @@ class CheckoutController extends Controller
                     'user_id' => Auth::id(),
                     'contact_id' => Auth::check() ? null : $contact->id,
                     'cart_id' => $cart->id,
-                    'notes' => $data['notes'],
+                    'notes' => $data['notes'] ?? null,
                     'checkout_token' => $checkoutToken,
                     'payment_method_id' => $data['payment_method_id'],
                 ]
@@ -333,8 +335,9 @@ class CheckoutController extends Controller
                 'subtotal' => $cart->subtotal,
                 'total' => $cart->total,
                 'status' => OrderStatus::Shipping,
-                'notes' => $data['notes'],
+                'notes' => $data['notes'] ?? null,
                 'checkout_token' => $checkoutToken,
+                'tracking_number' => null, // Explicitly set to null
             ];
 
             if (!Auth::check() && $contact instanceof Contact) {
@@ -420,7 +423,7 @@ class CheckoutController extends Controller
             $message = "Thank you for your order #{$order->id}! Your order for {$order->total} is being processed.";
             $whatsAppService->sendMessage($data['phone'], $message);
 
-            // JT Express integration
+            // JT Express integration (prepare data but do not assign tracking number yet)
             $jtExpressData = $this->prepareJtExpressOrderData($order);
             $jtExpressResponse = $this->sendJtExpressRequest($jtExpressData); // Implement as needed
             $this->updateJtExpressOrder($order, 'pending', $jtExpressData, $jtExpressResponse);
@@ -432,7 +435,7 @@ class CheckoutController extends Controller
                     'order_id' => $order->id,
                     'total' => $order->total,
                     'status' => $order->status,
-                    'tracking_number' => $order->tracking_number,
+                    'tracking_number' => $order->tracking_number, // Should be null
                     'created_at' => $order->created_at->toIso8601String(),
                 ],
                 'message' => 'Order placed successfully',
@@ -454,19 +457,15 @@ class CheckoutController extends Controller
     private function prepareJtExpressOrderData(Order $order): array
     {
         $data = [
-            'tracking_number' => '#' . $order->id . ' EGY' . time() . rand(1000, 9999),
+            // Do not generate tracking_number here to keep it null in the order
             'weight' => 1.0, // Dynamic calculation needed
             'quantity' => $order->items->sum('quantity'),
             'remark' => implode(' , ', array_filter([
                 'Notes: ' . ($order->notes ?? 'No notes'),
                 $order->user?->name ? 'User: ' . $order->user->name : null,
-                $order->user?->email ? 'Email: ' . $order->user->email : null,
-                $order->user?->phone ? 'Phone: ' . $order->user->phone : null,
-                $order->user?->address ? 'Address: ' . $order->user->address : null,
-                $order->contact?->name ? 'Contact: ' . $order->contact->name : null,
-                $order->contact?->email ? 'Contact Email: ' . $order->contact->email : null,
-                $order->contact?->phone ? 'Contact Phone: ' . $order->contact->phone : null,
-                $order->contact?->address ? 'Contact Address: ' . $order->contact->address : null,
+                'Email: ' . ($order->user?->email ?? $order->contact?->email ?? null),
+                'Phone: ' . ($order->user?->phone ?? $order->contact?->phone ?? null),
+                'Address: ' . ($order->user?->address ?? $order->contact?->address ?? null),
             ])),
             'item_name' => $order->items->pluck('product.name')->implode(', '),
             'item_quantity' => $order->items->count(),
@@ -529,7 +528,12 @@ class CheckoutController extends Controller
     {
         // Implement actual JT Express API call here
         // This is a placeholder returning a mock response
-        return ['code' => 1, 'message' => 'JT Express order created'];
+        // Assume the API returns a tracking number if successful
+        return [
+            'code' => 1,
+            'message' => 'JT Express order created',
+            'tracking_number' => '#JT' . time() . rand(1000, 9999), // Example tracking number from API
+        ];
     }
 
     /**
@@ -539,7 +543,7 @@ class CheckoutController extends Controller
     {
         if (isset($jtExpressResponse['code']) && $jtExpressResponse['code'] == 1) {
             $order->update([
-                'tracking_number' => $jtExpressData['tracking_number'] ?? null,
+                // Only update shipping_status and shipping_response, not tracking_number
                 'shipping_status' => $shippingStatus,
                 'shipping_response' => json_encode($jtExpressResponse),
             ]);
