@@ -8,15 +8,12 @@ use Filament\Resources\Pages\CreateRecord;
 
 class CreateWheelSpin extends CreateRecord
 {
-    use CreateRecord\Concerns\Translatable;
-
     protected static string $resource = WheelSpinResource::class;
 
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\LocaleSwitcher::make(),
         ];
     }
 }

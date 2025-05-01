@@ -8,14 +8,12 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListWheelSpins extends ListRecords
 {
-    use ListRecords\Concerns\Translatable;
-
     protected static string $resource = WheelSpinResource::class;
 
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Actions\CreateAction::make(),
             Actions\LocaleSwitcher::make(),
         ];
     }
