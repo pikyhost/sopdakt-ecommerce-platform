@@ -4,20 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Translatable\HasTranslations;
 
 class WheelPrize extends Model
 {
-    protected $fillable = [
-        'wheel_id',
-        'name',
-        'type',
-        'value',
-        'coupon_id',
-        'discount_id',
-        'probability',
-        'is_available',
-        'daily_limit',
-        'total_limit',
+    use HasTranslations;
+
+    protected $guarded = [];
+
+    public $translatable = ['name']; // Define translatable fields
+
+    protected $casts = [
+        'is_available' => 'boolean',
+        'probability' => 'integer',
+        'value' => 'integer',
     ];
 
     public function wheel(): BelongsTo
@@ -33,10 +33,5 @@ class WheelPrize extends Model
     public function discount(): BelongsTo
     {
         return $this->belongsTo(Discount::class);
-    }
-
-    public function spins()
-    {
-        return $this->hasMany(WheelSpin::class);
     }
 }

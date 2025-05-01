@@ -7,11 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class WheelSpin extends Model
 {
-    protected $fillable = [
-        'user_id',
-        'wheel_id',
-        'wheel_prize_id',
-        'is_winner',
+    protected $guarded = [];
+
+    protected $casts = [
+        'is_winner' => 'boolean',
     ];
 
     public function user(): BelongsTo
@@ -19,13 +18,18 @@ class WheelSpin extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function contact(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class);
+    }
+
     public function wheel(): BelongsTo
     {
         return $this->belongsTo(Wheel::class);
     }
 
-    public function prize(): BelongsTo
+    public function wheelPrize(): BelongsTo
     {
-        return $this->belongsTo(WheelPrize::class, 'wheel_prize_id');
+        return $this->belongsTo(WheelPrize::class);
     }
 }

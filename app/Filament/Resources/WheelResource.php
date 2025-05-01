@@ -7,6 +7,7 @@ use App\Models\Wheel;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
+use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -14,6 +15,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class WheelResource extends Resource
 {
+    use Translatable;
+
     protected static ?string $model = Wheel::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-cube-transparent';

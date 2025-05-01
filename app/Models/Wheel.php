@@ -2,31 +2,36 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Translatable\HasTranslations;
 
 class Wheel extends Model
 {
+    use HasFactory, HasTranslations;
+
     protected $guarded = [];
 
-    /**
-     * The attributes that should be cast to native types.
-     */
+    public $translatable = ['name']; // Define translatable fields
+
     protected $casts = [
         'is_active' => 'boolean',
-        'delay_seconds' => 'integer',
         'specific_pages' => 'array', // Cast JSON string to array
+        'start_date' => 'datetime',
+        'end_date' => 'datetime',
+        'spins_per_user' => 'integer',
+        'spins_duration' => 'integer',
     ];
 
-    public function prizes()
+    public function prizes(): HasMany
     {
-        return $this->hasMany(WheelPrize::class); //wheelPrizes
+        return $this->hasMany(WheelPrize::class);
     }
 
-
-    public function wheelPrizes()
+    public function wheelPrizes(): HasMany
     {
-        return $this->hasMany(WheelPrize::class); //wheelPrizes
+        return $this->hasMany(WheelPrize::class);
     }
 
     public function spins(): HasMany

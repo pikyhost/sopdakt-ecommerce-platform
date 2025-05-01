@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\ContactSettingController;
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\WheelController;
 use App\Http\Controllers\Api\WishlistController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Http\Request;
@@ -83,3 +84,9 @@ Route::prefix('banners')->group(function () {
 
 Route::get('/popups', [App\Http\Controllers\Api\PopupController::class, 'index'])->name('popups.index');
 Route::post('/checkout', [App\Http\Controllers\Api\CheckoutController::class, 'store'])->name('checkout.store');
+
+// Wheel of Fortune Routes
+Route::prefix('wheel')->group(function () {
+    Route::get('/', [WheelController::class, 'index'])->name('wheel.index');
+    Route::post('/spin', [WheelController::class, 'spin'])->name('wheel.spin');
+});
