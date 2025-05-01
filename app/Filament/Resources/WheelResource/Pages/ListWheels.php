@@ -15,7 +15,6 @@ class ListWheels extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
             Actions\LocaleSwitcher::make(),
         ];
     }
