@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Api\AboutUsController;
-use App\Http\Controllers\Api\BannerController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CartListController;
 use App\Http\Controllers\Api\CompareController;
@@ -16,11 +15,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ShippingController;
 
+require __DIR__.'/auth.php';
+
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
-
-require __DIR__.'/auth.php';
 
 Route::post('jt-express-webhook', [ShippingController::class, 'handleWebhook']);
 
@@ -81,3 +80,6 @@ Route::prefix('banners')->group(function () {
     Route::get('/product', [App\Http\Controllers\Api\BannerController::class, 'product'])->name('banners.product');
     Route::get('/category', [App\Http\Controllers\Api\BannerController::class, 'category'])->name('banners.category');
 });
+
+Route::get('/popups', [App\Http\Controllers\Api\PopupController::class, 'index'])->name('popups.index');
+Route::post('/checkout', [App\Http\Controllers\Api\CheckoutController::class, 'store'])->name('checkout.store');
