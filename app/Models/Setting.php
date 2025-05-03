@@ -29,6 +29,7 @@ class Setting extends Model
         'shipping_type_enabled',
         'shipping_locations_enabled',
         'minimum_stock_level',
+        'free_shipping_threshold',
 
         // New fields
         'primary_color',
@@ -160,6 +161,14 @@ class Setting extends Model
     }
 
     /**
+     * Get the free shipping threshold.
+     */
+    public static function getFreeShippingThreshold(): float
+    {
+        return (float)(self::getAllSettings()['free_shipping_threshold'] ?? 500.00);
+    }
+
+    /**
      * Get contact details (phone & email).
      */
     public static function getContactDetails(): array
@@ -248,5 +257,4 @@ class Setting extends Model
     {
         return self::where('key', $key)->value('value') == '1';
     }
-
 }
