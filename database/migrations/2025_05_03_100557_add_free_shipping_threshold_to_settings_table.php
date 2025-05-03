@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('settings', function (Blueprint $table) {
-            $table->decimal('free_shipping_threshold', 10, 2)->default(500)->after('id');
+            $table->integer('free_shipping_threshold', 10, 2)->default(500)->after('id');
         });
     }
 

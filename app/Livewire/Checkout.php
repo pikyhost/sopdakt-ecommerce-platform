@@ -4,12 +4,8 @@ namespace App\Livewire;
 
 use App\Models\Transaction;
 use App\Services\StockLevelNotifier;
-use App\Services\WAPilotWhatsAppService;
-use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Session;
-use App\Enums\OrderStatus;
 use App\Enums\UserRole;
 use App\Helpers\GeneralHelper;
 use App\Mail\GuestInvitationMail;
@@ -550,11 +546,6 @@ class Checkout extends Component
 
                 Mail::to($contact->email)->locale($locale)->send(new GuestInvitationMail($invitation));
             }
-
-            $whatsAppService = new WAPilotWhatsAppService();
-            $message = "Thank you for your order #{$order->id}! Your order for {$order->total} is being processed.";
-            $whatsAppService->sendMessage($this->phone, $message);
-
             DB::commit();
 
             $this->checkoutToken = (string) Str::uuid();

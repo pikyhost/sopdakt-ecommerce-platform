@@ -165,7 +165,7 @@ class Setting extends Model
      */
     public static function getFreeShippingThreshold(): float
     {
-        return (float)(self::getAllSettings()['free_shipping_threshold'] ?? 500.00);
+        return (int)(self::getAllSettings()['free_shipping_threshold'] ?? 0);
     }
 
     /**

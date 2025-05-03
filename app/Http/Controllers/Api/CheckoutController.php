@@ -5,13 +5,11 @@ namespace App\Http\Controllers\Api;
 use App\Enums\OrderStatus;
 use App\Enums\TransactionType;
 use App\Enums\UserRole;
-use App\Helpers\GeneralHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCheckoutRequest;
 use App\Mail\GuestInvitationMail;
 use App\Mail\OrderStatusMail;
 use App\Models\Cart;
-use App\Models\CartItem;
 use App\Models\Contact;
 use App\Models\Invitation;
 use App\Models\Order;
@@ -20,7 +18,6 @@ use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Services\StockLevelNotifier;
-use App\Services\WAPilotWhatsAppService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -417,12 +414,6 @@ class CheckoutController extends Controller
 
                 Mail::to($contact->email)->locale($locale)->send(new GuestInvitationMail($invitation));
             }
-
-            // Send WhatsApp notification
-            $whatsAppService = new WAPilotWhatsAppService();
-            $message = "Thank you for your order #{$order->id}! Your order for {$order->total} is being processed.";
-            $whatsAppService->sendMessage($data['phone'], $message);
-
             // JT Express integration (prepare data but do not assign tracking number yet)
             $jtExpressData = $this->prepareJtExpressOrderData($order);
             $jtExpressResponse = $this->sendJtExpressRequest($jtExpressData); // Implement as needed

@@ -104,7 +104,7 @@ class OrderResource extends Resource
                     ->iconPosition(IconPosition::After)
                     ->color('gray')
                     ->url(url()->previous())
-                    ->hidden(fn () => url()->previous() === url()->current()),
+                    ->hidden(fn() => url()->previous() === url()->current()),
             ])
             ->columns([
                 Tables\Columns\TextColumn::make('id')
@@ -137,7 +137,7 @@ class OrderResource extends Resource
 
                 Tables\Columns\TextColumn::make('user.name')
                     ->formatStateUsing(function ($record) {
-                        return $record->user->name.' (#'.$record->user_id.')';
+                        return $record->user->name . ' (#' . $record->user_id . ')';
                     })
                     ->label(__('User Name'))
                     ->searchable()
@@ -147,7 +147,7 @@ class OrderResource extends Resource
 
                 Tables\Columns\TextColumn::make('contact.name')
                     ->formatStateUsing(function ($record) {
-                        return $record->contact->name.' (#'.$record->contact_id.')';
+                        return $record->contact->name . ' (#' . $record->contact_id . ')';
                     })
                     ->label(__('Contact Name'))
                     ->searchable()
@@ -243,87 +243,87 @@ class OrderResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-         ->filters([
+            ->filters([
                 SelectFilter::make('status')
                     ->label(__('Status'))
                     ->multiple()
                     ->options(
                         collect(OrderStatus::cases())
-                            ->mapWithKeys(fn ($status) => [$status->value => $status->getLabel()])
+                            ->mapWithKeys(fn($status) => [$status->value => $status->getLabel()])
                             ->toArray()
                     ),
 
-             Filter::make('location')
-                 ->form([
-                     Select::make('country_ids')
-                         ->label(__('Countries'))
-                         ->multiple()
-                         ->live()
-                         ->options(fn () => Country::pluck('name', 'id')),
+                Filter::make('location')
+                    ->form([
+                        Select::make('country_ids')
+                            ->label(__('Countries'))
+                            ->multiple()
+                            ->live()
+                            ->options(fn() => Country::pluck('name', 'id')),
 
-                     Select::make('governorate_ids')
-                         ->label(__('Governorates'))
-                         ->multiple()
-                         ->live()
-                         ->searchable()
-                         ->options(function (callable $get) {
-                             $countryIds = $get('country_ids');
+                        Select::make('governorate_ids')
+                            ->label(__('Governorates'))
+                            ->multiple()
+                            ->live()
+                            ->searchable()
+                            ->options(function (callable $get) {
+                                $countryIds = $get('country_ids');
 
-                             if (!is_array($countryIds) || empty($countryIds)) {
-                                 return [];
-                             }
+                                if (!is_array($countryIds) || empty($countryIds)) {
+                                    return [];
+                                }
 
-                             return Governorate::whereIn('country_id', $countryIds)
-                                 ->pluck('name', 'id');
-                         }),
+                                return Governorate::whereIn('country_id', $countryIds)
+                                    ->pluck('name', 'id');
+                            }),
 
-                     Select::make('city_ids')
-                         ->label(__('Cities'))
-                         ->multiple()
-                         ->searchable()
-                         ->options(function (callable $get) {
-                             $governorateIds = $get('governorate_ids');
+                        Select::make('city_ids')
+                            ->label(__('Cities'))
+                            ->multiple()
+                            ->searchable()
+                            ->options(function (callable $get) {
+                                $governorateIds = $get('governorate_ids');
 
-                             if (!is_array($governorateIds) || empty($governorateIds)) {
-                                 return [];
-                             }
+                                if (!is_array($governorateIds) || empty($governorateIds)) {
+                                    return [];
+                                }
 
-                             return City::whereIn('governorate_id', $governorateIds)
-                                 ->pluck('name', 'id');
-                         }),
-                 ])
-                 ->query(function (Builder $query, array $data): Builder {
-                     return $query
-                         ->when(filled($data['country_ids'] ?? null), function (Builder $q) use ($data) {
-                             $q->whereIn('country_id', $data['country_ids']);
-                         })
-                         ->when(filled($data['governorate_ids'] ?? null), function (Builder $q) use ($data) {
-                             $q->whereIn('governorate_id', $data['governorate_ids']);
-                         })
-                         ->when(filled($data['city_ids'] ?? null), function (Builder $q) use ($data) {
-                             $q->whereIn('city_id', $data['city_ids']);
-                         });
-                 })
-                 ->indicateUsing(function (array $data) {
-                     $indicators = [];
+                                return City::whereIn('governorate_id', $governorateIds)
+                                    ->pluck('name', 'id');
+                            }),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(filled($data['country_ids'] ?? null), function (Builder $q) use ($data) {
+                                $q->whereIn('country_id', $data['country_ids']);
+                            })
+                            ->when(filled($data['governorate_ids'] ?? null), function (Builder $q) use ($data) {
+                                $q->whereIn('governorate_id', $data['governorate_ids']);
+                            })
+                            ->when(filled($data['city_ids'] ?? null), function (Builder $q) use ($data) {
+                                $q->whereIn('city_id', $data['city_ids']);
+                            });
+                    })
+                    ->indicateUsing(function (array $data) {
+                        $indicators = [];
 
-                     if (!empty($data['country_ids'])) {
-                         $countries = Country::whereIn('id', $data['country_ids'])->pluck('name')->implode(', ');
-                         $indicators[] = Indicator::make("Countries: $countries")->removeField('country_ids');
-                     }
+                        if (!empty($data['country_ids'])) {
+                            $countries = Country::whereIn('id', $data['country_ids'])->pluck('name')->implode(', ');
+                            $indicators[] = Indicator::make("Countries: $countries")->removeField('country_ids');
+                        }
 
-                     if (!empty($data['governorate_ids'])) {
-                         $governorates = Governorate::whereIn('id', $data['governorate_ids'])->pluck('name')->implode(', ');
-                         $indicators[] = Indicator::make("Governorates: $governorates")->removeField('governorate_ids');
-                     }
+                        if (!empty($data['governorate_ids'])) {
+                            $governorates = Governorate::whereIn('id', $data['governorate_ids'])->pluck('name')->implode(', ');
+                            $indicators[] = Indicator::make("Governorates: $governorates")->removeField('governorate_ids');
+                        }
 
-                     if (!empty($data['city_ids'])) {
-                         $cities = City::whereIn('id', $data['city_ids'])->pluck('name')->implode(', ');
-                         $indicators[] = Indicator::make("Cities: $cities")->removeField('city_ids');
-                     }
+                        if (!empty($data['city_ids'])) {
+                            $cities = City::whereIn('id', $data['city_ids'])->pluck('name')->implode(', ');
+                            $indicators[] = Indicator::make("Cities: $cities")->removeField('city_ids');
+                        }
 
-                     return $indicators;
-                 }),
+                        return $indicators;
+                    }),
 
                 Tables\Filters\Filter::make('created_at')
                     ->form([
@@ -336,11 +336,11 @@ class OrderResource extends Resource
                         return $query
                             ->when(
                                 $data['created_from'] ?? null,
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
                             )
                             ->when(
                                 $data['created_until'] ?? null,
-                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
                             );
                     })
                     ->indicateUsing(function (array $data): array {
@@ -361,8 +361,7 @@ class OrderResource extends Resource
                     ->label(__('actions.track_order'))
                     ->icon('heroicon-o-map')
                     ->color('success')
-                    ->visible(fn (Order $record): bool =>
-                        Setting::first()?->enable_jnt &&
+                    ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt &&
                         !is_null($record->tracking_number) &&
                         !is_null($record->shipping_status)
                     )
@@ -389,8 +388,7 @@ class OrderResource extends Resource
                     ->label(__('actions.check_order'))
                     ->icon('heroicon-o-check-circle')
                     ->color('primary')
-                    ->visible(fn (Order $record): bool =>
-                        Setting::first()?->enable_jnt &&
+                    ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt &&
                         !is_null($record->tracking_number)
                     )
                     ->action(function (Order $record): void {
@@ -416,8 +414,7 @@ class OrderResource extends Resource
                     ->label(__('actions.get_order_status'))
                     ->icon('heroicon-o-clipboard-document-list')
                     ->color('info')
-                    ->visible(fn (Order $record): bool =>
-                        Setting::first()?->enable_jnt &&
+                    ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt &&
                         !is_null($record->tracking_number)
                     )
                     ->action(function (Order $record): void {
@@ -450,8 +447,7 @@ class OrderResource extends Resource
                     ->label(__('actions.get_trajectory'))
                     ->icon('heroicon-o-arrow-path')
                     ->color('gray')
-                    ->visible(fn (Order $record): bool =>
-                        Setting::first()?->enable_jnt &&
+                    ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt &&
                         !is_null($record->tracking_number)
                     )
                     ->action(function (Order $record): void {
@@ -480,8 +476,7 @@ class OrderResource extends Resource
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
                     ->requiresConfirmation()
-                    ->visible(fn (Order $record): bool =>
-                        Setting::first()?->enable_jnt &&
+                    ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt &&
                         !is_null($record->tracking_number) &&
                         $record->shipping_status !== 'delivered' &&
                         $record->shipping_status !== 'cancelled'
@@ -492,8 +487,8 @@ class OrderResource extends Resource
 
                         if ($cancelResult['code'] ?? null === 1) {
                             $record->update([
-                                'status'            => OrderStatus::Cancelled,
-                                'shipping_status'   => 'cancelled',
+                                'status' => OrderStatus::Cancelled,
+                                'shipping_status' => 'cancelled',
                                 'shipping_response' => json_encode($cancelResult)
                             ]);
 
@@ -516,8 +511,7 @@ class OrderResource extends Resource
                     ->label('Send to Bosta')
                     ->icon('heroicon-o-truck')
                     ->color('primary')
-                    ->visible(fn (Order $record): bool =>
-                        Setting::first()?->enable_bosta &&
+                    ->visible(fn(Order $record): bool => Setting::first()?->enable_bosta &&
                         $record->status === OrderStatus::Preparing &&
                         !$record->bosta_delivery_id
                     )
@@ -552,8 +546,7 @@ class OrderResource extends Resource
                     ->label('Ship with Aramex')
                     ->icon('heroicon-m-truck')
                     ->color('primary')
-                    ->visible(fn ($record) =>
-                        Setting::first()?->enable_aramex &&
+                    ->visible(fn($record) => Setting::first()?->enable_aramex &&
                         $record->status === 'preparing'
                     )
                     ->action(function ($record, AramexService $aramexService) {
@@ -592,8 +585,7 @@ class OrderResource extends Resource
                     ->label('Track Shipment')
                     ->icon('heroicon-m-magnifying-glass')
                     ->color('info')
-                    ->visible(fn ($record) =>
-                        Setting::first()?->enable_aramex &&
+                    ->visible(fn($record) => Setting::first()?->enable_aramex &&
                         !empty($record->aramex_shipment_id)
                     )
                     ->action(function ($record, AramexService $aramexService) {
@@ -629,12 +621,11 @@ class OrderResource extends Resource
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
-                    ...collect(OrderStatus::cases())->map(fn ($status) =>
-                    Tables\Actions\Action::make($status->value)
+                    ...collect(OrderStatus::cases())->map(fn($status) => Tables\Actions\Action::make($status->value)
                         ->label(__($status->getLabel()))
                         ->icon($status->getIcon())
                         ->color($status->getColor())
-                        ->action(fn ($record) => self::updateOrderStatus($record, $status))
+                        ->action(fn($record) => self::updateOrderStatus($record, $status))
                     )->toArray(),
 
                     Tables\Actions\DeleteAction::make(),
@@ -646,12 +637,11 @@ class OrderResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    ...collect(OrderStatus::cases())->map(fn ($status) =>
-                    Tables\Actions\BulkAction::make($status->value)
+                    ...collect(OrderStatus::cases())->map(fn($status) => Tables\Actions\BulkAction::make($status->value)
                         ->label(__($status->getLabel()))
                         ->icon($status->getIcon())
                         ->color($status->getColor())
-                        ->action(fn ($records) => $records->each(fn ($record) => $record->update(['status' => $status->value])))
+                        ->action(fn($records) => $records->each(fn($record) => $record->update(['status' => $status->value])))
                     )->toArray(),
 
                     Tables\Actions\DeleteBulkAction::make(),
@@ -719,11 +709,11 @@ class OrderResource extends Resource
     private static function prepareJtExpressOrderData($order): array
     {
         $data = [
-            'tracking_number'   => time() . rand(1000, 9999),
-            'weight'            => 1.0, // You might want to calculate the total weight dynamically
-            'quantity'          => 1,  // $order->items->sum('quantity') Sum of all item quantities in the order
+            'tracking_number' => time() . rand(1000, 9999),
+            'weight' => 1.0, // You might want to calculate the total weight dynamically
+            'quantity' => 1,  // $order->items->sum('quantity') Sum of all item quantities in the order
 
-            'remark'            => implode(' , ', array_filter([
+            'remark' => implode(' , ', array_filter([
                 'Notes: ' . ($order->notes ?? 'No notes'),
                 $order->user?->name ? 'User: ' . $order->user->name : null,
                 $order->user?->email ? 'Email: ' . $order->user->email : null,
@@ -735,55 +725,55 @@ class OrderResource extends Resource
                 $order->contact?->address ? 'Contact Address: ' . $order->contact->address : null,
             ])),
 
-            'item_name'         => $order->items->pluck('product.name')->implode(', '), // Concatenated product names
-            'item_quantity'     => $order->items->count(), // Total distinct items in the order
-            'item_value'        => $order->total, // Order total amount
-            'item_currency'     => 'EGP',
-            'item_description'  => $order->notes ?? 'No description provided',
+            'item_name' => $order->items->pluck('product.name')->implode(', '), // Concatenated product names
+            'item_quantity' => $order->items->count(), // Total distinct items in the order
+            'item_value' => $order->total, // Order total amount
+            'item_currency' => 'EGP',
+            'item_description' => $order->notes ?? 'No description provided',
         ];
 
         $data['sender'] = [
-            'name'                   => 'Your Company Name',
-            'company'                => 'Your Company',
-            'city'                   => 'Your City',
-            'address'                => 'Your Full Address',
-            'mobile'                 => 'Your Contact Number',
-            'countryCode'            => 'Your Country Code',
-            'prov'                   => 'Your Prov',
-            'area'                   => 'Your Area',
-            'town'                   => 'Your Town',
-            'street'                 => 'Your Street',
-            'addressBak'             => 'Your Address Bak',
-            'postCode'               => 'Your Post Code',
-            'phone'                  => 'Your Phone',
-            'mailBox'                => 'Your Mail Box',
-            'areaCode'               => 'Your Area Code',
-            'building'               => 'Your Building',
-            'floor'                  => 'Your Floor',
-            'flats'                  => 'Your Flats',
+            'name' => 'Your Company Name',
+            'company' => 'Your Company',
+            'city' => 'Your City',
+            'address' => 'Your Full Address',
+            'mobile' => 'Your Contact Number',
+            'countryCode' => 'Your Country Code',
+            'prov' => 'Your Prov',
+            'area' => 'Your Area',
+            'town' => 'Your Town',
+            'street' => 'Your Street',
+            'addressBak' => 'Your Address Bak',
+            'postCode' => 'Your Post Code',
+            'phone' => 'Your Phone',
+            'mailBox' => 'Your Mail Box',
+            'areaCode' => 'Your Area Code',
+            'building' => 'Your Building',
+            'floor' => 'Your Floor',
+            'flats' => 'Your Flats',
             'alternateSenderPhoneNo' => 'Your Alternate Sender Phone No',
         ];
 
         $data['receiver'] = [
-            'name'                      => 'test', // $order->name,
-            'prov'                      => 'أسيوط', // $order->region->governorate->name,
-            'city'                      => 'القوصية', // $order->region->name,
-            'address'                   => 'sdfsacdscdscdsa', // $order->address,
-            'mobile'                    => '1441234567', // $order->phone,
-            'company'                   => 'guangdongshengshenzhe',
-            'countryCode'               => 'EGY',
-            'area'                      => 'الصبحه',
-            'town'                      => 'town',
-            'addressBak'                => 'receivercdsfsafdsaf lkhdlksjlkfjkndskjfnhskjlkafdslkjdshflksjal',
-            'street'                    => 'street',
-            'postCode'                  => '54830',
-            'phone'                     => '23423423423',
-            'mailBox'                   => 'ant_li123@qq.com',
-            'areaCode'                  => '2342343',
-            'building'                  => '13',
-            'floor'                     => '25',
-            'flats'                     => '47',
-            'alternateReceiverPhoneNo'  => $order->another_phone ?? '1231321322',
+            'name' => 'test', // $order->name,
+            'prov' => 'أسيوط', // $order->region->governorate->name,
+            'city' => 'القوصية', // $order->region->name,
+            'address' => 'sdfsacdscdscdsa', // $order->address,
+            'mobile' => '1441234567', // $order->phone,
+            'company' => 'guangdongshengshenzhe',
+            'countryCode' => 'EGY',
+            'area' => 'الصبحه',
+            'town' => 'town',
+            'addressBak' => 'receivercdsfsafdsaf lkhdlksjlkfjkndskjfnhskjlkafdslkjdshflksjal',
+            'street' => 'street',
+            'postCode' => '54830',
+            'phone' => '23423423423',
+            'mailBox' => 'ant_li123@qq.com',
+            'areaCode' => '2342343',
+            'building' => '13',
+            'floor' => '25',
+            'flats' => '47',
+            'alternateReceiverPhoneNo' => $order->another_phone ?? '1231321322',
         ];
 
         return $data;
@@ -793,8 +783,8 @@ class OrderResource extends Resource
     {
         if (isset($jtExpressResponse['code']) && $jtExpressResponse['code'] == 1) {
             $order->update([
-                'tracking_number'   => $JtExpressOrderData['tracking_number'] ?? null,
-                'shipping_status'   => $shipping_status,
+                'tracking_number' => $JtExpressOrderData['tracking_number'] ?? null,
+                'shipping_status' => $shipping_status,
                 'shipping_response' => json_encode($jtExpressResponse)
             ]);
         }
@@ -815,224 +805,229 @@ class OrderResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Hidden::make('checkout_token')
-                    ->default(fn () => (string) Str::uuid())
+                    ->default(fn() => (string)Str::uuid())
                     ->dehydrated(),
-            Wizard::make([
-                Step::make(__('Order Details'))
-                    ->schema([
-                        Select::make('user_id')
-                            ->live()
-                            ->hidden(fn (Get $get) => $get('contact_id'))
-                            ->relationship('user', 'name')
-                            ->label(__('Customer')),
+                Wizard::make([
+                    Step::make(__('Order Details'))
+                        ->schema([
+                            Select::make('user_id')
+                                ->live()
+                                ->hidden(fn(Get $get) => $get('contact_id'))
+                                ->relationship('user', 'name')
+                                ->label(__('Customer')),
 
-                        Select::make('contact_id')
-                            ->live()
-                            ->hidden(fn (Get $get) => $get('user_id'))
-                            ->relationship('contact', 'name')
-                            ->label(__('Contact')),
+                            Select::make('contact_id')
+                                ->live()
+                                ->hidden(fn(Get $get) => $get('user_id'))
+                                ->relationship('contact', 'name')
+                                ->label(__('Contact')),
 
-                        Forms\Components\ToggleButtons::make('status')
-                            ->label(__('Status'))
-                            ->inline()
-                            ->options(OrderStatus::class)
-                            ->required(),
+                            Forms\Components\ToggleButtons::make('status')
+                                ->label(__('Status'))
+                                ->inline()
+                                ->options(OrderStatus::class)
+                                ->required(),
 
-                        Forms\Components\MarkdownEditor::make('notes')
-                            ->label(__('Notes'))
-                            ->columnSpan('full'),
-                    ]),
+                            Forms\Components\MarkdownEditor::make('notes')
+                                ->label(__('Notes'))
+                                ->columnSpan('full'),
+                        ]),
 
-                Step::make(__('Order Items'))
-                    ->schema([
-                        Repeater::make('items')
-                            ->label(__('Order Items'))
-                            ->relationship('items')
-                            ->schema([
-                                Select::make('product_id')
-                                    ->label(__('Product'))
-                                    ->options(Product::pluck('name', 'id'))
-                                    ->searchable()
-                                    ->live()
-                                    ->afterStateUpdated(fn ($state, Forms\Set $set) =>
-                                    $set('price_per_unit', (float) Product::find($state)?->discount_price_for_current_country ?? 0)
-                                    )->disabled(fn ($record, $operation) => $operation === 'edit'
-                                        && $record?->bundle_id !== null)
-                                ,
+                    Step::make(__('Order Items'))
+                        ->schema([
+                            Repeater::make('items')
+                                ->label(__('Order Items'))
+                                ->relationship('items')
+                                ->schema([
+                                    Select::make('product_id')
+                                        ->label(__('Product'))
+                                        ->options(Product::pluck('name', 'id'))
+                                        ->searchable()
+                                        ->live()
+                                        ->afterStateUpdated(fn($state, Forms\Set $set) => $set('price_per_unit', (float)Product::find($state)?->discount_price_for_current_country ?? 0)
+                                        )->disabled(fn($record, $operation) => $operation === 'edit'
+                                            && $record?->bundle_id !== null)
+                                    ,
 
-                                Select::make('color_id')
-                                    ->label(__('Color'))
-                                    ->options(fn (Get $get) => ProductColor::where('product_id', $get('product_id'))
-                                        ->with('color')
-                                        ->get()
-                                        ->pluck('color.name', 'color.id'))
-                                    ->reactive()
-                                    ->afterStateUpdated(fn ($state, Forms\Set $set) => $set('size_id', null))
-                                    ->visible(fn (Get $get) => Product::find($get('product_id'))?->productColors()->exists()),
+                                    Select::make('color_id')
+                                        ->label(__('Color'))
+                                        ->options(fn(Get $get) => ProductColor::where('product_id', $get('product_id'))
+                                            ->with('color')
+                                            ->get()
+                                            ->pluck('color.name', 'color.id'))
+                                        ->reactive()
+                                        ->afterStateUpdated(fn($state, Forms\Set $set) => $set('size_id', null))
+                                        ->visible(fn(Get $get) => Product::find($get('product_id'))?->productColors()->exists()),
 
-                                Select::make('size_id')
-                                    ->label(__('Size'))
-                                    ->options(fn (Get $get) => ProductColor::where([
-                                        ['product_id', $get('product_id')],
-                                        ['color_id', $get('color_id')],
-                                    ])
-                                        ->with('sizes')
-                                        ->first()?->sizes
-                                        ->pluck('name', 'id') ?? [])
-                                    ->reactive()
-                                    ->visible(fn (Get $get) => Product::find($get('product_id'))?->productColors()->exists()),
+                                    Select::make('size_id')
+                                        ->label(__('Size'))
+                                        ->options(fn(Get $get) => ProductColor::where([
+                                            ['product_id', $get('product_id')],
+                                            ['color_id', $get('color_id')],
+                                        ])
+                                            ->with('sizes')
+                                            ->first()?->sizes
+                                            ->pluck('name', 'id') ?? [])
+                                        ->reactive()
+                                        ->visible(fn(Get $get) => Product::find($get('product_id'))?->productColors()->exists()),
 
-                                TextInput::make('quantity')
-                                    ->required()
-                                    ->label(__('Quantity'))
-                                    ->numeric()
-                                    ->minValue(1)
-                                    ->live()
-                                    ->disabled(fn ($record, $operation) => $operation === 'edit'
-                                        && $record?->bundle_id !== null)
-                                    ->afterStateUpdated(fn ($state, callable $set, Get $get) =>
-                                    $set('subtotal', ($get('price_per_unit') ?? 0) * ($state ?? 1))
-                                    ),
+                                    TextInput::make('quantity')
+                                        ->required()
+                                        ->label(__('Quantity'))
+                                        ->numeric()
+                                        ->minValue(1)
+                                        ->live()
+                                        ->disabled(fn($record, $operation) => $operation === 'edit'
+                                            && $record?->bundle_id !== null)
+                                        ->afterStateUpdated(fn($state, callable $set, Get $get) => $set('subtotal', ($get('price_per_unit') ?? 0) * ($state ?? 1))
+                                        ),
 
-                                TextInput::make('price_per_unit')
-                                    ->default(fn (Get $get) => (float) Product::find($get('product_id'))?->discount_price_for_current_country ?? 0)
-                                    ->readOnly()
-                                    ->label(__('Price per Unit'))
-                                    ->numeric(),
-                                // Hide when bundle is selected
+                                    TextInput::make('price_per_unit')
+                                        ->default(fn(Get $get) => (float)Product::find($get('product_id'))?->discount_price_for_current_country ?? 0)
+                                        ->readOnly()
+                                        ->label(__('Price per Unit'))
+                                        ->numeric(),
+                                    // Hide when bundle is selected
 
-                                TextInput::make('subtotal')
-                                    ->readOnly()
-                                    ->label(__('Subtotal'))
-                                    ->numeric()
-                                ,
-                            ])
-                            ->columns(3)
-                            ->collapsible()
-                            ->afterStateUpdated(function (Get $get, Forms\Set $set) {
-                                $items = $get('items') ?? [];
-                                $subtotal = collect($items)
-                                    ->filter(fn ($item) => !isset($item['bundle_id']) || empty($item['bundle_id']))
-                                    ->sum(fn ($item) => ($item['subtotal'] ?? 0));
+                                    TextInput::make('subtotal')
+                                        ->readOnly()
+                                        ->label(__('Subtotal'))
+                                        ->numeric()
+                                    ,
+                                ])
+                                ->columns(3)
+                                ->collapsible()
+                                ->afterStateUpdated(function (Get $get, Forms\Set $set) {
+                                    $items = $get('items') ?? [];
+                                    $subtotal = collect($items)
+                                        ->filter(fn($item) => !isset($item['bundle_id']) || empty($item['bundle_id']))
+                                        ->sum(fn($item) => ($item['subtotal'] ?? 0));
 
-                                if ($get('bundle_id')) {
-                                    $subtotal += Bundle::find($get('bundle_id'))?->discount_price ?? 0;
-                                }
+                                    // Check free shipping threshold - NEW CODE
+                                    $freeShippingThreshold = Setting::getFreeShippingThreshold();
+                                    if ($freeShippingThreshold > 0 && $subtotal >= $freeShippingThreshold) {
+                                        $shippingCost = 0.0;
+                                        $set('shipping_cost', 0.0);
+                                    }
 
-                                $taxPercentage = Setting::getTaxPercentage();
-                                $taxAmount = ($subtotal * $taxPercentage) / 100;
-                                $shippingCost = $get('shipping_cost') ?? 0;
-                                $total = $subtotal + $taxAmount + $shippingCost;
+                                    if ($get('bundle_id')) {
+                                        $subtotal += Bundle::find($get('bundle_id'))?->discount_price ?? 0;
+                                    }
 
-                                $set('subtotal', $subtotal);
-                                $set('tax_amount', $taxAmount);
-                                $set('total', $total);
-                                $set('shipping_type_id', null);
-                            }),
-                    ]),
+                                    $taxPercentage = Setting::getTaxPercentage();
+                                    $taxAmount = ($subtotal * $taxPercentage) / 100;
+                                    $shippingCost = $get('shipping_cost') ?? 0;
+                                    $total = $subtotal + $taxAmount + $shippingCost;
 
-                Step::make(__('Shipping Information'))
-                    ->schema([
-                        Select::make('shipping_type_id')
-                            ->relationship('shippingType', 'name')
-                            ->required()
-                            ->label(__('Shipping Type'))
-                            ->live()
-                            ->afterStateUpdated(fn ($state, callable $set, Get $get) =>
-                            self::updateShippingCost($set, $state, $get('items'), $get('city_id'), $get('governorate_id'), $get('country_id'))
-                            ),
+                                    $set('subtotal', $subtotal);
+                                    $set('tax_amount', $taxAmount);
+                                    $set('total', $total);
+                                    $set('shipping_type_id', null);
+                                }),
+                        ]),
 
-                        Select::make('country_id')
-                            ->required()
-                            ->label(__('Country'))
-                            ->options(Country::pluck('name', 'id'))
-                            ->live()
-                            ->afterStateUpdated(function (callable $set, Get $get) {
-                                $set('governorate_id', null);
-                                $set('city_id', null);
-                                self::updateShippingCost($set, $get('shipping_type_id'), $get('items'), null, null, $get('country_id'));
+                    Step::make(__('Shipping Information'))
+                        ->schema([
+                            Select::make('shipping_type_id')
+                                ->relationship('shippingType', 'name')
+                                ->required()
+                                ->label(__('Shipping Type'))
+                                ->live()
+                                ->afterStateUpdated(fn($state, callable $set, Get $get) => self::updateShippingCost($set, $state, $get('items'), $get('city_id'), $get('governorate_id'), $get('country_id'))
+                                ),
 
-                                // Recalculate total when shipping details change
-                                self::recalculateTotal($set, $get);
-                            }),
+                            Select::make('country_id')
+                                ->required()
+                                ->label(__('Country'))
+                                ->options(Country::pluck('name', 'id'))
+                                ->live()
+                                ->afterStateUpdated(function (callable $set, Get $get) {
+                                    $set('governorate_id', null);
+                                    $set('city_id', null);
+                                    self::updateShippingCost($set, $get('shipping_type_id'), $get('items'), null, null, $get('country_id'));
 
-                        Select::make('governorate_id')
-                            ->required()
-                            ->label(__('Governorate'))
-                            ->options(function (Get $get) {
-                                return Governorate::where('country_id', $get('country_id'))->pluck('name', 'id');
-                            })
-                            ->live()
-                            ->afterStateUpdated(function ($state, callable $set, Get $get) {
-                                self::updateShippingCost($set, $get('shipping_type_id'), $get('items'), null, $state, $get('country_id'));
-                                self::recalculateTotal($set, $get);
-                            }),
+                                    // Recalculate total when shipping details change
+                                    self::recalculateTotal($set, $get);
+                                }),
 
-                        Select::make('city_id')
-                            ->label(__('City'))
-                            ->options(function (Get $get) {
-                                return City::where('governorate_id', $get('governorate_id'))->pluck('name', 'id');
-                            })
-                            ->live()
-                            ->placeholder(function (Get $get) {
-                                return empty($get('governorate_id')) ? __('Select a governorate first') : 'Select a city';
-                            })
-                            ->afterStateUpdated(function ($state, callable $set, Get $get) {
-                                self::updateShippingCost($set, $get('shipping_type_id'), $get('items'), $state, $get('governorate_id'), $get('country_id'));
-                                self::recalculateTotal($set, $get);
-                            }),
+                            Select::make('governorate_id')
+                                ->required()
+                                ->label(__('Governorate'))
+                                ->options(function (Get $get) {
+                                    return Governorate::where('country_id', $get('country_id'))->pluck('name', 'id');
+                                })
+                                ->live()
+                                ->afterStateUpdated(function ($state, callable $set, Get $get) {
+                                    self::updateShippingCost($set, $get('shipping_type_id'), $get('items'), null, $state, $get('country_id'));
+                                    self::recalculateTotal($set, $get);
+                                }),
 
-                        Forms\Components\TextInput::make('shipping_cost')
-                            ->columnSpanFull()
-                            ->numeric()
-                            ->readOnly()
-                            ->label(__('Shipping Cost'))
-                            ->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
-                                self::recalculateTotal($set, $get);
-                            }),
-                    ])->columns(2),
+                            Select::make('city_id')
+                                ->label(__('City'))
+                                ->options(function (Get $get) {
+                                    return City::where('governorate_id', $get('governorate_id'))->pluck('name', 'id');
+                                })
+                                ->live()
+                                ->placeholder(function (Get $get) {
+                                    return empty($get('governorate_id')) ? __('Select a governorate first') : 'Select a city';
+                                })
+                                ->afterStateUpdated(function ($state, callable $set, Get $get) {
+                                    self::updateShippingCost($set, $get('shipping_type_id'), $get('items'), $state, $get('governorate_id'), $get('country_id'));
+                                    self::recalculateTotal($set, $get);
+                                }),
 
-                // **Moved Billing Information to a separate step**
-                Step::make(__('Billing Information'))
-                    ->schema([
-                        Select::make('payment_method_id')
-                            ->relationship('paymentMethod', 'name')
-                            ->required()
-                            ->label(__('Payment Method')),
+                            Forms\Components\TextInput::make('shipping_cost')
+                                ->columnSpanFull()
+                                ->numeric()
+                                ->readOnly()
+                                ->label(__('Shipping Cost'))
+                                ->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
+                                    self::recalculateTotal($set, $get);
+                                }),
+                        ])->columns(2),
 
-                        Select::make('coupon_id')
-                            ->relationship('coupon', 'id')
-                            ->label(__('Coupon')),
+                    // **Moved Billing Information to a separate step**
+                    Step::make(__('Billing Information'))
+                        ->schema([
+                            Select::make('payment_method_id')
+                                ->relationship('paymentMethod', 'name')
+                                ->required()
+                                ->label(__('Payment Method')),
 
-                        Forms\Components\TextInput::make('tax_percentage')
-                            ->required()
-                            ->numeric()
-                            ->readOnly()
-                            ->default(self::getTaxPercentage())
-                            ->live()
-                            ->label(__('Tax Percentage')),
+                            Select::make('coupon_id')
+                                ->relationship('coupon', 'id')
+                                ->label(__('Coupon')),
 
-                        Forms\Components\TextInput::make('tax_amount')
-                            ->live()
-                            ->readOnly()
-                            ->numeric()
-                            ->label(__('Tax Amount')),
+                            Forms\Components\TextInput::make('tax_percentage')
+                                ->required()
+                                ->numeric()
+                                ->readOnly()
+                                ->default(self::getTaxPercentage())
+                                ->live()
+                                ->label(__('Tax Percentage')),
 
-                        Forms\Components\TextInput::make('subtotal')
-                            ->live()
-                            ->numeric()
-                            ->readOnly()
-                            ->label(__('Subtotal')),
+                            Forms\Components\TextInput::make('tax_amount')
+                                ->live()
+                                ->readOnly()
+                                ->numeric()
+                                ->label(__('Tax Amount')),
 
-                        Forms\Components\TextInput::make('total')
-                            ->live()
-                            ->numeric()
-                            ->readOnly()
-                            ->label(__('Total')),
-                    ])->columns(2),
-            ])->columnSpanFull()->skippable()
-        ]);
+                            Forms\Components\TextInput::make('subtotal')
+                                ->live()
+                                ->numeric()
+                                ->readOnly()
+                                ->label(__('Subtotal')),
+
+                            Forms\Components\TextInput::make('total')
+                                ->live()
+                                ->numeric()
+                                ->readOnly()
+                                ->label(__('Total')),
+                        ])->columns(2),
+                ])->columnSpanFull()->skippable()
+            ]);
     }
+
 
     private static function calculateProductShippingCost(Product $product, $cityId, $governorateId, $countryId): float
     {
@@ -1057,6 +1052,16 @@ class OrderResource extends Resource
 
     private static function updateShippingCost(callable $set, $shippingTypeId, $items, $cityId, $governorateId, $countryId): void
     {
+        // Calculate subtotal first
+        $subtotal = collect($items)->sum(fn($item) => $item['subtotal'] ?? 0);
+        $freeShippingThreshold = Setting::getFreeShippingThreshold();
+
+        // Check free shipping threshold
+        if ($freeShippingThreshold > 0 && $subtotal >= $freeShippingThreshold) {
+            $set('shipping_cost', 0.0);
+            return;
+        }
+
         $totalShippingCost = 0.0;
         $hasChargeableItems = false;
 
@@ -1108,7 +1113,7 @@ class OrderResource extends Resource
     private static function recalculateTotal(callable $set, Get $get): void
     {
         $items = collect($get('items') ?? []);
-        $subtotal = $items->sum(fn ($item) => $item['subtotal'] ?? 0);
+        $subtotal = $items->sum(fn($item) => $item['subtotal'] ?? 0);
 
         if ($bundleId = $get('bundle_id')) {
             $subtotal += Bundle::find($bundleId)?->discount_price ?? 0;
@@ -1116,7 +1121,13 @@ class OrderResource extends Resource
 
         $taxPercentage = self::getTaxPercentage();
         $taxAmount = ($subtotal * $taxPercentage) / 100;
-        $shippingCost = $get('shipping_cost') ?? 0;
+
+        // Check free shipping threshold
+        $freeShippingThreshold = Setting::getFreeShippingThreshold();
+        $shippingCost = ($freeShippingThreshold > 0 && $subtotal >= $freeShippingThreshold)
+            ? 0.0
+            : ($get('shipping_cost') ?? 0);
+
         $total = $subtotal + $taxAmount + $shippingCost;
 
         $set('subtotal', $subtotal);
@@ -1168,20 +1179,20 @@ class OrderResource extends Resource
 
         if ($cityId) {
             $city = City::find($cityId);
-            if ($city?->cost > 0) return (float) $city->cost;
+            if ($city?->cost > 0) return (float)$city->cost;
         }
 
         if ($governorateId) {
             $governorate = Governorate::find($governorateId);
-            if ($governorate?->cost > 0) return (float) $governorate->cost;
+            if ($governorate?->cost > 0) return (float)$governorate->cost;
 
             $zone = $governorate->shippingZones()->first();
-            if ($zone?->cost > 0) return (float) $zone->cost;
+            if ($zone?->cost > 0) return (float)$zone->cost;
         }
 
         if ($countryId) {
             $country = Country::find($countryId);
-            if ($country?->cost > 0) return (float) $country->cost;
+            if ($country?->cost > 0) return (float)$country->cost;
         }
 
         return null;

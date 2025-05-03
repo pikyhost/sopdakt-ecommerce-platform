@@ -18,6 +18,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 
 class SettingResource extends Resource
@@ -306,16 +307,20 @@ class SettingResource extends Resource
                         Forms\Components\Checkbox::make('enable_jnt')
                             ->label(__('Enable J&T'))
                             ->default(false)
-                            ->helperText(__('Enable J&T Express as a shipping option for customers.')),
+                            ->helperText(__('Enable J&T Express as a shipping option for customers.'))
+                            ->visible(fn () => Auth::user()->hasRole('super_admin')),
+
                         Forms\Components\Checkbox::make('enable_aramex')
                             ->label(__('Enable Aramex'))
                             ->default(false)
-                            ->helperText(__('Enable Aramex as a shipping option for customers.')),
+                            ->helperText(__('Enable Aramex as a shipping option for customers.'))
+                            ->visible(fn () => Auth::user()->hasRole('super_admin')),
 
                         Forms\Components\Checkbox::make('enable_bosta')
                             ->label(__('Enable Bosta'))
                             ->default(false)
-                            ->helperText(__('Enable Bosta as a shipping option for customers.')),
+                            ->helperText(__('Enable Bosta as a shipping option for customers.'))
+                            ->visible(fn () => Auth::user()->hasRole('super_admin')),
                     ])
                     ->columns(3)
             ]);

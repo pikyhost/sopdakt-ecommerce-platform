@@ -6,11 +6,13 @@ use App\Http\Controllers\Api\CartListController;
 use App\Http\Controllers\Api\CompareController;
 use App\Http\Controllers\Api\ContactMessageController;
 use App\Http\Controllers\Api\ContactSettingController;
+use App\Http\Controllers\Api\DiscountController;
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\WheelController;
 use App\Http\Controllers\Api\WishlistController;
+use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -90,3 +92,8 @@ Route::prefix('wheel')->group(function () {
     Route::get('/', [WheelController::class, 'index'])->name('wheel.index');
     Route::post('/spin', [WheelController::class, 'spin'])->name('wheel.spin');
 });
+
+
+// routes/api.php
+
+Route::get('/discounts', [DiscountController::class, 'index']);

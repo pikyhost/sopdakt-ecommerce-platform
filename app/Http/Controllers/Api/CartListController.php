@@ -787,8 +787,16 @@ class CartListController extends Controller
             ? ShippingType::find($cart->shipping_type_id)?->cost ?? 0.0
             : 0.0;
 
+        // Check for free shipping threshold
+        $freeShippingThreshold = Setting::getFreeShippingThreshold();
+        $shouldApplyFreeShipping = $freeShippingThreshold > 0 && $subtotal >= $freeShippingThreshold;
+
+        // Apply free shipping if threshold is met (unless it's a FABS shipping product)
         if (count($cartItems) === 1 && $cartItems[0]->product && $cartItems[0]->product->isfabs_shipping) {
             $shippingTypeCost = 0.0;
+        } elseif ($shouldApplyFreeShipping) {
+            $shippingTypeCost = 0.0;
+            $locationBasedShippingCost = 0.0;
         }
 
         $shippingCost = max($shippingTypeCost, $locationBasedShippingCost);
@@ -802,6 +810,7 @@ class CartListController extends Controller
             'tax' => $tax,
             'total' => $total,
             'currency' => $this->extractCurrency($cartItems[0]->product->discount_price_for_current_country ?? 'USD'),
+            'free_shipping_applied' => $shouldApplyFreeShipping,
         ];
     }
 
