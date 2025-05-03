@@ -279,6 +279,13 @@ class SettingResource extends Resource
                             ->required()
                             ->helperText(__('Alert when product quantity is equal or below this value')),
 
+                        Forms\Components\TextInput::make('free_shipping_threshold')
+                            ->label(__('settings.free_shipping_threshold.label'))
+                            ->helperText(__('settings.free_shipping_threshold.helper'))
+                            ->numeric()
+                            ->required()
+                            ->minValue(0),
+
                         Forms\Components\Checkbox::make('shipping_type_enabled')
                             ->columnSpanFull()
                             ->label(__('Enable Shipping Types'))

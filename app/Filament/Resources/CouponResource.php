@@ -8,6 +8,7 @@ use App\Models\Coupon;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -60,6 +61,7 @@ class CouponResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('code')
+                    ->weight(FontWeight::Bold)
                     ->label(__('Code'))
                     ->searchable()
                     ->sortable(),
