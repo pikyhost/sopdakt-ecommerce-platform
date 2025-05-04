@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class NewsletterSubscriberResource extends Resource
@@ -146,8 +147,12 @@ class NewsletterSubscriberResource extends Resource
 
     public static function sendOffer(Collection $users, array $data): void
     {
-        foreach ($users as $user) {
-            Mail::to($user->email)->queue(new OfferEmail($user, $data));
+        try {
+            foreach ($users as $user) {
+                Mail::to($user->email)->sendNow(new OfferEmail($user, $data));
+            }
+        } catch (\Exception $e) {
+            Log::error('Mail sending failed: ' . $e->getMessage());
         }
 
         Notification::make()
