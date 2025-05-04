@@ -6,6 +6,7 @@ use App\Filament\Pages\Analysis;
 use App\Filament\Pages\MyGoogleAnalyticsPage;
 use App\Filament\Pages\SavedProducts;
 use App\Filament\Pages\ServerEnvEditor;
+use App\Filament\Pages\Tags;
 use App\Filament\Resources\AboutUsResource;
 use App\Filament\Resources\AttributeResource;
 use App\Filament\Resources\BannerResource;
@@ -212,6 +213,7 @@ class AdminPanelProvider extends PanelProvider
                 'label' => __('Blogs Management'),
                 'items' => [
                     BlogCategoryResource::getNavigationItems(),
+                    Tags::getNavigationItems(),
                     BlogResource::getNavigationItems(),
                     BlogUserLikeResource::getNavigationItems(),
                 ],
