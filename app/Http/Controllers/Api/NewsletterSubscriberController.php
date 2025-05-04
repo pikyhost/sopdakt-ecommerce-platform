@@ -64,7 +64,7 @@ class NewsletterSubscriberController extends Controller
             ]);
 
             // Send verification email
-            Notification::send($subscriber, new \App\Notifications\VerifyNewsletterSubscription($subscriber));
+            Notification::send($subscriber->email, new \App\Notifications\VerifyNewsletterSubscription($subscriber));
 
             return response()->json([
                 'message' => 'Subscription request received. Please check your email to verify.',
