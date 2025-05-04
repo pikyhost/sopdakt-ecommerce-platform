@@ -16,7 +16,6 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Mail;
-use PhpParser\Node\Expr\Closure;
 
 class NewsletterSubscriberResource extends Resource
 {
