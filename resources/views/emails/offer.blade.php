@@ -19,7 +19,7 @@
 @endif
 
 @if($data['type'] === 'custom')
-    <p>{{ $data['custom_message'] }}</p>
+    <div>{!! $data['custom_message'] !!}</div>
 @endif
 
 <p>Thanks,<br> {{ \App\Models\Setting::first()->site_name }}</p>

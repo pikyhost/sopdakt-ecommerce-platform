@@ -118,16 +118,22 @@ class NewsletterSubscriberResource extends Resource
                             ->visible(fn (Get $get) => $get('type') === 'product')
                             ->required(fn (Get $get) => $get('type') === 'product'),
 
-                        Select::make('article_id')
-                            ->label('Select Article')
+                        Select::make('blog_id')
+                            ->label('Select Blog')
                             ->options(fn () => \App\Models\Blog::latest()->pluck('title', 'id'))
-                            ->visible(fn (Get $get) => $get('type') === 'article')
-                            ->required(fn (Get $get) => $get('type') === 'article'),
+                            ->visible(fn (Get $get) => $get('type') === 'blog')
+                            ->required(fn (Get $get) => $get('type') === 'blog'),
 
-                        Textarea::make('custom_message')
+
+                        \Filament\Forms\Components\RichEditor::make('custom_message')
                             ->label('Message')
                             ->visible(fn (Get $get) => $get('type') === 'custom')
-                            ->required(fn (Get $get) => $get('type') === 'custom'),
+                            ->required(fn (Get $get) => $get('type') === 'custom')
+                            ->toolbarButtons([
+                                'bold', 'italic', 'underline', 'link', 'bulletList', 'orderedList', 'h2', 'h3', 'blockquote', 'image',
+                            ])
+                            ->fileAttachmentsDirectory('emails') // optional: store images
+
                     ])
                     ->action(fn (Collection $records, array $data) => static::sendOffer($records, $data))
                     ->deselectRecordsAfterCompletion(),
