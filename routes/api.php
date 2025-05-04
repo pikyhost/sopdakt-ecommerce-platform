@@ -97,4 +97,6 @@ Route::get('/discounts', [DiscountController::class, 'index']);
 
 Route::post('/newsletter/subscribe', [NewsletterSubscriberController::class, 'store'])->name('newsletter.subscribe');
 
-Route::get('/products', [ProductController::class, 'getAllActiveProducts']);
+Route::get('/all-products', [ProductController::class, 'getAllActiveProducts']);
+
+Route::get('/recommended-products', [ProductController::class, 'getRecommendedProducts']);
