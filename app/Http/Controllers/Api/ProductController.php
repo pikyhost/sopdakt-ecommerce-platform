@@ -248,7 +248,6 @@ class ProductController extends Controller
         ]);
     }
 
-
     protected function buildProductActionsWithMethods(Product $product): array
     {
         return [
