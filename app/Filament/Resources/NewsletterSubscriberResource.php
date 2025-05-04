@@ -6,6 +6,7 @@ use App\Filament\Resources\NewsletterSubscriberResource\Pages;
 use App\Mail\OfferEmail;
 use App\Models\NewsletterSubscriber;
 use Filament\Forms;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
@@ -91,53 +92,49 @@ class NewsletterSubscriberResource extends Resource
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make()->label(__('Delete Selected')),
 
-                Tables\Actions\BulkAction::make('sendOffer')
-                    ->label('Send Offer / Update')
+                Tables\Actions\BulkAction::make('sendOfferOrMessage')
+                    ->label(__('Send Offer or Update'))
                     ->icon('heroicon-o-paper-airplane')
                     ->form([
                         Select::make('type')
-                            ->label('Send')
+                            ->label(__('Choose what to send'))
                             ->options([
-                                'discount' => 'Discount',
-                                'product' => 'Product',
-                                'article' => 'Article',
-                                'custom' => 'Custom Message',
+                                'discount' => __('Promotional Discount'),
+                                'product'  => __('Product Highlight'),
+                                'article'  => __('Blog Article'),
+                                'custom'   => __('Custom Message'),
                             ])
                             ->required()
                             ->live(),
 
                         Select::make('discount_id')
-                            ->label('Select Discount')
+                            ->label(__('Select a Discount'))
                             ->options(fn () => \App\Models\Discount::active()->pluck('name', 'id'))
                             ->visible(fn (Get $get) => $get('type') === 'discount')
                             ->required(fn (Get $get) => $get('type') === 'discount'),
 
                         Select::make('product_id')
-                            ->label('Select Product')
+                            ->label(__('Select a Product'))
                             ->options(fn () => \App\Models\Product::pluck('name', 'id'))
                             ->visible(fn (Get $get) => $get('type') === 'product')
                             ->required(fn (Get $get) => $get('type') === 'product'),
 
                         Select::make('blog_id')
-                            ->label('Select Blog')
+                            ->label(__('Select a Blog Article'))
                             ->options(fn () => \App\Models\Blog::latest()->pluck('title', 'id'))
-                            ->visible(fn (Get $get) => $get('type') === 'blog')
-                            ->required(fn (Get $get) => $get('type') === 'blog'),
+                            ->visible(fn (Get $get) => $get('type') === 'article')
+                            ->required(fn (Get $get) => $get('type') === 'article'),
 
-
-                        \Filament\Forms\Components\RichEditor::make('custom_message')
-                            ->label('Message')
+                        RichEditor::make('custom_message')
+                            ->label(__('Write your message'))
                             ->visible(fn (Get $get) => $get('type') === 'custom')
                             ->required(fn (Get $get) => $get('type') === 'custom')
-                            ->toolbarButtons([
-                                'bold', 'italic', 'underline', 'link', 'bulletList', 'orderedList', 'h2', 'h3', 'blockquote', 'image',
-                            ])
-                            ->fileAttachmentsDirectory('emails') // optional: store images
-
+                            ->fileAttachmentsDirectory('emails')
                     ])
                     ->action(fn (Collection $records, array $data) => static::sendOffer($records, $data))
-                    ->deselectRecordsAfterCompletion(),
-            ])
+                    ->deselectRecordsAfterCompletion()
+                    ->successNotificationTitle(__('Your message was successfully sent!'))
+        ])
             ->actions([
                 Tables\Actions\EditAction::make()->label(__('Edit')),
                 Tables\Actions\DeleteAction::make()->label(__('Delete')),
