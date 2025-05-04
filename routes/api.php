@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ContactMessageController;
 use App\Http\Controllers\Api\ContactSettingController;
 use App\Http\Controllers\Api\DiscountController;
 use App\Http\Controllers\Api\HomeController;
+use App\Http\Controllers\Api\NewsletterSubscriberController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\WheelController;
@@ -93,6 +94,6 @@ Route::prefix('wheel')->group(function () {
 });
 
 
-// routes/api.php
 
 Route::get('/discounts', [DiscountController::class, 'index']);
+Route::post('/newsletter/subscribe', [NewsletterSubscriberController::class, 'store']);
