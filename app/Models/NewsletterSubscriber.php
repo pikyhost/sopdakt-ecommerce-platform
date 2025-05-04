@@ -9,10 +9,11 @@ class NewsletterSubscriber extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['email', 'ip_address'];
+    protected $fillable = ['email', 'ip_address', 'verified_at'];
 
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'verified_at' => 'datetime'
     ];
 }

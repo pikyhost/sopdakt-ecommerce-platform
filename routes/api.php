@@ -93,7 +93,9 @@ Route::prefix('wheel')->group(function () {
     Route::post('/spin', [WheelController::class, 'spin'])->name('wheel.spin');
 });
 
-
-
 Route::get('/discounts', [DiscountController::class, 'index']);
-Route::post('/newsletter/subscribe', [NewsletterSubscriberController::class, 'store']);
+
+Route::post('/newsletter/subscribe', [NewsletterSubscriberController::class, 'store'])->name('newsletter.subscribe');
+Route::get('/newsletter/verify/{id}/{hash}', [NewsletterSubscriberController::class, 'verify'])
+    ->name('newsletter.verify')
+    ->middleware('signed');
