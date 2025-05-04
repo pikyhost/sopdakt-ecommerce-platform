@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Exports\CountryExporter;
 use App\Filament\Exports\UserExporter;
+use App\Mail\OfferEmail;
 use App\Models\User;
 use Closure;
 use App\Enums\UserRole;
@@ -13,6 +14,9 @@ use App\Traits\HasCreatedAtFilter;
 use App\Traits\HasTimestampSection;
 use Filament\Actions\Exports\Enums\ExportFormat;
 use Filament\Forms\Components\Checkbox;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Events\Auth\Registered;
 use Filament\Forms;
@@ -50,6 +54,8 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Spatie\Permission\Models\Role;
@@ -460,18 +466,60 @@ class UserResource extends Resource
                         ->send();
                 }
             }),
-                    \Filament\Tables\Actions\BulkAction::make('active')
-                        ->label(__('Activate Selected'))
-                        ->icon('heroicon-o-check-circle')
-                        ->color('success')
-                        ->requiresConfirmation()
-                        ->action(function ($records) {
+         \Filament\Tables\Actions\BulkAction::make('active')
+             ->label(__('Activate Selected'))
+             ->icon('heroicon-o-check-circle')
+             ->color('success')
+             ->requiresConfirmation()
+             ->action(function ($records) {
                             $records->each(fn ($record) => self::activeUser($record));
                         }),
-                    ])
+                    Tables\Actions\BulkAction::make('sendOfferOrMessage')
+                        ->label(__('Send Offer or Update'))
+                        ->icon('heroicon-o-paper-airplane')
+                        ->form([
+                            Select::make('type')
+                                ->label(__('Choose what to send'))
+                                ->options([
+                                    'discount' => __('Promotional Discount'),
+                                    'product'  => __('Product Highlight'),
+                                    'article'  => __('Blog Article'),
+                                    'custom'   => __('Custom Message'),
+                                ])
+                                ->required()
+                                ->live(),
+
+                            Select::make('discount_id')
+                                ->label(__('Select a Discount'))
+                                ->options(fn () => \App\Models\Discount::active()->pluck('name', 'id'))
+                                ->visible(fn (Get $get) => $get('type') === 'discount')
+                                ->required(fn (Get $get) => $get('type') === 'discount'),
+
+                            Select::make('product_id')
+                                ->label(__('Select a Product'))
+                                ->options(fn () => \App\Models\Product::pluck('name', 'id'))
+                                ->visible(fn (Get $get) => $get('type') === 'product')
+                                ->required(fn (Get $get) => $get('type') === 'product'),
+
+                            Select::make('blog_id')
+                                ->label(__('Select a Blog Article'))
+                                ->options(fn () => \App\Models\Blog::latest()->pluck('title', 'id'))
+                                ->visible(fn (Get $get) => $get('type') === 'article')
+                                ->required(fn (Get $get) => $get('type') === 'article'),
+
+                            RichEditor::make('custom_message')
+                                ->label(__('Write your message'))
+                                ->visible(fn (Get $get) => $get('type') === 'custom')
+                                ->required(fn (Get $get) => $get('type') === 'custom')
+                                ->fileAttachmentsDirectory('emails')
+                        ])
+                        ->action(fn (Collection $records, array $data) => static::sendOffer($records, $data))
+                        ->deselectRecordsAfterCompletion()
+                        ->successNotificationTitle(__('Your message was successfully sent!'))
+                ])
             ])
             ->recordUrl(fn () => '')
-            ->defaultSort('orders_count', 'desc'); //order_items_count
+            ->defaultSort('orders_count', 'desc');
     }
 
     private static function activeUser(User $record)
@@ -587,5 +635,16 @@ class UserResource extends Resource
     protected static function getTooltip(TextColumn $column): ?string
     {
         return strlen($column->getState()) > $column->getCharacterLimit() ? $column->getState() : null;
+    }
+
+    public static function sendOffer(Collection $users, array $data): void
+    {
+        try {
+            foreach ($users as $user) {
+                Mail::to($user->email)->sendNow(new OfferEmail($user, $data));
+            }
+        } catch (\Exception $e) {
+            Log::error('Mail sending failed: ' . $e->getMessage());
+        }
     }
 }

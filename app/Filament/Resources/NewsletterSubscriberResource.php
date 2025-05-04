@@ -157,10 +157,5 @@ class NewsletterSubscriberResource extends Resource
         } catch (\Exception $e) {
             Log::error('Mail sending failed: ' . $e->getMessage());
         }
-
-        Notification::make()
-            ->title('Offer sent successfully.')
-            ->success()
-            ->send();
     }
 }
