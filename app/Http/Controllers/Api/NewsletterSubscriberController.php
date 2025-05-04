@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\NewsletterSubscriber;
+use App\Models\User;
+use Filament\Notifications\Actions\Action;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Notification;
 
@@ -65,6 +68,26 @@ class NewsletterSubscriberController extends Controller
 
             // Send verification email
             Notification::send($subscriber, new \App\Notifications\VerifyNewsletterSubscription($subscriber));
+
+            $adminUsers = User::role(['admin', 'super_admin'])->get();
+
+            foreach ($adminUsers as $admin) {
+                App::setLocale($admin->locale ?? config('app.locale'));
+
+                \Filament\Notifications\Notification::make()
+                    ->title(__('New Newsletter Subscription'))
+                    ->warning()
+                    ->body(__('A new user has subscribed to the newsletter with the email: :email', [
+                        'email' => $subscriber->email,
+                    ]))
+                    ->actions([
+                        Action::make('view')
+                            ->label(__('View Subscribers'))
+                            ->url(route('filament.admin.resources.newsletter-subscribers.index'))
+                            ->markAsRead(),
+                    ])
+                    ->sendToDatabase($admin);
+            }
 
             return response()->json([
                 'message' => 'Subscription request received. Please check your email to verify.',
