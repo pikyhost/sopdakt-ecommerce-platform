@@ -631,7 +631,6 @@ class UserResource extends Resource
         return $query;
     }
 
-
     protected static function getTooltip(TextColumn $column): ?string
     {
         return strlen($column->getState()) > $column->getCharacterLimit() ? $column->getState() : null;

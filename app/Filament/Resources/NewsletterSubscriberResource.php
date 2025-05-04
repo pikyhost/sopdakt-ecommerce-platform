@@ -14,6 +14,7 @@ use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
@@ -90,49 +91,50 @@ class NewsletterSubscriberResource extends Resource
                     ->dateTime(),
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make()->label(__('Delete Selected')),
+                BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make()->label(__('Delete Selected')),
+                    Tables\Actions\BulkAction::make('sendOfferOrMessage')
+                        ->label(__('Send Offer or Update'))
+                        ->icon('heroicon-o-paper-airplane')
+                        ->form([
+                            Select::make('type')
+                                ->label(__('Choose what to send'))
+                                ->options([
+                                    'discount' => __('Promotional Discount'),
+                                    'product'  => __('Product Highlight'),
+                                    'article'  => __('Blog Article'),
+                                    'custom'   => __('Custom Message'),
+                                ])
+                                ->required()
+                                ->live(),
 
-                Tables\Actions\BulkAction::make('sendOfferOrMessage')
-                    ->label(__('Send Offer or Update'))
-                    ->icon('heroicon-o-paper-airplane')
-                    ->form([
-                        Select::make('type')
-                            ->label(__('Choose what to send'))
-                            ->options([
-                                'discount' => __('Promotional Discount'),
-                                'product'  => __('Product Highlight'),
-                                'article'  => __('Blog Article'),
-                                'custom'   => __('Custom Message'),
-                            ])
-                            ->required()
-                            ->live(),
+                            Select::make('discount_id')
+                                ->label(__('Select a Discount'))
+                                ->options(fn () => \App\Models\Discount::active()->pluck('name', 'id'))
+                                ->visible(fn (Get $get) => $get('type') === 'discount')
+                                ->required(fn (Get $get) => $get('type') === 'discount'),
 
-                        Select::make('discount_id')
-                            ->label(__('Select a Discount'))
-                            ->options(fn () => \App\Models\Discount::active()->pluck('name', 'id'))
-                            ->visible(fn (Get $get) => $get('type') === 'discount')
-                            ->required(fn (Get $get) => $get('type') === 'discount'),
+                            Select::make('product_id')
+                                ->label(__('Select a Product'))
+                                ->options(fn () => \App\Models\Product::pluck('name', 'id'))
+                                ->visible(fn (Get $get) => $get('type') === 'product')
+                                ->required(fn (Get $get) => $get('type') === 'product'),
 
-                        Select::make('product_id')
-                            ->label(__('Select a Product'))
-                            ->options(fn () => \App\Models\Product::pluck('name', 'id'))
-                            ->visible(fn (Get $get) => $get('type') === 'product')
-                            ->required(fn (Get $get) => $get('type') === 'product'),
+                            Select::make('blog_id')
+                                ->label(__('Select a Blog Article'))
+                                ->options(fn () => \App\Models\Blog::latest()->pluck('title', 'id'))
+                                ->visible(fn (Get $get) => $get('type') === 'article')
+                                ->required(fn (Get $get) => $get('type') === 'article'),
 
-                        Select::make('blog_id')
-                            ->label(__('Select a Blog Article'))
-                            ->options(fn () => \App\Models\Blog::latest()->pluck('title', 'id'))
-                            ->visible(fn (Get $get) => $get('type') === 'article')
-                            ->required(fn (Get $get) => $get('type') === 'article'),
-
-                        RichEditor::make('custom_message')
-                            ->label(__('Write your message'))
-                            ->visible(fn (Get $get) => $get('type') === 'custom')
-                            ->required(fn (Get $get) => $get('type') === 'custom')
-                            ->fileAttachmentsDirectory('emails')
-                    ])
-                    ->action(fn (Collection $records, array $data) => static::sendOffer($records, $data))
-                    ->deselectRecordsAfterCompletion()
+                            RichEditor::make('custom_message')
+                                ->label(__('Write your message'))
+                                ->visible(fn (Get $get) => $get('type') === 'custom')
+                                ->required(fn (Get $get) => $get('type') === 'custom')
+                                ->fileAttachmentsDirectory('emails')
+                        ])
+                        ->action(fn (Collection $records, array $data) => static::sendOffer($records, $data))
+                        ->deselectRecordsAfterCompletion()
+                ]),
         ])
             ->actions([
                 Tables\Actions\EditAction::make()->label(__('Edit')),
@@ -156,7 +158,6 @@ class NewsletterSubscriberResource extends Resource
         } catch (\Exception $e) {
             Log::error('Mail sending failed: ' . $e->getMessage());
         }
-
 
         Notification::make()
             ->title(__('Your message was successfully sent!'))
