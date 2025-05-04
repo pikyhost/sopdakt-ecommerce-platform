@@ -23,27 +23,27 @@ class BlogUserLikeResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return 'User Likes'; // Navigation label for Favorite Articles
+        return __('User Likes');
     }
 
     public static function getModelLabel(): string
     {
-        return 'Favorite Article'; // Singular label for Favorite Article
+        return __('Favorite Article');
     }
 
     public static function getLabel(): ?string
     {
-        return 'Favorite Article'; // Singular label
+        return __('Favorite Article');
     }
 
     public static function getBreadcrumb(): string
     {
-        return 'Favorite Articles'; // Breadcrumb label for Favorite Articles
+        return __('Favorite Articles');
     }
 
     public static function getPluralLabel(): ?string
     {
-        return 'Favorite Articles'; // Plural label for Favorite Articles
+        return __('Favorite Articles');
     }
 
     public static function table(Table $table): Table
@@ -51,40 +51,38 @@ class BlogUserLikeResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('blog.title')
-                    ->label('Article Title') // Blog Title in English
+                    ->label(__('Article Title'))
                     ->sortable()
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('user.name')
-                    ->label('User Name') // User Name in English
+                    ->label(__('User Name'))
                     ->sortable()
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Added Date') // Added Date in English
+                    ->label(__('Added Date'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->label('Updated Date') // Updated Date in English
+                    ->label(__('Updated Date'))
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                // User Filter
                 SelectFilter::make('user_id')
-                    ->label('User') // English label for User
+                    ->label(__('User'))
                     ->relationship('user', 'name')
-                    ->placeholder('All Users') // English placeholder
+                    ->placeholder(__('All Users'))
                     ->visible(fn () => auth()->user()->hasRole(UserRole::SuperAdmin->value)),
 
-                // Blog Filter
                 SelectFilter::make('blog_id')
-                    ->label('Article') // English label for Article
+                    ->label(__('Article'))
                     ->relationship('blog', 'title')
-                    ->placeholder('All Articles') // English placeholder
+                    ->placeholder(__('All Articles'))
                     ->visible(fn () => auth()->user()->hasRole(UserRole::SuperAdmin->value)),
             ], Tables\Enums\FiltersLayout::AboveContent)
             ->filtersFormColumns(2);

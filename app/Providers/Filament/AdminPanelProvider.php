@@ -10,6 +10,9 @@ use App\Filament\Resources\AboutUsResource;
 use App\Filament\Resources\AttributeResource;
 use App\Filament\Resources\BannerResource;
 use App\Filament\Resources\BlockedPhoneNumberResource;
+use App\Filament\Resources\BlogCategoryResource;
+use App\Filament\Resources\BlogResource;
+use App\Filament\Resources\BlogUserLikeResource;
 use App\Filament\Resources\BundleResource;
 use App\Filament\Resources\CategoryResource;
 use App\Filament\Resources\CityResource;
@@ -167,6 +170,11 @@ class AdminPanelProvider extends PanelProvider
                 '*/admin/products/create',
                 '*/admin/categories/create',
                 '*/admin/analysis',
+                '*/admin/blog-categories/create',
+                '*/admin/blog-categories/*/edit',
+
+                '*/admin/blogs',
+                '*/admin/blogs/*',
             ])
             ->unsavedChangesAlerts()
             ->plugins([
@@ -198,6 +206,14 @@ class AdminPanelProvider extends PanelProvider
                 'items' => [
                    Analysis::getNavigationItems(),
                     MyGoogleAnalyticsPage::getNavigationItems(),
+                ],
+            ],
+            'blogs' => [
+                'label' => __('Blogs Management'),
+                'items' => [
+                    BlogCategoryResource::getNavigationItems(),
+                    BlogResource::getNavigationItems(),
+                    BlogUserLikeResource::getNavigationItems(),
                 ],
             ],
             'products' => [

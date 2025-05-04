@@ -29,17 +29,17 @@ class BlogCategoryResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return 'Blog Categories';
+        return __('Blog Categories');
     }
 
     public static function getLabel(): ?string
     {
-        return 'Blog Category';
+        return __('Blog Category');
     }
 
     public static function getPluralLabel(): ?string
     {
-        return 'Blog Categories';
+        return __('Blog Categories');
     }
 
     public static function form(Form $form): Form
@@ -51,34 +51,34 @@ class BlogCategoryResource extends Resource
                         ->columnSpanFull()
                         ->required()
                         ->maxLength(255)
-                        ->label('Name'),
+                        ->label(__('Name')),
 
                     SelectTree::make('parent_id')
                         ->columnSpanFull()
-                        ->label('Parent Category')
+                        ->label(__('Parent Category'))
                         ->searchable()
                         ->enableBranchNode()
                         ->relationship('parent', 'name', 'parent_id')
-                        ->placeholder('Select a parent category')
+                        ->placeholder(__('Select a parent category'))
                         ->rules([
                             fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
                                 if ($value === $get('id')) {
-                                    $fail('A category cannot be its own parent.');
+                                    $fail(__('A category cannot be its own parent.'));
                                 }
                             },
                         ])
-                        ->validationAttribute('Parent Category'),
+                        ->validationAttribute(__('Parent Category')),
 
                     Forms\Components\Textarea::make('description')
                         ->columnSpanFull()
                         ->maxLength(65535)
                         ->columnSpanFull()
-                        ->label('Description'),
+                        ->label(__('Description')),
 
                     Forms\Components\Checkbox::make('is_active')
                         ->columnSpanFull()
                         ->default(true)
-                        ->label('Active'),
+                        ->label(__('Active')),
                 ]),
             ]);
     }
@@ -89,48 +89,48 @@ class BlogCategoryResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
-                    ->label('Name'),
+                    ->label(__('Name')),
                 TextColumn::make('parent.name')
                     ->badge()
-                    ->label('Parent Category')
+                    ->label(__('Parent Category'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('description')
                     ->searchable()
                     ->limit(50)
-                    ->label('Description'),
+                    ->label(__('Description')),
 
                 Tables\Columns\IconColumn::make('is_active')
                     ->boolean()
-                    ->label('Active'),
+                    ->label(__('Active')),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->label('Created At'),
+                    ->label(__('Created At')),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->label('Updated At'),
+                    ->label(__('Updated At')),
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
-                    ->label('Edit'),
+                    ->label(__('Edit')),
                 Tables\Actions\DeleteAction::make()
-                    ->label('Delete')
-                    ->modalHeading('Delete Blog Category')
-                    ->modalDescription('Are you sure you want to delete this category?')
-                    ->modalSubmitActionLabel('Yes, delete')
-                    ->modalCancelActionLabel('No, cancel'),
+                    ->label(__('Delete'))
+                    ->modalHeading(__('Delete Blog Category'))
+                    ->modalDescription(__('Are you sure you want to delete this category?'))
+                    ->modalSubmitActionLabel(__('Yes, delete'))
+                    ->modalCancelActionLabel(__('No, cancel')),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                        ->label('Delete Selected')
-                        ->modalHeading('Delete Selected Categories')
-                        ->modalDescription('Are you sure you want to delete the selected categories?')
-                        ->modalSubmitActionLabel('Yes, delete')
-                        ->modalCancelActionLabel('No, cancel'),
+                        ->label(__('Delete Selected'))
+                        ->modalHeading(__('Delete Selected Categories'))
+                        ->modalDescription(__('Are you sure you want to delete the selected categories?'))
+                        ->modalSubmitActionLabel(__('Yes, delete'))
+                        ->modalCancelActionLabel(__('No, cancel')),
                 ]),
             ]);
     }

@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\BlogResource\Pages;
 use App\Models\Blog;
+use App\Services\Filament\BlogActionsService;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -41,17 +42,17 @@ class BlogResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return 'Blogs';
+        return __('Blogs');
     }
 
     public static function getLabel(): ?string
     {
-        return 'Blog';
+        return __('Blog');
     }
 
     public static function getPluralLabel(): ?string
     {
-        return 'Blogs';
+        return __('Blogs');
     }
 
     public static function getGloballySearchableAttributes(): array
@@ -62,8 +63,8 @@ class BlogResource extends Resource
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [
-            'Author' => $record->author->name,
-            'Category' => $record->category->name,
+            __('Author') => $record->author->name,
+            __('Category') => $record->category->name,
         ];
     }
 
@@ -77,14 +78,14 @@ class BlogResource extends Resource
                             Forms\Components\TextInput::make('title')
                                 ->required()
                                 ->maxLength(255)
-                                ->label('Title'),
+                                ->label(__('Title')),
                             Forms\Components\MarkdownEditor::make('content')
                                 ->required()
                                 ->columnSpanFull()
-                                ->label('Content'),
+                                ->label(__('Content')),
                             Forms\Components\Toggle::make('is_active')
                                 ->default(false)
-                                ->label('Active'),
+                                ->label(__('Active')),
                         ])->columns(1),
                     ])->columnSpan(2),
 
@@ -94,15 +95,15 @@ class BlogResource extends Resource
                             Forms\Components\SpatieMediaLibraryFileUpload::make('main_blog_image')
                                 ->live()
                                 ->image()
-                                ->label('Featured Image')
+                                ->label(__('Featured Image'))
                                 ->collection('main_blog_image')
                                 ->afterStateUpdated(function (Forms\Contracts\HasForms $livewire, Forms\Components\SpatieMediaLibraryFileUpload $component) {
                                     $livewire->validateOnly($component->getStatePath());
                                 }),
 
                             SelectTree::make('blog_category_id')
-                                ->placeholder('Select Category')
-                                ->label('Category')
+                                ->placeholder(__('Select Category'))
+                                ->label(__('Category'))
                                 ->searchable()
                                 ->enableBranchNode()
                                 ->relationship('category', 'name', 'parent_id'),
@@ -117,13 +118,13 @@ class BlogResource extends Resource
                                     Forms\Components\TextInput::make('name')
                                         ->required()
                                         ->unique('tags', 'name')
-                                        ->label('Name'),
+                                        ->label(__('Name')),
                                 ])
-                                ->label('Tags'),
+                                ->label(__('Tags')),
                             Forms\Components\DatePicker::make('published_at')
                                 ->required()
                                 ->default(now())
-                                ->label('Publish Date'),
+                                ->label(__('Publish Date')),
                         ]),
                     ]),
             ])->columns(3);
@@ -134,45 +135,45 @@ class BlogResource extends Resource
         return $table
             ->columns([
                 SpatieMediaLibraryImageColumn::make('main_blog_image')
-                    ->label('Image')
+                    ->label(__('Image'))
                     ->collection('main_blog_image'),
                 Tables\Columns\TextColumn::make('title')
                     ->searchable()
-                    ->label('Title'),
+                    ->label(__('Title')),
                 TextColumn::make('category.parent.name')
                     ->badge()
-                    ->label('Parent Category')
+                    ->label(__('Parent Category'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('category.name')
                     ->searchable()
-                    ->label('Category'),
+                    ->label(__('Category')),
                 Tables\Columns\TextColumn::make('author.name')
                     ->searchable()
-                    ->label('Author'),
+                    ->label(__('Author')),
                 Tables\Columns\IconColumn::make('is_active')
                     ->boolean()
-                    ->label('Active'),
+                    ->label(__('Active')),
                 Tables\Columns\TextColumn::make('tags.name')
                     ->placeholder('-')
                     ->badge()
                     ->color('warning')
-                    ->label('Tags'),
+                    ->label(__('Tags')),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->label('Created At'),
+                    ->label(__('Created At')),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true)
-                    ->label('Updated At'),
+                    ->label(__('Updated At')),
             ])
             ->filtersFormColumns(6)
             ->filters([
                 TernaryFilter::make('is_active')
                     ->native(false)
-                    ->placeholder('Select Status')
+                    ->placeholder(__('Select Status'))
                     ->label('')
                     ->columnSpan(['default' => 6, 'sm' => 6, 'md' => 6, 'lg' => 3, 'xl' => 3, '2xl' => 3]),
 
@@ -180,7 +181,7 @@ class BlogResource extends Resource
                     ->columnSpan(['default' => 6, 'sm' => 6, 'md' => 6, 'lg' => 3, 'xl' => 3, '2xl' => 3])
                     ->form([
                         SelectTree::make('category_id')
-                            ->placeholder('Search for a Category...')
+                            ->placeholder(__('Search for a Category...'))
                             ->enableBranchNode()
                             ->hiddenLabel()
                             ->relationship('category', 'name', 'parent_id')
@@ -209,22 +210,22 @@ class BlogResource extends Resource
                         }
 
                         $category = BlogCategory::find($data['category_id']);
-                        $categoryName = $category->name ?? 'Unknown Category';
+                        $categoryName = $category->name ?? __('Unknown Category');
 
                         // Check if it's a parent category
                         $isParent = BlogCategory::where('parent_id', $data['category_id'])->exists();
 
                         if ($isParent) {
-                            return "Showing blogs in category and subcategories: {$categoryName}";
+                            return __('Showing blogs in category and subcategories:') . " {$categoryName}";
                         }
 
-                        return "Showing blogs in category: {$categoryName}";
+                        return __('Showing blogs in category:') . " {$categoryName}";
                     }),
 
                 Tables\Filters\SelectFilter::make('author_id')
                     ->native(false)
                     ->label('')
-                    ->placeholder('Select Author')
+                    ->placeholder(__('Select Author'))
                     ->relationship('author', 'name')
                     ->columnSpan(['default' => 6, 'sm' => 6, 'md' => 6, 'lg' => 3, 'xl' => 3, '2xl' => 3]),
 
@@ -233,7 +234,7 @@ class BlogResource extends Resource
                     ->preload()
                     ->native(false)
                     ->label('')
-                    ->placeholder('Select Tags')
+                    ->placeholder(__('Select Tags'))
                     ->relationship('tags', 'name')
                     ->columnSpan(['default' => 6, 'sm' => 6, 'md' => 6, 'lg' => 3, 'xl' => 3, '2xl' => 3]),
             ], Tables\Enums\FiltersLayout::AboveContent)
@@ -247,15 +248,15 @@ class BlogResource extends Resource
                         ->color(fn(Blog $record) => BlogActionsService::getLikeActionColor($record))
                         ->action(fn(Blog $record) => BlogActionsService::toggleLikeBlog($record)),
                     Tables\Actions\EditAction::make()
-                        ->label('Edit'),
+                        ->label(__('Edit')),
                     Tables\Actions\DeleteAction::make()
-                        ->label('Delete')
-                        ->modalHeading('Delete Blog')
-                        ->modalDescription('Are you sure you want to delete this blog?')
-                        ->modalSubmitActionLabel('Yes, delete')
-                        ->modalCancelActionLabel('No, cancel'),
+                        ->label(__('Delete'))
+                        ->modalHeading(__('Delete Blog'))
+                        ->modalDescription(__('Are you sure you want to delete this blog?'))
+                        ->modalSubmitActionLabel(__('Yes, delete'))
+                        ->modalCancelActionLabel(__('No, cancel')),
                 ])
-                    ->label('Actions')
+                    ->label(__('Actions'))
                     ->icon('heroicon-m-ellipsis-vertical')
                     ->size(ActionSize::Small)
                     ->color('primary')
@@ -264,11 +265,11 @@ class BlogResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make()
-                        ->label('Delete Selected')
-                        ->modalHeading('Delete Selected Blogs')
-                        ->modalDescription('Are you sure you want to delete the selected blogs?')
-                        ->modalSubmitActionLabel('Yes, delete')
-                        ->modalCancelActionLabel('No, cancel'),
+                        ->label(__('Delete Selected'))
+                        ->modalHeading(__('Delete Selected Blogs'))
+                        ->modalDescription(__('Are you sure you want to delete the selected blogs?'))
+                        ->modalSubmitActionLabel(__('Yes, delete'))
+                        ->modalCancelActionLabel(__('No, cancel')),
                 ]),
             ]);
     }
@@ -302,7 +303,7 @@ class BlogResource extends Resource
     {
         return $infolist
             ->schema([
-                Section::make('Basic Information')
+                Section::make(__('Basic Information'))
                     ->icon('heroicon-o-information-circle')
                     ->schema([
                         \Filament\Infolists\Components\Split::make([
@@ -324,34 +325,31 @@ class BlogResource extends Resource
                         ])->from('xl'),
                     ]),
 
-                Section::make('Timestamps')
+                Section::make(__('Timestamps'))
                     ->icon('heroicon-o-clock')
                     ->collapsible()
                     ->schema([
                         TextEntry::make('created_at')
-                            ->label('Created At')
+                            ->label(__('Created At'))
                             ->dateTime('D, M j, Y \a\t g:i A'),
                         TextEntry::make('updated_at')
-                            ->label('Updated At')
+                            ->label(__('Updated At'))
                             ->dateTime('D, M j, Y \a\t g:i A'),
                         TextEntry::make('published_at')
-                            ->label('Published At')
+                            ->label(__('Published At'))
                             ->dateTime('D, M j, Y \a\t g:i A'),
                     ])->columns(3),
 
-                Section::make('Content')
+                Section::make(__('Content'))
                     ->icon('heroicon-o-document-text')
                     ->schema([
                         TextEntry::make('content')
-                            ->label('Content')
-                            ->placeholder('No content available')
+                            ->label(__('Content'))
+                            ->placeholder(__('No content available'))
                             ->prose()
                             ->markdown()
                             ->hiddenLabel(),
                     ])->collapsible(),
-
-                CommentsEntry::make('filament_comments')
-                    ->columnSpanFull(),
             ]);
     }
 }
