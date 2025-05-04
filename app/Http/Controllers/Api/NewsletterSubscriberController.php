@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\URL;
 
 class NewsletterSubscriberController extends Controller
 {
@@ -64,7 +65,7 @@ class NewsletterSubscriberController extends Controller
             ]);
 
             // Send verification email
-            Notification::send($subscriber->email, new \App\Notifications\VerifyNewsletterSubscription($subscriber));
+            Notification::send($subscriber, new \App\Notifications\VerifyNewsletterSubscription($subscriber));
 
             return response()->json([
                 'message' => 'Subscription request received. Please check your email to verify.',

@@ -16,4 +16,15 @@ class NewsletterSubscriber extends Model
         'updated_at' => 'datetime',
         'verified_at' => 'datetime'
     ];
+
+    /**
+     * Route notifications for the mail channel.
+     *
+     * @param  \Illuminate\Notifications\Notification  $notification
+     * @return string
+     */
+    public function routeNotificationForMail($notification): string
+    {
+        return $this->email;
+    }
 }
