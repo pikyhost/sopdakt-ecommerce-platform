@@ -1,11 +1,11 @@
 <?php
 
-use App\Http\Middleware\ProtectDocs;
 use App\Livewire\AcceptGuestInvitation;
 use App\Livewire\AcceptInvitation;
 use Illuminate\Support\Facades\Route;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
-use App\Http\Controllers\{CartController,
+use App\Http\Controllers\{Api\NewsletterSubscriberController,
+    CartController,
     CheckoutController,
     HomePageController,
     OrderCompleteController,
@@ -21,23 +21,25 @@ use App\Http\Controllers\{CartController,
 use Spatie\Analytics\Facades\Analytics;
 use Spatie\Analytics\Period;
 
-// This route catches everything except `admin/*` and `client/*`
-Route::get('{any}', function () {
-    abort(404);
-})->where('any', '^(?!admin|client).*$');
+Route::get('/invitation/guest/{invitation}', AcceptGuestInvitation::class)
+    ->name('guest.invitation.accept');
 
 Route::middleware('signed')
     ->get('invitation/{invitation}/accept', AcceptInvitation::class)
     ->name('invitation.accept');
 
+Route::get('/newsletter/verify/{id}/{hash}', [NewsletterSubscriberController::class, 'verify'])
+    ->name('newsletter.verify')
+    ->middleware('signed');
 
-Route::get('/invitation/guest/{invitation}', AcceptGuestInvitation::class)
-    ->name('guest.invitation.accept');
+// This route catches everything except `admin/*` and `client/*`
+Route::get('{any}', function () {
+    abort(404);
+})->where('any', '^(?!admin|client).*$');
 
 Route::group(['prefix' => LaravelLocalization::setLocale(), 'middleware' => ['localeSessionRedirect', 'localizationRedirect', 'localeViewPath']], function () {
 
     Route::get('/', [HomePageController::class, 'index'])->name('homepage');
-
 
     Route::get('/wheel/{wheel}', [HomePageController::class, 'wheel'])
         ->name('wheel.spin');
