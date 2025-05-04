@@ -12,19 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('blog_categories', function (Blueprint $table) {
-            Schema::create('blog_categories', function (Blueprint $table) {
-                $table->id();
-                $table->foreignId('parent_id')
-                    ->nullable()
-                    ->constrained('blog_categories')
-                    ->cascadeOnDelete()
-                    ->cascadeOnUpdate();
-                $table->string('name', 255)->unique();
-                $table->tinyText('description')->nullable();
-                $table->timestamps();
+            $table->id();
+            $table->foreignId('parent_id')
+                ->nullable()
+                ->constrained('blog_categories')
+                ->cascadeOnDelete()
+                ->cascadeOnUpdate();
+            $table->string('name', 255)->unique();
+            $table->tinyText('description')->nullable();
+            $table->timestamps();
 
-                $table->boolean('is_active')->default(false);
-            });
+            $table->boolean('is_active')->default(false);
         });
     }
 
