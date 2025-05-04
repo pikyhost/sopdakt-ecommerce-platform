@@ -72,11 +72,11 @@ class NewsletterSubscriberController extends Controller
             $adminUsers = User::role(['admin', 'super_admin'])->get();
 
             foreach ($adminUsers as $admin) {
-                App::setLocale($admin->locale ?? config('app.locale'));
+                App::setLocale($admin->preferred_language ?? config('app.locale'));
 
                 \Filament\Notifications\Notification::make()
                     ->title(__('New Newsletter Subscription'))
-                    ->warning()
+                    ->success()
                     ->body(__('A new user has subscribed to the newsletter with the email: :email', [
                         'email' => $subscriber->email,
                     ]))
