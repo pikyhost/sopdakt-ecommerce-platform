@@ -646,5 +646,10 @@ class UserResource extends Resource
         } catch (\Exception $e) {
             Log::error('Mail sending failed: ' . $e->getMessage());
         }
+
+        Notification::make()
+            ->title(__('Your message was successfully sent!'))
+            ->success()
+            ->send();
     }
 }

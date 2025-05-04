@@ -133,7 +133,6 @@ class NewsletterSubscriberResource extends Resource
                     ])
                     ->action(fn (Collection $records, array $data) => static::sendOffer($records, $data))
                     ->deselectRecordsAfterCompletion()
-                    ->successNotificationTitle(__('Your message was successfully sent!'))
         ])
             ->actions([
                 Tables\Actions\EditAction::make()->label(__('Edit')),
@@ -157,5 +156,11 @@ class NewsletterSubscriberResource extends Resource
         } catch (\Exception $e) {
             Log::error('Mail sending failed: ' . $e->getMessage());
         }
+
+
+        Notification::make()
+            ->title(__('Your message was successfully sent!'))
+            ->success()
+            ->send();
     }
 }
