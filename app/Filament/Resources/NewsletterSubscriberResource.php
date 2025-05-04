@@ -3,12 +3,20 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\NewsletterSubscriberResource\Pages;
+use App\Mail\OfferEmail;
 use App\Models\NewsletterSubscriber;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Mail;
+use PhpParser\Node\Expr\Closure;
 
 class NewsletterSubscriberResource extends Resource
 {
@@ -74,13 +82,59 @@ class NewsletterSubscriberResource extends Resource
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('Created At'))
                     ->dateTime(),
+
+
+                Tables\Columns\TextColumn::make('verified_at')
+                    ->label(__('Verified At'))
+                    ->dateTime(),
+            ])
+            ->bulkActions([
+                Tables\Actions\DeleteBulkAction::make()->label(__('Delete Selected')),
+
+                Tables\Actions\BulkAction::make('sendOffer')
+                    ->label('Send Offer / Update')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->form([
+                        Select::make('type')
+                            ->label('Send')
+                            ->options([
+                                'discount' => 'Discount',
+                                'product' => 'Product',
+                                'article' => 'Article',
+                                'custom' => 'Custom Message',
+                            ])
+                            ->required()
+                            ->live(),
+
+                        Select::make('discount_id')
+                            ->label('Select Discount')
+                            ->options(fn () => \App\Models\Discount::active()->pluck('name', 'id'))
+                            ->visible(fn (Get $get) => $get('type') === 'discount')
+                            ->required(fn (Get $get) => $get('type') === 'discount'),
+
+                        Select::make('product_id')
+                            ->label('Select Product')
+                            ->options(fn () => \App\Models\Product::pluck('name', 'id'))
+                            ->visible(fn (Get $get) => $get('type') === 'product')
+                            ->required(fn (Get $get) => $get('type') === 'product'),
+
+                        Select::make('article_id')
+                            ->label('Select Article')
+                            ->options(fn () => \App\Models\Blog::latest()->pluck('title', 'id'))
+                            ->visible(fn (Get $get) => $get('type') === 'article')
+                            ->required(fn (Get $get) => $get('type') === 'article'),
+
+                        Textarea::make('custom_message')
+                            ->label('Message')
+                            ->visible(fn (Get $get) => $get('type') === 'custom')
+                            ->required(fn (Get $get) => $get('type') === 'custom'),
+                    ])
+                    ->action(fn (Collection $records, array $data) => static::sendOffer($records, $data))
+                    ->deselectRecordsAfterCompletion(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make()->label(__('Edit')),
                 Tables\Actions\DeleteAction::make()->label(__('Delete')),
-            ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make()->label(__('Delete Selected')),
             ]);
     }
 
@@ -89,5 +143,17 @@ class NewsletterSubscriberResource extends Resource
         return [
             'index' => Pages\ManageNewsletterSubscribers::route('/'),
         ];
+    }
+
+    public static function sendOffer(Collection $users, array $data): void
+    {
+        foreach ($users as $user) {
+            Mail::to($user->email)->queue(new OfferEmail($user, $data));
+        }
+
+        Notification::make()
+            ->title('Offer sent successfully.')
+            ->success()
+            ->send();
     }
 }
