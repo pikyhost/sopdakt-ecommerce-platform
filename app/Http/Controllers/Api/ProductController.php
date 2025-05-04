@@ -143,7 +143,7 @@ class ProductController extends Controller
             'productColors.color',
             'productColors.productColorSizes.size',
             'labels',
-            'bundles',
+            'bundles.products', // Load products inside bundles
             'ratings',
         ])
             ->where('slug', $slug)
@@ -228,7 +228,7 @@ class ProductController extends Controller
                     ];
                 }),
 
-                // Bundles (if needed)
+                // Bundles
                 'bundles' => $product->bundles->map(fn($bundle) => [
                     'id' => $bundle->id,
                     'name' => $bundle->getTranslation('name', $locale),
@@ -237,6 +237,11 @@ class ProductController extends Controller
                     'formatted_price' => $bundle->formatPrice(),
                     'buy_x' => $bundle->buy_x,
                     'get_y' => $bundle->get_y,
+                    'products' => $bundle->products->map(fn($bundleProduct) => [
+                        'id' => $bundleProduct->id,
+                        'name' => $bundleProduct->getTranslation('name', $locale),
+                        'image' => $bundleProduct->getFeatureProductImageUrl(),
+                    ]),
                 ]),
 
                 // Real average rating
