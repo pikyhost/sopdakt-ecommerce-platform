@@ -63,14 +63,15 @@ class ContactMessageController extends Controller
             $data = $request->validated();
 
             $message = ContactMessage::create([
-                'name' => $data['name'],
+                'name' => auth()->check() ? auth()->user()->name : $data['name'],
                 'email' => $data['email'],
-                'phone' => $data['phone'],
-                'subject' => $data['subject'] ?? null,
+                'phone' => $data['phone'] ?? null,
+                'subject' => $data['subject'],
                 'message' => $data['message'],
                 'ip_address' => $request->ip(),
-                'user_id' => auth()->id() ?? null,
+                'user_id' => auth()->id(),
             ]);
+
 
             ContactMessageNotifier::notify($message);
 

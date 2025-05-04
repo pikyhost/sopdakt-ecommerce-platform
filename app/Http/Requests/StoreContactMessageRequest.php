@@ -24,13 +24,19 @@ class StoreContactMessageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['nullable', 'string', 'min:3', 'max:255'], // Explicitly specify string type
+            'name' => [
+                auth()->check() ? 'nullable' : 'required',
+                'string',
+                'min:3',
+                'max:255',
+            ],
             'email' => ['required', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'min:10', 'max:20'],
             'subject' => ['required', 'string', 'max:255'],
             'message' => ['required', 'string', 'min:10', 'max:5000'],
         ];
     }
+
 
     /**
      * Get custom validation messages.
