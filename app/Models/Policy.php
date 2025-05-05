@@ -9,11 +9,7 @@ class Policy extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'privacy_policy_en', 'privacy_policy_ar',
-        'refund_policy_en', 'refund_policy_ar',
-        'terms_of_service_en', 'terms_of_service_ar',
-    ];
+    protected $guarded = [];
 
     public static function getPolicy(string $policyType, string $locale = 'en'): ?string
     {

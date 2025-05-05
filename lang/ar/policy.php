@@ -19,4 +19,8 @@ return [
     'terms_of_service_ar' => 'شروط الخدمة (بالعربية)',
     "no_policy_found" => '..قيد التوثيق',
     'pages_group' => 'صفحات السياسات',
+
+    'shipping_policy' => 'سياسة الشحن',
+    'shipping_policy_en' => 'سياسة الشحن (بالإنجليزية)',
+    'shipping_policy_ar' => 'سياسة الشحن (بالعربية)',
 ];

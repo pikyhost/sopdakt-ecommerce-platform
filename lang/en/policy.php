@@ -20,4 +20,8 @@ return [
     "no_policy_found" => 'Documentation pending..',
     'pages_group' => 'Policy Pages',
 
+    'shipping_policy' => 'Shipping Policy',
+    'shipping_policy_en' => 'Shipping Policy (English)',
+    'shipping_policy_ar' => 'Shipping Policy (Arabic)',
+
 ];

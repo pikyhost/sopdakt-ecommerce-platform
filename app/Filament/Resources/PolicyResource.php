@@ -75,6 +75,19 @@ class PolicyResource extends Resource
                             ->label(__('policy.terms_of_service_ar'))
                             ->columnSpanFull(),
                     ]),
+
+                Tab::make(__('policy.shipping_policy'))
+                    ->columnSpanFull()
+                    ->schema([
+                        MarkdownEditor::make('shipping_policy_en')
+                            ->label(__('policy.shipping_policy_en'))
+                            ->columnSpanFull(),
+
+                        MarkdownEditor::make('shipping_policy_ar')
+                            ->label(__('policy.shipping_policy_ar'))
+                            ->columnSpanFull(),
+                    ]),
+
             ]),
         ])->columns(1);
     }
