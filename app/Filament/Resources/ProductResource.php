@@ -653,20 +653,6 @@ class ProductResource extends Resource
                     ->collection('feature_product_image')
                     ->label(__('products.Product Image')),
 
-                Tables\Columns\SpatieMediaLibraryImageColumn::make('second_feature_product_image')
-                    ->toggleable(true, false)
-                    ->circular()
-                    ->simpleLightbox()
-                    ->placeholder('-')
-                    ->collection('second_feature_product_image')
-                    ->label(__('Second Feature Image')),
-
-                Tables\Columns\ImageColumn::make('sizeGuide.image_path')
-                    ->circular()
-                    ->simpleLightbox()
-                    ->placeholder('-')
-                    ->label(__('Sizes Image')),
-
                 Tables\Columns\TextColumn::make('user.name')
                     ->label(__('products.User')),
 
@@ -705,6 +691,7 @@ class ProductResource extends Resource
                     ->label(__('SKU')),
 
                 Tables\Columns\TextColumn::make('colors.name')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable()
                     ->placeholder('-')
                     ->label(__('Colors'))
@@ -712,6 +699,7 @@ class ProductResource extends Resource
                     ->badge(),
 
                 Tables\Columns\TextColumn::make('sizes.name')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable()
                     ->placeholder('-')
                     ->label(__('Sizes'))
@@ -764,6 +752,7 @@ class ProductResource extends Resource
                     ->sortable(),
 
                 RatingColumn::make('fake_average_rating')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->label(__('products.Rating')),
 
                 Tables\Columns\IconColumn::make('is_published')
@@ -810,11 +799,21 @@ class ProductResource extends Resource
                     ->columnSpanFull()
                     ->label(__('Creation date')),
 
-                Filter::make('is_published')->toggle()->label(__("Is Active?")),
+                Filter::make('is_published')
+                    ->toggle()
+                    ->label(__('Is Active?'))
+                    ->query(fn ($query) => $query->where('is_published', true)),
 
-                Filter::make('is_featured')->toggle()->label(__("Is Featured?")),
+                Filter::make('is_featured')
+                    ->toggle()
+                    ->label(__('Is Featured?'))
+                    ->query(fn ($query) => $query->where('is_featured', true)),
 
-                Filter::make('must_be_collection')->toggle()->label(__('Must be Collection?')),
+                Filter::make('must_be_collection')
+                    ->toggle()
+                    ->label(__('Must be Collection?'))
+                    ->query(fn ($query) => $query->where('must_be_collection', true)),
+
 
             ], Tables\Enums\FiltersLayout::AboveContentCollapsible)
             ->filtersFormColumns(3)
