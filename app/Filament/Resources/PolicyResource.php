@@ -118,6 +118,14 @@ class PolicyResource extends Resource
 
                 TextColumn::make('terms_of_service_ar')
                     ->label(__('policy.terms_of_service_ar'))
+                    ->limit(50),
+
+                TextColumn::make('shipping_policy_en')
+                    ->label(__('policy.shipping_policy_en'))
+                    ->limit(50),
+
+                TextColumn::make('shipping_policy_ar')
+                    ->label(__('policy.shipping_policy_ar'))
                     ->limit(50)
             ])
             ->actions([
