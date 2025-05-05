@@ -87,7 +87,7 @@ class CartController extends Controller
      *   "message": "Requested quantity exceeds stock!"
      * }
      */
-    ppublic function store(Request $request)
+    public function store(Request $request)
 {
     $request->validate([
         'product_id' => ['required', 'exists:products,id'],
