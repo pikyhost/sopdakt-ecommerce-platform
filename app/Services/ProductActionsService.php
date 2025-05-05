@@ -115,7 +115,7 @@ class ProductActionsService
                         ->rule(function (Product $record) {
                             return function (string $attribute, $value, $fail) use ($record) {
                                 if ($record->must_be_collection && $value < 2) {
-                                    $fail(__('This product requires a minimum quantity of 2.'));
+                                    $fail(__("This product must be added to the cart and ordered in a quantity of 2 or more."));
                                 } elseif ($value < 1) {
                                     $fail(__('Quantity must be at least 1.'));
                                 }
