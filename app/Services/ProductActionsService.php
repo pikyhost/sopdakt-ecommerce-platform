@@ -109,9 +109,18 @@ class ProductActionsService
                     TextInput::make('quantity')
                         ->label(__('landing_page_order.quantity'))
                         ->numeric()
-                        ->minValue(1)
                         ->default(1)
-                        ->required(),
+                        ->required()
+                        ->minValue(1)
+                        ->rule(function (Product $record) {
+                            return function (string $attribute, $value, $fail) use ($record) {
+                                if ($record->must_be_collection && $value < 2) {
+                                    $fail(__('This product requires a minimum quantity of 2.'));
+                                } elseif ($value < 1) {
+                                    $fail(__('Quantity must be at least 1.'));
+                                }
+                            };
+                        }),
                 ])
                 ->action(function (Product $record, array $data) {
                     $user = Auth::user();
