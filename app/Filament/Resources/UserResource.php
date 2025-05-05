@@ -225,24 +225,22 @@ class UserResource extends Resource
                 ->dehydrated(false),
 
             Forms\Components\Select::make('roles')
-                ->columnSpanFull()
+                ->searchable()
                 ->preload()
-                ->maxItems(1)
-                ->multiple()
-                ->label(__('roles'))
-                ->native(false)
-                ->relationship('roles', 'name'),
-
-            Checkbox::make('email_verified_at')
                 ->columnSpanFull()
-                ->label(__('Verified'))
-                ->afterStateHydrated(function (Checkbox $component, $state) {
-                    $component->state(!is_null($state));
-                })
-                ->dehydrated(fn ($state) => (bool) $state) // Only send data if checked
-                ->afterStateUpdated(function (Set $set, $state) {
-                    $set('email_verified_at', $state ? now() : null);
-                })
+                ->multiple()
+                ->maxItems(1)
+                ->label(__('roles'))
+                ->relationship('roles', 'name', fn ($query) =>
+                auth()->user()?->hasRole('super_admin')
+                    ? $query
+                    : $query->where('name', '!=', 'super_admin')
+                ),
+
+            Forms\Components\DateTimePicker::make('email_verified_at')
+                ->columnSpanFull()
+                ->default(now())
+                ->label(__('Verified at'))
         ])
             ->columns(2)
             ->columnSpan([

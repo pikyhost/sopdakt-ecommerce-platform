@@ -122,6 +122,43 @@ class PolicyController extends Controller
     }
 
     /**
+     * Retrieve the Shipping Policy
+     *
+     * This endpoint fetches the Shipping Policy content in the current application locale (English or Arabic).
+     * The response includes the policy content and the locale used. If no policy data is found, an error
+     * message is returned indicating that the policy is null or empty.
+     *
+     * @group Policies
+     * @response 200 {
+     *     "data": {
+     *         "content": "# Shipping Policy in English",
+     *         "locale": "en"
+     *     },
+     *     "message": "Shipping Policy retrieved successfully"
+     * }
+     * @response 200 {
+     *     "data": {
+     *         "content": "# سياسة الشحن بالعربية",
+     *         "locale": "ar"
+     *     },
+     *     "message": "Shipping Policy retrieved successfully"
+     * }
+     * @response 404 {
+     *     "error": "Shipping Policy is null or empty",
+     *     "support_link": "https://your-domain.com/contact-us"
+     * }
+     * @response 500 {
+     *     "error": "An unexpected error occurred while retrieving the Shipping Policy. Please try again.",
+     *     "support_link": "https://your-domain.com/contact-us"
+     * }
+     * @return JsonResponse
+     */
+    public function shipping(): JsonResponse
+    {
+        return $this->getPolicy('shipping_policy');
+    }
+
+    /**
      * Helper method to retrieve policy content
      *
      * Fetches the specified policy type in the current locale and returns a JSON response.
