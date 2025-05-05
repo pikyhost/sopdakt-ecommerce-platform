@@ -810,12 +810,14 @@ class ProductResource extends Resource
                     ->columnSpanFull()
                     ->label(__('Creation date')),
 
-                Filter::make('is_published')->toggle()->label(__("Is Active?"))->columnSpanFull(),
+                Filter::make('is_published')->toggle()->label(__("Is Active?")),
 
-                Filter::make('is_featured')->toggle()->label(__("Is Featured?"))->columnSpanFull(),
+                Filter::make('is_featured')->toggle()->label(__("Is Featured?")),
+
+                Filter::make('must_be_collection')->toggle()->label(__('Must be Collection?')),
 
             ], Tables\Enums\FiltersLayout::AboveContentCollapsible)
-            ->filtersFormColumns(4)
+            ->filtersFormColumns(3)
             ->actions([
                 Tables\Actions\ActionGroup::make(
                     array_merge([
