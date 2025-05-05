@@ -634,6 +634,14 @@ class ProductResource extends Resource
                     ->searchable()
                     ->sortable(),
 
+                Tables\Columns\SpatieMediaLibraryImageColumn::make('feature_product_image')
+                    ->toggleable(true, false)
+                    ->circular()
+                    ->simpleLightbox()
+                    ->placeholder('-')
+                    ->collection('feature_product_image')
+                    ->label(__('products.Product Image')),
+
                 Tables\Columns\TextColumn::make('name')
                     ->label(__('products.Product Name'))
                     ->searchable(),
@@ -645,14 +653,6 @@ class ProductResource extends Resource
                     ->counts('orderItems')
                     ->sortable(),
 
-                Tables\Columns\SpatieMediaLibraryImageColumn::make('feature_product_image')
-                    ->toggleable(true, false)
-                    ->circular()
-                    ->simpleLightbox()
-                    ->placeholder('-')
-                    ->collection('feature_product_image')
-                    ->label(__('products.Product Image')),
-
                 Tables\Columns\TextColumn::make('user.name')
                     ->label(__('products.User')),
 
@@ -662,9 +662,11 @@ class ProductResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('label.title')
-                    ->label(__('label')),
+                    ->label(__('label'))
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('summary')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->placeholder('-')
                     ->label(__('Small description'))
                     ->searchable(),
@@ -678,6 +680,15 @@ class ProductResource extends Resource
                         $locale = app()->getLocale();
                         return $locale === 'ar' ? "{$state} {$symbol}" : "{$symbol} {$state}";
                     })
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('price')
+                    ->label(__('products.Price'))
+                    ->sortable(),
+
+
+                Tables\Columns\TextColumn::make('after_discount_price')
+                    ->label(__('products.After Discount Price'))
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('quantity')
@@ -720,12 +731,6 @@ class ProductResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->label(__('products.Meta Description'))
                     ->searchable(),
-
-                Tables\Columns\TextColumn::make('after_discount_price')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->label(__('products.After Discount Price'))
-                    ->numeric()
-                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('discount_start')
                     ->toggleable(isToggledHiddenByDefault: true)
