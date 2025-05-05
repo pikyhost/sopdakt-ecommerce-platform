@@ -87,88 +87,94 @@ class CartController extends Controller
      *   "message": "Requested quantity exceeds stock!"
      * }
      */
-    public function store(Request $request)
-    {
-        $request->validate([
-            'product_id' => ['required', 'exists:products,id'],
-            'quantity' => ['required', 'integer', 'min:1', 'max:10'],
-            'color_id' => ['nullable', 'exists:colors,id'],
-            'size_id' => ['nullable', 'exists:sizes,id'],
-        ]);
+    ppublic function store(Request $request)
+{
+    $request->validate([
+        'product_id' => ['required', 'exists:products,id'],
+        'quantity' => ['required', 'integer', 'min:1', 'max:10'],
+        'color_id' => ['nullable', 'exists:colors,id'],
+        'size_id' => ['nullable', 'exists:sizes,id'],
+    ]);
 
-        $product = Product::findOrFail($request->product_id);
+    $product = Product::findOrFail($request->product_id);
 
-        $hasColors = $product->productColors()->exists();
-        if ($hasColors && !$request->color_id) {
-            return response()->json(['message' => 'Please select a color.'], 422);
-        }
-
-        $hasSizes = false;
-        if ($request->color_id) {
-            $color = $product->productColors()->where('color_id', $request->color_id)->first();
-            $hasSizes = $color && $color->sizes()->exists();
-
-            if ($hasSizes && !$request->size_id) {
-                return response()->json(['message' => 'Please select a size.'], 422);
-            }
-        }
-
-        $availableStock = $product->quantity;
-
-        if ($request->color_id && $request->size_id) {
-            $variant = ProductColorSize::whereHas('productColor', function ($query) use ($request) {
-                $query->where('product_id', $request->product_id)
-                    ->where('color_id', $request->color_id);
-            })->where('size_id', $request->size_id)->first();
-
-            if (!$variant) {
-                return response()->json(['message' => 'Selected variant not available.'], 422);
-            }
-
-            $availableStock = $variant->quantity;
-        }
-
-        if ($availableStock <= 0) {
-            return response()->json(['message' => 'This product is out of stock!'], 422);
-        }
-
-        if ($request->quantity > $availableStock) {
-            return response()->json(['message' => 'Requested quantity exceeds stock!'], 422);
-        }
-
-        // Create or find the cart
-        $cart = Cart::firstOrCreate(
-            ['user_id' => Auth::id()],
-            ['session_id' => Auth::check() ? null : Session::getId()]
-        );
-
-        // Create or update the cart item
-        $cartItem = $cart->items()
-            ->where('product_id', $product->id)
-            ->where('size_id', $request->size_id)
-            ->where('color_id', $request->color_id)
-            ->first();
-
-        $price = (float) $product->discount_price_for_current_country;
-        $subtotal = $request->quantity * $price;
-
-        if ($cartItem) {
-            $cartItem->increment('quantity', $request->quantity);
-            $cartItem->update(['subtotal' => $cartItem->quantity * $cartItem->price_per_unit]);
-        } else {
-            $cart->items()->create([
-                'product_id' => $product->id,
-                'size_id' => $request->size_id,
-                'color_id' => $request->color_id,
-                'quantity' => $request->quantity,
-                'price_per_unit' => $price,
-                'subtotal' => $subtotal,
-                'currency_id' => optional(Setting::getCurrency())->id,
-            ]);
-        }
-
-        return response()->json(['message' => 'Product added to cart successfully.']);
+    // Custom validation: check if the product must be ordered in quantity >= 2
+    if ($product->must_be_collection && $request->quantity < 2) {
+        return response()->json([
+            'message' => 'This product must be ordered in a quantity of 2 or more.'
+        ], 422);
     }
+
+    $hasColors = $product->productColors()->exists();
+    if ($hasColors && !$request->color_id) {
+        return response()->json(['message' => 'Please select a color.'], 422);
+    }
+
+    $hasSizes = false;
+    if ($request->color_id) {
+        $color = $product->productColors()->where('color_id', $request->color_id)->first();
+        $hasSizes = $color && $color->sizes()->exists();
+
+        if ($hasSizes && !$request->size_id) {
+            return response()->json(['message' => 'Please select a size.'], 422);
+        }
+    }
+
+    $availableStock = $product->quantity;
+
+    if ($request->color_id && $request->size_id) {
+        $variant = ProductColorSize::whereHas('productColor', function ($query) use ($request) {
+            $query->where('product_id', $request->product_id)
+                ->where('color_id', $request->color_id);
+        })->where('size_id', $request->size_id)->first();
+
+        if (!$variant) {
+            return response()->json(['message' => 'Selected variant not available.'], 422);
+        }
+
+        $availableStock = $variant->quantity;
+    }
+
+    if ($availableStock <= 0) {
+        return response()->json(['message' => 'This product is out of stock!'], 422);
+    }
+
+    if ($request->quantity > $availableStock) {
+        return response()->json(['message' => 'Requested quantity exceeds stock!'], 422);
+    }
+
+    $cart = Cart::firstOrCreate(
+        ['user_id' => Auth::id()],
+        ['session_id' => Auth::check() ? null : Session::getId()]
+    );
+
+    $cartItem = $cart->items()
+        ->where('product_id', $product->id)
+        ->where('size_id', $request->size_id)
+        ->where('color_id', $request->color_id)
+        ->first();
+
+    $price = (float) $product->discount_price_for_current_country;
+    $subtotal = $request->quantity * $price;
+
+    if ($cartItem) {
+        $cartItem->increment('quantity', $request->quantity);
+        $cartItem->update(['subtotal' => $cartItem->quantity * $cartItem->price_per_unit]);
+    } else {
+        $cart->items()->create([
+            'product_id' => $product->id,
+            'size_id' => $request->size_id,
+            'color_id' => $request->color_id,
+            'quantity' => $request->quantity,
+            'price_per_unit' => $price,
+            'subtotal' => $subtotal,
+            'currency_id' => optional(Setting::getCurrency())->id,
+        ]);
+    }
+
+    return response()->json(['message' => 'Product added to cart successfully.']);
+}
+
 
 
     /**
