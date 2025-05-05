@@ -118,6 +118,12 @@ class ProductResource extends Resource
                                     ->label(__('Slug'))
                                     ->required()
                                     ->maxLength(255),
+
+                                Forms\Components\Checkbox::make('must_be_collection')
+                                    ->columnSpanFull()
+                                    ->label(__('Must be Collection?'))
+                                    ->helperText(__('This product must be added to the cart with a quantity greater than 2.')),
+
                             ]),
 
                         // Pricing & Stock Tab

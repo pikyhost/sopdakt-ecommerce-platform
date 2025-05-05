@@ -1,4 +1,6 @@
 {
+    "Must be Collection?": "يجب أن يكون ضمن مجموعة؟",
+    "This product must be added to the cart with a quantity greater than 2.": "يجب إضافة هذا المنتج إلى السلة بكمية تزيد عن 2.",
     "Tag": "وسم",
     "Add New Tag": "إضافة وسم جديد",
     "Saved successfully": "تم الحفظ بنجاح",
