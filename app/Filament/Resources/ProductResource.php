@@ -654,7 +654,8 @@ class ProductResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('user.name')
-                    ->label(__('products.User')),
+                    ->label(__('products.User'))
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('category.name')
                     ->label(__('products.Category'))
@@ -694,7 +695,8 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('quantity')
                     ->label(__('Quantity'))
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 Tables\Columns\TextColumn::make('sku')
                     ->searchable()

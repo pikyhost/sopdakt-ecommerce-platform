@@ -116,7 +116,10 @@ class ProductActionsService
                 ->action(function (Product $record, array $data) {
                     $user = Auth::user();
                     if (!$user) {
-                        Notification::make()->danger()->title(__('You must be logged in to add items to the cart.'))->send();
+                        Notification::make()
+                            ->danger()
+                            ->title(__('You must be logged in to add items to the cart.'))
+                            ->send();
                         return;
                     }
 
@@ -125,18 +128,32 @@ class ProductActionsService
                     $sizeId = $data['sizeId'] ?? null;
 
                     if ($quantity < 1) {
-                        Notification::make()->danger()->title(__('Invalid quantity.'))->send();
+                        Notification::make()
+                            ->danger()
+                            ->title(__('Invalid quantity.'))
+                            ->send();
+                        return;
+                    }
+
+                    // ✅ Enforce minimum quantity of 2 if product is marked as collection
+                    if ($record->must_be_collection && $quantity < 2) {
+                        Notification::make()
+                            ->danger()
+                            ->title(__('This product must be added to the cart and ordered in a quantity of 2 or more.'))
+                            ->send();
                         return;
                     }
 
                     $availableStock = $record->quantity;
                     if ($availableStock <= 0 || $quantity > $availableStock) {
-                        Notification::make()->danger()->title(__('Not enough stock available!'))->send();
+                        Notification::make()
+                            ->danger()
+                            ->title(__('Not enough stock available!'))
+                            ->send();
                         return;
                     }
 
                     $pricePerUnit = (float) $record->discount_price_for_current_country;
-
                     $cart = Cart::firstOrCreate(['user_id' => $user->id]);
 
                     $cartItem = CartItem::where('cart_id', $cart->id)
@@ -147,11 +164,28 @@ class ProductActionsService
 
                     if ($cartItem) {
                         $newQuantity = $cartItem->quantity + $quantity;
-                        if ($newQuantity > $availableStock) {
-                            Notification::make()->danger()->title(__('Not enough stock available!'))->send();
+
+                        // Also check combined quantity for collections
+                        if ($record->must_be_collection && $newQuantity < 2) {
+                            Notification::make()
+                                ->danger()
+                                ->title(__('This product must be ordered in quantity of 2 or more.'))
+                                ->send();
                             return;
                         }
-                        $cartItem->update(['quantity' => $newQuantity, 'subtotal' => $newQuantity * $pricePerUnit]);
+
+                        if ($newQuantity > $availableStock) {
+                            Notification::make()
+                                ->danger()
+                                ->title(__('Not enough stock available!'))
+                                ->send();
+                            return;
+                        }
+
+                        $cartItem->update([
+                            'quantity' => $newQuantity,
+                            'subtotal' => $newQuantity * $pricePerUnit,
+                        ]);
                     } else {
                         CartItem::create([
                             'cart_id' => $cart->id,
@@ -165,7 +199,10 @@ class ProductActionsService
                     }
 
                     $record->decrement('quantity', $quantity);
-                    Notification::make()->success()->title(__('Product added to cart successfully!'))->send();
+                    Notification::make()
+                        ->success()
+                        ->title(__('Product added to cart successfully!'))
+                        ->send();
                 }),
 
             Action::make('analyze')
