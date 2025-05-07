@@ -80,11 +80,15 @@ class BlogResource extends Resource
                                 ->required()
                                 ->maxLength(255)
                                 ->label(__('Title')),
+                            Forms\Components\TextInput::make('slug')
+                                ->required()
+                                ->maxLength(255)
+                                ->label(__('Slug')),
                             Forms\Components\MarkdownEditor::make('content')
                                 ->required()
                                 ->columnSpanFull()
                                 ->label(__('Content')),
-                            Forms\Components\Toggle::make('is_published')
+                            Forms\Components\Toggle::make('is_active')
                                 ->default(false)
                                 ->label(__('Active')),
                         ])->columns(1),
@@ -102,7 +106,7 @@ class BlogResource extends Resource
                                     $livewire->validateOnly($component->getStatePath());
                                 }),
 
-                            SelectTree::make('blog_category_id')
+                            SelectTree::make('blog_blog_category_id')
                                 ->placeholder(__('Select Category'))
                                 ->label(__('Category'))
                                 ->searchable()
@@ -151,7 +155,7 @@ class BlogResource extends Resource
                 Tables\Columns\TextColumn::make('author.name')
                     ->searchable()
                     ->label(__('Author')),
-                Tables\Columns\IconColumn::make('is_published')
+                Tables\Columns\IconColumn::make('is_active')
                     ->boolean()
                     ->label(__('Active')),
                 Tables\Columns\TextColumn::make('tags.name')
@@ -172,7 +176,7 @@ class BlogResource extends Resource
             ])
             ->filtersFormColumns(6)
             ->filters([
-                TernaryFilter::make('is_published')
+                TernaryFilter::make('is_active')
                     ->native(false)
                     ->placeholder(__('Select Status'))
                     ->label('')
@@ -181,7 +185,7 @@ class BlogResource extends Resource
                 Filter::make('category')
                     ->columnSpan(['default' => 6, 'sm' => 6, 'md' => 6, 'lg' => 3, 'xl' => 3, '2xl' => 3])
                     ->form([
-                        SelectTree::make('category_id')
+                        SelectTree::make('blog_category_id')
                             ->placeholder(__('Search for a Category...'))
                             ->enableBranchNode()
                             ->hiddenLabel()
@@ -189,8 +193,8 @@ class BlogResource extends Resource
                             ->searchable(),
                     ])
                     ->query(function (Builder $query, array $data) {
-                        if (!empty($data['category_id'])) {
-                            $selectedCategoryId = $data['category_id'];
+                        if (!empty($data['blog_category_id'])) {
+                            $selectedCategoryId = $data['blog_category_id'];
 
                             // Check if the selected category has children
                             $hasChildren = BlogCategory::where('parent_id', $selectedCategoryId)->exists();
@@ -198,23 +202,23 @@ class BlogResource extends Resource
                             if ($hasChildren) {
                                 // If it's a parent category, get all its descendants
                                 $categoryIds = self::getCategoryWithDescendants($selectedCategoryId);
-                                $query->whereIn('blog_category_id', $categoryIds);
+                                $query->whereIn('blog_blog_category_id', $categoryIds);
                             } else {
                                 // If it's a child category, just filter for that category
-                                $query->where('blog_category_id', $selectedCategoryId);
+                                $query->where('blog_blog_category_id', $selectedCategoryId);
                             }
                         }
                     })
                     ->indicateUsing(function (array $data): ?string {
-                        if (empty($data['category_id'])) {
+                        if (empty($data['blog_category_id'])) {
                             return null;
                         }
 
-                        $category = BlogCategory::find($data['category_id']);
+                        $category = BlogCategory::find($data['blog_category_id']);
                         $categoryName = $category->name ?? __('Unknown Category');
 
                         // Check if it's a parent category
-                        $isParent = BlogCategory::where('parent_id', $data['category_id'])->exists();
+                        $isParent = BlogCategory::where('parent_id', $data['blog_category_id'])->exists();
 
                         if ($isParent) {
                             return __('Showing blogs in category and subcategories:') . " {$categoryName}";
@@ -315,7 +319,7 @@ class BlogResource extends Resource
                                 ]),
                                 Group::make([
                                     TextEntry::make('author.name'),
-                                    IconEntry::make('is_published')->boolean(),
+                                    IconEntry::make('is_active')->boolean(),
                                 ]),
                             ]),
                             SpatieMediaLibraryImageEntry::make('main_blog_image')
