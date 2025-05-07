@@ -106,4 +106,9 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     {
         return $this->hasMany(CouponUsage::class);
     }
+
+    public function likedBlogs(): BelongsToMany
+    {
+        return $this->belongsToMany(Blog::class, 'blog_user_likes')->withTimestamps();
+    }
 }
