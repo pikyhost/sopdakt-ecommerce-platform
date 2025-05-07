@@ -8,9 +8,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Tag extends Model
 {
-    use HasFactory, HasTranslations;
-
-    public $translatable = ['name'];
+    use HasFactory;
 
     protected $guarded = [];
 

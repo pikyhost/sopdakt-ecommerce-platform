@@ -111,3 +111,20 @@ Route::group(['prefix' => 'blogs', 'as' => 'api.blogs.'], function () {
     Route::post('{blogId}/toggle-like', [BlogController::class, 'toggleLike'])
         ->name('toggle-like')->middleware('auth:sanctum');
 });
+
+Route::middleware('api')->group(function () {
+    // Public blog endpoints
+    Route::get('/blogs', [BlogController::class, 'index']);
+    Route::get('/blogs/categories', [BlogController::class, 'categories']);
+    Route::get('/blogs/popular', [BlogController::class, 'popular']);
+    Route::get('/blogs/recent', [BlogController::class, 'recent']);
+    Route::get('/blogs/search', [BlogController::class, 'search']);
+    Route::get('/blogs/category/{categorySlug}', [BlogController::class, 'byCategory']);
+    Route::get('/blogs/tag/{tagId}', [BlogController::class, 'byTag']);
+    Route::get('/blogs/{slug}', [BlogController::class, 'show']);
+
+    // Authenticated endpoints
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/blogs/{blogId}/like', [BlogController::class, 'toggleLike']);
+    });
+});

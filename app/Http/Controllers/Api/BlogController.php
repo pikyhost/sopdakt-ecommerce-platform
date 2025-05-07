@@ -12,229 +12,695 @@ use Illuminate\Support\Facades\App;
 class BlogController extends Controller
 {
     /**
-     * Retrieve all active blog categories with their children.
+     * Retrieve all active blog categories with their active blogs count.
      *
-     * This endpoint fetches all active blog categories that have no parent (top-level categories)
-     * and includes their child categories. The response is localized based on the Accept-Language
-     * header (defaults to English). The response includes category ID, name, description, and
-     * nested children.
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
      *
-     * @param Request $request The HTTP request containing the Accept-Language header.
-     * @return \Illuminate\Http\JsonResponse JSON response containing the list of categories.
+     * @route GET /api/blogs/categories
+     * @middleware api
+     * @header Accept-Language en|ar (optional, defaults to en)
+     * @response 200 {
+     *     "success": true,
+     *     "data": [
+     *         {
+     *             "id": 1,
+     *             "name": "Category Name",
+     *             "slug": "category-slug",
+     *             "blogs_count": 5,
+     *             ...
+     *         },
+     *         ...
+     *     ],
+     *     "message": "Blog categories retrieved successfully"
+     * }
      */
-    public function getCategories(Request $request)
+    public function categories(Request $request)
     {
         $locale = $request->header('Accept-Language', 'en');
         App::setLocale($locale);
 
-        $categories = BlogCategory::where('is_active', true)
-            ->with('children')
+        $categories = BlogCategory::withCount(['blogs' => function($query) {
+            $query->where('is_active', true);
+        }])
+            ->where('is_active', true)
             ->whereNull('parent_id')
-            ->get()
-            ->map(function ($category) {
-                return [
-                    'id' => $category->id,
-                    'name' => $category->name,
-                    'description' => $category->description,
-                    'children' => $category->children->map(function ($child) {
-                        return [
-                            'id' => $child->id,
-                            'name' => $child->name,
-                            'description' => $child->description,
-                        ];
-                    })->toArray(),
-                ];
-            });
-
-        return response()->json(['data' => $categories]);
-    }
-
-    /**
-     * Retrieve a paginated list of published blogs with optional filters.
-     *
-     * This endpoint fetches published blogs, optionally filtered by category, tag, or search term.
-     * The response is paginated (10 blogs per page) and includes blog details, related category,
-     * author, tags, like status, and likes count. The response is localized based on the
-     * Accept-Language header (defaults to English).
-     *
-     * @param Request $request The HTTP request containing query parameters (category_id, tag_id, search).
-     * @return \Illuminate\Http\JsonResponse JSON response containing the paginated list of blogs.
-     */
-    public function getBlogs(Request $request)
-    {
-        $locale = $request->header('Accept-Language', 'en');
-        App::setLocale($locale);
-
-        $query = Blog::query()
-            ->where('is_published', true)
-            ->with(['category', 'author', 'tags', 'likers']);
-
-        // Filter by category
-        if ($request->has('category_id')) {
-            $query->where('blog_category_id', $request->category_id);
-        }
-
-        // Filter by tag
-        if ($request->has('tag_id')) {
-            $query->whereHas('tags', function ($q) use ($request) {
-                $q->where('tags.id', $request->tag_id);
-            });
-        }
-
-        // Search by title or content
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search, $locale) {
-                $q->where('title->' . $locale, 'like', '%' . $search . '%')
-                    ->orWhere('content->' . $locale, 'like', '%' . $search . '%');
-            });
-        }
-
-        // Pagination
-        $blogs = $query->latest()->paginate(10);
-
-        $formattedBlogs = $blogs->getCollection()->map(function ($blog) use ($locale) {
-            return [
-                'id' => $blog->id,
-                'title' => $blog->getTranslation('title', $locale),
-                'content' => $blog->getTranslation('content', $locale),
-                'slug' => $blog->slug,
-                'image' => $blog->getMainBlogImageUrl(),
-                'category' => $blog->category ? [
-                    'id' => $blog->category->id,
-                    'name' => $blog->category->name,
-                    'description' => $blog->category->description,
-                ] : null,
-                'author' => [
-                    'id' => $blog->author->id,
-                    'name' => $blog->author->name,
-                ],
-                'tags' => $blog->tags->map(function ($tag) {
-                    return [
-                        'id' => $tag->id,
-                        'name' => $tag->name,
-                    ];
-                })->toArray(),
-                'is_liked' => auth()->check() ? $blog->likers->contains(auth()->id()) : false,
-                'likes_count' => $blog->likers->count(),
-                'created_at' => $blog->created_at->toDateTimeString(),
-            ];
-        });
+            ->get();
 
         return response()->json([
-            'data' => $formattedBlogs,
-            'current_page' => $blogs->currentPage(),
-            'last_page' => $blogs->lastPage(),
-            'per_page' => $blogs->perPage(),
-            'total' => $blogs->total(),
+            'success' => true,
+            'data' => $categories,
+            'message' => 'Blog categories retrieved successfully'
         ]);
     }
 
     /**
-     * Retrieve a single blog by its slug.
+     * Retrieve a paginated list of active blogs.
      *
-     * This endpoint fetches a published blog by its slug, including related category, author,
-     * tags, like status, and likes count. The response is localized based on the Accept-Language
-     * header (defaults to English). Returns a 404 if the blog is not found.
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
      *
-     * @param Request $request The HTTP request containing the Accept-Language header.
-     * @param string $slug The slug of the blog to retrieve.
-     * @return \Illuminate\Http\JsonResponse JSON response containing the blog details.
+     * @route GET /api/blogs
+     * @middleware api
+     * @header Accept-Language en|ar (optional, defaults to en)
+     * @queryParam per_page integer Number of blogs per page. Default: 10
+     * @queryParam page integer Page number. Default: 1
+     * @response 200 {
+     *     "success": true,
+     *     "data": {
+     *         "data": [
+     *             {
+     *                 "id": 1,
+     *                 "title": "Blog Title",
+     *                 "slug": "blog-slug",
+     *                 "excerpt": "Blog excerpt...",
+     *                 "content": "Blog content...",
+     *                 "published_at": "2023-01-01",
+     *                 "category": "Category Name",
+     *                 "author": "Author Name",
+     *                 "image_url": "http://example.com/image.jpg",
+     *                 "likes_count": 10,
+     *                 "tags": [
+     *                     {"id": 1, "name": "Tag Name"},
+     *                     ...
+     *                 ]
+     *             },
+     *             ...
+     *         ],
+     *         "current_page": 1,
+     *         "last_page": 5,
+     *         ...
+     *     },
+     *     "message": "Blogs retrieved successfully"
+     * }
      */
-    public function getBlogBySlug(Request $request, $slug)
+    public function index(Request $request)
     {
         $locale = $request->header('Accept-Language', 'en');
         App::setLocale($locale);
 
-        $blog = Blog::where('slug', $slug)
-            ->where('is_published', true)
-            ->with(['category', 'author', 'tags', 'likers'])
-            ->firstOrFail();
+        $perPage = $request->input('per_page', 10);
+        $page = $request->input('page', 1);
 
-        $formattedBlog = [
-            'id' => $blog->id,
-            'title' => $blog->getTranslation('title', $locale),
-            'content' => $blog->getTranslation('content', $locale),
-            'slug' => $blog->slug,
-            'image' => $blog->getMainBlogImageUrl(),
-            'category' => $blog->category ? [
-        'id' => $blog->category->id,
-        'name' => $blog->category->name,
-        'description' => $blog->category->description,
-    ] : null,
-            'author' => [
-        'id' => $blog->author->id,
-        'name' => $blog->author->name,
-    ],
-            'tags' => $blog->tags->map(function ($tag) {
-        return [
-            'id' => $tag->id,
-            'name' => $tag->name,
-        ];
-    })->toArray(),
-            'is_liked' => auth()->check() ? $blog->likers->contains(auth()->id()) : false,
-            'likes_count' => $blog->likers->count(),
-            'created_at' => $blog->created_at->toDateTimeString(),
-        ];
+        $blogs = Blog::with(['category', 'author', 'tags'])
+            ->where('is_active', true)
+            ->orderBy('published_at', 'desc')
+            ->paginate($perPage, ['*'], 'page', $page);
 
-        return response()->json(['data' => $formattedBlog]);
+        // Transform each blog to include image URLs
+        $transformedBlogs = $blogs->getCollection()->map(function($blog) {
+            return [
+                'id' => $blog->id,
+                'title' => $blog->title,
+                'slug' => $blog->slug,
+                'excerpt' => str_limit(strip_tags($blog->content), 150),
+                'content' => $blog->content,
+                'published_at' => $blog->published_at->format('Y-m-d'),
+                'category' => $blog->category->name,
+                'author' => $blog->author->name,
+                'image_url' => $blog->getMainBlogImageUrl(),
+                'likes_count' => $blog->likers()->count(),
+                'tags' => $blog->tags->map(function($tag) {
+                    return [
+                        'id' => $tag->id,
+                        'name' => App::getLocale() == 'ar' ? $tag->name_ar : $tag->name_en
+                    ];
+                })
+            ];
+        });
+
+        $paginatedResponse = $blogs->toArray();
+        $paginatedResponse['data'] = $transformedBlogs;
+
+        return response()->json([
+            'success' => true,
+            'data' => $paginatedResponse,
+            'message' => 'Blogs retrieved successfully'
+        ]);
     }
 
     /**
-     * Retrieve all active tags.
+     * Retrieve a single blog post by its slug.
      *
-     * This endpoint fetches all active tags, returning their ID and name. The response is
-     * localized based on the Accept-Language header (defaults to English).
+     * @param Request $request
+     * @param string $slug
+     * @return \Illuminate\Http\JsonResponse
      *
-     * @param Request $request The HTTP request containing the Accept-Language header.
-     * @return \Illuminate\Http\JsonResponse JSON response containing the list of tags.
+     * @route GET /api/blogs/{slug}
+     * @middleware api
+     * @header Accept-Language en|ar (optional, defaults to en)
+     * @response 200 {
+     *     "success": true,
+     *     "data": {
+     *         "id": 1,
+     *         "title": "Blog Title",
+     *         "slug": "blog-slug",
+     *         "content": "Blog content...",
+     *         "published_at": "2023-01-01",
+     *         "category": {
+     *             "id": 1,
+     *             "name": "Category Name"
+     *         },
+     *         "author": {
+     *             "id": 1,
+     *             "name": "Author Name",
+     *             "avatar": "http://example.com/avatar.jpg"
+     *         },
+     *         "image_url": "http://example.com/image.jpg",
+     *         "likes_count": 10,
+     *         "is_liked": false,
+     *         "tags": [
+     *             {"id": 1, "name": "Tag Name"},
+     *             ...
+     *         ],
+     *         "related_blogs": [
+     *             {
+     *                 "id": 2,
+     *                 "title": "Related Blog Title",
+     *                 "slug": "related-blog-slug",
+     *                 "excerpt": "Related blog excerpt...",
+     *                 "published_at": "2023-01-02",
+     *                 "image_url": "http://example.com/related-image.jpg"
+     *             },
+     *             ...
+     *         ]
+     *     },
+     *     "message": "Blog retrieved successfully"
+     * }
+     * @response 404 {
+     *     "message": "Blog not found"
+     * }
      */
-    public function getTags(Request $request)
+    public function show(Request $request, $slug)
     {
         $locale = $request->header('Accept-Language', 'en');
         App::setLocale($locale);
 
-        $tags = Tag::where('is_active', true)
+        $blog = Blog::with(['category', 'author', 'tags', 'likers'])
+            ->where('slug', $slug)
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        $relatedBlogs = Blog::where('blog_category_id', $blog->blog_category_id)
+            ->where('id', '!=', $blog->id)
+            ->where('is_active', true)
+            ->orderBy('published_at', 'desc')
+            ->limit(3)
             ->get()
-            ->map(function ($tag) {
+            ->map(function($relatedBlog) {
                 return [
-                    'id' => $tag->id,
-                    'name' => $tag->name,
+                    'id' => $relatedBlog->id,
+                    'title' => $relatedBlog->title,
+                    'slug' => $relatedBlog->slug,
+                    'excerpt' => str_limit(strip_tags($relatedBlog->content), 100),
+                    'published_at' => $relatedBlog->published_at->format('Y-m-d'),
+                    'image_url' => $relatedBlog->getMainBlogImageUrl()
                 ];
             });
 
-        return response()->json(['data' => $tags]);
+        $response = [
+            'id' => $blog->id,
+            'title' => $blog->title,
+            'slug' => $blog->slug,
+            'content' => $blog->content,
+            'published_at' => $blog->published_at->format('Y-m-d'),
+            'category' => [
+                'id' => $blog->category->id,
+                'name' => $blog->category->name
+            ],
+            'author' => [
+                'id' => $blog->author->id,
+                'name' => $blog->author->name,
+                'avatar' => $blog->author->getAvatarUrl()
+            ],
+            'image_url' => $blog->getMainBlogImageUrl(),
+            'likes_count' => $blog->likers->count(),
+            'is_liked' => $request->user() ? $blog->likers->contains($request->user()->id) : false,
+            'tags' => $blog->tags->map(function($tag) {
+                return [
+                    'id' => $tag->id,
+                    'name' => App::getLocale() == 'ar' ? $tag->name_ar : $tag->name_en
+                ];
+            }),
+            'related_blogs' => $relatedBlogs
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $response,
+            'message' => 'Blog retrieved successfully'
+        ]);
     }
 
     /**
-     * Toggle like/unlike status for a blog.
+     * Retrieve paginated blogs by category slug.
      *
-     * This endpoint allows an authenticated user to like or unlike a blog. If the user has
-     * already liked the blog, it removes the like; otherwise, it adds a like. Requires Sanctum
-     * authentication. Returns a 401 if unauthorized or a 404 if the blog is not found.
+     * @param Request $request
+     * @param string $categorySlug
+     * @return \Illuminate\Http\JsonResponse
      *
-     * @param Request $request The HTTP request.
-     * @param int $blogId The ID of the blog to like/unlike.
-     * @return \Illuminate\Http\JsonResponse JSON response with a success message.
+     * @route GET /api/blogs/category/{categorySlug}
+     * @middleware api
+     * @header Accept-Language en|ar (optional, defaults to en)
+     * @queryParam per_page integer Number of blogs per page. Default: 10
+     * @queryParam page integer Page number. Default: 1
+     * @response 200 {
+     *     "success": true,
+     *     "data": {
+     *         "data": [
+     *             {
+     *                 "id": 1,
+     *                 "title": "Blog Title",
+     *                 "slug": "blog-slug",
+     *                 "excerpt": "Blog excerpt...",
+     *                 "published_at": "2023-01-01",
+     *                 "author": "Author Name",
+     *                 "image_url": "http://example.com/image.jpg",
+     *                 "likes_count": 10,
+     *                 "tags": [
+     *                     {"id": 1, "name": "Tag Name"},
+     *                     ...
+     *                 ]
+     *             },
+     *             ...
+     *         ],
+     *         "category": {
+     *             "id": 1,
+     *             "name": "Category Name",
+     *             "slug": "category-slug",
+     *             ...
+     *         },
+     *         "current_page": 1,
+     *         "last_page": 5,
+     *         ...
+     *     },
+     *     "message": "Blogs by category retrieved successfully"
+     * }
+     * @response 404 {
+     *     "message": "Category not found"
+     * }
+     */
+    public function byCategory(Request $request, $categorySlug)
+    {
+        $locale = $request->header('Accept-Language', 'en');
+        App::setLocale($locale);
+
+        $perPage = $request->input('per_page', 10);
+        $page = $request->input('page', 1);
+
+        $category = BlogCategory::where('slug', $categorySlug)
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        $blogs = Blog::with(['author', 'tags'])
+            ->where('blog_category_id', $category->id)
+            ->where('is_active', true)
+            ->orderBy('published_at', 'desc')
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        $transformedBlogs = $blogs->getCollection()->map(function($blog) {
+            return [
+                'id' => $blog->id,
+                'title' => $blog->title,
+                'slug' => $blog->slug,
+                'excerpt' => str_limit(strip_tags($blog->content), 150),
+                'published_at' => $blog->published_at->format('Y-m-d'),
+                'author' => $blog->author->name,
+                'image_url' => $blog->getMainBlogImageUrl(),
+                'likes_count' => $blog->likers()->count(),
+                'tags' => $blog->tags->map(function($tag) {
+                    return [
+                        'id' => $tag->id,
+                        'name' => App::getLocale() == 'ar' ? $tag->name_ar : $tag->name_en
+                    ];
+                })
+            ];
+        });
+
+        $paginatedResponse = $blogs->toArray();
+        $paginatedResponse['data'] = $transformedBlogs;
+        $paginatedResponse['category'] = $category;
+
+        return response()->json([
+            'success' => true,
+            'data' => $paginatedResponse,
+            'message' => 'Blogs by category retrieved successfully'
+        ]);
+    }
+
+    /**
+     * Retrieve paginated blogs by tag ID.
+     *
+     * @param Request $request
+     * @param int $tagId
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @route GET /api/blogs/tag/{tagId}
+     * @middleware api
+     * @header Accept-Language en|ar (optional, defaults to en)
+     * @queryParam per_page integer Number of blogs per page. Default: 10
+     * @queryParam page integer Page number. Default: 1
+     * @response 200 {
+     *     "success": true,
+    physics: true,
+     *     "data": {
+     *         "data": [
+     *             {
+     *                 "id": 1,
+     *                 "title": "Blog Title",
+     *                 "slug": "blog-slug",
+     *                 "excerpt": "Blog excerpt...",
+     *                 "published_at": "2023-01-01",
+     *                 "author": "Author Name",
+     *                 "category": "Category Name",
+     *                 "image_url": "http://example.com/image.jpg",
+     *                 "likes_count": 10
+     *             },
+     *             ...
+     *         ],
+     *         "tag": {
+     *             "id": 1,
+     *             "name": "Tag Name"
+     *         },
+     *         "current_page": 1,
+     *         "last_page": 5,
+     *         ...
+     *     },
+     *     "message": "Blogs by tag retrieved successfully"
+     * }
+     * @response 404 {
+     *     "message": "Tag not found"
+     * }
+     */
+    public function byTag(Request $request, $tagId)
+    {
+        $locale = $request->header('Accept-Language', 'en');
+        App::setLocale($locale);
+
+        $perPage = $request->input('per_page', 10);
+        $page = $request->input('page', 1);
+
+        $tag = Tag::where('id', $tagId)
+            ->where('is_active', true)
+            ->firstOrFail();
+
+        $blogs = Blog::with(['author', 'category'])
+            ->whereHas('tags', function($query) use ($tagId) {
+                $query->where('id', $tagId);
+            })
+            ->where('is_active', true)
+            ->orderBy('published_at', 'desc')
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        $transformedBlogs = $blogs->getCollection()->map(function($blog) {
+            return [
+                'id' => $blog->id,
+                'title' => $blog->title,
+                'slug' => $blog->slug,
+                'excerpt' => str_limit(strip_tags($blog->content), 150),
+                'published_at' => $blog->published_at->format('Y-m-d'),
+                'author' => $blog->author->name,
+                'category' => $blog->category->name,
+                'image_url' => $blog->getMainBlogImageUrl(),
+                'likes_count' => $blog->likers()->count()
+            ];
+        });
+
+        $paginatedResponse = $blogs->toArray();
+        $paginatedResponse['data'] = $transformedBlogs;
+        $paginatedResponse['tag'] = [
+            'id' => $tag->id,
+            'name' => App::getLocale() == 'ar' ? $tag->name_ar : $tag->name_en
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $paginatedResponse,
+            'message' => 'Blogs by tag retrieved successfully'
+        ]);
+    }
+
+    /**
+     * Retrieve popular blogs based on likes count.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @route GET /api/blogs/popular
+     * @middleware api
+     * @header Accept-Language en|ar (optional, defaults to en)
+     * @queryParam limit integer Number of blogs to return. Default: 5
+     * @response 200 {
+     *     "success": true,
+     *     "data": [
+     *         {
+     *             "id": 1,
+     *             "title": "Blog Title",
+     *             "slug": "blog-slug",
+     *             "excerpt": "Blog excerpt...",
+     *             "published_at": "2023-01-01",
+     *             "image_url": "http://example.com/image.jpg",
+     *             "likes_count": 10
+     *         },
+     *         ...
+     *     ],
+     *     "message": "Popular blogs retrieved successfully"
+     * }
+     */
+    public function popular(Request $request)
+    {
+        $locale = $request->header('Accept-Language', 'en');
+        App::setLocale($locale);
+
+        $limit = $request->input('limit', 5);
+
+        $blogs = Blog::withCount('likers')
+            ->where('is_active', true)
+            ->orderBy('likers_count', 'desc')
+            ->limit($limit)
+            ->get()
+            ->map(function($blog) {
+                return [
+                    'id' => $blog->id,
+                    'title' => $blog->title,
+                    'slug' => $blog->slug,
+                    'excerpt' => str_limit(strip_tags($blog->content), 100),
+                    'published_at' => $blog->published_at->format('Y-m-d'),
+                    'image_url' => $blog->getMainBlogImageUrl(),
+                    'likes_count' => $blog->likers_count
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $blogs,
+            'message' => 'Popular blogs retrieved successfully'
+        ]);
+    }
+
+    /**
+     * Retrieve recent blogs based on publication date.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @route GET /api/blogs/recent
+     * @middleware api
+     * @header Accept-Language en|ar (optional, defaults to en)
+     * @queryParam limit integer Number of blogs to return. Default: 5
+     * @response 200 {
+     *     "success": true,
+     *     "data": [
+     *         {
+     *             "id": 1,
+     *             "title": "Blog Title",
+     *             "slug": "blog-slug",
+     *             "excerpt": "Blog excerpt...",
+     *             "published_at": "2023-01-01",
+     *             "image_url": "http://example.com/image.jpg"
+     *         },
+     *         ...
+     *     ],
+     *     "message": "Recent blogs retrieved successfully"
+     * }
+     */
+    public function recent(Request $request)
+    {
+        $locale = $request->header('Accept-Language', 'en');
+        App::setLocale($locale);
+
+        $limit = $request->input('limit', 5);
+
+        $blogs = Blog::where('is_active', true)
+            ->orderBy('published_at', 'desc')
+            ->limit($limit)
+            ->get()
+            ->map(function($blog) {
+                return [
+                    'id' => $blog->id,
+                    'title' => $blog->title,
+                    'slug' => $blog->slug,
+                    'excerpt' => str_limit(strip_tags($blog->content), 100),
+                    'published_at' => $blog->published_at->format('Y-m-d'),
+                    'image_url' => $blog->getMainBlogImageUrl()
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $blogs,
+            'message' => 'Recent blogs retrieved successfully'
+        ]);
+    }
+
+    /**
+     * Toggle like status for a blog post.
+     *
+     * @param Request $request
+     * @param int $blogId
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @route POST /api/blogs/{blogId}/like
+     * @middleware api, auth:sanctum
+     * @response 200 {
+     *     "success": true,
+     *     "data": {
+     *         "likes_count": 11,
+     *         "is_liked": true
+     *     },
+     *     "message": "Blog liked successfully"
+     * }
+     * @response 200 {
+     *     "success": true,
+     *     "data": {
+     *         "likes_count": 10,
+     *         "is_liked": false
+     *     },
+     *     "message": "Blog unliked successfully"
+     * }
+     * @response 401 {
+     *     "success": false,
+     *     "message": "Unauthenticated"
+     * }
+     * @response 404 {
+     *     "message": "Blog not found"
+     * }
      */
     public function toggleLike(Request $request, $blogId)
     {
-        $user = auth()->user();
+        $user = $request->user();
+
         if (!$user) {
-            return response()->json(['message' => 'Unauthorized'], 401);
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthenticated'
+            ], 401);
         }
 
         $blog = Blog::findOrFail($blogId);
-        $liked = $blog->likers()->where('user_id', $user->id)->exists();
 
-        if ($liked) {
-            $blog->likers()->detach($user->id);
-            $message = 'Blog unliked successfully';
-        } else {
-            $blog->likers()->attach($user->id);
-            $message = 'Blog liked successfully';
+        $liked = $blog->likers()->toggle($user->id);
+
+        $likesCount = $blog->likers()->count();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'likes_count' => $likesCount,
+                'is_liked' => $blog->likers()->where('user_id', $user->id)->exists()
+            ],
+            'message' => $liked['attached'] ? 'Blog liked successfully' : 'Blog unliked successfully'
+        ]);
+    }
+
+    /**
+     * Search blogs by title or content.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @route GET /api/blogs/search
+     * @middleware api
+     * @header Accept-Language en|ar (optional, defaults to en)
+     * @queryParam query string required Search term
+     * @queryParam per_page integer Number of blogs per page. Default: 10
+     * @queryParam page integer Page number. Default: 1
+     * @response 200 {
+     *     "success": true,
+     *     "data": {
+     *         "data": [
+     *             {
+     *                 "id": 1,
+     *                 "title": "Blog Title",
+     *                 "slug": "blog-slug",
+     *                 "excerpt": "Blog excerpt...",
+     *                 "published_at": "2023-01-01",
+     *                 "author": "Author Name",
+     *                 "category": "Category Name",
+     *                 "image_url": "http://example.com/image.jpg",
+     *                 "likes_count": 10
+     *             },
+     *             ...
+     *         ],
+     *         "search_query": "search term",
+     *         "current_page": 1,
+     *         "last_page": 5,
+     *         ...
+     *     },
+     *     "message": "Search results retrieved successfully"
+     * }
+     * @response 400 {
+     *     "success": false,
+     *     "message": "Search query is required"
+     * }
+     */
+    public function search(Request $request)
+    {
+        $locale = $request->header('Accept-Language', 'en');
+        App::setLocale($locale);
+
+        $query = $request->input('query');
+        $perPage = $request->input('per_page', 10);
+        $page = $request->input('page', 1);
+
+        if (!$query) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Search query is required'
+            ], 400);
         }
 
-        return response()->json(['message' => $message]);
+        $blogs = Blog::with(['author', 'category'])
+            ->where('is_active', true)
+            ->where(function($q) use ($query) {
+                $q->where('title', 'like', "%{$query}%")
+                    ->orWhere('content', 'like', "%{$query}%");
+            })
+            ->orderBy('published_at', 'desc')
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        $transformedBlogs = $blogs->getCollection()->map(function($blog) {
+            return [
+                'id' => $blog->id,
+                'title' => $blog->title,
+                'slug' => $blog->slug,
+                'excerpt' => str_limit(strip_tags($blog->content), 150),
+                'published_at' => $blog->published_at->format('Y-m-d'),
+                'author' => $blog->author->name,
+                'category' => $blog->category->name,
+                'image_url' => $blog->getMainBlogImageUrl(),
+                'likes_count' => $blog->likers()->count()
+            ];
+        });
+
+        $paginatedResponse = $blogs->toArray();
+        $paginatedResponse['data'] = $transformedBlogs;
+        $paginatedResponse['search_query'] = $query;
+
+        return response()->json([
+            'success' => true,
+            'data' => $paginatedResponse,
+            'message' => 'Search results retrieved successfully'
+        ]);
     }
 }
