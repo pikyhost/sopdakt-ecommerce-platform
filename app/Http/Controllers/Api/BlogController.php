@@ -8,6 +8,7 @@ use App\Models\BlogCategory;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Str;
 
 class BlogController extends Controller
 {
@@ -113,7 +114,7 @@ class BlogController extends Controller
                 'id' => $blog->id,
                 'title' => $blog->title,
                 'slug' => $blog->slug,
-                'excerpt' => str_limit(strip_tags($blog->content), 150),
+                'excerpt' => Str::limit(strip_tags($blog->content), 150),
                 'content' => $blog->content,
                 'published_at' => $blog->published_at->format('Y-m-d'),
                 'category' => $blog->category->name,
@@ -212,7 +213,7 @@ class BlogController extends Controller
                     'id' => $relatedBlog->id,
                     'title' => $relatedBlog->title,
                     'slug' => $relatedBlog->slug,
-                    'excerpt' => str_limit(strip_tags($relatedBlog->content), 100),
+                    'excerpt' => Str::limit(strip_tags($relatedBlog->content), 100),
                     'published_at' => $relatedBlog->published_at->format('Y-m-d'),
                     'image_url' => $relatedBlog->getMainBlogImageUrl()
                 ];
@@ -323,7 +324,7 @@ class BlogController extends Controller
                 'id' => $blog->id,
                 'title' => $blog->title,
                 'slug' => $blog->slug,
-                'excerpt' => str_limit(strip_tags($blog->content), 150),
+                'excerpt' => Str::limit(strip_tags($blog->content), 150),
                 'published_at' => $blog->published_at->format('Y-m-d'),
                 'author' => $blog->author->name,
                 'image_url' => $blog->getMainBlogImageUrl(),
@@ -417,7 +418,7 @@ class BlogController extends Controller
                 'id' => $blog->id,
                 'title' => $blog->title,
                 'slug' => $blog->slug,
-                'excerpt' => str_limit(strip_tags($blog->content), 150),
+                'excerpt' => Str::limit(strip_tags($blog->content), 150),
                 'published_at' => $blog->published_at->format('Y-m-d'),
                 'author' => $blog->author->name,
                 'category' => $blog->category->name,
@@ -484,7 +485,7 @@ class BlogController extends Controller
                     'id' => $blog->id,
                     'title' => $blog->title,
                     'slug' => $blog->slug,
-                    'excerpt' => str_limit(strip_tags($blog->content), 100),
+                    'excerpt' => Str::limit(strip_tags($blog->content), 100),
                     'published_at' => $blog->published_at->format('Y-m-d'),
                     'image_url' => $blog->getMainBlogImageUrl(),
                     'likes_count' => $blog->likers_count
@@ -540,7 +541,7 @@ class BlogController extends Controller
                     'id' => $blog->id,
                     'title' => $blog->title,
                     'slug' => $blog->slug,
-                    'excerpt' => str_limit(strip_tags($blog->content), 100),
+                    'excerpt' => Str::limit(strip_tags($blog->content), 100),
                     'published_at' => $blog->published_at->format('Y-m-d'),
                     'image_url' => $blog->getMainBlogImageUrl()
                 ];
@@ -684,7 +685,7 @@ class BlogController extends Controller
                 'id' => $blog->id,
                 'title' => $blog->title,
                 'slug' => $blog->slug,
-                'excerpt' => str_limit(strip_tags($blog->content), 150),
+                'excerpt' => Str::limit(strip_tags($blog->content), 150),
                 'published_at' => $blog->published_at->format('Y-m-d'),
                 'author' => $blog->author->name,
                 'category' => $blog->category->name,
