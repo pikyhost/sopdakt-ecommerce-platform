@@ -11,14 +11,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->foreignId('coupon_id')
-                ->nullable()
-                ->after('shipping_type_id')
-                ->constrained('coupons')
-                ->onDelete('set null');
-        });
-
         Schema::table('carts', function (Blueprint $table) {
             $table->foreignId('coupon_id')
                 ->nullable()
