@@ -245,7 +245,7 @@ class BlogController extends Controller
             'author' => [
                 'id' => $blog->author->id,
                 'name' => $blog->author->name,
-                'avatar' => $blog->author->getAvatarUrl(),
+                'avatar' => $blog->author->avatar_url,
             ],
             'image_url' => $blog->getMainBlogImageUrl(),
             'likes_count' => $blog->likers->count(),
