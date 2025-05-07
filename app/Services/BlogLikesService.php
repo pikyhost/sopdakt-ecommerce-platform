@@ -36,13 +36,22 @@ class BlogLikesService
         if ($user && $this->isBlogLiked($blog->id)) {
             $user->likedBlogs()->detach($blog->id);
             $this->removeFromLikedCache($blog->id);
-            $this->sendNotification('Removed from favorites', "{$blog->title} has been removed from your liked list.", 'danger');
+            $this->sendNotification(
+                __('Removed from favorites'),
+                __(':title has been removed from your liked list.', ['title' => $blog->title]),
+                'danger'
+            );
         } elseif ($user) {
             $user->likedBlogs()->attach($blog->id);
             $this->addToLikedCache($blog->id);
-            $this->sendNotification('Added to favorites', "{$blog->title} has been added to your liked list.", 'success');
+            $this->sendNotification(
+                __('Added to favorites'),
+                __(':title has been added to your liked list.', ['title' => $blog->title]),
+                'success'
+            );
         }
     }
+
     protected function addToLikedCache(int $blogId): void
     {
         $this->likedBlogs[] = $blogId;

@@ -145,13 +145,14 @@ class BlogResource extends Resource
                 Tables\Columns\TextColumn::make('title')
                     ->searchable()
                     ->label(__('Title')),
-                TextColumn::make('category.parent.name')
-                    ->badge()
-                    ->label(__('Parent Category'))
-                    ->searchable(),
                 Tables\Columns\TextColumn::make('category.name')
                     ->searchable()
                     ->label(__('Category')),
+                TextColumn::make('category.parent.name')
+                    ->placeholder('-')
+                    ->badge()
+                    ->label(__('Parent Category'))
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('author.name')
                     ->searchable()
                     ->label(__('Author')),
@@ -269,12 +270,7 @@ class BlogResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
-                        ->label(__('Delete Selected'))
-                        ->modalHeading(__('Delete Selected Blogs'))
-                        ->modalDescription(__('Are you sure you want to delete the selected blogs?'))
-                        ->modalSubmitActionLabel(__('Yes, delete'))
-                        ->modalCancelActionLabel(__('No, cancel')),
+                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -319,6 +315,7 @@ class BlogResource extends Resource
                                 ]),
                                 Group::make([
                                     TextEntry::make('author.name'),
+                                    IconEntry::make('is_active')->boolean(),
                                 ]),
                             ]),
                             SpatieMediaLibraryImageEntry::make('main_blog_image')
@@ -327,7 +324,6 @@ class BlogResource extends Resource
                                 ->hiddenLabel()
                                 ->grow(false),
                         ])->from('xl'),
-                        IconEntry::make('is_active')->boolean()->columnSpanFull(),
                     ]),
 
                 Section::make(__('Timestamps'))

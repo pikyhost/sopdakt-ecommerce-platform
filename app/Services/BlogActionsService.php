@@ -9,8 +9,8 @@ class BlogActionsService
     public static function getLikeActionLabel(Blog $blog): string
     {
         return BlogLikesService::getInstance()->isBlogLiked($blog->id)
-            ? 'Remove Like'
-            : 'Like';
+            ? __('Remove Like')
+            : __('Like');
     }
 
     public static function getLikeActionIcon(Blog $blog): string

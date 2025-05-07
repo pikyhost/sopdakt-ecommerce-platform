@@ -1,4 +1,10 @@
 {
+    "Added to favorites": "تمت الإضافة إلى المفضلة",
+    "Removed from favorites": "تمت الإزالة من المفضلة",
+    ":title has been added to your liked list.": "تمت إضافة :title إلى قائمة إعجاباتك.",
+    ":title has been removed from your liked list.": "تمت إزالة :title من قائمة إعجاباتك.",
+    "Like": "إعجاب",
+    "Remove Like": "إلغاء الإعجاب",
     "Must be Collection?": "يجب أن يكون ضمن مجموعة؟",
     "This product must be added to the cart and ordered in a quantity of 2 or more.": "يجب إضافة هذا المنتج إلى السلة وطلبه بكمية لا تقل عن 2.",
     "Tag": "وسم",
