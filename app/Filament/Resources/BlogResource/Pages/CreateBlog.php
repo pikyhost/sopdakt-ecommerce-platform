@@ -4,6 +4,7 @@ namespace App\Filament\Resources\BlogResource\Pages;
 
 use App\Filament\Resources\BlogResource;
 use Filament\Resources\Pages\CreateRecord;
+use Filament\Actions;
 
 class CreateBlog extends CreateRecord
 {
@@ -16,5 +17,12 @@ class CreateBlog extends CreateRecord
         $data['author_id'] = auth()->id();
 
         return $data;
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Actions\LocaleSwitcher::make(),
+        ];
     }
 }
