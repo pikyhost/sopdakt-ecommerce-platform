@@ -1,4 +1,8 @@
 {
+    "name in english": "الاسم باللغة الإنجليزية",
+    "name in arabic": "الاسم باللغة العربية",
+    "In English": "باللغة الإنجليزية",
+    "In Arabic": "باللغة العربية",
     "Added to favorites": "تمت الإضافة إلى المفضلة",
     "Removed from favorites": "تمت الإزالة من المفضلة",
     ":title has been added to your liked list.": "تمت إضافة :title إلى قائمة إعجاباتك.",

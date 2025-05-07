@@ -10,7 +10,7 @@ class Tag extends Model
 {
     use HasFactory, HasTranslations;
 
-    public $translatable = ['name']; // Define translatable fields
+    public $translatable = ['name'];
 
     protected $guarded = [];
 

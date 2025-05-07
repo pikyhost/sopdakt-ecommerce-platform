@@ -68,13 +68,20 @@ class Tags extends Page implements HasForms, HasTable
             ->schema([
                 Section::make(__('Add New Tag'))
                     ->schema([
-                        TextInput::make('name')
+                        TextInput::make('name_en')
                             ->columnSpanFull()
-                            ->hiddenLabel()
+                            ->label(__('In English'))
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->maxLength(255)
                             ->dehydrateStateUsing(fn (string $state): string => ucwords($state)),
+
+                        TextInput::make('name_ar')
+                            ->columnSpanFull()
+                            ->label(__('In Arabic'))
+                            ->required()
+                            ->unique(ignoreRecord: true)
+                            ->maxLength(255),
                     ]),
             ])
             ->statePath('data');
@@ -85,10 +92,11 @@ class Tags extends Page implements HasForms, HasTable
         $formData = $this->form->getState();
 
         Tag::create([
-            'name' => $formData['name'],
+            'name_en' => $formData['name_en'],
+            'name_ar' => $formData['name_ar'],
         ]);
 
-        $this->form->fill([]); // Clear form state after creation
+        $this->form->fill([]);
 
         Notification::make()
             ->title(__('Saved successfully'))
@@ -98,38 +106,42 @@ class Tags extends Page implements HasForms, HasTable
 
     public function table(Table $table): Table
     {
-        $columns = [
-            TextColumn::make('id')
-                ->label(__('ID'))
-                ->searchable()
-                ->toggleable(isToggledHiddenByDefault: true),
-
-            TextColumn::make('name')
-                ->label(__('Tag Name'))
-                ->sortable()
-                ->searchable(),
-
-            TextColumn::make('created_at')
-                ->label(__('Created At'))
-                ->dateTime()
-                ->toggleable(isToggledHiddenByDefault: true),
-
-            TextColumn::make('deleted_at')
-                ->label(__('Deleted At'))
-                ->dateTime()
-                ->toggleable(isToggledHiddenByDefault: true),
-        ];
-
         return $table
             ->heading(__('Tags'))
             ->description(__('Manage blog tags'))
             ->query(Tag::latest())
-            ->columns($columns)
+            ->columns([
+                TextColumn::make('id')
+                    ->label(__('ID'))
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('name_en')
+                    ->label(__('Tag Name (English)'))
+                    ->sortable()
+                    ->searchable(),
+
+                TextColumn::make('name_ar')
+                    ->label(__('Tag Name (Arabic)'))
+                    ->sortable()
+                    ->searchable(),
+
+                TextColumn::make('created_at')
+                    ->label(__('Created At'))
+                    ->dateTime()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('deleted_at')
+                    ->label(__('Deleted At'))
+                    ->dateTime()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
             ->actions([
                 ViewAction::make()->infolist(function () {
                     return [
                         TextEntry::make('id')->label(__('ID'))->inlineLabel(),
-                        TextEntry::make('name')->label(__('Tag Name'))->inlineLabel(),
+                        TextEntry::make('name_en')->label(__('Tag Name (English)'))->inlineLabel(),
+                        TextEntry::make('name_ar')->label(__('Tag Name (Arabic)'))->inlineLabel(),
                         TextEntry::make('created_at')->label(__('Created At'))->inlineLabel(),
                         TextEntry::make('updated_at')->label(__('Last Updated'))->inlineLabel(),
                     ];
@@ -139,10 +151,18 @@ class Tags extends Page implements HasForms, HasTable
                     ->slideOver()
                     ->form(function ($record) {
                         return [
-                            TextInput::make('name')
+                            TextInput::make('name_en')
+                                ->label(__('In English'))
                                 ->columnSpanFull()
                                 ->required()
-                                ->unique('tags', 'name', ignorable: $record)
+                                ->unique('tags', 'name_en', ignorable: $record)
+                                ->maxLength(255),
+
+                            TextInput::make('name_ar')
+                                ->label(__('In Arabic'))
+                                ->columnSpanFull()
+                                ->required()
+                                ->unique('tags', 'name_ar', ignorable: $record)
                                 ->maxLength(255),
                         ];
                     }),
