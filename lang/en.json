@@ -1,4 +1,7 @@
 {
+    "The phone number must be :length characters for :country.": "The phone number must be :length characters for :country.",
+    "The phone number is not valid for :country.": "The phone number is not valid for :country.",
+    "The phone number format is invalid.": "The phone number format is invalid.",
     "Added to favorites": "Added to favorites",
     "Removed from favorites": "Removed from favorites",
     ":title has been added to your liked list.": ":title has been added to your liked list.",

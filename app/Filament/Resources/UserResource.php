@@ -162,7 +162,6 @@ class UserResource extends Resource
                 ->separateDialCode(true)
                 ->enableIpLookup(true)
                 ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
-                ->countryStatePath('phone_country') // Bind country code to a state path
                 ->required()
                 ->rules([
                     // Dynamic validation based on country code
@@ -230,7 +229,6 @@ class UserResource extends Resource
                 ->separateDialCode(true)
                 ->enableIpLookup(true)
                 ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
-                ->countryStatePath('phone_country') // Bind country code to a state path
                 ->required()
                 ->rules([
                     // Dynamic validation based on country code

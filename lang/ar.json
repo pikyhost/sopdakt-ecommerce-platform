@@ -1,4 +1,7 @@
 {
+    "The phone number must be :length characters for :country.": "يجب أن يتكون رقم الهاتف من :length أرقام لـ :country.",
+    "The phone number is not valid for :country.": "رقم الهاتف غير صالح لـ :country.",
+    "The phone number format is invalid.": "تنسيق رقم الهاتف غير صالح.",
     "Verified at": "تم التحقق في",
     "Tag Name (English)": "اسم الوسم (بالإنجليزية)",
     "Tag Name (Arabic)": "اسم الوسم (بالعربية)",
