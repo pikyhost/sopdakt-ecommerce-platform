@@ -8,6 +8,7 @@ use App\Models\BlogCategory;
 use App\Services\BlogActionsService;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Infolists\Components\Grid;
 use Filament\Infolists\Components\Group;
@@ -117,13 +118,26 @@ class BlogResource extends Resource
                         Forms\Components\Section::make([
                             Forms\Components\Select::make('tags')
                                 ->multiple()
-                                ->relationship('tags', 'name')
+                                ->relationship(
+                                    'tags',
+                                    app()->getLocale() === 'ar' ? 'name_ar' : 'name_en'
+                                )
                                 ->preload()
                                 ->createOptionForm([
-                                    Forms\Components\TextInput::make('name')
+                                    TextInput::make('name_en')
+                                        ->columnSpanFull()
+                                        ->label(__('In English'))
                                         ->required()
-                                        ->unique('tags', 'name')
-                                        ->label(__('Name')),
+                                        ->unique(ignoreRecord: true)
+                                        ->maxLength(255)
+                                        ->dehydrateStateUsing(fn (string $state): string => ucwords($state)),
+
+                                    TextInput::make('name_ar')
+                                        ->columnSpanFull()
+                                        ->label(__('In Arabic'))
+                                        ->required()
+                                        ->unique(ignoreRecord: true)
+                                        ->maxLength(255),
                                 ])
                                 ->label(__('Tags')),
                             Forms\Components\DatePicker::make('published_at')
@@ -159,7 +173,7 @@ class BlogResource extends Resource
                 Tables\Columns\IconColumn::make('is_active')
                     ->boolean()
                     ->label(__('Active')),
-                Tables\Columns\TextColumn::make('tags.name')
+                Tables\Columns\TextColumn::make('tags.' . (app()->getLocale() === 'ar' ? 'name_ar' : 'name_en'))
                     ->placeholder('-')
                     ->badge()
                     ->color('warning')
@@ -239,10 +253,14 @@ class BlogResource extends Resource
                     ->multiple()
                     ->preload()
                     ->native(false)
-                    ->label('')
+                    ->label(__('Tags'))
                     ->placeholder(__('Select Tags'))
-                    ->relationship('tags', 'name')
+                    ->relationship(
+                        'tags',
+                        app()->getLocale() === 'ar' ? 'name_ar' : 'name_en'
+                    )
                     ->columnSpan(['default' => 6, 'sm' => 6, 'md' => 6, 'lg' => 3, 'xl' => 3, '2xl' => 3]),
+
             ], Tables\Enums\FiltersLayout::AboveContent)
             ->actions([
                 Tables\Actions\ActionGroup::make([
