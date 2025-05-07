@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Services\Filament;
+namespace App\Services;
 
 use App\Models\Blog;
+use App\Services\Filament\BlogLikesService;
 
 class BlogActionsService
 {
