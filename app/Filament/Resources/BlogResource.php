@@ -106,7 +106,7 @@ class BlogResource extends Resource
                                     $livewire->validateOnly($component->getStatePath());
                                 }),
 
-                            SelectTree::make('blog_blog_category_id')
+                            SelectTree::make('blog_category_id')
                                 ->placeholder(__('Select Category'))
                                 ->label(__('Category'))
                                 ->searchable()
@@ -202,10 +202,10 @@ class BlogResource extends Resource
                             if ($hasChildren) {
                                 // If it's a parent category, get all its descendants
                                 $categoryIds = self::getCategoryWithDescendants($selectedCategoryId);
-                                $query->whereIn('blog_blog_category_id', $categoryIds);
+                                $query->whereIn('blog_category_id', $categoryIds);
                             } else {
                                 // If it's a child category, just filter for that category
-                                $query->where('blog_blog_category_id', $selectedCategoryId);
+                                $query->where('blog_category_id', $selectedCategoryId);
                             }
                         }
                     })
