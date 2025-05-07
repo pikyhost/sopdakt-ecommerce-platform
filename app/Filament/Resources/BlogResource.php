@@ -319,7 +319,6 @@ class BlogResource extends Resource
                                 ]),
                                 Group::make([
                                     TextEntry::make('author.name'),
-                                    IconEntry::make('is_active')->boolean()->columnSpanFull(),
                                 ]),
                             ]),
                             SpatieMediaLibraryImageEntry::make('main_blog_image')
@@ -328,6 +327,7 @@ class BlogResource extends Resource
                                 ->hiddenLabel()
                                 ->grow(false),
                         ])->from('xl'),
+                        IconEntry::make('is_active')->boolean()->columnSpanFull(),
                     ]),
 
                 Section::make(__('Timestamps'))
