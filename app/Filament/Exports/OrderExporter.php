@@ -43,7 +43,8 @@ class OrderExporter extends Exporter
             ExportColumn::make('city.name')
                 ->label(__('City')),
             ExportColumn::make('status')
-                ->label(__('Status')),
+                ->label(__('Status'))
+                ->formatStateUsing(fn ($state) => $state?->value),
             ExportColumn::make('notes')
                 ->label(__('Notes')),
             ExportColumn::make('created_at')

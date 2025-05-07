@@ -72,7 +72,6 @@ class ContactMessageController extends Controller
                 'user_id' => auth()->id(),
             ]);
 
-
             ContactMessageNotifier::notify($message);
 
             return response()->json([

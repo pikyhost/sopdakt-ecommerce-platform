@@ -175,8 +175,6 @@ class CartController extends Controller
     return response()->json(['message' => 'Product added to cart successfully.']);
 }
 
-
-
     /**
      * Update Cart Item Quantity
      *

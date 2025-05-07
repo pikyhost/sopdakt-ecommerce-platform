@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignIdFor(\App\Models\User::class)->nullable()->constrained()->cascadeOnDelete(); // Authenticated users
             $table->foreignIdFor(\App\Models\Contact::class)->nullable()->constrained()->cascadeOnDelete(); // Shipping contact info
             $table->foreignIdFor(\App\Models\PaymentMethod::class)->constrained()->cascadeOnDelete(); // Payment method
-            $table->foreignIdFor(\App\Models\Coupon::class)->nullable()->constrained()->cascadeOnDelete(); // Applied discount
+            $table->foreignIdFor(\App\Models\Coupon::class)->nullable()->constrained()->cascadeOnDelete(); // Applied Coupon
             $table->unsignedInteger('shipping_cost')->nullable(); // Optional, free shipping cases
             $table->unsignedTinyInteger('tax_percentage')->default(0);
             $table->integer('tax_amount')->default(0);

@@ -97,6 +97,7 @@ class ContactMessageResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')->label(__('fields.name')),
                 Tables\Columns\TextColumn::make('email')->label(__('fields.email')),
+                Tables\Columns\TextColumn::make('phone')->label(__('Phone')),
                 Tables\Columns\TextColumn::make('subject')->label(__('fields.subject')),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('fields.created_at'))
@@ -130,6 +131,7 @@ class ContactMessageResource extends Resource
                             ->label(__('fields.name')),
 
                         PhoneEntry::make('phone')
+                            ->placeholder('-')
                             ->label(__('Phone number')),
 
                         Components\TextEntry::make('email')
@@ -165,7 +167,6 @@ class ContactMessageResource extends Resource
                     ->columns(2),
             ]);
     }
-
 
     public static function getPages(): array
     {
