@@ -90,12 +90,9 @@ class UserResource extends Resource
 
     public static function getNavigationGroup(): ?string
     {
-        return __('Settings Management'); //Products Management
+        return __('Settings Management');
     }
 
-    /**
-     * @return string|null
-     */
     public static function getPluralLabel(): ?string
     {
         return __('user.label');
@@ -165,37 +162,24 @@ class UserResource extends Resource
                 ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
                 ->required()
                 ->rules([
-                    'min:11',
-                    'max:20',
-                    Rule::unique('users', 'phone')
-                        ->where(function ($query) {
-                            return $query->where('id', '!=', request()->route('record'));
-                        }),
-                    Rule::unique('users', 'second_phone')
-                        ->where(function ($query) {
-                            return $query->where('id', '!=', request()->route('record'));
-                        }),
+                    'min:13',
+                    'max:13',
                 ])
+                ->unique(table: 'users', column: 'phone', ignoreRecord: true)
+                ->unique(table: 'users', column: 'second_phone', ignoreRecord: true)
                 ->label(__('Phone Number')),
 
             PhoneInput::make('second_phone')
-                ->different('phone')
                 ->separateDialCode(true)
                 ->enableIpLookup(true)
                 ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
                 ->required()
                 ->rules([
-                    'min:11',
-                    'max:20',
-                    Rule::unique('users', 'phone')
-                        ->where(function ($query) {
-                            return $query->where('id', '!=', request()->route('record'));
-                        }),
-                    Rule::unique('users', 'second_phone')
-                        ->where(function ($query) {
-                            return $query->where('id', '!=', request()->route('record'));
-                        }),
+                    'min:13',
+                    'max:13',
                 ])
+                ->unique(table: 'users', column: 'phone', ignoreRecord: true)
+                ->unique(table: 'users', column: 'second_phone', ignoreRecord: true)
                 ->label(__('Second Phone Number')),
 
             Forms\Components\TextInput::make('password')
