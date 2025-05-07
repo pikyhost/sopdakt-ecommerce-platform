@@ -84,7 +84,7 @@ class BlogResource extends Resource
                                 ->required()
                                 ->columnSpanFull()
                                 ->label(__('Content')),
-                            Forms\Components\Toggle::make('is_active')
+                            Forms\Components\Toggle::make('is_published')
                                 ->default(false)
                                 ->label(__('Active')),
                         ])->columns(1),
@@ -151,7 +151,7 @@ class BlogResource extends Resource
                 Tables\Columns\TextColumn::make('author.name')
                     ->searchable()
                     ->label(__('Author')),
-                Tables\Columns\IconColumn::make('is_active')
+                Tables\Columns\IconColumn::make('is_published')
                     ->boolean()
                     ->label(__('Active')),
                 Tables\Columns\TextColumn::make('tags.name')
@@ -172,7 +172,7 @@ class BlogResource extends Resource
             ])
             ->filtersFormColumns(6)
             ->filters([
-                TernaryFilter::make('is_active')
+                TernaryFilter::make('is_published')
                     ->native(false)
                     ->placeholder(__('Select Status'))
                     ->label('')
@@ -315,7 +315,7 @@ class BlogResource extends Resource
                                 ]),
                                 Group::make([
                                     TextEntry::make('author.name'),
-                                    IconEntry::make('is_active')->boolean(),
+                                    IconEntry::make('is_published')->boolean(),
                                 ]),
                             ]),
                             SpatieMediaLibraryImageEntry::make('main_blog_image')
