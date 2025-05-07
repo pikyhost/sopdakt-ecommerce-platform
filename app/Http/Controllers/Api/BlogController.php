@@ -7,6 +7,7 @@ use App\Models\Blog;
 use App\Models\BlogCategory;
 use App\Models\Tag;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class BlogController extends Controller
@@ -177,7 +178,7 @@ class BlogController extends Controller
      *         "author": {
      *             "id": 1,
      *             "name": "Author Name",
-     *             "avatar": "http://example.com/avatar.jpg"
+     *             "avatar": "http://example.com/storage/avatar.jpg"
      *         },
      *         "image_url": "http://example.com/image.jpg",
      *         "likes_count": 10,
@@ -245,7 +246,7 @@ class BlogController extends Controller
             'author' => [
                 'id' => $blog->author->id,
                 'name' => $blog->author->name,
-                'avatar' => $blog->author->avatar_url,
+                'avatar' => asset('storage/' . $blog->author->avatar_url)
             ],
             'image_url' => $blog->getMainBlogImageUrl(),
             'likes_count' => $blog->likers->count(),

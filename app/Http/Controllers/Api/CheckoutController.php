@@ -17,6 +17,7 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Models\Coupon;
 use App\Services\StockLevelNotifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -36,8 +37,8 @@ class CheckoutController extends Controller
      * and creating an order. It supports both authenticated users and guests, with optional account creation for guests.
      * Payment methods include Paymob (returns a payment iframe URL) and Cash on Delivery (creates the order directly).
      * The endpoint updates user/contact information, manages cart items, updates stock, sends email/WhatsApp notifications,
-     * and integrates with JT Express for shipping. The response includes the order details or payment URL on success,
-     * or an error message for failures (e.g., empty cart, invalid payment).
+     * and integrates with JT Express for shipping. It also validates and applies any coupons associated with the cart.
+     * The response includes the order details or payment URL on success, or an error message for failures (e.g., empty cart, invalid payment, invalid coupon).
      *
      * @group Checkout
      * @bodyParam payment_method_id integer required The ID of the payment method (1 for COD, 2 for Paymob). Example: 1
@@ -72,6 +73,9 @@ class CheckoutController extends Controller
      *         "phone": ["The phone number is blocked. Please contact support."],
      *         "payment_method_id": ["The selected payment method is invalid."]
      *     }
+     * }
+     * @response 422 {
+     *     "error": "Invalid or expired coupon."
      * }
      * @response 404 {
      *     "error": "Cart is empty or not found",
@@ -123,6 +127,53 @@ class CheckoutController extends Controller
                     'error' => 'Cart is empty or not found',
                     'support_link' => route('contact.us'),
                 ], 404);
+            }
+
+            // Validate coupon if applied
+            if ($cart->coupon_id) {
+                $coupon = Coupon::where('id', $cart->coupon_id)
+                    ->where('is_active', true)
+                    ->whereHas('discount', function ($q) {
+                        $q->where('is_active', true)
+                            ->where(function ($q2) {
+                                $q2->whereNull('starts_at')->orWhere('starts_at', '<=', now());
+                            })
+                            ->where(function ($q2) {
+                                $q2->whereNull('ends_at')->orWhere('ends_at', '>=', now());
+                            });
+                    })
+                    ->first();
+
+                if (!$coupon) {
+                    Log::warning('Invalid or expired coupon during checkout', ['coupon_id' => $cart->coupon_id]);
+                    return response()->json([
+                        'error' => 'Invalid or expired coupon.',
+                        'support_link' => route('contact.us'),
+                    ], 422);
+                }
+
+                // Check coupon usage limits
+                if ($coupon->total_usage_limit) {
+                    $totalUsages = $coupon->usages()->count();
+                    if ($totalUsages >= $coupon->total_usage_limit) {
+                        Log::warning('Coupon usage limit reached', ['coupon_id' => $cart->coupon_id]);
+                        return response()->json([
+                            'error' => 'Coupon usage limit reached.',
+                            'support_link' => route('contact.us'),
+                        ], 422);
+                    }
+                }
+
+                if ($coupon->usage_limit_per_user && Auth::check()) {
+                    $userUsages = $coupon->usages()->where('user_id', Auth::id())->count();
+                    if ($userUsages >= $coupon->usage_limit_per_user) {
+                        Log::warning('Coupon usage limit per user reached', ['coupon_id' => $cart->coupon_id, 'user_id' => Auth::id()]);
+                        return response()->json([
+                            'error' => 'Coupon usage limit per user reached.',
+                            'support_link' => route('contact.us'),
+                        ], 422);
+                    }
+                }
             }
 
             // Save contact data
@@ -343,6 +394,14 @@ class CheckoutController extends Controller
 
             $order = Order::create($orderData);
 
+            // Record coupon usage if applicable
+            if ($cart->coupon_id && Auth::check()) {
+                Coupon::find($cart->coupon_id)->usages()->create([
+                    'user_id' => Auth::id(),
+                    'order_id' => $order->id,
+                ]);
+            }
+
             foreach ($cart->items as $item) {
                 OrderItem::create([
                     'order_id' => $order->id,
@@ -414,6 +473,7 @@ class CheckoutController extends Controller
 
                 Mail::to($contact->email)->locale($locale)->send(new GuestInvitationMail($invitation));
             }
+
             // JT Express integration (prepare data but do not assign tracking number yet)
             $jtExpressData = $this->prepareJtExpressOrderData($order);
             $jtExpressResponse = $this->sendJtExpressRequest($jtExpressData); // Implement as needed
@@ -541,3 +601,4 @@ class CheckoutController extends Controller
         }
     }
 }
+?>

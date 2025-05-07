@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('discounts', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // Translatable
-            $table->text('description')->nullable(); // Translatable
+            $table->string('name');
+            $table->text('description')->nullable();
             $table->enum('discount_type', ['percentage', 'fixed', 'free_shipping']);
             $table->enum('applies_to', ['product', 'category', 'cart', 'collection']);
             $table->decimal('value', 10, 2)->nullable();

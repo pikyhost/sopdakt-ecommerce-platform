@@ -14,6 +14,8 @@ use App\Models\City;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Models\ShippingType;
+use App\Models\Discount;
+use App\Models\Coupon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -35,6 +37,7 @@ class CartListController extends Controller
      * Retrieves the current user's cart or a session-based cart if the user is not authenticated. Includes cart items, totals, shipping options, and complementary products.
      *
      * @authenticated
+     * @bodyParam coupon_code string nullable Coupon code to apply. Example: SUMMER20
      * @response 200 {
      *   "cart": {
      *     "id": 1,
@@ -70,7 +73,9 @@ class CartListController extends Controller
      *     "shipping_cost": 5.00,
      *     "tax": 5.00,
      *     "total": 109.99,
-     *     "currency": "USD"
+     *     "currency": "USD",
+     *     "free_shipping_applied": false,
+     *     "discount_applied": 10.00
      *   },
      *   "countries": [
      *     {"id": 1, "name": "USA", "cost": 5.00},
@@ -100,9 +105,20 @@ class CartListController extends Controller
      * @response 401 {
      *   "message": "Unauthenticated."
      * }
+     * @response 422 {
+     *   "error": "Invalid or expired coupon."
+     * }
      */
     public function index(Request $request): JsonResponse
     {
+        $validator = Validator::make($request->all(), [
+            'coupon_code' => ['nullable', 'string', 'exists:coupons,code'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
         $cart = $this->getOrCreateCart();
         $cartItems = $this->loadCartItems($cart);
 
@@ -112,7 +128,7 @@ class CartListController extends Controller
             ]);
         }
 
-        $totals = $this->calculateTotals($cart, $cartItems);
+        $totals = $this->calculateTotals($cart, $cartItems, $request->coupon_code);
         $productIds = collect($cartItems)->pluck('product.id')->filter()->unique();
 
         // Fetch complementary product IDs from related products
@@ -168,8 +184,6 @@ class CartListController extends Controller
         ]);
     }
 
-
-
     /**
      * Update cart shipping and location details
      *
@@ -180,6 +194,7 @@ class CartListController extends Controller
      * @bodyParam governorate_id integer nullable The ID of the governorate. Example: 1
      * @bodyParam city_id integer nullable The ID of the city. Example: 1
      * @bodyParam shipping_type_id integer nullable The ID of the shipping type. Example: 1
+     * @bodyParam coupon_code string nullable Coupon code to apply. Example: SUMMER20
      * @response 200 {
      *   "cart": {
      *     "id": 1,
@@ -215,7 +230,9 @@ class CartListController extends Controller
      *     "shipping_cost": 5.00,
      *     "tax": 5.00,
      *     "total": 109.99,
-     *     "currency": "USD"
+     *     "currency": "USD",
+     *     "free_shipping_applied": false,
+     *     "discount_applied": 10.00
      *   },
      *   "governorates": [
      *     {"id": 1, "name": "California", "country_id": 1}
@@ -229,6 +246,9 @@ class CartListController extends Controller
      *     "country_id": ["The selected country id is invalid."]
      *   }
      * }
+     * @response 422 {
+     *   "error": "Invalid or expired coupon."
+     * }
      * @response 401 {
      *   "message": "Unauthenticated."
      * }
@@ -240,6 +260,7 @@ class CartListController extends Controller
             'governorate_id' => 'nullable|exists:governorates,id',
             'city_id' => 'nullable|exists:cities,id',
             'shipping_type_id' => 'nullable|exists:shipping_types,id',
+            'coupon_code' => ['nullable', 'string', 'exists:coupons,code'],
         ]);
 
         if ($validator->fails()) {
@@ -255,7 +276,7 @@ class CartListController extends Controller
         ]);
 
         $cartItems = $this->loadCartItems($cart);
-        $totals = $this->calculateTotals($cart, $cartItems);
+        $totals = $this->calculateTotals($cart, $cartItems, $request->coupon_code);
 
         return response()->json([
             'cart' => new CartResource($cart),
@@ -274,6 +295,7 @@ class CartListController extends Controller
      * @authenticated
      * @urlParam cartItemId integer required The ID of the cart item. Example: 1
      * @bodyParam action string required Must be "increase" or "decrease". Example: increase
+     * @bodyParam coupon_code string nullable Coupon code to apply. Example: SUMMER20
      * @response 200 {
      *   "cart": {
      *     "id": 1,
@@ -305,7 +327,9 @@ class CartListController extends Controller
      *     "shipping_cost": 5.00,
      *     "tax": 3.75,
      *     "total": 82.47,
-     *     "currency": "USD"
+     *     "currency": "USD",
+     *     "free_shipping_applied": false,
+     *     "discount_applied": 7.50
      *   }
      * }
      * @response 404 {
@@ -316,6 +340,9 @@ class CartListController extends Controller
      *     "action": ["The action must be increase or decrease."]
      *   }
      * }
+     * @response 422 {
+     *   "error": "Invalid or expired coupon."
+     * }
      * @response 401 {
      *   "message": "Unauthenticated."
      * }
@@ -324,6 +351,7 @@ class CartListController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'action' => 'required|in:increase,decrease',
+            'coupon_code' => ['nullable', 'string', 'exists:coupons,code'],
         ]);
 
         if ($validator->fails()) {
@@ -350,17 +378,9 @@ class CartListController extends Controller
             $cartItem->decrement('quantity');
         }
 
-        // Recalculate subtotal
-        $priceString = $cartItem->product?->discount_price_for_current_country ?? '0 USD';
-        $price = $this->extractPrice($priceString);
-        $subtotal = $price * $cartItem->quantity;
-
-        $cartItem->update(['subtotal' => $subtotal]);
-
-        // Reload cart and totals
         $cart = $this->getOrCreateCart();
         $cartItems = $this->loadCartItems($cart);
-        $totals = $this->calculateTotals($cart, $cartItems);
+        $totals = $this->calculateTotals($cart, $cartItems, $request->coupon_code);
 
         return response()->json([
             'cart' => new CartResource($cart),
@@ -369,7 +389,6 @@ class CartListController extends Controller
         ]);
     }
 
-
     /**
      * Remove a cart item
      *
@@ -377,6 +396,7 @@ class CartListController extends Controller
      *
      * @authenticated
      * @urlParam cartItemId integer required The ID of the cart item to remove. Example: 1
+     * @bodyParam coupon_code string nullable Coupon code to apply. Example: SUMMER20
      * @response 200 {
      *   "cart": {
      *     "id": 1,
@@ -394,18 +414,31 @@ class CartListController extends Controller
      *     "shipping_cost": 0.00,
      *     "tax": 0.00,
      *     "total": 0.00,
-     *     "currency": "USD"
+     *     "currency": "USD",
+     *     "free_shipping_applied": false,
+     *     "discount_applied": 0.00
      *   }
      * }
      * @response 404 {
      *   "error": "Cart item not found"
      * }
+     * @response 422 {
+     *   "error": "Invalid or expired coupon."
+     * }
      * @response 401 {
      *   "message": "Unauthenticated."
      * }
      */
-    public function removeItem($cartItemId): JsonResponse
+    public function removeItem(Request $request, $cartItemId): JsonResponse
     {
+        $validator = Validator::make($request->all(), [
+            'coupon_code' => ['nullable', 'string', 'exists:coupons,code'],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
         $cart = $this->getOrCreateCart();
         $cartItem = CartItem::where('cart_id', $cart->id)->find($cartItemId);
 
@@ -420,7 +453,7 @@ class CartListController extends Controller
         }
 
         $cartItems = $this->loadCartItems($cart);
-        $totals = $this->calculateTotals($cart, $cartItems);
+        $totals = $this->calculateTotals($cart, $cartItems, $request->coupon_code);
 
         return response()->json([
             'cart' => new CartResource($cart),
@@ -435,6 +468,11 @@ class CartListController extends Controller
      * Validates the cart and prepares it for checkout. Ensures valid quantities and shipping details, then returns a checkout URL.
      *
      * @authenticated
+     * @bodyParam selected_shipping integer nullable ID of the selected shipping type. Example: 1
+     * @bodyParam country_id integer required ID of the country. Example: 1
+     * @bodyParam governorate_id integer required ID of the governorate. Example: 1
+     * @bodyParam city_id integer nullable ID of the city. Example: 1
+     * @bodyParam coupon_code string nullable Coupon code to apply. Example: SUMMER20
      * @response 200 {
      *   "message": "Cart ready for checkout",
      *   "checkout_url": "http://example.com/checkout",
@@ -462,29 +500,34 @@ class CartListController extends Controller
      *     "country_id": ["The country id field is required."]
      *   }
      * }
+     * @response 422 {
+     *   "error": "Invalid or expired coupon."
+     * }
      * @response 401 {
      *   "message": "Unauthenticated."
      * }
-     */
-    /**
-     * Handle the checkout process
-     */
-    /**
-     * Handle the checkout process
-     */
-    /**
-     * Handle the checkout process
-     */
-    /**
-     * Handle the checkout process
-     */
-    /**
-     * Handle the checkout process
      */
     public function checkout(Request $request): JsonResponse
     {
         DB::beginTransaction();
         try {
+            $validator = Validator::make($request->all(), [
+                'selected_shipping' => Setting::isShippingEnabled() ? 'required|exists:shipping_types,id' : 'nullable',
+                'country_id' => 'required|exists:countries,id',
+                'governorate_id' => 'required|exists:governorates,id',
+                'city_id' => 'nullable|exists:cities,id',
+                'coupon_code' => ['nullable', 'string', 'exists:coupons,code'],
+            ]);
+
+            if ($validator->fails()) {
+                DB::rollBack();
+                return response()->json([
+                    'error' => 'Validation failed',
+                    'errors' => $validator->errors(),
+                    'request_data' => $request->all(),
+                ], 422);
+            }
+
             $cart = $this->getOrCreateCart();
             $cartItems = $this->loadCartItems($cart);
 
@@ -497,7 +540,7 @@ class CartListController extends Controller
                 ], 422);
             }
 
-            // Validate cart items (quantity checks from Livewire)
+            // Validate cart items (quantity checks)
             foreach ($cartItems as $item) {
                 if ($item->quantity < 1) {
                     DB::rollBack();
@@ -516,24 +559,7 @@ class CartListController extends Controller
                 }
             }
 
-            // Validate shipping and location data
-            $validator = Validator::make($request->all(), [
-                'selected_shipping' => Setting::isShippingEnabled() ? 'required|exists:shipping_types,id' : 'nullable',
-                'country_id' => 'required|exists:countries,id',
-                'governorate_id' => 'required|exists:governorates,id',
-                'city_id' => 'nullable|exists:cities,id',
-            ]);
-
-            if ($validator->fails()) {
-                DB::rollBack();
-                return response()->json([
-                    'error' => 'Validation failed',
-                    'errors' => $validator->errors(),
-                    'request_data' => $request->all(),
-                ], 422);
-            }
-
-            // Validate all cart items (using existing method)
+            // Validate all cart items
             $validationErrors = $this->validateCartItems($cartItems);
             if ($validationErrors) {
                 DB::rollBack();
@@ -547,29 +573,33 @@ class CartListController extends Controller
                 return $shippingValidation;
             }
 
-            // Calculate totals
-            $totals = $this->calculateTotals($cart, $cartItems);
+            // Calculate totals with discounts and coupons
+            $totals = $this->calculateTotals($cart, $cartItems, $request->coupon_code);
             if (!is_numeric($totals['subtotal']) || !is_numeric($totals['total'])) {
                 DB::rollBack();
                 throw new \Exception('Invalid totals calculation');
             }
 
-            // Apply tax calculation
-            $taxPercentage = Setting::first()?->tax_percentage ?? 0;
-            $taxAmount = ($taxPercentage > 0) ? ($totals['subtotal'] * $taxPercentage / 100) : 0;
-
             // Update cart with final details
             $cart->update([
                 'subtotal' => $totals['subtotal'],
                 'total' => $totals['total'],
-                'tax_percentage' => $taxPercentage,
-                'tax_amount' => $taxAmount,
+                'tax_percentage' => $totals['tax_percentage'],
+                'tax_amount' => $totals['tax'],
                 'shipping_cost' => $totals['shipping_cost'],
                 'shipping_type_id' => $request->selected_shipping ?? null,
                 'country_id' => $request->country_id,
                 'governorate_id' => $request->governorate_id,
                 'city_id' => $request->city_id,
             ]);
+
+            // Record coupon usage if applicable
+            if ($totals['coupon'] && Auth::check()) {
+                $totals['coupon']->usages()->create([
+                    'user_id' => Auth::id(),
+                    'order_id' => null, // Will be updated when order is created
+                ]);
+            }
 
             DB::commit();
 
@@ -642,12 +672,12 @@ class CartListController extends Controller
 
             if (Setting::isShippingEnabled() && $request->selected_shipping) {
                 $shippingType = ShippingType::where('id', $request->selected_shipping)
-                    ->where('status', true) // Changed from 'is_active' to 'status'
+                    ->where('status', true)
                     ->first();
 
                 if (!$shippingType) {
-                    $availableMethods = ShippingType::where('status', true) // Changed from active() to where('status', true)
-                    ->get()
+                    $availableMethods = ShippingType::where('status', true)
+                        ->get()
                         ->map(function ($method) {
                             return [
                                 'id' => $method->id,
@@ -744,27 +774,147 @@ class CartListController extends Controller
     }
 
     /**
-     * Calculate totals (subtotal, shipping, tax, total)
+     * Calculate totals (subtotal, shipping, tax, total) with discounts and coupons
      */
-    private function calculateTotals(Cart $cart, $cartItems): array
+    private function calculateTotals(Cart $cart, $cartItems, ?string $couponCode = null): array
     {
         $subtotal = 0.0;
+        $discountApplied = 0.0;
         $seenBundles = [];
         $locationBasedShippingCosts = [];
+        $isFreeShipping = false;
 
-        foreach ($cartItems as $item) {
-            $priceString = $item->product ? $item->product->discount_price_for_current_country : '0 USD';
-            $price = $this->extractPrice($priceString);
+        // Validate coupon if provided
+        $coupon = null;
+        if ($couponCode) {
+            $coupon = Coupon::where('code', $couponCode)
+                ->where('is_active', true)
+                ->whereHas('discount', function ($q) {
+                    $q->where('is_active', true)
+                        ->where(function ($q2) {
+                            $q2->whereNull('starts_at')->orWhere('starts_at', '<=', now());
+                        })
+                        ->where(function ($q2) {
+                            $q2->whereNull('ends_at')->orWhere('ends_at', '>=', now());
+                        });
+                })
+                ->first();
 
-            if (!empty($item->bundle_id)) {
-                if (!in_array($item->bundle_id, $seenBundles)) {
-                    $subtotal += $item->quantity * $price;
-                    $seenBundles[] = $item->bundle_id;
-                }
-            } else {
-                $subtotal += $item->quantity * $price;
+            if (!$coupon) {
+                throw new \Exception('Invalid or expired coupon.');
             }
 
+            // Check coupon usage limits
+            if ($coupon->total_usage_limit) {
+                $totalUsages = $coupon->usages()->count();
+                if ($totalUsages >= $coupon->total_usage_limit) {
+                    throw new \Exception('Coupon usage limit reached.');
+                }
+            }
+
+            if ($coupon->usage_limit_per_user && Auth::check()) {
+                $userUsages = $coupon->usages()->where('user_id', Auth::id())->count();
+                if ($userUsages >= $coupon->usage_limit_per_user) {
+                    throw new \Exception('Coupon usage limit per user reached.');
+                }
+            }
+        }
+
+        // Calculate item subtotals with discounts
+        foreach ($cartItems as $item) {
+            $priceString = $item->product ? $item->product->discount_price_for_current_country : '0 USD';
+            $basePrice = $this->extractPrice($priceString);
+            $discountAmount = 0.0;
+
+            // Skip if already processed as part of a bundle
+            if ($item->bundle_id && in_array($item->bundle_id, $seenBundles)) {
+                continue;
+            }
+
+            // Find applicable item-level discounts
+            $discounts = [];
+            if ($item->product) {
+                $product = $item->product;
+                $discounts = Discount::where('is_active', true)
+                    ->where(function ($q) {
+                        $q->whereNull('starts_at')->orWhere('starts_at', '<=', now());
+                    })
+                    ->where(function ($q) {
+                        $q->whereNull('ends_at')->orWhere('ends_at', '>=', now());
+                    })
+                    ->where(function ($q) use ($product) {
+                        $q->where('applies_to', 'product')
+                            ->whereIn('id', function ($q2) use ($product) {
+                                $q2->select('discount_id')->from('discount_product')
+                                    ->where('product_id', $product->id);
+                            })
+                            ->orWhere('applies_to', 'category')
+                            ->whereIn('id', function ($q2) use ($product) {
+                                $q2->select('discount_id')->from('discount_category')
+                                    ->whereIn('category_id', $product->categories()->pluck('categories.id'));
+                            })
+                            ->orWhere('applies_to', 'collection')
+                            ->whereIn('id', function ($q2) use ($product) {
+                                $q2->select('discount_id')->from('collection_discount')
+                                    ->whereIn('collection_id', function ($q3) use ($product) {
+                                        $q3->select('collection_id')->from('collection_product')
+                                            ->where('product_id', $product->id);
+                                    });
+                            });
+                    })
+                    ->get();
+
+                // Filter discounts based on coupon
+                if ($coupon) {
+                    $discounts = $discounts->filter(function ($discount) use ($coupon) {
+                        return $discount->id === $coupon->discount_id && $discount->requires_coupon;
+                    })->merge(
+                        $discounts->where('requires_coupon', false)
+                    );
+                } else {
+                    $discounts = $discounts->where('requires_coupon', false);
+                }
+
+                // Apply item-level discounts
+                foreach ($discounts as $discount) {
+                    if ($discount->min_order_value && $basePrice * $item->quantity < $discount->min_order_value) {
+                        continue;
+                    }
+                    if ($discount->usage_limit) {
+                        $usageCount = DB::table('coupon_usages')
+                            ->whereIn('coupon_id', function ($q) use ($discount) {
+                                $q->select('id')->from('coupons')->where('discount_id', $discount->id);
+                            })->count();
+                        if ($usageCount >= $discount->usage_limit) {
+                            continue;
+                        }
+                    }
+                    if ($discount->discount_type === 'percentage') {
+                        $discountAmount += ($basePrice * $discount->value) / 100;
+                    } elseif ($discount->discount_type === 'fixed') {
+                        $discountAmount += $discount->value;
+                    }
+                }
+            }
+
+            // Calculate item subtotal
+            $pricePerUnit = max(0, $basePrice - $discountAmount);
+            $itemSubtotal = $pricePerUnit * $item->quantity;
+            $discountApplied += $discountAmount * $item->quantity;
+
+            // Update cart item
+            $item->update([
+                'price_per_unit' => $pricePerUnit,
+                'subtotal' => $itemSubtotal,
+            ]);
+
+            if ($item->bundle_id) {
+                $seenBundles[] = $item->bundle_id;
+            }
+
+            $subtotal += $itemSubtotal;
+
+            // Calculate shipping costs
             if ($item->product_id) {
                 $product = Product::find($item->product_id);
                 if ($product) {
@@ -778,6 +928,54 @@ class CartListController extends Controller
             }
         }
 
+        // Apply cart-level discounts
+        $cartDiscounts = Discount::where('is_active', true)
+            ->where('applies_to', 'cart')
+            ->where(function ($q) {
+                $q->whereNull('starts_at')->orWhere('starts_at', '<=', now());
+            })
+            ->where(function ($q) {
+                $q->whereNull('ends_at')->orWhere('ends_at', '>=', now());
+            })
+            ->get();
+
+        if ($coupon) {
+            $cartDiscounts = $cartDiscounts->filter(function ($discount) use ($coupon) {
+                return $discount->id === $coupon->discount_id && $discount->requires_coupon;
+            })->merge(
+                $cartDiscounts->where('requires_coupon', false)
+            );
+        } else {
+            $cartDiscounts = $cartDiscounts->where('requires_coupon', false);
+        }
+
+        $cartDiscountAmount = 0.0;
+        foreach ($cartDiscounts as $discount) {
+            if ($discount->min_order_value && $subtotal < $discount->min_order_value) {
+                continue;
+            }
+            if ($discount->usage_limit) {
+                $usageCount = DB::table('coupon_usages')
+                    ->whereIn('coupon_id', function ($q) use ($discount) {
+                        $q->select('id')->from('coupons')->where('discount_id', $discount->id);
+                    })->count();
+                if ($usageCount >= $discount->usage_limit) {
+                    continue;
+                }
+            }
+            if ($discount->discount_type === 'percentage') {
+                $cartDiscountAmount += ($subtotal * $discount->value) / 100;
+            } elseif ($discount->discount_type === 'fixed') {
+                $cartDiscountAmount += $discount->value;
+            } elseif ($discount->discount_type === 'free_shipping') {
+                $isFreeShipping = true;
+            }
+        }
+
+        $discountApplied += $cartDiscountAmount;
+        $subtotal = max(0, $subtotal - $cartDiscountAmount);
+
+        // Calculate shipping cost
         $isShippingLocationEnabled = Setting::isShippingLocationsEnabled();
         $locationBasedShippingCost = ($isShippingLocationEnabled && !empty($locationBasedShippingCosts))
             ? max($locationBasedShippingCosts)
@@ -791,26 +989,36 @@ class CartListController extends Controller
         $freeShippingThreshold = Setting::getFreeShippingThreshold();
         $shouldApplyFreeShipping = $freeShippingThreshold > 0 && $subtotal >= $freeShippingThreshold;
 
-        // Apply free shipping if threshold is met (unless it's a FABS shipping product)
+        // Apply free shipping logic
         if (count($cartItems) === 1 && $cartItems[0]->product && $cartItems[0]->product->isfabs_shipping) {
             $shippingTypeCost = 0.0;
-        } elseif ($shouldApplyFreeShipping) {
+            $locationBasedShippingCost = 0.0;
+        } elseif ($shouldApplyFreeShipping || $isFreeShipping) {
             $shippingTypeCost = 0.0;
             $locationBasedShippingCost = 0.0;
         }
 
         $shippingCost = max($shippingTypeCost, $locationBasedShippingCost);
+
+        // Calculate tax
         $taxPercentage = Setting::first()?->tax_percentage ?? 0;
         $tax = ($taxPercentage > 0) ? ($subtotal * $taxPercentage / 100) : 0.0;
+
+        // Calculate total
         $total = $subtotal + $shippingCost + $tax;
 
         return [
             'subtotal' => $subtotal,
             'shipping_cost' => $shippingCost,
             'tax' => $tax,
+            'tax_percentage' => $taxPercentage,
             'total' => $total,
-            'currency' => $this->extractCurrency($cartItems[0]->product->discount_price_for_current_country ?? 'USD'),
-            'free_shipping_applied' => $shouldApplyFreeShipping,
+            'currency' => $cartItems->isNotEmpty()
+                ? $this->extractCurrency($cartItems[0]->product->discount_price_for_current_country ?? 'USD')
+                : 'USD',
+            'free_shipping_applied' => $shouldApplyFreeShipping || $isFreeShipping,
+            'discount_applied' => $discountApplied,
+            'coupon' => $coupon,
         ];
     }
 
@@ -918,3 +1126,4 @@ class CartListController extends Controller
         return 0.0;
     }
 }
+?>
