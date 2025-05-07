@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('blogs', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(\App\Models\User::class)->constrained()->cascadeOnDelete();
-            $table->foreignIdFor(\App\Models\Category::class)->nullable()->constrained()->nullOnDelete();
+            $table->foreignIdFor(\App\Models\BlogCategory::class)->nullable()->constrained()->nullOnDelete();
             $table->string('image')->nullable();
             $table->string('title');
             $table->text('content');
