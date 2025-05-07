@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\CompareController;
 use App\Http\Controllers\Api\ContactMessageController;
 use App\Http\Controllers\Api\ContactSettingController;
 use App\Http\Controllers\Api\DiscountController;
+use App\Http\Controllers\Api\GlobalSearchController;
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\NewsletterSubscriberController;
 use App\Http\Controllers\Api\OrderController;
@@ -128,3 +129,6 @@ Route::middleware('api')->group(function () {
         Route::post('/blogs/{blogId}/like', [BlogController::class, 'toggleLike']);
     });
 });
+
+
+Route::get('/search', [GlobalSearchController::class, 'search'])->middleware('throttle:60,1');
