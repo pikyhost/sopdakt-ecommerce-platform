@@ -131,5 +131,5 @@ Route::middleware('api')->group(function () {
     });
 });
 
-Route::get('/search', [GlobalSearchController::class, 'search'])->middleware('throttle:60,1');
+Route::get('/global-search', [GlobalSearchController::class, 'search'])->middleware('throttle:60,1');
 Route::get('/top-notices', [TopNoticeController::class, 'index']);
