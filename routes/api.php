@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AboutUsController;
+use App\Http\Controllers\Api\BlogController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CartListController;
 use App\Http\Controllers\Api\CompareController;
@@ -101,3 +102,12 @@ Route::post('/newsletter/subscribe', [NewsletterSubscriberController::class, 'st
 Route::get('/all-products', [ProductController::class, 'getAllActiveProducts']);
 
 Route::get('/recommended-products', [ProductController::class, 'getRecommendedProducts']);
+
+Route::group(['prefix' => 'blogs', 'as' => 'api.blogs.'], function () {
+    Route::get('categories', [BlogController::class, 'getCategories'])->name('categories');
+    Route::get('/', [BlogController::class, 'getBlogs'])->name('index');
+    Route::get('{slug}', [BlogController::class, 'getBlogBySlug'])->name('show');
+    Route::get('tags', [BlogController::class, 'getTags'])->name('tags');
+    Route::post('{blogId}/toggle-like', [BlogController::class, 'toggleLike'])
+        ->name('toggle-like')->middleware('auth:sanctum');
+});

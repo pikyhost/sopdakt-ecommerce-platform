@@ -81,6 +81,7 @@ class HomePageSettingResource extends Resource
                             ->default(__('50% off')),
 
                         TextInput::make('starting_price')
+                            ->maxLength(null)
                             ->label(__('Starting Price'))
                             ->required()
                             ->numeric()

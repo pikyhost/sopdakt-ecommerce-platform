@@ -43,11 +43,22 @@ class AppServiceProvider extends ServiceProvider
         });
     }
 
+    protected function fixAssetPaths(): void
+    {
+        // Forces Laravel to generate assets from the current domain root
+        app()->bind('path.public', function () {
+            return base_path(); // Since index.php is at backend/
+        });
+    }
+
     /**
      * Bootstrap any application services.
      */
     public function boot(): void
     {
+        // Fix for missing styles/scripts when Laravel is served from root
+        $this->fixAssetPaths();
+
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->ip());
         });

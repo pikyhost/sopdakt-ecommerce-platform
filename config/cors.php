@@ -15,7 +15,8 @@ return [
 
     'allowed_origins' => [
         'http://localhost:5173',          // Local frontend
-        'https://sopdakt.netlify.app',    // Live Netlify frontend
+        'https://sopdakt.com',    // Live Netlify frontend
+        'http://sopdakt.com',    // Live Netlify frontend
     ],
 
     'allowed_origins_patterns' => [],
