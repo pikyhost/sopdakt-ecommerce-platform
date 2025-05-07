@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\MediaLibrary\HasMedia;
@@ -10,7 +11,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Blog extends Model implements HasMedia
 {
-    use HasFactory, HasTranslations, InteractsWithMedia;
+    use HasFactory, HasTranslations, InteractsWithMedia, Sluggable;
 
     protected $guarded = [];
 
@@ -19,6 +20,24 @@ class Blog extends Model implements HasMedia
     protected $casts = [
         'published_at' => 'datetime'
     ];
+
+    /**
+     * Configure the settings for generating slugs.
+     */
+    public function sluggable(): array
+    {
+        return [
+            'slug' => ['source' => 'title'],
+        ];
+    }
+
+    /**
+     * Get the route key name for Laravel routing.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
 
     public function category()
     {

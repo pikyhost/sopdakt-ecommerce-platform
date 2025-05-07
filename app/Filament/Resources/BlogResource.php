@@ -155,6 +155,7 @@ class BlogResource extends Resource
             ->columns([
                 SpatieMediaLibraryImageColumn::make('main_blog_image')
                     ->label(__('Image'))
+                    ->circular()
                     ->collection('main_blog_image'),
                 Tables\Columns\TextColumn::make('title')
                     ->searchable()
@@ -329,11 +330,12 @@ class BlogResource extends Resource
                             Grid::make(2)->schema([
                                 Group::make([
                                     TextEntry::make('title'),
-                                    TextEntry::make('category.name'),
+                                    TextEntry::make('slug'),
+                                    IconEntry::make('is_active')->boolean(),
                                 ]),
                                 Group::make([
+                                    TextEntry::make('category.name'),
                                     TextEntry::make('author.name'),
-                                    IconEntry::make('is_active')->boolean(),
                                 ]),
                             ]),
                             SpatieMediaLibraryImageEntry::make('main_blog_image')
