@@ -319,7 +319,7 @@ class BlogResource extends Resource
                                 ]),
                                 Group::make([
                                     TextEntry::make('author.name'),
-                                    IconEntry::make('is_active')->boolean(),
+                                    IconEntry::make('is_active')->boolean()->columnSpanFull(),
                                 ]),
                             ]),
                             SpatieMediaLibraryImageEntry::make('main_blog_image')
