@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\NewsletterSubscriberController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\TopNoticeController;
 use App\Http\Controllers\Api\WheelController;
 use App\Http\Controllers\Api\WishlistController;
 use App\Http\Controllers\PaymentController;
@@ -130,5 +131,5 @@ Route::middleware('api')->group(function () {
     });
 });
 
-
 Route::get('/search', [GlobalSearchController::class, 'search'])->middleware('throttle:60,1');
+Route::get('/top-notices', [TopNoticeController::class, 'index']);
