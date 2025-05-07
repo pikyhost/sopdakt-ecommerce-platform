@@ -7,7 +7,6 @@ use App\Models\Blog;
 use App\Models\BlogCategory;
 use App\Models\Tag;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 
 class BlogController extends Controller
@@ -20,7 +19,6 @@ class BlogController extends Controller
      *
      * @route GET /api/blogs/categories
      * @middleware api
-     * @header Accept-Language en|ar (optional, defaults to en)
      * @response 200 {
      *     "success": true,
      *     "data": [
@@ -28,8 +26,7 @@ class BlogController extends Controller
      *             "id": 1,
      *             "name": "Category Name",
      *             "slug": "category-slug",
-     *             "blogs_count": 5,
-     *             ...
+     *             "blogs_count": 5
      *         },
      *         ...
      *     ],
@@ -38,15 +35,22 @@ class BlogController extends Controller
      */
     public function categories(Request $request)
     {
-        $locale = $request->header('Accept-Language', 'en');
-        App::setLocale($locale);
+        $locale = app()->getLocale();
 
-        $categories = BlogCategory::withCount(['blogs' => function($query) {
+        $categories = BlogCategory::withCount(['blogs' => function ($query) {
             $query->where('is_active', true);
         }])
             ->where('is_active', true)
             ->whereNull('parent_id')
-            ->get();
+            ->get()
+            ->map(function ($category) use ($locale) {
+                return [
+                    'id' => $category->id,
+                    'name' => $category->getTranslation('name', $locale),
+                    'slug' => $category->slug,
+                    'blogs_count' => $category->blogs_count,
+                ];
+            });
 
         return response()->json([
             'success' => true,
@@ -63,7 +67,6 @@ class BlogController extends Controller
      *
      * @route GET /api/blogs
      * @middleware api
-     * @header Accept-Language en|ar (optional, defaults to en)
      * @queryParam per_page integer Number of blogs per page. Default: 10
      * @queryParam page integer Page number. Default: 1
      * @response 200 {
@@ -75,10 +78,15 @@ class BlogController extends Controller
      *                 "title": "Blog Title",
      *                 "slug": "blog-slug",
      *                 "excerpt": "Blog excerpt...",
-     *                 "content": "Blog content...",
      *                 "published_at": "2023-01-01",
-     *                 "category": "Category Name",
-     *                 "author": "Author Name",
+     *                 "category": {
+     *                     "id": 1,
+     *                     "name": "Category Name"
+     *                 },
+     *                 "author": {
+     *                     "id": 1,
+     *                     "name": "Author Name"
+     *                 },
      *                 "image_url": "http://example.com/image.jpg",
      *                 "likes_count": 10,
      *                 "tags": [
@@ -97,8 +105,7 @@ class BlogController extends Controller
      */
     public function index(Request $request)
     {
-        $locale = $request->header('Accept-Language', 'en');
-        App::setLocale($locale);
+        $locale = app()->getLocale();
 
         $perPage = $request->input('per_page', 10);
         $page = $request->input('page', 1);
@@ -108,25 +115,29 @@ class BlogController extends Controller
             ->orderBy('published_at', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);
 
-        // Transform each blog to include image URLs
-        $transformedBlogs = $blogs->getCollection()->map(function($blog) {
+        $transformedBlogs = $blogs->getCollection()->map(function ($blog) use ($locale) {
             return [
                 'id' => $blog->id,
-                'title' => $blog->title,
+                'title' => $blog->getTranslation('title', $locale),
                 'slug' => $blog->slug,
-                'excerpt' => Str::limit(strip_tags($blog->content), 150),
-                'content' => $blog->content,
+                'excerpt' => Str::limit(strip_tags($blog->getTranslation('content', $locale)), 150),
                 'published_at' => $blog->published_at->format('Y-m-d'),
-                'category' => $blog->category->name,
-                'author' => $blog->author->name,
+                'category' => $blog->category ? [
+                    'id' => $blog->category->id,
+                    'name' => $blog->category->getTranslation('name', $locale),
+                ] : null,
+                'author' => [
+                    'id' => $blog->author->id,
+                    'name' => $blog->author->name,
+                ],
                 'image_url' => $blog->getMainBlogImageUrl(),
                 'likes_count' => $blog->likers()->count(),
-                'tags' => $blog->tags->map(function($tag) {
+                'tags' => $blog->tags->map(function ($tag) use ($locale) {
                     return [
                         'id' => $tag->id,
-                        'name' => App::getLocale() == 'ar' ? $tag->name_ar : $tag->name_en
+                        'name' => $locale == 'ar' ? $tag->name_ar : $tag->name_en,
                     ];
-                })
+                }),
             ];
         });
 
@@ -149,7 +160,6 @@ class BlogController extends Controller
      *
      * @route GET /api/blogs/{slug}
      * @middleware api
-     * @header Accept-Language en|ar (optional, defaults to en)
      * @response 200 {
      *     "success": true,
      *     "data": {
@@ -157,10 +167,12 @@ class BlogController extends Controller
      *         "title": "Blog Title",
      *         "slug": "blog-slug",
      *         "content": "Blog content...",
+     *         "excerpt": "Blog excerpt...",
      *         "published_at": "2023-01-01",
      *         "category": {
      *             "id": 1,
-     *             "name": "Category Name"
+     *             "name": "Category Name",
+     *             "slug": "category-slug"
      *         },
      *         "author": {
      *             "id": 1,
@@ -194,8 +206,7 @@ class BlogController extends Controller
      */
     public function show(Request $request, $slug)
     {
-        $locale = $request->header('Accept-Language', 'en');
-        App::setLocale($locale);
+        $locale = app()->getLocale();
 
         $blog = Blog::with(['category', 'author', 'tags', 'likers'])
             ->where('slug', $slug)
@@ -208,42 +219,44 @@ class BlogController extends Controller
             ->orderBy('published_at', 'desc')
             ->limit(3)
             ->get()
-            ->map(function($relatedBlog) {
+            ->map(function ($relatedBlog) use ($locale) {
                 return [
                     'id' => $relatedBlog->id,
-                    'title' => $relatedBlog->title,
+                    'title' => $relatedBlog->getTranslation('title', $locale),
                     'slug' => $relatedBlog->slug,
-                    'excerpt' => Str::limit(strip_tags($relatedBlog->content), 100),
+                    'excerpt' => Str::limit(strip_tags($relatedBlog->getTranslation('content', $locale)), 100),
                     'published_at' => $relatedBlog->published_at->format('Y-m-d'),
-                    'image_url' => $relatedBlog->getMainBlogImageUrl()
+                    'image_url' => $relatedBlog->getMainBlogImageUrl(),
                 ];
             });
 
         $response = [
             'id' => $blog->id,
-            'title' => $blog->title,
+            'title' => $blog->getTranslation('title', $locale),
             'slug' => $blog->slug,
-            'content' => $blog->content,
+            'content' => $blog->getTranslation('content', $locale),
+            'excerpt' => Str::limit(strip_tags($blog->getTranslation('content', $locale)), 150),
             'published_at' => $blog->published_at->format('Y-m-d'),
-            'category' => [
+            'category' => $blog->category ? [
                 'id' => $blog->category->id,
-                'name' => $blog->category->name
-            ],
+                'name' => $blog->category->getTranslation('name', $locale),
+                'slug' => $blog->category->slug,
+            ] : null,
             'author' => [
                 'id' => $blog->author->id,
                 'name' => $blog->author->name,
-                'avatar' => $blog->author->getAvatarUrl()
+                'avatar' => $blog->author->getAvatarUrl(),
             ],
             'image_url' => $blog->getMainBlogImageUrl(),
             'likes_count' => $blog->likers->count(),
             'is_liked' => $request->user() ? $blog->likers->contains($request->user()->id) : false,
-            'tags' => $blog->tags->map(function($tag) {
+            'tags' => $blog->tags->map(function ($tag) use ($locale) {
                 return [
                     'id' => $tag->id,
-                    'name' => App::getLocale() == 'ar' ? $tag->name_ar : $tag->name_en
+                    'name' => $locale == 'ar' ? $tag->name_ar : $tag->name_en,
                 ];
             }),
-            'related_blogs' => $relatedBlogs
+            'related_blogs' => $relatedBlogs,
         ];
 
         return response()->json([
@@ -262,7 +275,6 @@ class BlogController extends Controller
      *
      * @route GET /api/blogs/category/{categorySlug}
      * @middleware api
-     * @header Accept-Language en|ar (optional, defaults to en)
      * @queryParam per_page integer Number of blogs per page. Default: 10
      * @queryParam page integer Page number. Default: 1
      * @response 200 {
@@ -275,7 +287,10 @@ class BlogController extends Controller
      *                 "slug": "blog-slug",
      *                 "excerpt": "Blog excerpt...",
      *                 "published_at": "2023-01-01",
-     *                 "author": "Author Name",
+     *                 "author": {
+     *                     "id": 1,
+     *                     "name": "Author Name"
+     *                 },
      *                 "image_url": "http://example.com/image.jpg",
      *                 "likes_count": 10,
      *                 "tags": [
@@ -288,8 +303,7 @@ class BlogController extends Controller
      *         "category": {
      *             "id": 1,
      *             "name": "Category Name",
-     *             "slug": "category-slug",
-     *             ...
+     *             "slug": "category-slug"
      *         },
      *         "current_page": 1,
      *         "last_page": 5,
@@ -303,8 +317,7 @@ class BlogController extends Controller
      */
     public function byCategory(Request $request, $categorySlug)
     {
-        $locale = $request->header('Accept-Language', 'en');
-        App::setLocale($locale);
+        $locale = app()->getLocale();
 
         $perPage = $request->input('per_page', 10);
         $page = $request->input('page', 1);
@@ -319,28 +332,35 @@ class BlogController extends Controller
             ->orderBy('published_at', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);
 
-        $transformedBlogs = $blogs->getCollection()->map(function($blog) {
+        $transformedBlogs = $blogs->getCollection()->map(function ($blog) use ($locale) {
             return [
                 'id' => $blog->id,
-                'title' => $blog->title,
+                'title' => $blog->getTranslation('title', $locale),
                 'slug' => $blog->slug,
-                'excerpt' => Str::limit(strip_tags($blog->content), 150),
+                'excerpt' => Str::limit(strip_tags($blog->getTranslation('content', $locale)), 150),
                 'published_at' => $blog->published_at->format('Y-m-d'),
-                'author' => $blog->author->name,
+                'author' => [
+                    'id' => $blog->author->id,
+                    'name' => $blog->author->name,
+                ],
                 'image_url' => $blog->getMainBlogImageUrl(),
                 'likes_count' => $blog->likers()->count(),
-                'tags' => $blog->tags->map(function($tag) {
+                'tags' => $blog->tags->map(function ($tag) use ($locale) {
                     return [
                         'id' => $tag->id,
-                        'name' => App::getLocale() == 'ar' ? $tag->name_ar : $tag->name_en
+                        'name' => $locale == 'ar' ? $tag->name_ar : $tag->name_en,
                     ];
-                })
+                }),
             ];
         });
 
         $paginatedResponse = $blogs->toArray();
         $paginatedResponse['data'] = $transformedBlogs;
-        $paginatedResponse['category'] = $category;
+        $paginatedResponse['category'] = [
+            'id' => $category->id,
+            'name' => $category->getTranslation('name', $locale),
+            'slug' => $category->slug,
+        ];
 
         return response()->json([
             'success' => true,
@@ -358,12 +378,10 @@ class BlogController extends Controller
      *
      * @route GET /api/blogs/tag/{tagId}
      * @middleware api
-     * @header Accept-Language en|ar (optional, defaults to en)
      * @queryParam per_page integer Number of blogs per page. Default: 10
      * @queryParam page integer Page number. Default: 1
      * @response 200 {
      *     "success": true,
-    physics: true,
      *     "data": {
      *         "data": [
      *             {
@@ -372,8 +390,14 @@ class BlogController extends Controller
      *                 "slug": "blog-slug",
      *                 "excerpt": "Blog excerpt...",
      *                 "published_at": "2023-01-01",
-     *                 "author": "Author Name",
-     *                 "category": "Category Name",
+     *                 "author": {
+     *                     "id": 1,
+     *                     "name": "Author Name"
+     *                 },
+     *                 "category": {
+     *                     "id": 1,
+     *                     "name": "Category Name"
+     *                 },
      *                 "image_url": "http://example.com/image.jpg",
      *                 "likes_count": 10
      *             },
@@ -395,8 +419,7 @@ class BlogController extends Controller
      */
     public function byTag(Request $request, $tagId)
     {
-        $locale = $request->header('Accept-Language', 'en');
-        App::setLocale($locale);
+        $locale = app()->getLocale();
 
         $perPage = $request->input('per_page', 10);
         $page = $request->input('page', 1);
@@ -406,24 +429,30 @@ class BlogController extends Controller
             ->firstOrFail();
 
         $blogs = Blog::with(['author', 'category'])
-            ->whereHas('tags', function($query) use ($tagId) {
+            ->whereHas('tags', function ($query) use ($tagId) {
                 $query->where('id', $tagId);
             })
             ->where('is_active', true)
             ->orderBy('published_at', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);
 
-        $transformedBlogs = $blogs->getCollection()->map(function($blog) {
+        $transformedBlogs = $blogs->getCollection()->map(function ($blog) use ($locale) {
             return [
                 'id' => $blog->id,
-                'title' => $blog->title,
+                'title' => $blog->getTranslation('title', $locale),
                 'slug' => $blog->slug,
-                'excerpt' => Str::limit(strip_tags($blog->content), 150),
+                'excerpt' => Str::limit(strip_tags($blog->getTranslation('content', $locale)), 150),
                 'published_at' => $blog->published_at->format('Y-m-d'),
-                'author' => $blog->author->name,
-                'category' => $blog->category->name,
+                'author' => [
+                    'id' => $blog->author->id,
+                    'name' => $blog->author->name,
+                ],
+                'category' => $blog->category ? [
+                    'id' => $blog->category->id,
+                    'name' => $blog->category->getTranslation('name', $locale),
+                ] : null,
                 'image_url' => $blog->getMainBlogImageUrl(),
-                'likes_count' => $blog->likers()->count()
+                'likes_count' => $blog->likers()->count(),
             ];
         });
 
@@ -431,7 +460,7 @@ class BlogController extends Controller
         $paginatedResponse['data'] = $transformedBlogs;
         $paginatedResponse['tag'] = [
             'id' => $tag->id,
-            'name' => App::getLocale() == 'ar' ? $tag->name_ar : $tag->name_en
+            'name' => $locale == 'ar' ? $tag->name_ar : $tag->name_en,
         ];
 
         return response()->json([
@@ -449,7 +478,6 @@ class BlogController extends Controller
      *
      * @route GET /api/blogs/popular
      * @middleware api
-     * @header Accept-Language en|ar (optional, defaults to en)
      * @queryParam limit integer Number of blogs to return. Default: 5
      * @response 200 {
      *     "success": true,
@@ -470,8 +498,7 @@ class BlogController extends Controller
      */
     public function popular(Request $request)
     {
-        $locale = $request->header('Accept-Language', 'en');
-        App::setLocale($locale);
+        $locale = app()->getLocale();
 
         $limit = $request->input('limit', 5);
 
@@ -480,15 +507,15 @@ class BlogController extends Controller
             ->orderBy('likers_count', 'desc')
             ->limit($limit)
             ->get()
-            ->map(function($blog) {
+            ->map(function ($blog) use ($locale) {
                 return [
                     'id' => $blog->id,
-                    'title' => $blog->title,
+                    'title' => $blog->getTranslation('title', $locale),
                     'slug' => $blog->slug,
-                    'excerpt' => Str::limit(strip_tags($blog->content), 100),
+                    'excerpt' => Str::limit(strip_tags($blog->getTranslation('content', $locale)), 100),
                     'published_at' => $blog->published_at->format('Y-m-d'),
                     'image_url' => $blog->getMainBlogImageUrl(),
-                    'likes_count' => $blog->likers_count
+                    'likes_count' => $blog->likers_count,
                 ];
             });
 
@@ -507,7 +534,6 @@ class BlogController extends Controller
      *
      * @route GET /api/blogs/recent
      * @middleware api
-     * @header Accept-Language en|ar (optional, defaults to en)
      * @queryParam limit integer Number of blogs to return. Default: 5
      * @response 200 {
      *     "success": true,
@@ -527,8 +553,7 @@ class BlogController extends Controller
      */
     public function recent(Request $request)
     {
-        $locale = $request->header('Accept-Language', 'en');
-        App::setLocale($locale);
+        $locale = app()->getLocale();
 
         $limit = $request->input('limit', 5);
 
@@ -536,14 +561,14 @@ class BlogController extends Controller
             ->orderBy('published_at', 'desc')
             ->limit($limit)
             ->get()
-            ->map(function($blog) {
+            ->map(function ($blog) use ($locale) {
                 return [
                     'id' => $blog->id,
-                    'title' => $blog->title,
+                    'title' => $blog->getTranslation('title', $locale),
                     'slug' => $blog->slug,
-                    'excerpt' => Str::limit(strip_tags($blog->content), 100),
+                    'excerpt' => Str::limit(strip_tags($blog->getTranslation('content', $locale)), 100),
                     'published_at' => $blog->published_at->format('Y-m-d'),
-                    'image_url' => $blog->getMainBlogImageUrl()
+                    'image_url' => $blog->getMainBlogImageUrl(),
                 ];
             });
 
@@ -608,9 +633,9 @@ class BlogController extends Controller
             'success' => true,
             'data' => [
                 'likes_count' => $likesCount,
-                'is_liked' => $blog->likers()->where('user_id', $user->id)->exists()
+                'is_liked' => $blog->likers()->where('user_id', $user->id)->exists(),
             ],
-            'message' => $liked['attached'] ? 'Blog liked successfully' : 'Blog unliked successfully'
+            'message' => $liked['attached'] ? 'Blog liked successfully' : 'Blog unliked successfully',
         ]);
     }
 
@@ -622,7 +647,6 @@ class BlogController extends Controller
      *
      * @route GET /api/blogs/search
      * @middleware api
-     * @header Accept-Language en|ar (optional, defaults to en)
      * @queryParam query string required Search term
      * @queryParam per_page integer Number of blogs per page. Default: 10
      * @queryParam page integer Page number. Default: 1
@@ -636,8 +660,14 @@ class BlogController extends Controller
      *                 "slug": "blog-slug",
      *                 "excerpt": "Blog excerpt...",
      *                 "published_at": "2023-01-01",
-     *                 "author": "Author Name",
-     *                 "category": "Category Name",
+     *                 "author": {
+     *                     "id": 1,
+     *                     "name": "Author Name"
+     *                 },
+     *                 "category": {
+     *                     "id": 1,
+     *                     "name": "Category Name"
+     *                 },
      *                 "image_url": "http://example.com/image.jpg",
      *                 "likes_count": 10
      *             },
@@ -657,8 +687,7 @@ class BlogController extends Controller
      */
     public function search(Request $request)
     {
-        $locale = $request->header('Accept-Language', 'en');
-        App::setLocale($locale);
+        $locale = app()->getLocale();
 
         $query = $request->input('query');
         $perPage = $request->input('per_page', 10);
@@ -673,24 +702,30 @@ class BlogController extends Controller
 
         $blogs = Blog::with(['author', 'category'])
             ->where('is_active', true)
-            ->where(function($q) use ($query) {
-                $q->where('title', 'like', "%{$query}%")
-                    ->orWhere('content', 'like', "%{$query}%");
+            ->where(function ($q) use ($query, $locale) {
+                $q->whereRaw("JSON_EXTRACT(title, '$.{$locale}') LIKE ?", ["%{$query}%"])
+                    ->orWhereRaw("JSON_EXTRACT(content, '$.{$locale}') LIKE ?", ["%{$query}%"]);
             })
             ->orderBy('published_at', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);
 
-        $transformedBlogs = $blogs->getCollection()->map(function($blog) {
+        $transformedBlogs = $blogs->getCollection()->map(function ($blog) use ($locale) {
             return [
                 'id' => $blog->id,
-                'title' => $blog->title,
+                'title' => $blog->getTranslation('title', $locale),
                 'slug' => $blog->slug,
-                'excerpt' => Str::limit(strip_tags($blog->content), 150),
+                'excerpt' => Str::limit(strip_tags($blog->getTranslation('content', $locale)), 150),
                 'published_at' => $blog->published_at->format('Y-m-d'),
-                'author' => $blog->author->name,
-                'category' => $blog->category->name,
+                'author' => [
+                    'id' => $blog->author->id,
+                    'name' => $blog->author->name,
+                ],
+                'category' => $blog->category ? [
+                    'id' => $blog->category->id,
+                    'name' => $blog->category->getTranslation('name', $locale),
+                ] : null,
                 'image_url' => $blog->getMainBlogImageUrl(),
-                'likes_count' => $blog->likers()->count()
+                'likes_count' => $blog->likers()->count(),
             ];
         });
 
