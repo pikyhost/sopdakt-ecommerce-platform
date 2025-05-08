@@ -731,15 +731,15 @@ class CartListController extends Controller
             return Cart::firstOrCreate(
                 ['user_id' => Auth::id()],
                 [
-                    'session_id' => null,
+                    'session_id' => session()->getId(),
                     'country_id' => request('country_id'),
                     'governorate_id' => request('governorate_id'),
                 ]
             );
         }
 
-        $sessionId = Session::get('cart_session', Session::getId());
-        Session::put('cart_session', $sessionId);
+        // Use consistent session ID for guest
+        $sessionId = session()->getId();
 
         return Cart::firstOrCreate(
             ['session_id' => $sessionId],
@@ -750,6 +750,7 @@ class CartListController extends Controller
             ]
         );
     }
+
 
     /**
      * Load cart items with necessary data
@@ -851,7 +852,7 @@ class CartListController extends Controller
                             ->orWhere('applies_to', 'category')
                             ->whereIn('id', function ($q2) use ($product) {
                                 $q2->select('discount_id')->from('discount_category')
-                                    ->whereIn('category_id', $product->categories()->pluck('categories.id'));
+                                    ->whereIn('category_id', $product->category()->pluck('categories.id'));
                             })
                             ->orWhere('applies_to', 'collection')
                             ->whereIn('id', function ($q2) use ($product) {

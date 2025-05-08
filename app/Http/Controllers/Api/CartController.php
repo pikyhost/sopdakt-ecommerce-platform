@@ -43,13 +43,16 @@ class CartController extends Controller
      */
     public function index(Request $request)
     {
-        $cart = Cart::where(function ($query) {
-            if (Auth::check()) {
-                $query->where('user_id', Auth::id());
-            } else {
-                $query->where('session_id', Session::getId());
-            }
-        })->with('items.product')->first();
+        $cart = Cart::with('items.product')
+            ->where(function ($query) {
+                if (Auth::check()) {
+                    $query->where('user_id', Auth::id());
+                } else {
+                    $query->where('session_id', Session::getId());
+                }
+            })
+            ->first();
+
 
         return response()->json([
             'cart' => $cart,
@@ -144,9 +147,15 @@ class CartController extends Controller
     }
 
     $cart = Cart::firstOrCreate(
-        ['user_id' => Auth::id()],
-        ['session_id' => Auth::check() ? null : Session::getId()]
+        Auth::check()
+            ? ['user_id' => Auth::id()]
+            : ['session_id' => Session::getId()],
+        [
+            'user_id' => Auth::id(),
+            'session_id' => Auth::check() ? null : Session::getId()
+        ]
     );
+
 
     $cartItem = $cart->items()
         ->where('product_id', $product->id)
