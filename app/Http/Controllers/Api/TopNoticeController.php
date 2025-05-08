@@ -19,12 +19,6 @@ class TopNoticeController extends Controller
             ->map(function ($notice) use ($suffix) {
                 return [
                     'content' => $notice->{'content' . $suffix},
-                    'cta_text' => $notice->{'cta_text' . $suffix},
-                    'cta_url' => $notice->cta_url,
-                    'cta_text_2' => $notice->{'cta_text_2' . $suffix},
-                    'cta_url_2' => $notice->cta_url_2,
-                    'limited_time_text' => $notice->{'limited_time_text' . $suffix},
-                    'header_message' => $notice->{'header_message' . $suffix},
                 ];
             });
 

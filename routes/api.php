@@ -132,4 +132,4 @@ Route::middleware('api')->group(function () {
 });
 
 Route::get('/global-search', [GlobalSearchController::class, 'search'])->middleware('throttle:60,1');
-Route::get('/top-notices', [TopNoticeController::class, 'index']);
+Route::get('/top-bars', [TopNoticeController::class, 'index']);
