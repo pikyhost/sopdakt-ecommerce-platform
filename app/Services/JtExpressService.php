@@ -25,14 +25,14 @@ class JtExpressService
 
     protected function getAuthHeaders(array $requestBody)
     {
-        $bizContent = json_encode($requestBody, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        $digest = base64_encode(md5($bizContent . $this->privateKey, true));
+        $data_param = http_build_query($requestBody);
+        $digest = base64_encode(md5($data_param . $this->privateKey, true));
 
         return [
             'apiAccount' => $this->apiAccount,
             'digest' => $digest,
             'timestamp' => time(),
-            'Content-Type' => 'application/json',
+            'Content-Type' => 'application/x-www-form-urlencoded',
         ];
     }
 
@@ -48,6 +48,7 @@ class JtExpressService
     {
         try {
             $response = Http::withHeaders($this->getAuthHeaders($payload))
+                ->asForm()
                 ->post($this->baseUrl . $endpoint, $payload);
 
             $responseData = $response->json();
@@ -58,7 +59,10 @@ class JtExpressService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            throw new Exception("Failed to process J&T Express request: " . $e->getMessage());
+            return [
+                'code' => 0,
+                'msg' => 'Request failed: ' . $e->getMessage(),
+            ];
         }
     }
 
