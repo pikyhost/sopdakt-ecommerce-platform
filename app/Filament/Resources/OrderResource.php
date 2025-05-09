@@ -455,10 +455,8 @@ class OrderResource extends Resource
                     ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt && !is_null($record->tracking_number))
                     ->action(function (Order $record): void {
                         try {
-                            // Decode shipping_response as an associative array
                             $shipping_response = json_decode($record->shipping_response, true);
 
-                            // Validate JSON decoding
                             if (json_last_error() !== JSON_ERROR_NONE || !is_array($shipping_response)) {
                                 Log::error('Invalid shipping_response', [
                                     'order_id' => $record->id,
@@ -472,16 +470,13 @@ class OrderResource extends Resource
                                 return;
                             }
 
-                            // Normalize shipping_response to extract data or use top-level properties
                             $response_data = isset($shipping_response['data'])
                                 ? $shipping_response['data']
                                 : $shipping_response;
 
-                            // Use tracking_number as fallback for txlogisticId or billCode
                             $txlogisticId = $response_data['txlogisticId'] ?? $record->tracking_number;
                             $billCode = $response_data['billCode'] ?? $record->tracking_number;
 
-                            // Ensure required fields exist
                             if (!$txlogisticId || !$billCode) {
                                 Log::error('Missing check order data', [
                                     'order_id' => $record->id,
@@ -497,7 +492,6 @@ class OrderResource extends Resource
                                 return;
                             }
 
-                            // Create a stdClass object for JtExpressService compatibility
                             $check_data = (object) [
                                 'txlogisticId' => $txlogisticId,
                                 'billCode' => $billCode,
@@ -546,10 +540,8 @@ class OrderResource extends Resource
                     ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt && !is_null($record->tracking_number))
                     ->action(function (Order $record): void {
                         try {
-                            // Decode shipping_response as an associative array
                             $shipping_response = json_decode($record->shipping_response, true);
 
-                            // Validate JSON decoding
                             if (json_last_error() !== JSON_ERROR_NONE || !is_array($shipping_response)) {
                                 Log::error('Invalid shipping_response', [
                                     'order_id' => $record->id,
@@ -563,16 +555,13 @@ class OrderResource extends Resource
                                 return;
                             }
 
-                            // Normalize shipping_response to extract data or use top-level properties
                             $response_data = isset($shipping_response['data'])
                                 ? $shipping_response['data']
                                 : $shipping_response;
 
-                            // Use tracking_number as fallback for txlogisticId or billCode
                             $txlogisticId = $response_data['txlogisticId'] ?? $record->tracking_number;
                             $billCode = $response_data['billCode'] ?? $record->tracking_number;
 
-                            // Ensure required fields exist
                             if (!$txlogisticId || !$billCode) {
                                 Log::error('Missing status data', [
                                     'order_id' => $record->id,
@@ -588,7 +577,6 @@ class OrderResource extends Resource
                                 return;
                             }
 
-                            // Create a stdClass object for JtExpressService compatibility
                             $status_data = (object) [
                                 'txlogisticId' => $txlogisticId,
                                 'billCode' => $billCode,
@@ -644,10 +632,8 @@ class OrderResource extends Resource
                     ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt && !is_null($record->tracking_number))
                     ->action(function (Order $record): void {
                         try {
-                            // Decode shipping_response as an associative array
                             $shipping_response = json_decode($record->shipping_response, true);
 
-                            // Validate JSON decoding
                             if (json_last_error() !== JSON_ERROR_NONE || !is_array($shipping_response)) {
                                 Log::error('Invalid shipping_response', [
                                     'order_id' => $record->id,
@@ -661,16 +647,13 @@ class OrderResource extends Resource
                                 return;
                             }
 
-                            // Normalize shipping_response to extract data or use top-level properties
                             $response_data = isset($shipping_response['data'])
                                 ? $shipping_response['data']
                                 : $shipping_response;
 
-                            // Use tracking_number as fallback for txlogisticId or billCode
                             $txlogisticId = $response_data['txlogisticId'] ?? $record->tracking_number;
                             $billCode = $response_data['billCode'] ?? $record->tracking_number;
 
-                            // Ensure required fields exist
                             if (!$txlogisticId || !$billCode) {
                                 Log::error('Missing trajectory data', [
                                     'order_id' => $record->id,
@@ -686,7 +669,6 @@ class OrderResource extends Resource
                                 return;
                             }
 
-                            // Create a stdClass object for JtExpressService compatibility
                             $trajectory_data = (object) [
                                 'txlogisticId' => $txlogisticId,
                                 'billCode' => $billCode,
@@ -741,10 +723,8 @@ class OrderResource extends Resource
                         $record->shipping_status !== 'cancelled')
                     ->action(function (Order $record): void {
                         try {
-                            // Decode shipping_response as an associative array
                             $shipping_response = json_decode($record->shipping_response, true);
 
-                            // Validate JSON decoding
                             if (json_last_error() !== JSON_ERROR_NONE || !is_array($shipping_response)) {
                                 Log::error('Invalid shipping_response', [
                                     'order_id' => $record->id,
@@ -758,16 +738,13 @@ class OrderResource extends Resource
                                 return;
                             }
 
-                            // Normalize shipping_response to extract data or use top-level properties
                             $response_data = isset($shipping_response['data'])
                                 ? $shipping_response['data']
                                 : $shipping_response;
 
-                            // Use tracking_number as fallback for txlogisticId or billCode
                             $txlogisticId = $response_data['txlogisticId'] ?? $record->tracking_number;
                             $billCode = $response_data['billCode'] ?? $record->tracking_number;
 
-                            // Ensure required fields exist
                             if (!$txlogisticId || !$billCode) {
                                 Log::error('Missing cancel order data', [
                                     'order_id' => $record->id,
@@ -783,7 +760,6 @@ class OrderResource extends Resource
                                 return;
                             }
 
-                            // Create a stdClass object for JtExpressService compatibility
                             $cancel_data = (object) [
                                 'txlogisticId' => $txlogisticId,
                                 'billCode' => $billCode,
