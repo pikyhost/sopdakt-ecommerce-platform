@@ -58,7 +58,6 @@ class ShippingController extends Controller
             }
 
             Log::info('JT Express Webhook: Order updated successfully', [
-                'order_id' => $order->id,
                 'tracking_number' => $trackingNumber,
                 'new_status' => $newStatus,
             ]);
