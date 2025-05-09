@@ -367,6 +367,7 @@ class SettingResource extends Resource
                     ])->columns(3),
 
                 Forms\Components\Section::make(__('Shipping Providers'))
+                    ->visible(fn () => Auth::user()->hasRole('super_admin'))
                     ->description(__('Enable/disable available shipping partners and configure their visibility at checkout'))
                     ->collapsed(true)
                     ->schema([
