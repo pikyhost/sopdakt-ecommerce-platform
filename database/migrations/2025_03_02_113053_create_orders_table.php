@@ -30,6 +30,11 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->timestamps();
 
+            $table->string('aramex_shipment_id')->nullable()->after('status');
+            $table->string('aramex_tracking_number')->nullable()->after('aramex_shipment_id');
+            $table->string('aramex_tracking_url')->nullable()->after('aramex_tracking_number');
+            $table->text('aramex_response')->nullable()->after('aramex_tracking_url');
+
             $table->string('tracking_number')->nullable();
             $table->string('shipping_status')->nullable();
             $table->json('shipping_response')->nullable();

@@ -32,39 +32,45 @@ class AramexService
                     'city' => config('aramex.shipper.city'),
                     'zip_code' => config('aramex.shipper.zip_code', ''),
                     'line1' => config('aramex.shipper.address'),
-                    'line2' => '',
+                    'line2' => config('aramex.shipper.line2', 'Unknown Address'),
                     'line3' => '',
                 ],
                 'consignee' => [
                     'name' => $contact->name ?? 'Customer',
-                    'email' => $contact->email ?? 'N/A',
-                    'phone' => $contact->phone ?? 'N/A',
-                    'cell_phone' => $contact->phone ?? 'N/A',
+                    'email' => $contact->email ?? 'unknown@example.com',
+                    'phone' => $contact->phone ?? '0000000000',
+                    'cell_phone' => $contact->phone ?? '0000000000',
                     'country_code' => $order->country->code ?? 'SA',
-                    'city' => $city->name ?? 'N/A',
+                    'city' => $city->name ?? 'Unknown City',
                     'zip_code' => $contact->zip_code ?? '',
-                    'line1' => $contact->address ?? 'N/A',
-                    'line2' => '',
+                    'line1' => $contact->address ?? 'Unknown Address',
+                    'line2' => $contact->line2 ?? 'Unknown Address',
                     'line3' => '',
                 ],
                 'shipping_date_time' => time(),
                 'due_date' => time() + 86400, // 1 day later
                 'comments' => 'Order #' . $order->id,
-                'pickup_location' => 'N/A',
-                'weight' => 1,
+                'pickup_location' => config('aramex.shipper.address'), // Set to shipper's address
+                'weight' => 1, // Adjust based on actual weight
                 'number_of_pieces' => 1,
                 'description' => 'Order #' . $order->id,
                 'reference' => 'REF' . $order->id,
                 'shipper_reference' => 'SHIPPER' . $order->id,
                 'consignee_reference' => 'CONSIGNEE' . $order->id,
                 'services' => 'CODS',
-                'cash_on_delivery_amount' => $order->total / 100,
+                'cash_on_delivery_amount' => $order->total / 100, // Assuming total is in cents
                 'product_group' => config('aramex.product_group', 'EXP'),
                 'product_type' => config('aramex.product_type', 'PPX'),
                 'payment_type' => config('aramex.payment_type', 'P'),
             ];
 
+            // Log request for debugging
+            Log::info('Aramex Shipment Data', $shipmentData);
+
             $response = $this->aramex->createShipment($shipmentData);
+
+            // Log response for debugging
+            Log::info('Aramex API Response', (array) $response);
 
             if (empty($response->error) && isset($response->Shipments->ProcessedShipment->ID)) {
                 $shipment = $response->Shipments->ProcessedShipment;
@@ -75,19 +81,23 @@ class AramexService
                     'tracking_url' => $shipment->ShipmentLabel->LabelURL ?? 'https://www.aramex.com/track/shipments',
                     'response' => json_encode($response),
                 ];
+            } else {
+                $errorMessage = 'Unknown error';
+                if (!empty($response->error) && !empty($response->errors)) {
+                    $errorMessage = collect($response->errors)->pluck('Message')->implode('; ');
+                } elseif (isset($response->error)) {
+                    $errorMessage = $response->error;
+                }
+                return [
+                    'success' => false,
+                    'error' => $errorMessage,
+                ];
             }
-
-            $errorMessage = 'Unknown error';
-            if (!empty($response->error) && !empty($response->errors)) {
-                $errorMessage = collect($response->errors)->pluck('Message')->implode('; ');
-            }
-
-            return [
-                'success' => false,
-                'error' => $errorMessage,
-            ];
         } catch (\Exception $e) {
-            Log::error('Aramex shipment creation failed: ' . $e->getMessage());
+            Log::error('Aramex shipment creation failed: ' . $e->getMessage(), [
+                'order_id' => $order->id,
+                'exception' => $e->getTraceAsString(),
+            ]);
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
@@ -100,6 +110,9 @@ class AramexService
         try {
             $response = $this->aramex->trackShipments([$shipmentId]);
 
+            // Log response for debugging
+            Log::info('Aramex Tracking Response', (array) $response);
+
             if (empty($response->error) && isset($response->TrackingResults)) {
                 $trackingResult = collect($response->TrackingResults->KeyValueOfstringArrayOfTrackingResultmFAkxlpY)
                     ->firstWhere('Key', $shipmentId);
@@ -111,23 +124,24 @@ class AramexService
                         'status' => $latestUpdate->UpdateDescription ?? 'Unknown',
                         'last_update' => $latestUpdate->UpdateDateTime ?? now(),
                     ];
+                } else {
+                    return [
+                        'success' => false,
+                        'error' => 'No tracking results found',
+                    ];
                 }
-
+            } else {
+                $errorMessage = 'Unknown error';
+                if (!empty($response->error) && !empty($response->errors)) {
+                    $errorMessage = collect($response->errors)->pluck('Message')->implode('; ');
+                } elseif (isset($response->error)) {
+                    $errorMessage = $response->error;
+                }
                 return [
                     'success' => false,
-                    'error' => 'No tracking results found',
+                    'error' => $errorMessage,
                 ];
             }
-
-            $errorMessage = 'Unknown error';
-            if (!empty($response->error) && !empty($response->errors)) {
-                $errorMessage = collect($response->errors)->pluck('Message')->implode('; ');
-            }
-
-            return [
-                'success' => false,
-                'error' => $errorMessage,
-            ];
         } catch (\Exception $e) {
             Log::error('Aramex tracking failed: ' . $e->getMessage());
             return [

@@ -647,7 +647,7 @@ class OrderResource extends Resource
                     ->icon('heroicon-m-truck')
                     ->color('primary')
                     ->visible(fn($record) => Setting::first()?->enable_aramex &&
-                        $record->status === 'preparing'
+                        $record->status === OrderStatus::Preparing
                     )
                     ->action(function ($record, AramexService $aramexService) {
                         try {
@@ -718,6 +718,8 @@ class OrderResource extends Resource
                             throw $e;
                         }
                     }),
+
+
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
