@@ -115,6 +115,8 @@ class CityResource extends Resource
                     ->numeric()
                     ->default(0),
 
+                Forms\Components\TextInput::make('bosta_code'),
+
                 Forms\Components\TextInput::make('shipping_estimate_time')
                     ->label(__('shipping_cost.shipping_estimate_time'))
                     ->maxLength(255)
