@@ -645,7 +645,7 @@ class OrderResource extends Resource
                 Action::make('ship_with_aramex')
                     ->label('Ship with Aramex')
                     ->icon('heroicon-o-truck')
-                    ->visible(fn ($record) => $record->status === 'preparing')
+                    ->visible(fn ($record) =>   $record->status === OrderStatus::Preparing)
                     ->requiresConfirmation()
                     ->action(function ($record) {
                         $response = app(AramexService::class)->createShipment($record);
