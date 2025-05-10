@@ -35,34 +35,44 @@ class BostaService
      */
     public function createDelivery($order)
     {
+        $contact = $order->user ?? $order->contact;
+        $city = $order->city;
+
+        if (!$contact || !$contact->address) {
+            Log::error('Cannot create Bosta delivery: missing contact address', ['order_id' => $order->id]);
+            return null;
+        }
+
+        if (!$city || !$city->name) {
+            Log::error('Cannot create Bosta delivery: missing city', ['order_id' => $order->id]);
+            return null;
+        }
+
+        $payload = [
+            'type' => 10, // Cash on Delivery (adjust as needed)
+            'specs' => [
+                'packageDetails' => [
+                    'itemsCount' => 1,
+                    'description' => 'Order #' . $order->id,
+                ],
+            ],
+            'notes' => $order->notes ?? '',
+            'cod' => $order->total, // Cash on Delivery amount
+            'dropOffAddress' => [
+                'city' => $city->name, // Update to city code if required
+                'firstLine' => $contact->address,
+                'district' => $order->governorate->name,
+            ],
+            'receiver' => [
+                'firstName' => $contact->first_name ?? 'N/A',
+                'lastName' => $contact->last_name ?? 'N/A',
+                'phone' => $contact->phone,
+                'email' => $contact->email ?? null,
+            ],
+        ];
+
         try {
-            $contact = $order->contact;
-            $city = $order->city;
-
-            $payload = [
-                'type' => 10, // Cash on Delivery (adjust as needed)
-                'specs' => [
-                    'packageDetails' => [
-                        'itemsCount' => 1,
-                        'description' => 'Order #' . $order->id,
-                    ],
-                ],
-                'notes' => $order->notes ?? '',
-                'cod' => $order->total, // Cash on Delivery amount
-                'dropOffAddress' => [
-                    'city' => $city->name,
-                    'firstLine' => $contact->address ?? 'N/A',
-                    'district' => $order->governorate->name,
-                ],
-                'receiver' => [
-                    'firstName' => $contact->first_name ?? 'N/A',
-                    'lastName' => $contact->last_name ?? 'N/A',
-                    'phone' => $contact->phone,
-                    'email' => $contact->email ?? null,
-                ],
-            ];
-
-            $response = $this->client->post('/deliveries', [
+            $response = $this->client->post('/api/v2/deliveries', [
                 'json' => $payload,
             ]);
 
@@ -75,7 +85,6 @@ class BostaService
             return null;
         }
     }
-
     /**
      * Map Bosta status to local OrderStatus enum.
      *

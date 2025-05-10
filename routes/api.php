@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\TopNoticeController;
 use App\Http\Controllers\Api\WheelController;
 use App\Http\Controllers\Api\WishlistController;
+use App\Http\Controllers\BostaWebhookController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -28,6 +29,8 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::post('jt-express-webhook', [ShippingController::class, 'handleWebhook']);
+
+ Route::post('/bosta/webhook', [BostaWebhookController::class, 'handle']);
 
 Route::post('/payment/process', [PaymentController::class, 'paymentProcess']);
 Route::match(['GET','POST'],'/payment/callback', [PaymentController::class, 'callBack']);

@@ -598,14 +598,14 @@ class OrderResource extends Resource
                         }
                     }),
 
-                // BOSTA ACTION
                 Action::make('send_to_bosta')
                     ->label('Send to Bosta')
                     ->icon('heroicon-o-truck')
                     ->color('primary')
                     ->visible(fn(Order $record): bool => Setting::first()?->enable_bosta &&
                         $record->status === OrderStatus::Preparing &&
-                        !$record->bosta_delivery_id
+                        !$record->bosta_delivery_id &&
+                        $record->contact->address
                     )
                     ->requiresConfirmation()
                     ->modalHeading('Send Order to Bosta')
