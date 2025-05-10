@@ -46,4 +46,14 @@ return [
         'webhook_url' => env('BOSTA_WEBHOOK_URL'),
         'webhook_secret' => env('BOSTA_WEBHOOK_SECRET'),
     ],
+
+    'aramex' => [
+        'username' => env('ARAMEX_USERNAME'),
+        'password' => env('ARAMEX_PASSWORD'),
+        'account_number' => env('ARAMEX_ACCOUNT_NUMBER'),
+        'account_pin' => env('ARAMEX_ACCOUNT_PIN'),
+        'account_entity' => env('ARAMEX_ACCOUNT_ENTITY'),
+        'account_country_code' => env('ARAMEX_ACCOUNT_COUNTRY_CODE'),
+        'url' => env('ARAMEX_URL', 'https://ws.aramex.net/shippingapi.v2/CreateShipments'),
+    ],
 ];
