@@ -17,15 +17,12 @@ class BostaWebhookController extends Controller
 
         if ($deliveryId && $bostaStatus) {
             $order = Order::where('bosta_delivery_id', $deliveryId)->first();
-
             if ($order) {
-                $bostaService = new BostaService();
-                $orderStatus = $bostaService->mapBostaStatusToOrderStatus($bostaStatus);
+                $orderStatus = (new BostaService())->mapBostaStatusToOrderStatus($bostaStatus);
                 $order->update(['status' => $orderStatus]);
                 Log::info('Bosta status updated', ['order_id' => $order->id, 'new_status' => $orderStatus]);
             }
         }
-
         return response()->json(['status' => 'success']);
     }
 }

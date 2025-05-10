@@ -604,7 +604,10 @@ class OrderResource extends Resource
                     ->color('primary')
                     ->visible(fn(Order $record): bool => Setting::first()?->enable_bosta &&
                         $record->status === OrderStatus::Preparing &&
-                        !$record->bosta_delivery_id
+                        !$record->bosta_delivery_id &&
+                        ($record->user || $record->contact) &&
+                        ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
+                        $record->city?->bosta_code
                     )
                     ->requiresConfirmation()
                     ->modalHeading('Send Order to Bosta')
@@ -619,19 +622,13 @@ class OrderResource extends Resource
                                 'status' => OrderStatus::Shipping,
                                 'bosta_delivery_id' => $response['deliveryId'],
                             ]);
-                            Notification::make()
-                                ->title('Order sent to Bosta')
-                                ->success()
-                                ->send();
+                            Notification::make()->title('Order sent to Bosta')->success()->send();
                         } else {
-                            Notification::make()
-                                ->title('Failed to send order to Bosta')
-                                ->danger()
-                                ->send();
+                            Notification::make()->title('Failed to send order to Bosta')->danger()->send();
                             Log::error('Failed to create Bosta delivery for order.', ['order_id' => $record->id]);
                         }
                     }),
-
+                
                 // ARAMEX ACTIONS
                 Action::make('shipWithAramex')
                     ->label('Ship with Aramex')
