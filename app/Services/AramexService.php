@@ -4,76 +4,142 @@ namespace App\Services;
 
 use App\Models\Order;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class AramexService
 {
+    protected string $apiUrl;
+    protected string $username;
+    protected string $password;
+    protected string $accountNumber;
+    protected string $accountPin;
+    protected string $accountEntity;
+    protected string $accountCountryCode;
+
+    public function __construct()
+    {
+        $this->apiUrl = config('services.aramex.url', 'https://ws.aramex.net/shippingapi.v2/CreateShipments');
+        $this->username = config('services.aramex.username');
+        $this->password = config('services.aramex.password');
+        $this->accountNumber = config('services.aramex.account_number');
+        $this->accountPin = config('services.aramex.account_pin');
+        $this->accountEntity = config('services.aramex.account_entity');
+        $this->accountCountryCode = config('services.aramex.account_country_code');
+    }
+
     public function createShipment(Order $order): array
     {
-        $contact = $order->user?? $order->contact;
+        try {
+            $contact = $order->user ?? $order->contact;
 
-        $data = [
-            'ClientInfo' => [
-                'UserName' => env('ARAMEX_USERNAME'),
-                'Password' => env('ARAMEX_PASSWORD'),
-                'AccountNumber' => env('ARAMEX_ACCOUNT_NUMBER'),
-                'AccountPin' => env('ARAMEX_ACCOUNT_PIN'),
-                'AccountEntity' => env('ARAMEX_ACCOUNT_ENTITY'),
-                'AccountCountryCode' => env('ARAMEX_COUNTRY_CODE'),
-            ],
-            'LabelInfo' => [
-                'ReportID' => 9729,
-                'ReportType' => 'URL'
-            ],
-            'Shipments' => [[
-                'Reference1' => $order->id,
-                'Shipper' => [
-                    'Name' => 'Your Company Name',
-                    'EmailAddress' => 'shipper@example.com',
-                    'PhoneNumber1' => '0799999999',
-                    'Line1' => 'Your address line 1',
-                    'City' => 'Amman',
-                    'CountryCode' => env('ARAMEX_COUNTRY_CODE'),
+            $data = [
+                'ClientInfo' => [
+                    'UserName'      => $this->username,
+                    'Password'      => $this->password,
+                    'Version'       => 'v1.0',
+                    'AccountNumber' => $this->accountNumber,
+                    'AccountPin'    => $this->accountPin,
+                    'AccountEntity' => $this->accountEntity,
+                    'AccountCountryCode' => $this->accountCountryCode,
                 ],
-                'Consignee' => [
-                    'Name' => $contact->name ?? 'Customer',
-                    'EmailAddress' => $contact->email ?? 'customer@example.com',
-                    'PhoneNumber1' => $contact->phone,
-                    'Line1' => 'Tanta test',
-                    'City' => $order->city->name,
-                    'CountryCode' => $order->country->code,
+                'LabelInfo' => [
+                    'ReportID'   => 9729,
+                    'ReportType' => 'URL',
                 ],
-                'Details' => [
-                    'ActualWeight' => ['Value' => 1, 'Unit' => 'KG'],
-                    'ProductGroup' => 'DOM',
-                    'ProductType' => 'OND',
-                    'PaymentType' => 'P',
-                    'NumberOfPieces' => 1,
-                    'DescriptionOfGoods' => 'Order #' . $order->id,
-                    'GoodsOriginCountry' => env('ARAMEX_COUNTRY_CODE'),
-                ],
-            ]],
-        ];
+                'Shipments' => [
+                    [
+                        'Reference1'  => 'Order-' . $order->id,
+                        'Shipper'     => [
+                            'Name'         => 'Your Company',
+                            'CellPhone'    => '0000000000',
+                            'Email'        => 'support@yourcompany.com',
+                            'Line1'        => 'Street Address',
+                            'City'         => 'Your City',
+                            'CountryCode'  => $this->accountCountryCode,
+                        ],
+                        'Consignee' => [
+                            'Name'        => $contact->name,
+                            'CellPhone'   => $contact->phone,
+                            'Email'       => $contact->email,
+                            'Line1'       => $contact->address,
+                            'City'        => $order->city?->name ?? 'City',
+                            'CountryCode' => $order->country?->code ?? 'EG',
+                        ],
+                        'ShippingDateTime' => now()->toIso8601String(),
+                        'DueDate'          => now()->addDays(3)->toIso8601String(),
+                        'Comments'         => 'Handle with care',
+                        'PickupLocation'   => 'Reception',
+                        'Details' => [
+                            'Dimensions' => [
+                                'Length' => 10,
+                                'Width'  => 10,
+                                'Height' => 10,
+                                'Unit'   => 'cm'
+                            ],
+                            'ActualWeight' => [
+                                'Value' => 1,
+                                'Unit'  => 'KG'
+                            ],
+                            'ProductGroup' => 'EXP',
+                            'ProductType'  => 'PPX',
+                            'PaymentType'  => 'P',
+                            'PaymentOptions' => '',
+                            'Services' => '',
+                            'NumberOfPieces' => 1,
+                            'DescriptionOfGoods' => 'E-commerce Order',
+                            'GoodsOriginCountry' => $this->accountCountryCode,
+                        ]
+                    ]
+                ]
+            ];
 
-        $response = Http::withHeaders(['Content-Type' => 'application/json'])
-            ->post('https://ws.aramex.net/shippingapi.v2/CreateShipments', $data);
+            $response = Http::withHeaders(['Content-Type' => 'application/json'])
+                ->post($this->apiUrl, $data);
 
-        $result = $response->json();
+            $result = $response->json();
 
-        if ($response->failed() || ($result['HasErrors'] ?? false)) {
+            if ($response->failed() || ($result['HasErrors'] ?? false)) {
+                Log::error('Aramex shipment failed', [
+                    'order_id' => $order->id,
+                    'response' => $result,
+                    'request' => $data,
+                ]);
+
+                return [
+                    'success' => false,
+                    'message' => $result['Notifications'][0]['Message']
+                        ?? $result['Notifications'][0]['Description']
+                            ?? 'Unknown error',
+                ];
+            }
+
+            $shipment = $result['Shipments'][0];
+
+            // Save Aramex tracking info
+            $order->update([
+                'aramex_shipment_id'    => $shipment['ID'] ?? null,
+                'aramex_tracking_number'=> $shipment['ShipmentID'] ?? null,
+                'aramex_tracking_url'   => $shipment['ShipmentLabel'] ?? null,
+                'status'                => 'shipping',
+                'aramex_response'       => json_encode($result),
+            ]);
+
+            return [
+                'success' => true,
+                'tracking_number' => $shipment['ShipmentID'],
+                'tracking_url'    => $shipment['ShipmentLabel'],
+            ];
+        } catch (\Throwable $e) {
+            Log::error('Aramex shipment exception', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             return [
                 'success' => false,
-                'message' => $result['Notifications'][0]['Message'] ?? 'Unknown error',
+                'message' => 'Unexpected error: ' . $e->getMessage(),
             ];
         }
-
-        $shipment = $result['Shipments'][0];
-
-        return [
-            'success' => true,
-            'shipment_id' => $shipment['ID'],
-            'tracking_number' => $shipment['ID'],
-            'tracking_url' => "https://www.aramex.com/track/shipments?ShipmentNumber={$shipment['ID']}",
-            'raw' => $result,
-        ];
     }
 }
