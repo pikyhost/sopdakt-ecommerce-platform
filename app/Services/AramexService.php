@@ -20,6 +20,10 @@ class AramexService
     {
         $this->apiUrl = config('services.aramex.url', 'https://ws.aramex.net/shippingapi.v2/CreateShipments');
         $this->username = config('services.aramex.username');
+        if (!$this->username) {
+            throw new \Exception("Aramex username is not configured.");
+        }
+
         $this->password = config('services.aramex.password');
         $this->accountNumber = config('services.aramex.account_number');
         $this->accountPin = config('services.aramex.account_pin');
