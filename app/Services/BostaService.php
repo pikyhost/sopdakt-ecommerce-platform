@@ -22,7 +22,7 @@ class BostaService
         $this->apiUrl = config('services.bosta.api_url');
 
         $this->client = new Client([
-            'base_uri' => $this->apiUrl,
+            'base_uri' => rtrim($this->apiUrl, '/') . '/', // Ensure no double slashes
             'headers' => [
                 'Authorization' => $this->apiKey,
                 'Content-Type' => 'application/json',
@@ -131,7 +131,7 @@ class BostaService
         $firstName = $nameParts[0] ?? 'First';
         $lastName = $nameParts[1] ?? 'Last';
 
-        return [
+        $payload = [
             'type' => 10,
             'businessLocationId' => config('services.bosta.business_location_id'),
             'specs' => [
@@ -153,11 +153,88 @@ class BostaService
                 'phone' => $contact->phone ?? '+201234567890',
                 'email' => $contact->email ?? 'test@example.com',
             ],
+            'webhookUrl' => config('services.bosta.webhook_url'), // Register webhook
+            'webhookCustomHeaders' => [
+                'Authorization' => 'Bearer ' . config('services.bosta.webhook_secret'),
+            ],
         ];
+
+        return $payload;
     }
 
     /**
-     * Map Bosta status to local OrderStatus enum.
+     * Create a pickup request in Bosta.
+     *
+     * @param string $scheduledDate
+     * @param array $contactPerson
+     * @param int $noOfPackages
+     * @return array|null
+     */
+    public function createPickup(string $scheduledDate, array $contactPerson, int $noOfPackages = 1): ?array
+    {
+        $payload = [
+            'scheduledDate' => $scheduledDate, // e.g., "2025-05-11"
+            'businessLocationId' => config('services.bosta.business_location_id'),
+            'contactPerson' => [
+                'name' => $contactPerson['name'],
+                'phone' => $contactPerson['phone'],
+                'email' => $contactPerson['email'] ?? null,
+            ],
+            'noOfPackages' => $noOfPackages,
+            'packageType' => 'Normal',
+            'notes' => 'Pickup for orders',
+        ];
+
+        try {
+            $response = $this->client->post('/api/v2/pickups', [
+                'json' => $payload,
+                'debug' => app()->environment('local'),
+            ]);
+
+            $result = json_decode($response->getBody()->getContents(), true);
+            Log::info('Bosta pickup created', ['result' => $result]);
+            return $result;
+        } catch (RequestException $e) {
+            $error = [
+                'message' => $e->getMessage(),
+                'response' => $e->hasResponse() ? $e->getResponse()->getBody()->getContents() : 'No response from Bosta API',
+            ];
+            Log::error('Bosta pickup creation failed', $error);
+            return null;
+        }
+    }
+
+    /**
+     * Map Bosta numeric state code to local OrderStatus enum.
+     *
+     * @param int $bostaStateCode
+     * @return OrderStatus
+     */
+    public function mapBostaStateCodeToOrderStatus($bostaStateCode): OrderStatus
+    {
+        return match ($bostaStateCode) {
+            10 => OrderStatus::Preparing, // Pickup requested
+            20, 24, 30, 105 => OrderStatus::Shipping, // Route Assigned, Received at warehouse, In transit, On hold
+            21, 23, 41 => OrderStatus::Shipping, // Picked up
+            22, 40 => OrderStatus::Shipping, // Picking up from consignee or for cash collection
+            25 => OrderStatus::Completed, // Fulfilled (Fulfillment)
+            45 => OrderStatus::Completed, // Delivered
+            46 => OrderStatus::Refund, // Returned to business
+            47 => OrderStatus::Delayed, // Exception
+            49 => OrderStatus::Cancelled, // Canceled
+            48 => OrderStatus::Cancelled, // Terminated
+            60 => OrderStatus::Refund, // Returned to stock (Fulfillment)
+            100 => OrderStatus::Cancelled, // Lost
+            101 => OrderStatus::Cancelled, // Damaged
+            102 => OrderStatus::Delayed, // Investigation
+            103 => OrderStatus::Refund, // Awaiting your action
+            104 => OrderStatus::Cancelled, // Archived
+            default => OrderStatus::Shipping, // Fallback
+        };
+    }
+
+    /**
+     * Map Bosta string status to local OrderStatus enum (for legacy compatibility).
      *
      * @param string $bostaStatus
      * @return OrderStatus

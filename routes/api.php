@@ -30,7 +30,7 @@ Route::get('/user', function (Request $request) {
 
 Route::post('jt-express-webhook', [ShippingController::class, 'handleWebhook']);
 
- Route::post('/bosta/webhook', [BostaWebhookController::class, 'handle']);
+Route::post('/bosta/webhook', [BostaWebhookController::class, 'handle'])->name('bosta.webhook');
 
 Route::post('/payment/process', [PaymentController::class, 'paymentProcess']);
 Route::match(['GET','POST'],'/payment/callback', [PaymentController::class, 'callBack']);
