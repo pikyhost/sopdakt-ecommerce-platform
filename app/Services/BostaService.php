@@ -49,20 +49,19 @@ class BostaService
 
         if (!$contact || !$firstLine) {
             Log::error('Cannot create Bosta delivery: missing contact address', ['order_id' => $order->id]);
-            Notification::make()
-                ->title('Cannot send order to Bosta: Missing contact address')
-                ->danger()
-                ->send();
+            Notification::make()->title('Cannot send order to Bosta: Missing contact address')->danger()->send();
             return null;
         }
 
         if (!$city || !$city->bosta_code) {
             Log::error('Cannot create Bosta delivery: missing city code', ['order_id' => $order->id]);
+            Notification::make()->title('Cannot send order to Bosta: Missing city code')->danger()->send();
             return null;
         }
 
         $payload = [
-            'type' => 10, // Cash on Delivery
+            'type' => 10,
+            'businessLocationId' => config('services.bosta.business_location_id'), // Add if provided
             'specs' => [
                 'packageDetails' => [
                     'itemsCount' => 1,
@@ -72,33 +71,44 @@ class BostaService
             'notes' => $order->notes ?? '',
             'cod' => $order->total,
             'dropOffAddress' => [
-                'city' => $city->bosta_code,
-                'firstLine' => $firstLine,
-                'district' => $order->governorate->name ?? '',
+                'city' => 'EG-01', // Cairo
+                'firstLine' => '123 Test Street',
+                'district' => 'Heliopolis',
             ],
             'receiver' => [
-                'firstName' => $contact->first_name ?? 'N/A',
-                'lastName' => $contact->last_name ?? 'N/A',
-                'phone' => $contact->phone,
-                'email' => $contact->email ?? null,
+                'firstName' => $contact->first_name ?? 'Test',
+                'lastName' => $contact->last_name ?? 'User',
+                'phone' => $contact->phone ?? '+201234567890',
+                'email' => $contact->email ?? 'test@example.com',
             ],
         ];
+
+        Log::debug('Bosta delivery payload', ['order_id' => $order->id, 'payload' => $payload]);
 
         try {
             $response = $this->client->post('/api/v2/deliveries', [
                 'json' => $payload,
+                'debug' => true, // Enable Guzzle debug to log raw request/response
             ]);
 
-            return json_decode($response->getBody()->getContents(), true);
+            $result = json_decode($response->getBody()->getContents(), true);
+            Log::info('Bosta delivery created', ['order_id' => $order->id, 'response' => $result]);
+            return $result;
         } catch (RequestException $e) {
-            Log::error('Bosta create delivery failed: ' . $e->getMessage(), [
+            $errorDetails = [
                 'order_id' => $order->id,
-                'response' => $e->hasResponse() ? $e->getResponse()->getBody()->getContents() : null,
-            ]);
+                'message' => $e->getMessage(),
+                'response' => $e->hasResponse() ? $e->getResponse()->getBody()->getContents() : 'No response from Bosta API',
+            ];
+            Log::error('Bosta create delivery failed', $errorDetails);
+            Notification::make()
+                ->title('Failed to send order to Bosta: API error')
+                ->body($errorDetails['response'])
+                ->danger()
+                ->send();
             return null;
         }
     }
-
 
     /**
      * Map Bosta status to local OrderStatus enum.

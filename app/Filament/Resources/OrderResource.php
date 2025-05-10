@@ -607,7 +607,8 @@ class OrderResource extends Resource
                         !$record->bosta_delivery_id &&
                         ($record->user || $record->contact) &&
                         ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
-                        $record->city?->bosta_code
+                        $record->city?->bosta_code &&
+                        ($record->user?->phone ?? $record->contact?->phone)
                     )
                     ->requiresConfirmation()
                     ->modalHeading('Send Order to Bosta')
@@ -617,18 +618,22 @@ class OrderResource extends Resource
                         $bostaService = new BostaService();
                         $response = $bostaService->createDelivery($record);
 
-                        if ($response && isset($response['deliveryId'])) {
+                        if ($response && isset($response['data']['_id'])) {
                             $record->update([
                                 'status' => OrderStatus::Shipping,
-                                'bosta_delivery_id' => $response['deliveryId'],
+                                'bosta_delivery_id' => $response['data']['_id'], // Match Postman response
                             ]);
                             Notification::make()->title('Order sent to Bosta')->success()->send();
                         } else {
-                            Notification::make()->title('Failed to send order to Bosta')->danger()->send();
-                            Log::error('Failed to create Bosta delivery for order.', ['order_id' => $record->id]);
+                            Notification::make()
+                                ->title('Failed to send order to Bosta')
+                                ->body('Check logs for API error details')
+                                ->danger()
+                                ->send();
+                            Log::error('Failed to create Bosta delivery for order.', ['order_id' => $record->id, 'response' => $response]);
                         }
                     }),
-                
+
                 // ARAMEX ACTIONS
                 Action::make('shipWithAramex')
                     ->label('Ship with Aramex')
