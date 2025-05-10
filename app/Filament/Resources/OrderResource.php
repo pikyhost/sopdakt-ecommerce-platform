@@ -628,16 +628,29 @@ class OrderResource extends Resource
                         if ($response && isset($response['data']['_id'])) {
                             $record->update([
                                 'status' => OrderStatus::Shipping,
-                                'bosta_delivery_id' => $response['data']['_id'], // Match Postman response
+                                'bosta_delivery_id' => $response['data']['_id'],
                             ]);
-                            Notification::make()->title('Order sent to Bosta')->success()->send();
+                            Notification::make()
+                                ->title('Order sent to Bosta successfully')
+                                ->success()
+                                ->send();
                         } else {
+                            Log::error('Failed to create Bosta delivery for order', [
+                                'order_id' => $record->id,
+                                'response' => $response,
+                                'order_details' => [
+                                    'status' => $record->status,
+                                    'bosta_delivery_id' => $record->bosta_delivery_id,
+                                    'city_bosta_code' => $record->city?->bosta_code,
+                                    'contact_phone' => $record->user?->phone ?? $record->contact?->phone,
+                                    'contact_address' => $record->user ? $record->user->addresses()->where('is_primary', true)->first()?->address : $record->contact?->address,
+                                ],
+                            ]);
                             Notification::make()
                                 ->title('Failed to send order to Bosta')
-                                ->body('Check logs for API error details')
+                                ->body('Check logs for API error details or contact Bosta support.')
                                 ->danger()
                                 ->send();
-                            Log::error('Failed to create Bosta delivery for order.', ['order_id' => $record->id, 'response' => $response]);
                         }
                     }),
 

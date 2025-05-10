@@ -43,7 +43,7 @@ class BostaWebhookController extends Controller
                 if (isset($data['exceptionReason'])) {
                     $updateData['exception_reason'] = $data['exceptionReason'];
                 }
-                if (isset($data['cod']) && $bostaStateCode === 45) { // Delivered
+                if (isset($data['cod']) && $bostaStateCode === 45) {
                     $updateData['cod_collected'] = $data['cod'];
                 }
 

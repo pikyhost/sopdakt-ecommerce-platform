@@ -15,22 +15,34 @@ class BostaService
     protected Client $client;
     protected string $apiKey;
     protected string $apiUrl;
+    protected ?string $businessLocationId;
 
     public function __construct()
     {
         $this->apiKey = config('services.bosta.api_key');
         $this->apiUrl = config('services.bosta.api_url');
+        $this->businessLocationId = config('services.bosta.business_location_id');
 
-        if (!$this->apiKey || !$this->apiUrl) {
-            Log::error('Bosta configuration missing', [
+        // Log configuration for debugging
+        Log::debug('BostaService configuration', [
+            'api_key' => $this->apiKey ? 'set' : 'missing',
+            'api_url' => $this->apiUrl,
+            'business_location_id' => $this->businessLocationId,
+            'webhook_url' => config('services.bosta.webhook_url'),
+            'webhook_secret' => config('services.bosta.webhook_secret') ? 'set' : 'missing',
+        ]);
+
+        if (!$this->apiKey || !$this->apiUrl || !$this->businessLocationId) {
+            Log::error('Bosta configuration incomplete', [
                 'api_key' => $this->apiKey,
                 'api_url' => $this->apiUrl,
+                'business_location_id' => $this->businessLocationId,
             ]);
-            throw new \Exception('Bosta API key or URL is not configured.');
+            throw new \Exception('Bosta API key, URL, or business location ID is not configured.');
         }
 
         $this->client = new Client([
-            'base_uri' => rtrim($this->apiUrl, '/') . '/', // Ensure no double slashes
+            'base_uri' => rtrim($this->apiUrl, '/') . '/',
             'headers' => [
                 'Authorization' => $this->apiKey,
                 'Content-Type' => 'application/json',
@@ -58,7 +70,7 @@ class BostaService
         try {
             $response = $this->client->post('/api/v2/deliveries', [
                 'json' => $payload,
-                'debug' => app()->environment('local'), // Enable debug only in local
+                'debug' => app()->environment('local'),
             ]);
 
             $result = json_decode($response->getBody()->getContents(), true);
@@ -80,11 +92,19 @@ class BostaService
 
             Log::error('Bosta create delivery failed', $error);
 
-            Notification::make()
-                ->title('Failed to send order to Bosta: API error')
-                ->body($error['response'])
-                ->danger()
-                ->send();
+            if (str_contains($error['response'], 'Business Pickup Location not found')) {
+                Notification::make()
+                    ->title('Failed to send order to Bosta: Invalid Business Location')
+                    ->body('The Business Pickup Location ID is invalid. Please contact Bosta support at techsupport@bosta.co to verify the ID.')
+                    ->danger()
+                    ->send();
+            } else {
+                Notification::make()
+                    ->title('Failed to send order to Bosta: API error')
+                    ->body($error['response'])
+                    ->danger()
+                    ->send();
+            }
 
             return null;
         }
@@ -104,6 +124,9 @@ class BostaService
         if (!$contact || !$city || !$city->bosta_code) {
             Log::error('Cannot create Bosta delivery: missing contact or city info', [
                 'order_id' => $order->id,
+                'contact' => $contact ? 'set' : 'missing',
+                'city' => $city ? 'set' : 'missing',
+                'bosta_code' => $city->bosta_code ?? 'missing',
             ]);
 
             Notification::make()
@@ -120,9 +143,7 @@ class BostaService
             $primaryAddress = $contact->addresses()->where('is_primary', true)->first();
             $firstLine = $primaryAddress?->address;
         } else {
-            $firstLine = $contact->address ??
-
-                null;
+            $firstLine = $contact->address ?? null;
         }
 
         if (!$firstLine) {
@@ -143,7 +164,7 @@ class BostaService
 
         $payload = [
             'type' => 10,
-            'businessLocationId' => config('services.bosta.business_location_id'),
+            'businessLocationId' => $this->businessLocationId,
             'specs' => [
                 'packageDetails' => [
                     'itemsCount' => 1,
@@ -165,7 +186,7 @@ class BostaService
             ],
         ];
 
-        // Add webhook fields only if webhook_url is set
+        // Add webhook fields if set
         $webhookUrl = config('services.bosta.webhook_url');
         if ($webhookUrl) {
             $payload['webhookUrl'] = $webhookUrl;
@@ -174,16 +195,6 @@ class BostaService
             ];
         } else {
             Log::warning('BOSTA_WEBHOOK_URL is not set in .env', ['order_id' => $order->id]);
-        }
-
-        // Validate businessLocationId
-        if (!$payload['businessLocationId']) {
-            Log::error('Cannot create Bosta delivery: missing businessLocationId', ['order_id' => $order->id]);
-            Notification::make()
-                ->title('Cannot send order to Bosta: Missing business location ID')
-                ->danger()
-                ->send();
-            return null;
         }
 
         return $payload;
@@ -200,8 +211,8 @@ class BostaService
     public function createPickup(string $scheduledDate, array $contactPerson, int $noOfPackages = 1): ?array
     {
         $payload = [
-            'scheduledDate' => $scheduledDate, // e.g., "2025-05-11"
-            'businessLocationId' => config('services.bosta.business_location_id'),
+            'scheduledDate' => $scheduledDate,
+            'businessLocationId' => $this->businessLocationId,
             'contactPerson' => [
                 'name' => $contactPerson['name'],
                 'phone' => $contactPerson['phone'],
@@ -214,6 +225,10 @@ class BostaService
 
         if (!$payload['businessLocationId']) {
             Log::error('Cannot create Bosta pickup: missing businessLocationId');
+            Notification::make()
+                ->title('Cannot create Bosta pickup: Missing business location ID')
+                ->danger()
+                ->send();
             return null;
         }
 
@@ -232,6 +247,12 @@ class BostaService
                 'response' => $e->hasResponse() ? $e->getResponse()->getBody()->getContents() : 'No response from Bosta API',
             ];
             Log::error('Bosta pickup creation failed', $error);
+
+            Notification::make()
+                ->title('Failed to create Bosta pickup: API error')
+                ->body($error['response'])
+                ->danger()
+                ->send();
             return null;
         }
     }
@@ -245,28 +266,28 @@ class BostaService
     public function mapBostaStateCodeToOrderStatus($bostaStateCode): OrderStatus
     {
         return match ($bostaStateCode) {
-            10 => OrderStatus::Preparing, // Pickup requested
-            20, 24, 30, 105 => OrderStatus::Shipping, // Route Assigned, Received at warehouse, In transit, On hold
-            21, 23, 41 => OrderStatus::Shipping, // Picked up
-            22, 40 => OrderStatus::Shipping, // Picking up from consignee or for cash collection
-            25 => OrderStatus::Completed, // Fulfilled (Fulfillment)
-            45 => OrderStatus::Completed, // Delivered
-            46 => OrderStatus::Refund, // Returned to business
-            47 => OrderStatus::Delayed, // Exception
-            49 => OrderStatus::Cancelled, // Canceled
-            48 => OrderStatus::Cancelled, // Terminated
-            60 => OrderStatus::Refund, // Returned to stock (Fulfillment)
-            100 => OrderStatus::Cancelled, // Lost
-            101 => OrderStatus::Cancelled, // Damaged
-            102 => OrderStatus::Delayed, // Investigation
-            103 => OrderStatus::Refund, // Awaiting your action
-            104 => OrderStatus::Cancelled, // Archived
-            default => OrderStatus::Shipping, // Fallback
+            10 => OrderStatus::Preparing,
+            20, 24, 30, 105 => OrderStatus::Shipping,
+            21, 23, 41 => OrderStatus::Shipping,
+            22, 40 => OrderStatus::Shipping,
+            25 => OrderStatus::Completed,
+            45 => OrderStatus::Completed,
+            46 => OrderStatus::Refund,
+            47 => OrderStatus::Delayed,
+            49 => OrderStatus::Cancelled,
+            48 => OrderStatus::Cancelled,
+            60 => OrderStatus::Refund,
+            100 => OrderStatus::Cancelled,
+            101 => OrderStatus::Cancelled,
+            102 => OrderStatus::Delayed,
+            103 => OrderStatus::Refund,
+            104 => OrderStatus::Cancelled,
+            default => OrderStatus::Shipping,
         };
     }
 
     /**
-     * Map Bosta string status to local OrderStatus enum (for legacy compatibility).
+     * Map Bosta string status to local OrderStatus enum.
      *
      * @param string $bostaStatus
      * @return OrderStatus
