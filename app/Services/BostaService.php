@@ -40,11 +40,15 @@ class BostaService
 
         if (!$contact || !$contact->address) {
             Log::error('Cannot create Bosta delivery: missing contact address', ['order_id' => $order->id]);
+            Notification::make()
+                ->title('Cannot send order to Bosta: Missing contact address')
+                ->danger()
+                ->send();
             return null;
         }
 
-        if (!$city || !$city->name) {
-            Log::error('Cannot create Bosta delivery: missing city', ['order_id' => $order->id]);
+        if (!$city || !$city->bosta_code) {
+            Log::error('Cannot create Bosta delivery: missing city code', ['order_id' => $order->id]);
             return null;
         }
 
@@ -59,8 +63,8 @@ class BostaService
             'notes' => $order->notes ?? '',
             'cod' => $order->total, // Cash on Delivery amount
             'dropOffAddress' => [
-                'city' => $city->name, // Update to city code if required
-                'firstLine' => $contact->address,
+                'city' => $city->bosta_code, // Use Bosta city code
+                'firstLine' => $contact->address ?? 'test',
                 'district' => $order->governorate->name,
             ],
             'receiver' => [
@@ -85,6 +89,7 @@ class BostaService
             return null;
         }
     }
+
     /**
      * Map Bosta status to local OrderStatus enum.
      *

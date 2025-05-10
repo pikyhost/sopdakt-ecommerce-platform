@@ -604,8 +604,7 @@ class OrderResource extends Resource
                     ->color('primary')
                     ->visible(fn(Order $record): bool => Setting::first()?->enable_bosta &&
                         $record->status === OrderStatus::Preparing &&
-                        !$record->bosta_delivery_id &&
-                        $record->contact->address
+                        !$record->bosta_delivery_id
                     )
                     ->requiresConfirmation()
                     ->modalHeading('Send Order to Bosta')
