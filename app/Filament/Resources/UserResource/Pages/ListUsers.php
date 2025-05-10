@@ -40,8 +40,14 @@ class ListUsers extends ListRecords
                     Select::make('role_id')
                     ->label(__('roles'))
                         ->helperText(__('roles.helper'))
-                        ->options(
-                            Role::pluck('name', 'id')->toArray()
+                        ->options(fn () => Role::when(
+                            auth()->user()->hasRole('admin')
+                            && ! auth()->user()->hasRole('super_admin'),
+                            fn ($q) => $q->where('name', '!=', 'super_admin'),
+                            fn ($q) => $q
+                        )
+                            ->pluck('name', 'id')
+                            ->toArray()
                         )
                         ->default(Role::where('name', UserRole::Client->value)->value('id')) // Optional default
                         ->required(), // Optional, if not nullable

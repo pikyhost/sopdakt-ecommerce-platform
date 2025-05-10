@@ -2,22 +2,18 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Exports\CountryExporter;
 use App\Filament\Exports\UserExporter;
 use App\Mail\OfferEmail;
 use App\Models\User;
-use Closure;
 use App\Enums\UserRole;
 use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\Pages\ManageUserOrders;
 use App\Traits\HasCreatedAtFilter;
 use App\Traits\HasTimestampSection;
 use Filament\Actions\Exports\Enums\ExportFormat;
-use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Events\Auth\Registered;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
@@ -52,19 +48,16 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use libphonenumber\PhoneNumberUtil;
 use Spatie\Permission\Models\Role;
 use Webbingbrasil\FilamentAdvancedFilter\Filters\DateFilter;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 use Ysfkaya\FilamentPhoneInput\Infolists\PhoneEntry;
 use Illuminate\Validation\Rules\Password;
-use Ysfkaya\FilamentPhoneInput\PhoneInputNumberType;
 
 class UserResource extends Resource
 {
@@ -458,11 +451,17 @@ class UserResource extends Resource
                     Tables\Actions\EditAction::make()->color('primary')->label(__('Edit')),
                     DeleteAction::make()
                         ->label(__('Delete'))
-                        ->hidden(fn($record) => $record->hasRole('super_admin') &&
-                            auth()->user()->hasRole('admin')),
+                        ->hidden(fn($record) =>
+                            // Hide if record is admin and current user is not super_admin
+                            $record->hasRole('admin') && !auth()->user()->hasRole('super_admin') ||
+                            $record->hasRole('super_admin') && auth()->user()->hasRole('admin')
+                        ),
 
                     Action::make('active')
-                        ->hidden(fn($record) => $record->is_active) // Use enum comparison
+                        ->hidden(fn($record) =>
+                            $record->is_active ||
+                            ($record->hasRole('admin') && !auth()->user()->hasRole('super_admin'))
+                        )
                         ->label(__('Activate'))
                         ->icon('heroicon-o-check')
                         ->color('success')
@@ -471,6 +470,7 @@ class UserResource extends Resource
                     Action::make('block')
                         ->hidden(fn($record) =>
                             !$record->is_active ||
+                            ($record->hasRole('admin') && !auth()->user()->hasRole('super_admin')) ||
                             ($record->hasRole('super_admin') && auth()->user()->hasRole('admin'))
                         )
                         ->label(__('Block'))
@@ -492,6 +492,17 @@ class UserResource extends Resource
                         ->deselectRecordsAfterCompletion()
                         ->action(function (Collection $records) {
                             $currentUser = auth()->user();
+
+                            $adminUsers = $records->filter(fn ($record) => $record->hasRole('admin'));
+                            if ($currentUser->hasRole('admin') && $adminUsers->isNotEmpty()) {
+                                Notification::make()
+                                    ->title(__('Action Denied'))
+                                    ->danger()
+                                    ->body(__('You cannot delete users with the Admin role.'))
+                                    ->send();
+                                return;
+                            }
+
 
                             // Separate super_admin users
                             $superAdminUsers = $records->filter(fn ($record) => $record->hasRole('super_admin'));
@@ -534,6 +545,17 @@ class UserResource extends Resource
             ->action(function (Collection $records) {
                 $currentUser = auth()->user();
 
+                $adminUsers = $records->filter(fn ($record) => $record->hasRole('admin'));
+                if ($currentUser->hasRole('admin') && $adminUsers->isNotEmpty()) {
+                    Notification::make()
+                        ->title(__('Action Denied'))
+                        ->danger()
+                        ->body(__('You cannot block users with the Admin role.'))
+                        ->send();
+                    return;
+                }
+
+
                 // Separate super_admin users
                 $superAdminUsers = $records->filter(fn ($record) => $record->hasRole('super_admin'));
                 $normalUsers = $records->reject(fn ($record) => $record->hasRole('super_admin'));
@@ -564,7 +586,17 @@ class UserResource extends Resource
              ->color('success')
              ->requiresConfirmation()
              ->action(function ($records) {
-                            $records->each(fn ($record) => self::activeUser($record));
+                 $adminUsers = $records->filter(fn ($record) => $record->hasRole('admin'));
+                 if (auth()->user()->hasRole('admin') && $adminUsers->isNotEmpty()) {
+                     Notification::make()
+                         ->title(__('Action Denied'))
+                         ->danger()
+                         ->body(__('You cannot activate Admin users.'))
+                         ->send();
+                     return;
+                 }
+
+                 $records->each(fn ($record) => self::activeUser($record));
                         }),
                     Tables\Actions\BulkAction::make('sendOfferOrMessage')
                         ->label(__('Send Offer or Update'))

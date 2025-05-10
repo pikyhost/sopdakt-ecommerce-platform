@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
@@ -194,5 +195,20 @@ class RoleResource extends Resource implements HasShieldPermissions
     public static function canAccess(): bool
     {
         return auth()->user()->hasAnyRole(['super_admin', 'admin']);
+    }
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        // If I'm an "admin" (and NOT a super_admin),
+        // strip out the super_admin role entirely.
+        if (
+            auth()->user()->hasRole('admin')
+            && ! auth()->user()->hasRole('super_admin')
+        ) {
+            $query->where('name', '!=', 'super_admin');
+        }
+
+        return $query;
     }
 }
