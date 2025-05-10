@@ -134,7 +134,7 @@ class OrderResource extends Resource
                     ->placeholder('-')
                     ->label(__('Tracking Number'))
                     ->searchable()
-                    ->weight(FontWeight::Bold), 
+                    ->weight(FontWeight::Bold),
 
                 TextColumn::make('bosta_delivery_id')
                     ->copyable()
