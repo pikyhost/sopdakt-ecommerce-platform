@@ -39,7 +39,15 @@ class BostaService
         $contact = $order->user ?? $order->contact;
         $city = $order->city;
 
-        if (!$contact || !$contact->address) {
+        // Determine the correct address
+        if ($contact instanceof \App\Models\User) {
+            $primaryAddress = $contact->addresses()->where('is_primary', true)->first();
+            $firstLine = $primaryAddress?->address;
+        } else {
+            $firstLine = $contact->address ?? null;
+        }
+
+        if (!$contact || !$firstLine) {
             Log::error('Cannot create Bosta delivery: missing contact address', ['order_id' => $order->id]);
             Notification::make()
                 ->title('Cannot send order to Bosta: Missing contact address')
@@ -54,7 +62,7 @@ class BostaService
         }
 
         $payload = [
-            'type' => 10, // Cash on Delivery (adjust as needed)
+            'type' => 10, // Cash on Delivery
             'specs' => [
                 'packageDetails' => [
                     'itemsCount' => 1,
@@ -62,11 +70,11 @@ class BostaService
                 ],
             ],
             'notes' => $order->notes ?? '',
-            'cod' => $order->total, // Cash on Delivery amount
+            'cod' => $order->total,
             'dropOffAddress' => [
-                'city' => $city->bosta_code, // Use Bosta city code
-                'firstLine' => $contact->address ?? 'test',
-                'district' => $order->governorate->name,
+                'city' => $city->bosta_code,
+                'firstLine' => $firstLine,
+                'district' => $order->governorate->name ?? '',
             ],
             'receiver' => [
                 'firstName' => $contact->first_name ?? 'N/A',
@@ -90,6 +98,7 @@ class BostaService
             return null;
         }
     }
+
 
     /**
      * Map Bosta status to local OrderStatus enum.
