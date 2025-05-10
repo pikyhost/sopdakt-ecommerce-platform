@@ -642,85 +642,36 @@ class OrderResource extends Resource
                     }),
 
                 // ARAMEX ACTIONS
-                Action::make('shipWithAramex')
+                Action::make('ship_with_aramex')
                     ->label('Ship with Aramex')
-                    ->icon('heroicon-m-truck')
-                    ->color('primary')
-                    ->visible(fn($record) => Setting::first()?->enable_aramex &&
-                        $record->status === OrderStatus::Preparing
-                    )
-                    ->action(function ($record, AramexService $aramexService) {
-                        try {
-                            $result = $aramexService->createShipment($record);
+                    ->icon('heroicon-o-truck')
+                    ->visible(fn ($record) => $record->status === 'preparing')
+                    ->requiresConfirmation()
+                    ->action(function ($record) {
+                        $response = app(AramexService::class)->createShipment($record);
 
-                            if (!is_array($result)) {
-                                throw new \Exception('AramexService returned non-array result');
-                            }
-
-                            if ($result['success']) {
-                                $record->update([
-                                    'status' => 'shipping',
-                                    'aramex_shipment_id' => $result['shipment_id'],
-                                    'aramex_tracking_number' => $result['tracking_number'],
-                                    'aramex_tracking_url' => $result['tracking_url'],
-                                    'aramex_response' => $result['response'],
-                                ]);
-
-                                Notification::make()
-                                    ->title('Aramex Shipment Created')
-                                    ->body("Shipment ID: {$result['tracking_number']}")
-                                    ->success()
-                                    ->send();
-                            } else {
-                                throw new \Exception($result['error'] ?? 'Failed to create Aramex shipment');
-                            }
-                        } catch (\Exception $e) {
+                        if (! $response['success']) {
                             Notification::make()
-                                ->title('Aramex Shipment Failed')
-                                ->body($e->getMessage())
+                                ->title('Aramex Error')
                                 ->danger()
+                                ->body($response['message'])
                                 ->send();
-
-                            throw $e;
+                            return;
                         }
-                    }),
 
-                Action::make('trackAramex')
-                    ->label('Track Shipment')
-                    ->icon('heroicon-m-magnifying-glass')
-                    ->color('info')
-                    ->visible(fn($record) => Setting::first()?->enable_aramex &&
-                        !empty($record->aramex_shipment_id)
-                    )
-                    ->action(function ($record, AramexService $aramexService) {
-                        try {
-                            $result = $aramexService->trackShipment($record->aramex_shipment_id);
+                        $record->update([
+                            'aramex_shipment_id' => $response['shipment_id'],
+                            'aramex_tracking_number' => $response['tracking_number'],
+                            'aramex_tracking_url' => $response['tracking_url'],
+                            'status' => 'shipping',
+                            'aramex_response' => json_encode($response['raw']),
+                        ]);
 
-                            if ($result['success']) {
-                                $status = $result['status'];
-                                $newStatus = $aramexService->mapAramexStatusToOrderStatus($status);
-
-                                if ($newStatus && $record->status !== $newStatus) {
-                                    $record->update(['status' => $newStatus]);
-                                }
-
-                                Notification::make()
-                                    ->title('Shipment Tracking')
-                                    ->body("Current status: {$status}")
-                                    ->info()
-                                    ->send();
-                            } else {
-                                throw new \Exception($result['error'] ?? 'Failed to track Aramex shipment');
-                            }
-                        } catch (\Exception $e) {
-                            Notification::make()
-                                ->title('Tracking Failed')
-                                ->body($e->getMessage())
-                                ->danger()
-                                ->send();
-
-                            throw $e;
-                        }
+                        Notification::make()
+                            ->title('Shipment Created')
+                            ->success()
+                            ->body('Shipment created successfully via Aramex.')
+                            ->send();
                     }),
 
 

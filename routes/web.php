@@ -4,6 +4,7 @@ use App\Livewire\AcceptGuestInvitation;
 use App\Livewire\AcceptInvitation;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{Api\NewsletterSubscriberController,
+    AramexWebhookController,
     BostaWebhookController,
     PaymentController,
     ShippingController};
@@ -12,6 +13,9 @@ use Spatie\Analytics\Facades\Analytics;
 use Spatie\Analytics\Period;
 
 Route::post('/bosta/webhook', [BostaWebhookController::class, 'handle'])->name('bosta.webhook');
+
+Route::post('/webhooks/aramex', AramexWebhookController::class);
+
 
 Route::get('/invitation/guest/{invitation}', AcceptGuestInvitation::class)
     ->name('guest.invitation.accept');

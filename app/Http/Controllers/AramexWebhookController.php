@@ -1,37 +1,34 @@
 <?php
 
-// app/Http/Controllers/AramexWebhookController.php
 namespace App\Http\Controllers;
 
-use App\Jobs\ProcessAramexWebhook;
+use App\Models\Order;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class AramexWebhookController extends Controller
 {
-    public function handle(Request $request)
+    public function __invoke(Request $request)
     {
-        try {
-            $data = $request->all();
+        $trackingNumber = $request->input('TrackingNumber');
+        $statusCode = $request->input('UpdateCode');
 
-            // Verify webhook (implement your verification logic based on Aramex documentation)
-            if (!$this->verifyWebhook($data)) {
-                return response()->json(['error' => 'Invalid webhook'], 403);
-            }
-
-            ProcessAramexWebhook::dispatch($data);
-
-            return response()->json(['status' => 'Webhook received']);
-        } catch (\Exception $e) {
-            Log::error('Aramex webhook error: ' . $e->getMessage());
-            return response()->json(['error' => 'Webhook processing failed'], 500);
+        $order = Order::where('aramex_tracking_number', $trackingNumber)->first();
+        if (! $order) {
+            return response()->noContent();
         }
-    }
 
-    protected function verifyWebhook(array $data): bool
-    {
-        // Implement Aramex webhook verification logic
-        // Check for signatures or tokens as per Aramex documentation
-        return true; // Replace with actual verification
+        $newStatus = match ($statusCode) {
+            'SH001' => 'shipping',
+            'DL001' => 'completed',
+            'CX001' => 'cancelled',
+            'SH002' => 'delayed',
+            default => $order->status,
+        };
+
+        $order->update([
+            'status' => $newStatus,
+        ]);
+
+        return response()->noContent();
     }
 }
