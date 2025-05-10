@@ -9,7 +9,7 @@ class AramexService
 {
     public function createShipment(Order $order): array
     {
-        $contact = $order->contact;
+        $contact = $order->user?? $order->contact;
 
         $data = [
             'ClientInfo' => [
@@ -38,7 +38,7 @@ class AramexService
                     'Name' => $contact->name ?? 'Customer',
                     'EmailAddress' => $contact->email ?? 'customer@example.com',
                     'PhoneNumber1' => $contact->phone,
-                    'Line1' => $contact->address,
+                    'Line1' => 'Tanta test',
                     'City' => $order->city->name,
                     'CountryCode' => $order->country->code,
                 ],
