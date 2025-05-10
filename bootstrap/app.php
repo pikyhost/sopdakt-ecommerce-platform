@@ -20,7 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->validateCsrfTokens(except: [
             'jt-express-webhook',
-            '/api/jt-express-webhook'
+            '/api/jt-express-webhook',
+              '/bosta/webhook',
+            '/api/bosta/webhook',
         ]);
 
         $middleware->api(prepend: [
