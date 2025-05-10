@@ -65,7 +65,7 @@ class AramexService
                             'Name'        => $contact->name,
                             'CellPhone'   => $contact->phone,
                             'Email'       => $contact->email,
-                            'Line1'       => $contact->address,
+                            'Line1'       => $contact->addresses()->first()->address,
                             'City'        => $order->city?->name ?? 'City',
                             'CountryCode' => $order->country?->code ?? 'EG',
                         ],
