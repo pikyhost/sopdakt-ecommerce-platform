@@ -111,4 +111,30 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     {
         return $this->belongsToMany(Blog::class, 'blog_user_likes')->withTimestamps();
     }
+
+    public function getPrimaryAddressAttribute()
+    {
+        return $this->addresses()->where('is_primary', true)->first();
+    }
+
+    public function getAddressLineAttribute()
+    {
+        return $this->primary_address?->address;
+    }
+
+    public function getCityAttribute()
+    {
+        return $this->primary_address?->city;
+    }
+
+    public function getGovernorateAttribute()
+    {
+        return $this->primary_address?->governorate;
+    }
+
+    public function getCountryAttribute()
+    {
+        return $this->primary_address?->country;
+    }
+
 }

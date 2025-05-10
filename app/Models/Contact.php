@@ -11,4 +11,10 @@ class Contact extends Model
     use HasFactory, Notifiable;
 
     protected $guarded = [];
+
+    public function getAddressLineAttribute()
+    {
+        return $this->address;
+    }
+
 }
