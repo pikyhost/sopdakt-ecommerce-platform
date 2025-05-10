@@ -21,6 +21,14 @@ class BostaService
         $this->apiKey = config('services.bosta.api_key');
         $this->apiUrl = config('services.bosta.api_url');
 
+        if (!$this->apiKey || !$this->apiUrl) {
+            Log::error('Bosta configuration missing', [
+                'api_key' => $this->apiKey,
+                'api_url' => $this->apiUrl,
+            ]);
+            throw new \Exception('Bosta API key or URL is not configured.');
+        }
+
         $this->client = new Client([
             'base_uri' => rtrim($this->apiUrl, '/') . '/', // Ensure no double slashes
             'headers' => [
@@ -112,7 +120,9 @@ class BostaService
             $primaryAddress = $contact->addresses()->where('is_primary', true)->first();
             $firstLine = $primaryAddress?->address;
         } else {
-            $firstLine = $contact->address ?? null;
+            $firstLine = $contact->address ??
+
+                null;
         }
 
         if (!$firstLine) {
@@ -153,11 +163,28 @@ class BostaService
                 'phone' => $contact->phone ?? '+201234567890',
                 'email' => $contact->email ?? 'test@example.com',
             ],
-            'webhookUrl' => config('services.bosta.webhook_url'), // Register webhook
-            'webhookCustomHeaders' => [
-                'Authorization' => 'Bearer ' . config('services.bosta.webhook_secret'),
-            ],
         ];
+
+        // Add webhook fields only if webhook_url is set
+        $webhookUrl = config('services.bosta.webhook_url');
+        if ($webhookUrl) {
+            $payload['webhookUrl'] = $webhookUrl;
+            $payload['webhookCustomHeaders'] = [
+                'Authorization' => 'Bearer ' . config('services.bosta.webhook_secret'),
+            ];
+        } else {
+            Log::warning('BOSTA_WEBHOOK_URL is not set in .env', ['order_id' => $order->id]);
+        }
+
+        // Validate businessLocationId
+        if (!$payload['businessLocationId']) {
+            Log::error('Cannot create Bosta delivery: missing businessLocationId', ['order_id' => $order->id]);
+            Notification::make()
+                ->title('Cannot send order to Bosta: Missing business location ID')
+                ->danger()
+                ->send();
+            return null;
+        }
 
         return $payload;
     }
@@ -184,6 +211,11 @@ class BostaService
             'packageType' => 'Normal',
             'notes' => 'Pickup for orders',
         ];
+
+        if (!$payload['businessLocationId']) {
+            Log::error('Cannot create Bosta pickup: missing businessLocationId');
+            return null;
+        }
 
         try {
             $response = $this->client->post('/api/v2/pickups', [

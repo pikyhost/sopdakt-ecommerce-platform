@@ -41,7 +41,9 @@ return [
 
     'bosta' => [
         'api_key' => env('BOSTA_API_KEY'),
-        'api_url' => env('BOSTA_API_URL', 'https://api.bosta.co/api/v2'),
+        'api_url' => env('BOSTA_API_URL'),
+        'business_location_id' => env('BOSTA_BUSINESS_LOCATION_ID'),
+        'webhook_url' => env('BOSTA_WEBHOOK_URL'),
         'webhook_secret' => env('BOSTA_WEBHOOK_SECRET'),
     ],
 
