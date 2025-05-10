@@ -46,9 +46,4 @@ return [
         'webhook_url' => env('BOSTA_WEBHOOK_URL'),
         'webhook_secret' => env('BOSTA_WEBHOOK_SECRET'),
     ],
-
-    'wapilot' => [
-        'api_token' => env('WAPILOT_API_TOKEN'),
-        'api_url' => 'https://api.wapilot.net/v1/messages/text',
-    ],
 ];
