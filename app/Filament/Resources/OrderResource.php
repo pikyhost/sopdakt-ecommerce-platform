@@ -653,6 +653,10 @@ class OrderResource extends Resource
                         try {
                             $result = $aramexService->createShipment($record);
 
+                            if (!is_array($result)) {
+                                throw new \Exception('AramexService returned non-array result');
+                            }
+
                             if ($result['success']) {
                                 $record->update([
                                     'status' => 'shipping',

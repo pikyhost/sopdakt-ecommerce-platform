@@ -47,10 +47,10 @@ class AramexService
                     'line3' => '',
                 ],
                 'shipping_date_time' => time(),
-                'due_date' => time() + 86400, // 1 day later
+                'due_date' => time() + 86400,
                 'comments' => 'Order #' . $order->id,
                 'pickup_location' => config('aramex.shipper.address'),
-                'weight' => 1, // Adjust based on actual weight
+                'weight' => 1,
                 'number_of_pieces' => 1,
                 'description' => 'Order #' . $order->id,
                 'reference' => 'REF' . $order->id,
@@ -66,16 +66,22 @@ class AramexService
                 'payment_type' => config('aramex.payment_type', 'P'),
             ];
 
-            // Log request for debugging
             Log::info('Aramex Shipment Data', $shipmentData);
 
             $response = $this->aramex->createShipment($shipmentData);
 
-            // Log response for debugging
             Log::info('Aramex API Response', (array) $response);
 
             if ($response === null) {
                 throw new \Exception('Aramex API returned null response');
+            }
+
+            if (!is_object($response)) {
+                throw new \Exception('Aramex API returned non-object response');
+            }
+
+            if (!property_exists($response, 'error') || !property_exists($response, 'Shipments')) {
+                throw new \Exception('Aramex API response missing expected properties');
             }
 
             if (empty($response->error) && isset($response->Shipments->ProcessedShipment->ID)) {
@@ -90,10 +96,12 @@ class AramexService
             }
 
             $errorMessage = 'Unknown error';
-            if (!empty($response->error) && !empty($response->errors)) {
-                $errorMessage = collect($response->errors)->pluck('Message')->implode('; ');
-            } elseif (isset($response->error)) {
-                $errorMessage = $response->error;
+            if (isset($response->error) && !empty($response->error)) {
+                if (isset($response->errors) && is_array($response->errors)) {
+                    $errorMessage = collect($response->errors)->pluck('Message')->implode('; ');
+                } else {
+                    $errorMessage = $response->error;
+                }
             }
 
             return [
@@ -111,7 +119,6 @@ class AramexService
             ];
         }
     }
-
     public function trackShipment(string $shipmentId): array
     {
         try {
