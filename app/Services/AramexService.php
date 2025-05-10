@@ -1,6 +1,5 @@
 <?php
 
-// app/Services/AramexService.php
 namespace App\Services;
 
 use Octw\Aramex\Aramex;
@@ -50,7 +49,7 @@ class AramexService
                 'shipping_date_time' => time(),
                 'due_date' => time() + 86400, // 1 day later
                 'comments' => 'Order #' . $order->id,
-                'pickup_location' => config('aramex.shipper.address'), // Set to shipper's address
+                'pickup_location' => config('aramex.shipper.address'),
                 'weight' => 1, // Adjust based on actual weight
                 'number_of_pieces' => 1,
                 'description' => 'Order #' . $order->id,
@@ -58,7 +57,10 @@ class AramexService
                 'shipper_reference' => 'SHIPPER' . $order->id,
                 'consignee_reference' => 'CONSIGNEE' . $order->id,
                 'services' => 'CODS',
-                'cash_on_delivery_amount' => $order->total / 100, // Assuming total is in cents
+                'cash_on_delivery_amount' => [
+                    'CurrencyCode' => 'USD',
+                    'Value' => number_format($order->total / 100, 3),
+                ],
                 'product_group' => config('aramex.product_group', 'EXP'),
                 'product_type' => config('aramex.product_type', 'PPX'),
                 'payment_type' => config('aramex.payment_type', 'P'),
@@ -72,6 +74,10 @@ class AramexService
             // Log response for debugging
             Log::info('Aramex API Response', (array) $response);
 
+            if ($response === null) {
+                throw new \Exception('Aramex API returned null response');
+            }
+
             if (empty($response->error) && isset($response->Shipments->ProcessedShipment->ID)) {
                 $shipment = $response->Shipments->ProcessedShipment;
                 return [
@@ -81,18 +87,19 @@ class AramexService
                     'tracking_url' => $shipment->ShipmentLabel->LabelURL ?? 'https://www.aramex.com/track/shipments',
                     'response' => json_encode($response),
                 ];
-            } else {
-                $errorMessage = 'Unknown error';
-                if (!empty($response->error) && !empty($response->errors)) {
-                    $errorMessage = collect($response->errors)->pluck('Message')->implode('; ');
-                } elseif (isset($response->error)) {
-                    $errorMessage = $response->error;
-                }
-                return [
-                    'success' => false,
-                    'error' => $errorMessage,
-                ];
             }
+
+            $errorMessage = 'Unknown error';
+            if (!empty($response->error) && !empty($response->errors)) {
+                $errorMessage = collect($response->errors)->pluck('Message')->implode('; ');
+            } elseif (isset($response->error)) {
+                $errorMessage = $response->error;
+            }
+
+            return [
+                'success' => false,
+                'error' => $errorMessage,
+            ];
         } catch (\Exception $e) {
             Log::error('Aramex shipment creation failed: ' . $e->getMessage(), [
                 'order_id' => $order->id,
@@ -113,6 +120,10 @@ class AramexService
             // Log response for debugging
             Log::info('Aramex Tracking Response', (array) $response);
 
+            if ($response === null) {
+                throw new \Exception('Aramex tracking API returned null response');
+            }
+
             if (empty($response->error) && isset($response->TrackingResults)) {
                 $trackingResult = collect($response->TrackingResults->KeyValueOfstringArrayOfTrackingResultmFAkxlpY)
                     ->firstWhere('Key', $shipmentId);
@@ -124,24 +135,25 @@ class AramexService
                         'status' => $latestUpdate->UpdateDescription ?? 'Unknown',
                         'last_update' => $latestUpdate->UpdateDateTime ?? now(),
                     ];
-                } else {
-                    return [
-                        'success' => false,
-                        'error' => 'No tracking results found',
-                    ];
                 }
-            } else {
-                $errorMessage = 'Unknown error';
-                if (!empty($response->error) && !empty($response->errors)) {
-                    $errorMessage = collect($response->errors)->pluck('Message')->implode('; ');
-                } elseif (isset($response->error)) {
-                    $errorMessage = $response->error;
-                }
+
                 return [
                     'success' => false,
-                    'error' => $errorMessage,
+                    'error' => 'No tracking results found',
                 ];
             }
+
+            $errorMessage = 'Unknown error';
+            if (!empty($response->error) && !empty($response->errors)) {
+                $errorMessage = collect($response->errors)->pluck('Message')->implode('; ');
+            } elseif (isset($response->error)) {
+                $errorMessage = $response->error;
+            }
+
+            return [
+                'success' => false,
+                'error' => $errorMessage,
+            ];
         } catch (\Exception $e) {
             Log::error('Aramex tracking failed: ' . $e->getMessage());
             return [
