@@ -134,6 +134,13 @@ class OrderResource extends Resource
                     ->placeholder('-')
                     ->label(__('Tracking Number'))
                     ->searchable()
+                    ->weight(FontWeight::Bold), 
+
+                TextColumn::make('bosta_delivery_id')
+                    ->copyable()
+                    ->placeholder('-')
+                    ->label(__('Bosta Delivery Number'))
+                    ->searchable()
                     ->weight(FontWeight::Bold),
 
                 Tables\Columns\TextColumn::make('user.name')
