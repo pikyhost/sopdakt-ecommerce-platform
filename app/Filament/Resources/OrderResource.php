@@ -641,20 +641,148 @@ class OrderResource extends Resource
                         }
                     }),
 
-                // In your table() method:
+
                 Action::make('createAramexShipment')
                     ->label('Create ARAMEX Shipment')
                     ->icon('heroicon-o-truck')
-                    ->action(function (Order $record) {
+                    ->action(function (Order $record, AramexService $aramexService) {
                         try {
-                            $client = new \GuzzleHttp\Client();
-                            $response = $client->post(route('api.aramex.orders.create-shipment', $record->id), [
-                                'headers' => [
-                                    'Accept' => 'application/json',
-                                ],
-                            ]);
+                            // Get contact information safely
+                            $contact = $record->user ?? $record->contact;
+                            $city = $record->city;
+                            $country = $record->country;
+                            $governorate = $record->governorate;
 
-                            $data = json_decode($response->getBody(), true);
+                            // Validate required information
+                            if (!$contact || !$city || !$country) {
+                                Notification::make()
+                                    ->title('Cannot create ARAMEX shipment')
+                                    ->body('Missing contact, city, or country information')
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
+
+                            // Get address line
+                            $addressLine1 = null;
+                            if ($contact instanceof \App\Models\User) {
+                                $primaryAddress = $contact->addresses()->where('is_primary', true)->first();
+                                $addressLine1 = $primaryAddress?->address;
+                            } else {
+                                $addressLine1 = $contact->address ?? null;
+                            }
+
+                            if (!$addressLine1) {
+                                Notification::make()
+                                    ->title('Cannot create ARAMEX shipment')
+                                    ->body('Missing contact address information')
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
+
+                            // Prepare name
+                            $fullName = $contact->name ?? $contact->full_name ?? 'Unknown Name';
+                            $nameParts = explode(' ', $fullName);
+                            $firstName = $nameParts[0] ?? 'First';
+                            $lastName = $nameParts[1] ?? 'Last';
+
+                            // Prepare shipment data
+                            $shipmentData = [
+                                'reference' => 'ORDER-' . $record->id,
+                                'weight' => $record->items->sum('weight') ?: 1,
+                                'description' => 'Order #' . $record->id,
+                                'product_group' => 'DOM',
+                                'product_type' => 'OND',
+                                'payment_type' => 'P',
+                            ];
+
+                            // Shipper data (your store info)
+                            $shipperData = [
+                                'Reference1' => 'STORE-' . $record->id,
+                                'Reference2' => '',
+                                'AccountNumber' => config('services.aramex.account_number'),
+                                'PartyAddress' => [
+                                    'Line1' => '123 Main St',
+                                    'Line2' => '',
+                                    'Line3' => '',
+                                    'City' => 'Cairo',
+                                    'StateOrProvinceCode' => 'C',
+                                    'PostCode' => '11511',
+                                    'CountryCode' => 'EG',
+                                ],
+                                'Contact' => [
+                                    'Department' => '',
+                                    'PersonName' => 'Store Manager',
+                                    'Title' => '',
+                                    'CompanyName' => 'Your Store Name',
+                                    'PhoneNumber1' => '+201000000000',
+                                    'PhoneNumber1Ext' => '',
+                                    'PhoneNumber2' => '',
+                                    'PhoneNumber2Ext' => '',
+                                    'FaxNumber' => '',
+                                    'CellPhone' => '+201000000000',
+                                    'EmailAddress' => 'store@example.com',
+                                    'Type' => ''
+                                ],
+                            ];
+
+                            // Consignee data (customer info)
+                            $consigneeData = [
+                                'Reference1' => 'CUSTOMER-' . $record->user_id,
+                                'Reference2' => '',
+                                'AccountNumber' => '',
+                                'PartyAddress' => [
+                                    'Line1' => $addressLine1,
+                                    'Line2' => $addressLine1 ?? '',
+                                    'Line3' => '',
+                                    'City' => $city->name,
+                                    'StateOrProvinceCode' => $governorate->code ?? 'C',
+                                    'PostCode' => $contact->postal_code ?? '00000',
+                                    'CountryCode' => $country->code,
+                                ],
+                                'Contact' => [
+                                    'Department' => '',
+                                    'PersonName' => $fullName,
+                                    'Title' => '',
+                                    'CompanyName' => '',
+                                    'PhoneNumber1' => $contact->phone ?? $contact->phone ?? '+201234567890',
+                                    'PhoneNumber1Ext' => '',
+                                    'PhoneNumber2' => '',
+                                    'PhoneNumber2Ext' => '',
+                                    'FaxNumber' => '',
+                                    'CellPhone' => $contact->phone ?? $contact->phone ?? '+201234567890',
+                                    'EmailAddress' => $contact->email ?? 'customer@example.com',
+                                    'Type' => ''
+                                ],
+                            ];
+
+                            // Prepare items
+                            $items = [];
+                            foreach ($record->items as $item) {
+                                $items[] = [
+                                    'PackageType' => 'Box',
+                                    'Quantity' => $item->quantity,
+                                    'Weight' => [
+                                        'Value' => $item->weight ?: 0.5,
+                                        'Unit' => 'kg'
+                                    ],
+                                    'Comments' => $item->product->name,
+                                    'Reference' => 'ITEM-' . $item->id,
+                                ];
+                            }
+
+                            // Create shipment directly
+                            $response = $aramexService->createShipment($shipmentData, $shipperData, $consigneeData, $items);
+
+                            // Update order
+                            $record->update([
+                                'aramex_shipment_id' => $response->Shipments->ProcessedShipment->ID,
+                                'aramex_tracking_number' => $response->Shipments->ProcessedShipment->ShipmentNumber,
+                                'aramex_tracking_url' => 'https://www.aramex.com/track/results?ShipmentNumber=' . $response->Shipments->ProcessedShipment->ShipmentNumber,
+                                'aramex_response' => json_encode($response),
+                                'status' => 'shipping',
+                            ]);
 
                             Notification::make()
                                 ->title('Shipment Created Successfully')
@@ -673,6 +801,7 @@ class OrderResource extends Resource
                     ->modalHeading('Create ARAMEX Shipment')
                     ->modalSubheading('Are you sure you want to create an ARAMEX shipment for this order?')
                     ->modalButton('Create Shipment'),
+
 
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),

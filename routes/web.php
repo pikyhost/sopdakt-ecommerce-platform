@@ -37,3 +37,35 @@ Route::get('/payment-success', [PaymentController::class, 'success'])->name('pay
 Route::get('/payment-failed', [PaymentController::class, 'failed'])->name('payment.failed');
 
 Route::post('/payment/callback', [App\Http\Controllers\PaymentController::class, 'callback'])->name('payment.callback');
+
+
+// routes/web.php
+Route::get('/test-aramex', function() {
+    try {
+        $client = new \SoapClient(
+            'https://ws.dev.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc?wsdl',
+            [
+                'stream_context' => stream_context_create([
+                    'ssl' => [
+                        'verify_peer' => false,
+                        'verify_peer_name' => false,
+                        'allow_self_signed' => true
+                    ]
+                ]),
+                'cache_wsdl' => WSDL_CACHE_NONE,
+                'trace' => 1
+            ]
+        );
+
+        return response()->json([
+            'success' => true,
+            'functions' => $client->__getFunctions()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+});
