@@ -669,7 +669,6 @@ class OrderResource extends Resource
                                 ->send();
                         }
                     })
-                    ->visible(fn (Order $record) => $record->status == OrderStatus::Shipping && empty($record->aramex_shipment_id))
                     ->requiresConfirmation()
                     ->modalHeading('Create ARAMEX Shipment')
                     ->modalSubheading('Are you sure you want to create an ARAMEX shipment for this order?')

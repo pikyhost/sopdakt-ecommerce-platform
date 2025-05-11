@@ -34,9 +34,19 @@ Route::post('/bosta/webhook', [BostaWebhookController::class, 'handle'])->name('
 
 Route::prefix('aramex')->group(function () {
     Route::post('webhook', [\App\Http\Controllers\Api\AramexController::class, 'webhook']);
-    Route::post('orders/{order}/create-shipment', [\App\Http\Controllers\Api\AramexController::class, 'createShipment']);
+    Route::post('orders/{order}/create-shipment', [\App\Http\Controllers\Api\AramexController::class, 'createShipment'])
+        ->name('api.aramex.orders.create-shipment');
     Route::get('orders/{order}/track-shipment', [\App\Http\Controllers\Api\AramexController::class, 'trackShipment']);
 });
+
+/*
+ *
+
+Failed to create shipment
+Route [api.aramex.orders.create-shipment] not defined.
+
+ *
+ * */
 
 Route::post('/payment/process', [PaymentController::class, 'paymentProcess']);
 Route::match(['GET','POST'],'/payment/callback', [PaymentController::class, 'callBack']);
