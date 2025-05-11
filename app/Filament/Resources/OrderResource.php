@@ -645,35 +645,64 @@ class OrderResource extends Resource
                 Action::make('ship_with_aramex')
                     ->label('Ship with Aramex')
                     ->icon('heroicon-o-truck')
-                    ->visible(fn ($record) =>   $record->status === OrderStatus::Preparing)
-                    ->requiresConfirmation()
-                    ->action(function ($record) {
-                        $response = app(AramexService::class)->createShipment($record);
-
-                        if (! $response['success']) {
+                    ->action(function (Order $record) {
+                        // Prevent shipping if already shipped
+                        if ($record->aramex_shipment_id) {
                             Notification::make()
-                                ->title('Aramex Error')
-                                ->danger()
-                                ->body($response['message'])
+                                ->title('Order already shipped')
+                                ->warning()
                                 ->send();
                             return;
                         }
 
-                        $record->update([
-                            'aramex_shipment_id' => $response['shipment_id'],
-                            'aramex_tracking_number' => $response['tracking_number'],
-                            'aramex_tracking_url' => $response['tracking_url'],
-                            'status' => 'shipping',
-                            'aramex_response' => json_encode($response['raw']),
-                        ]);
+                        // Validate order status
+                        if ( $record->status === OrderStatus::Preparing) {
+                            Notification::make()
+                                ->title('Order cannot be shipped')
+                                ->warning()
+                                ->body('Order must be in "preparing" status.')
+                                ->send();
+                            return;
+                        }
 
-                        Notification::make()
-                            ->title('Shipment Created')
-                            ->success()
-                            ->body('Shipment created successfully via Aramex.')
-                            ->send();
+                        // Prepare shipment data
+                        $shipmentData = [
+                            'order_id' => $record->id,
+                            'consignee_name' => $record->contact->name,
+                            'consignee_phone' => $record->contact->phone,
+                            'consignee_address' => $record->contact->address ?? 'No address provided',
+                            'consignee_city' => $record->city?->name ?? 'No city',
+                            'consignee_country_code' => $record->country?->code ?? 'No country',
+                            'weight' => 1, // TODO: Calculate based on order items
+                        ];
+
+                        // Create shipment
+                        $aramexService = new AramexService();
+                        try {
+                            $shipmentResponse = $aramexService->createShipment($shipmentData);
+
+                            // Update order
+                            $record->update([
+                                'aramex_shipment_id' => $shipmentResponse['shipment_id'],
+                                'aramex_tracking_number' => $shipmentResponse['tracking_number'],
+                                'aramex_tracking_url' => $shipmentResponse['tracking_url'],
+                                'aramex_response' => $shipmentResponse['response'],
+                                'status' => 'shipping',
+                            ]);
+
+                            Notification::make()
+                                ->title('Shipment Created')
+                                ->success()
+                                ->send();
+                        } catch (\Exception $e) {
+                            Log::error('Failed to ship order ' . $record->id . ': ' . $e->getMessage());
+                            Notification::make()
+                                ->title('Failed to create shipment')
+                                ->danger()
+                                ->body($e->getMessage())
+                                ->send();
+                        }
                     }),
-
 
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),

@@ -21,4 +21,11 @@ Artisan::command('order:normalize-shipping-response', function () {
 })->purpose('Sync order statuses from J&T Express API')
     ->everyFiveMinutes()
     ->withoutOverlapping()
-    ->appendOutputTo(storage_path('logs/schedule.log'));
+    ->appendOutputTo(storage_path('logs/schedule.log')); // aramex:update-statuses
+
+Artisan::command('aramex:update-statuses', function () {
+    $this->call('aramex:update-statuses');
+})->purpose('Sync order statuses from Aramix API')
+    ->everyFiveMinutes()
+    ->withoutOverlapping()
+    ->appendOutputTo(storage_path('logs/schedule.log')); // aramex:update-statuses

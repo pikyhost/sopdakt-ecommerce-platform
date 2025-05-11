@@ -39,7 +39,8 @@
         "torann/geoip": "^3.0",
         "webbingbrasil/filament-advancedfilter": "^3.0",
         "ysfkaya/filament-phone-input": "^3.1",
-        "z3d0x/filament-logger": "^0.8.0"
+        "z3d0x/filament-logger": "^0.8.0",
+        "ext-soap": "*"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.14",

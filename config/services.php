@@ -50,10 +50,11 @@ return [
     'aramex' => [
         'username' => env('ARAMEX_USERNAME'),
         'password' => env('ARAMEX_PASSWORD'),
+        'version' => env('ARAMEX_VERSION'),
         'account_number' => env('ARAMEX_ACCOUNT_NUMBER'),
         'account_pin' => env('ARAMEX_ACCOUNT_PIN'),
         'account_entity' => env('ARAMEX_ACCOUNT_ENTITY'),
         'account_country_code' => env('ARAMEX_ACCOUNT_COUNTRY_CODE'),
-        'url' => env('ARAMEX_URL', 'https://ws.aramex.net/shippingapi.v2/CreateShipments'),
+        'testing' => env('ARAMEX_TESTING', true),
     ],
 ];
