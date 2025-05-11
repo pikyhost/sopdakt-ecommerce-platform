@@ -48,13 +48,21 @@ return [
     ],
 
     'aramex' => [
-        'username' => env('ARAMEX_USERNAME'),
-        'password' => env('ARAMEX_PASSWORD'),
-        'version' => env('ARAMEX_VERSION'),
-        'account_number' => env('ARAMEX_ACCOUNT_NUMBER'),
-        'account_pin' => env('ARAMEX_ACCOUNT_PIN'),
-        'account_entity' => env('ARAMEX_ACCOUNT_ENTITY'),
-        'account_country_code' => env('ARAMEX_ACCOUNT_COUNTRY_CODE'),
-        'testing' => env('ARAMEX_TESTING', true),
+        'test_mode' => env('ARAMEX_TEST_MODE', true),
+        'username' => env('ARAMEX_USERNAME', 'testingapi@aramex.com'),
+        'password' => env('ARAMEX_PASSWORD', 'R123456789$r'),
+        'version' => env('ARAMEX_VERSION', 'v1'),
+        'account_number' => env('ARAMEX_ACCOUNT_NUMBER', '987654'),
+        'account_pin' => env('ARAMEX_ACCOUNT_PIN', '226321'),
+        'account_entity' => env('ARAMEX_ACCOUNT_ENTITY', 'CAI'),
+        'account_country_code' => env('ARAMEX_ACCOUNT_COUNTRY_CODE', 'EG'),
+        'test_urls' => [
+            'shipping' => 'https://ws.dev.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc',
+            'tracking' => 'https://ws.dev.aramex.net/ShippingAPI.V2/Tracking/Service_1_0.svc',
+        ],
+        'live_urls' => [
+            'shipping' => 'https://ws.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc',
+            'tracking' => 'https://ws.aramex.net/ShippingAPI.V2/Tracking/Service_1_0.svc',
+        ],
     ],
 ];

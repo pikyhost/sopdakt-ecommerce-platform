@@ -32,6 +32,12 @@ Route::post('jt-express-webhook', [ShippingController::class, 'handleWebhook']);
 
 Route::post('/bosta/webhook', [BostaWebhookController::class, 'handle'])->name('bosta.webhook');
 
+Route::prefix('aramex')->group(function () {
+    Route::post('webhook', [\App\Http\Controllers\Api\AramexController::class, 'webhook']);
+    Route::post('orders/{order}/create-shipment', [\App\Http\Controllers\Api\AramexController::class, 'createShipment']);
+    Route::get('orders/{order}/track-shipment', [\App\Http\Controllers\Api\AramexController::class, 'trackShipment']);
+});
+
 Route::post('/payment/process', [PaymentController::class, 'paymentProcess']);
 Route::match(['GET','POST'],'/payment/callback', [PaymentController::class, 'callBack']);
 

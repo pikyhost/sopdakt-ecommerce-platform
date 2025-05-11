@@ -2,139 +2,232 @@
 
 namespace App\Services;
 
-namespace App\Services;
-
 use SoapClient;
+use Exception;
+use Illuminate\Support\Facades\Log;
 
 class AramexService
 {
-    protected $shippingWsdl;
-    protected $trackingWsdl;
+    protected $clientInfo;
+    protected $testMode;
+    protected $urls;
 
     public function __construct()
     {
-        $this->shippingWsdl = config('services.aramex.testing')
-            ? 'http://ws.dev.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc'
-            : 'https://ws.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc';
-        $this->trackingWsdl = config('services.aramex.testing')
-            ? 'https://ws.dev.aramex.net/shippingapi/tracking/service_1_0.svc'
-            : 'https://ws.aramex.net/shippingapi/tracking/service_1_0.svc';
+        $this->testMode = config('services.aramex.test_mode');
+        $this->urls = config('services.aramex.' . ($this->testMode ? 'test_urls' : 'live_urls'));
+
+        $this->clientInfo = [
+            'UserName' => config('services.aramex.username'),
+            'Password' => config('services.aramex.password'),
+            'Version' => config('services.aramex.version'),
+            'AccountNumber' => config('services.aramex.account_number'),
+            'AccountPin' => config('services.aramex.account_pin'),
+            'AccountEntity' => config('services.aramex.account_entity'),
+            'AccountCountryCode' => config('services.aramex.account_country_code'),
+        ];
     }
 
-    public function createShipment($shipmentData)
+    /**
+     * Create a new shipment
+     */
+    public function createShipment(array $shipmentData, array $shipperData, array $consigneeData, array $items)
     {
-        $client = new SoapClient($this->shippingWsdl);
-        $request = $this->buildCreateShipmentRequest($shipmentData);
-        $response = $client->CreateShipments($request);
-        return $this->parseCreateShipmentResponse($response);
-    }
+        try {
+            $client = new SoapClient($this->urls['shipping'] . '?wsdl');
 
-    public function getTrackingStatus($trackingNumbers)
-    {
-        $client = new SoapClient($this->trackingWsdl);
-        $request = $this->buildTrackingRequest($trackingNumbers);
-        $response = $client->ShipmentTracking($request);
-        return $this->parseTrackingResponse($response);
-    }
-
-    protected function buildCreateShipmentRequest($shipmentData)
-    {
-        return [
-            'ClientInfo' => [
-                'UserName' => config('services.aramex.username'),
-                'Password' => config('services.aramex.password'),
-                'Version' => config('services.aramex.version'),
-                'AccountNumber' => config('services.aramex.account_number'),
-                'AccountPin' => config('services.aramex.account_pin'),
-                'AccountEntity' => config('services.aramex.account_entity'),
-                'AccountCountryCode' => config('services.aramex.account_country_code'),
-            ],
-            'Transaction' => [
-                'Reference1' => $shipmentData['order_id'],
-            ],
-            'Shipments' => [
-                [
-                    'Shipper' => [
-                        'Name' => 'Your Company Name',
-                        'PhoneNumber' => '1234567890',
-                        'Address' => [
-                            'Line1' => 'Your Address Line 1',
-                            'City' => 'Your City',
-                            'CountryCode' => 'EG',
+            $params = [
+                'ClientInfo' => $this->clientInfo,
+                'Transaction' => [
+                    'Reference1' => $shipmentData['reference'],
+                    'Reference2' => '',
+                    'Reference3' => '',
+                    'Reference4' => '',
+                    'Reference5' => '',
+                ],
+                'Shipments' => [
+                    [
+                        'Reference1' => $shipmentData['reference'],
+                        'Reference2' => '',
+                        'Reference3' => '',
+                        'Shipper' => $shipperData,
+                        'Consignee' => $consigneeData,
+                        'ThirdParty' => null,
+                        'ShippingDateTime' => time(),
+                        'DueDate' => time() + (7 * 24 * 60 * 60), // 7 days from now
+                        'Comments' => $shipmentData['comments'] ?? '',
+                        'PickupLocation' => 'Reception',
+                        'Operations' => '',
+                        'Details' => [
+                            'Dimensions' => [
+                                'Length' => $shipmentData['length'] ?? 10,
+                                'Width' => $shipmentData['width'] ?? 10,
+                                'Height' => $shipmentData['height'] ?? 10,
+                                'Unit' => 'cm',
+                            ],
+                            'ActualWeight' => [
+                                'Value' => $shipmentData['weight'],
+                                'Unit' => 'kg',
+                            ],
+                            'ChargeableWeight' => null,
+                            'DescriptionOfGoods' => $shipmentData['description'] ?? 'General Goods',
+                            'GoodsOriginCountry' => $shipperData['CountryCode'],
+                            'NumberOfPieces' => count($items),
+                            'ProductGroup' => $shipmentData['product_group'] ?? 'DOM', // DOM for domestic, EXP for international
+                            'ProductType' => $shipmentData['product_type'] ?? 'OND', // OND for On Demand
+                            'PaymentType' => $shipmentData['payment_type'] ?? 'P', // P=Prepaid, C=Collect, 3=Third Party
+                            'PaymentOptions' => $shipmentData['payment_options'] ?? '',
+                            'CustomsValueAmount' => [
+                                'Value' => $shipmentData['customs_value'] ?? 0,
+                                'CurrencyCode' => $shipmentData['currency_code'] ?? 'USD',
+                            ],
+                            'CashOnDeliveryAmount' => null,
+                            'InsuranceAmount' => null,
+                            'CashAdditionalAmount' => null,
+                            'CashAdditionalAmountDescription' => null,
+                            'CollectAmount' => null,
+                            'Services' => '',
+                            'Items' => $items,
                         ],
-                    ],
-                    'Consignee' => [
-                        'Name' => $shipmentData['consignee_name'],
-                        'PhoneNumber' => $shipmentData['consignee_phone'],
-                        'Address' => [
-                            'Line1' => $shipmentData['consignee_address'],
-                            'City' => $shipmentData['consignee_city'],
-                            'CountryCode' => $shipmentData['consignee_country_code'],
-                        ],
-                    ],
-                    'ShippingDateTime' => now()->toDateTimeString(),
-                    'Details' => [
-                        'Dimensions' => [
-                            'Length' => 10,
-                            'Width' => 10,
-                            'Height' => 10,
-                            'Unit' => 'CM',
-                        ],
-                        'ActualWeight' => [
-                            'Value' => $shipmentData['weight'],
-                            'Unit' => 'KG',
-                        ],
-                        'ProductGroup' => 'EXP',
-                        'ProductType' => 'PDX',
-                        'PaymentType' => 'P',
-                        'NumberOfPieces' => 1,
-                        'DescriptionOfGoods' => 'Order Items',
                     ],
                 ],
-            ],
-        ];
+            ];
+
+            $response = $client->CreateShipment($params);
+
+            if ($response->HasErrors) {
+                Log::error('ARAMEX CreateShipment Error', [
+                    'errors' => $response->Notifications,
+                    'request' => $params
+                ]);
+                throw new Exception('ARAMEX Error: ' . json_encode($response->Notifications));
+            }
+
+            return $response;
+
+        } catch (Exception $e) {
+            Log::error('ARAMEX CreateShipment Exception', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
     }
 
-    protected function parseCreateShipmentResponse($response)
+    /**
+     * Track a shipment
+     */
+    public function trackShipment($shipmentId)
     {
-        if (isset($response->HasErrors) && $response->HasErrors) {
-            throw new \Exception($response->Notifications->Notification->Message);
+        try {
+            $client = new SoapClient($this->urls['tracking'] . '?wsdl');
+
+            $params = [
+                'ClientInfo' => $this->clientInfo,
+                'Transaction' => [
+                    'Reference1' => $shipmentId,
+                ],
+                'Shipments' => [
+                    $shipmentId
+                ],
+            ];
+
+            $response = $client->TrackShipments($params);
+
+            if ($response->HasErrors) {
+                Log::error('ARAMEX TrackShipment Error', [
+                    'errors' => $response->Notifications,
+                    'request' => $params
+                ]);
+                throw new Exception('ARAMEX Error: ' . json_encode($response->Notifications));
+            }
+
+            return $response;
+
+        } catch (Exception $e) {
+            Log::error('ARAMEX TrackShipment Exception', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
         }
-        $shipment = $response->Shipments[0];
-        return [
-            'shipment_id' => $shipment->ID,
-            'tracking_number' => $shipment->ShipmentNumber,
-            'tracking_url' => 'https://www.aramex.com/track/shipments?ShipmentNumber=' . $shipment->ShipmentNumber,
-            'response' => json_encode($response),
-        ];
     }
 
-    protected function buildTrackingRequest($trackingNumbers)
+    /**
+     * Get shipping rates
+     */
+    public function calculateRate(array $origin, array $destination, array $shipmentDetails)
     {
-        return [
-            'ClientInfo' => [
-                'UserName' => config('services.aramex.username'),
-                'Password' => config('services.aramex.password'),
-                'Version' => config('services.aramex.version'),
-                'AccountNumber' => config('services.aramex.account_number'),
-                'AccountPin' => config('services.aramex.account_pin'),
-                'AccountEntity' => config('services.aramex.account_entity'),
-                'AccountCountryCode' => config('services.aramex.account_country_code'),
-            ],
-            'Shipments' => $trackingNumbers,
-            'GetLastTrackingUpdateOnly' => true,
-        ];
+        try {
+            $client = new SoapClient($this->urls['shipping'] . '?wsdl');
+
+            $params = [
+                'ClientInfo' => $this->clientInfo,
+                'Transaction' => [
+                    'Reference1' => 'RateCalc-' . time(),
+                ],
+                'OriginAddress' => $origin,
+                'DestinationAddress' => $destination,
+                'ShipmentDetails' => $shipmentDetails,
+            ];
+
+            $response = $client->CalculateRate($params);
+
+            if ($response->HasErrors) {
+                Log::error('ARAMEX CalculateRate Error', [
+                    'errors' => $response->Notifications,
+                    'request' => $params
+                ]);
+                throw new Exception('ARAMEX Error: ' . json_encode($response->Notifications));
+            }
+
+            return $response;
+
+        } catch (Exception $e) {
+            Log::error('ARAMEX CalculateRate Exception', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
     }
 
-    protected function parseTrackingResponse($response)
+    /**
+     * Schedule a pickup
+     */
+    public function schedulePickup(array $pickupDetails, array $pickupAddress, array $shipments)
     {
-        $statuses = [];
-        if (isset($response->HasErrors) && $response->HasErrors) {
-            throw new \Exception($response->Notifications->Notification->Message);
+        try {
+            $client = new SoapClient($this->urls['shipping'] . '?wsdl');
+
+            $params = [
+                'ClientInfo' => $this->clientInfo,
+                'Transaction' => [
+                    'Reference1' => 'Pickup-' . time(),
+                ],
+                'Pickup' => $pickupDetails,
+                'PickupAddress' => $pickupAddress,
+                'Shipments' => $shipments,
+            ];
+
+            $response = $client->CreatePickup($params);
+
+            if ($response->HasErrors) {
+                Log::error('ARAMEX SchedulePickup Error', [
+                    'errors' => $response->Notifications,
+                    'request' => $params
+                ]);
+                throw new Exception('ARAMEX Error: ' . json_encode($response->Notifications));
+            }
+
+            return $response;
+
+        } catch (Exception $e) {
+            Log::error('ARAMEX SchedulePickup Exception', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
         }
-        foreach ($response->TrackingResults->TrackingResult as $result) {
-            $statuses[$result->WaybillNumber] = $result->UpdateDescription;
-        }
-        return $statuses;
     }
 }

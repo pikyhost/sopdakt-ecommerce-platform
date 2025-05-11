@@ -641,110 +641,39 @@ class OrderResource extends Resource
                         }
                     }),
 
-                Action::make('ship_with_aramex')
-                    ->label('Ship with Aramex')
+                // In your table() method:
+                Action::make('createAramexShipment')
+                    ->label('Create ARAMEX Shipment')
                     ->icon('heroicon-o-truck')
                     ->action(function (Order $record) {
-                        // Prevent shipping if already shipped
-                        if ($record->aramex_shipment_id) {
-                            Notification::make()
-                                ->title('Order already shipped')
-                                ->warning()
-                                ->send();
-                            return;
-                        }
-
-                        // Validate order status
-                        if ($record->status !== OrderStatus::Preparing) {
-                            Notification::make()
-                                ->title('Order cannot be shipped')
-                                ->warning()
-                                ->body('Order must be in "preparing" status.')
-                                ->send();
-                            return;
-                        }
-
-                        $contact = $record->user ?? $record->contact;
-                        $city = $record->city;
-
-                        if (!$contact || !$city) {
-                            Log::error('Cannot create Aramex shipment: missing contact or city info', [
-                                'order_id' => $record->id,
-                            ]);
-
-                            Notification::make()
-                                ->title('Cannot ship with Aramex: Missing contact or city info')
-                                ->danger()
-                                ->send();
-                            return;
-                        }
-
-                        $address = null;
-                        if ($contact instanceof User) {
-                            $primaryAddress = $contact->addresses()->first();
-                            $address = $primaryAddress?->address;
-                        } else {
-                            $address = $contact->address ?? null;
-                        }
-
-                        if (!$address) {
-                            Log::error('Cannot create Aramex shipment: missing contact address', [
-                                'order_id' => $record->id,
-                            ]);
-
-                            Notification::make()
-                                ->title('Cannot ship with Aramex: Missing contact address')
-                                ->danger()
-                                ->send();
-                            return;
-                        }
-
-                        // Prepare shipment data
-                        $shipmentData = [
-                            'order_id' => $record->id,
-                            'consignee_name' => $contact->name ?? 'Unknown Name',
-                            'consignee_phone' => $contact->phone ?? '+201234567890',
-                            'consignee_email' => $contact->email ?? 'test@example.com',
-                            'consignee_address' => $address,
-                            'consignee_city' => $city->name ?? 'Unknown City',
-                            'consignee_country_code' => $record->country?->code ?? 'EG',
-                            'weight' => 1, // TODO: Calculate based on order items
-                            'notes' => $record->notes ?? '',
-                            'cod_amount' => $record->total,
-                            'description' => 'Order #' . $record->id,
-                        ];
-
-                        // Create shipment
-                        $aramexService = new AramexService();
                         try {
-                            $shipmentResponse = $aramexService->createShipment($shipmentData);
-
-                            // Update order
-                            $record->update([
-                                'aramex_shipment_id' => $shipmentResponse['shipment_id'],
-                                'aramex_tracking_number' => $shipmentResponse['tracking_number'],
-                                'aramex_tracking_url' => $shipmentResponse['tracking_url'],
-                                'aramex_response' => $shipmentResponse['response'],
-                                'status' => 'shipping',
+                            $client = new \GuzzleHttp\Client();
+                            $response = $client->post(route('api.aramex.orders.create-shipment', $record->id), [
+                                'headers' => [
+                                    'Accept' => 'application/json',
+                                ],
                             ]);
 
+                            $data = json_decode($response->getBody(), true);
+
                             Notification::make()
-                                ->title('Shipment Created')
+                                ->title('Shipment Created Successfully')
                                 ->success()
                                 ->send();
-                        } catch (\Exception $e) {
-                            Log::error('Failed to ship order ' . $record->id . ': ' . $e->getMessage(), [
-                                'order_id' => $record->id,
-                                'error' => $e->getMessage(),
-                            ]);
 
+                        } catch (\Exception $e) {
                             Notification::make()
                                 ->title('Failed to create shipment')
-                                ->danger()
                                 ->body($e->getMessage())
+                                ->danger()
                                 ->send();
                         }
-                    }),
+                    })
+                    ->visible(fn (Order $record) => $record->status == OrderStatus::Shipping && empty($record->aramex_shipment_id))
+                    ->requiresConfirmation()
+                    ->modalHeading('Create ARAMEX Shipment')
+                    ->modalSubheading('Are you sure you want to create an ARAMEX shipment for this order?')
+                    ->modalButton('Create Shipment'),
 
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),

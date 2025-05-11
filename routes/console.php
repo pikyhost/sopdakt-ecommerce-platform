@@ -23,8 +23,8 @@ Artisan::command('order:normalize-shipping-response', function () {
     ->withoutOverlapping()
     ->appendOutputTo(storage_path('logs/schedule.log')); // aramex:update-statuses
 
-Artisan::command('aramex:update-statuses', function () {
-    $this->call('aramex:update-statuses');
+Artisan::command('aramex:check-shipments', function () {
+    $this->call('aramex:check-shipments');
 })->purpose('Sync order statuses from Aramix API')
     ->everyFiveMinutes()
     ->withoutOverlapping()
