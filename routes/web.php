@@ -40,26 +40,19 @@ Route::post('/payment/callback', [App\Http\Controllers\PaymentController::class,
 
 
 // routes/web.php
-Route::get('/test-aramex', function() {
+Route::get('/test-aramex-connection', function() {
     try {
-        $client = new \SoapClient(
-            'https://ws.dev.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc?wsdl',
-            [
-                'stream_context' => stream_context_create([
-                    'ssl' => [
-                        'verify_peer' => false,
-                        'verify_peer_name' => false,
-                        'allow_self_signed' => true
-                    ]
-                ]),
-                'cache_wsdl' => WSDL_CACHE_NONE,
-                'trace' => 1
-            ]
-        );
+        $service = app(\App\Services\AramexService::class);
+
+        // Test WSDL loading
+        $client = $service->getSoapClient('shipping');
 
         return response()->json([
             'success' => true,
-            'functions' => $client->__getFunctions()
+            'functions' => $client->__getFunctions(),
+            'wsdl_url' => config('services.aramex.test_mode') ?
+                config('services.aramex.test_urls.shipping') :
+                config('services.aramex.live_urls.shipping')
         ]);
     } catch (\Exception $e) {
         return response()->json([

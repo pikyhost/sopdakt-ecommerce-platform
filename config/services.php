@@ -57,12 +57,12 @@ return [
         'account_entity' => env('ARAMEX_ACCOUNT_ENTITY', 'CAI'),
         'account_country_code' => env('ARAMEX_ACCOUNT_COUNTRY_CODE', 'EG'),
         'test_urls' => [
-            'shipping' => 'https://ws.dev.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc',
-            'tracking' => 'https://ws.dev.aramex.net/ShippingAPI.V2/Tracking/Service_1_0.svc',
+            'shipping' => 'https://ws.dev.aramex.net/shippingapi.v2/shipping/service_1_0.svc',
+            'tracking' => 'https://ws.dev.aramex.net/shippingapi.v2/tracking/service_1_0.svc',
         ],
         'live_urls' => [
-            'shipping' => 'https://ws.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc',
-            'tracking' => 'https://ws.aramex.net/ShippingAPI.V2/Tracking/Service_1_0.svc',
+            'shipping' => 'https://ws.aramex.net/shippingapi.v2/shipping/service_1_0.svc',
+            'tracking' => 'https://ws.aramex.net/shippingapi.v2/tracking/service_1_0.svc',
         ],
     ],
 ];

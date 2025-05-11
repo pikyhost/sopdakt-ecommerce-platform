@@ -11,6 +11,7 @@ class AramexService
     protected $clientInfo;
     protected $testMode;
     protected $urls;
+    protected $soapOptions;
 
     public function __construct()
     {
@@ -26,15 +27,46 @@ class AramexService
             'AccountEntity' => config('services.aramex.account_entity'),
             'AccountCountryCode' => config('services.aramex.account_country_code'),
         ];
+
+        $this->soapOptions = [
+            'stream_context' => stream_context_create([
+                'ssl' => [
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true
+                ]
+            ]),
+            'cache_wsdl' => WSDL_CACHE_NONE,
+            'trace' => 1,
+            'exceptions' => true
+        ];
     }
 
-    /**
-     * Create a new shipment
-     */
+    protected function getSoapClient($service)
+    {
+        try {
+            // Note: The WSDL URL is case-sensitive based on ARAMEX docs
+            $wsdlUrl = $this->urls[$service] . '?wsdl';
+
+            // For debugging - log the exact URL being used
+            Log::debug('ARAMEX WSDL URL', ['url' => $wsdlUrl]);
+
+            return new SoapClient($wsdlUrl, $this->soapOptions);
+        } catch (Exception $e) {
+            Log::error('SOAP Client Creation Failed', [
+                'error' => $e->getMessage(),
+                'service' => $service,
+                'url' => $wsdlUrl ?? null,
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw new Exception("Failed to initialize ARAMEX SOAP client: " . $e->getMessage());
+        }
+    }
+
     public function createShipment(array $shipmentData, array $shipperData, array $consigneeData, array $items)
     {
         try {
-            $client = new SoapClient($this->urls['shipping'] . '?wsdl');
+            $client = $this->getSoapClient('shipping');
 
             $params = [
                 'ClientInfo' => $this->clientInfo,
@@ -54,7 +86,7 @@ class AramexService
                         'Consignee' => $consigneeData,
                         'ThirdParty' => null,
                         'ShippingDateTime' => time(),
-                        'DueDate' => time() + (7 * 24 * 60 * 60), // 7 days from now
+                        'DueDate' => time() + (7 * 24 * 60 * 60),
                         'Comments' => $shipmentData['comments'] ?? '',
                         'PickupLocation' => 'Reception',
                         'Operations' => '',
@@ -73,9 +105,9 @@ class AramexService
                             'DescriptionOfGoods' => $shipmentData['description'] ?? 'General Goods',
                             'GoodsOriginCountry' => $shipperData['CountryCode'],
                             'NumberOfPieces' => count($items),
-                            'ProductGroup' => $shipmentData['product_group'] ?? 'DOM', // DOM for domestic, EXP for international
-                            'ProductType' => $shipmentData['product_type'] ?? 'OND', // OND for On Demand
-                            'PaymentType' => $shipmentData['payment_type'] ?? 'P', // P=Prepaid, C=Collect, 3=Third Party
+                            'ProductGroup' => $shipmentData['product_group'] ?? 'DOM',
+                            'ProductType' => $shipmentData['product_type'] ?? 'OND',
+                            'PaymentType' => $shipmentData['payment_type'] ?? 'P',
                             'PaymentOptions' => $shipmentData['payment_options'] ?? '',
                             'CustomsValueAmount' => [
                                 'Value' => $shipmentData['customs_value'] ?? 0,
@@ -93,6 +125,8 @@ class AramexService
                 ],
             ];
 
+            Log::debug('ARAMEX CreateShipment Request', ['params' => $params]);
+
             $response = $client->CreateShipment($params);
 
             if ($response->HasErrors) {
@@ -103,6 +137,8 @@ class AramexService
                 throw new Exception('ARAMEX Error: ' . json_encode($response->Notifications));
             }
 
+            Log::debug('ARAMEX CreateShipment Response', ['response' => $response]);
+
             return $response;
 
         } catch (Exception $e) {
@@ -110,7 +146,7 @@ class AramexService
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            throw $e;
+            throw new Exception('Failed to create ARAMEX shipment: ' . $e->getMessage());
         }
     }
 
