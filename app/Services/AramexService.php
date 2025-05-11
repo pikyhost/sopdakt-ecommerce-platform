@@ -14,8 +14,8 @@ class AramexService
     public function __construct()
     {
         $this->shippingWsdl = config('services.aramex.testing')
-            ? 'https://ws.dev.aramex.net/shippingapi.v2/shipping/service_1_0.svc'
-            : 'https://ws.aramex.net/shippingapi.v2/shipping/service_1_0.svc';
+            ? 'http://ws.dev.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc'
+            : 'https://ws.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc';
         $this->trackingWsdl = config('services.aramex.testing')
             ? 'https://ws.dev.aramex.net/shippingapi/tracking/service_1_0.svc'
             : 'https://ws.aramex.net/shippingapi/tracking/service_1_0.svc';

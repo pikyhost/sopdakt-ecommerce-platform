@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Exports\OrderExporter;
+use App\Models\User;
 use App\Services\AramexService;
 use App\Services\BostaService;
 use Filament\Actions\Exports\Enums\ExportFormat;
@@ -45,7 +46,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\FacadesLog;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
@@ -641,7 +641,6 @@ class OrderResource extends Resource
                         }
                     }),
 
-                // ARAMEX ACTIONS
                 Action::make('ship_with_aramex')
                     ->label('Ship with Aramex')
                     ->icon('heroicon-o-truck')
@@ -656,7 +655,7 @@ class OrderResource extends Resource
                         }
 
                         // Validate order status
-                        if ( $record->status === OrderStatus::Preparing) {
+                        if ($record->status !== OrderStatus::Preparing) {
                             Notification::make()
                                 ->title('Order cannot be shipped')
                                 ->warning()
@@ -665,15 +664,54 @@ class OrderResource extends Resource
                             return;
                         }
 
+                        $contact = $record->user ?? $record->contact;
+                        $city = $record->city;
+
+                        if (!$contact || !$city) {
+                            Log::error('Cannot create Aramex shipment: missing contact or city info', [
+                                'order_id' => $record->id,
+                            ]);
+
+                            Notification::make()
+                                ->title('Cannot ship with Aramex: Missing contact or city info')
+                                ->danger()
+                                ->send();
+                            return;
+                        }
+
+                        $address = null;
+                        if ($contact instanceof User) {
+                            $primaryAddress = $contact->addresses()->first();
+                            $address = $primaryAddress?->address;
+                        } else {
+                            $address = $contact->address ?? null;
+                        }
+
+                        if (!$address) {
+                            Log::error('Cannot create Aramex shipment: missing contact address', [
+                                'order_id' => $record->id,
+                            ]);
+
+                            Notification::make()
+                                ->title('Cannot ship with Aramex: Missing contact address')
+                                ->danger()
+                                ->send();
+                            return;
+                        }
+
                         // Prepare shipment data
                         $shipmentData = [
                             'order_id' => $record->id,
-                            'consignee_name' => $record->contact->name,
-                            'consignee_phone' => $record->contact->phone,
-                            'consignee_address' => $record->contact->address ?? 'No address provided',
-                            'consignee_city' => $record->city?->name ?? 'No city',
-                            'consignee_country_code' => $record->country?->code ?? 'No country',
+                            'consignee_name' => $contact->name ?? 'Unknown Name',
+                            'consignee_phone' => $contact->phone ?? '+201234567890',
+                            'consignee_email' => $contact->email ?? 'test@example.com',
+                            'consignee_address' => $address,
+                            'consignee_city' => $city->name ?? 'Unknown City',
+                            'consignee_country_code' => $record->country?->code ?? 'EG',
                             'weight' => 1, // TODO: Calculate based on order items
+                            'notes' => $record->notes ?? '',
+                            'cod_amount' => $record->total,
+                            'description' => 'Order #' . $record->id,
                         ];
 
                         // Create shipment
@@ -695,7 +733,11 @@ class OrderResource extends Resource
                                 ->success()
                                 ->send();
                         } catch (\Exception $e) {
-                            Log::error('Failed to ship order ' . $record->id . ': ' . $e->getMessage());
+                            Log::error('Failed to ship order ' . $record->id . ': ' . $e->getMessage(), [
+                                'order_id' => $record->id,
+                                'error' => $e->getMessage(),
+                            ]);
+
                             Notification::make()
                                 ->title('Failed to create shipment')
                                 ->danger()
