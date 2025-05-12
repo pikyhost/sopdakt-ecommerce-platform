@@ -6,10 +6,6 @@ use App\Models\Category;
 
 class CategoryController extends Controller
 {
-    use Illuminate\Http\JsonResponse;
-    use Illuminate\Http\Request;
-    use App\Models\Category;
-
     /**
      * Show Category with Products
      *
