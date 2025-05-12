@@ -30,7 +30,7 @@ class RedirectHomePage extends Widget
             ->url(config('app.frontend_url')) // Dynamically fetched
             ->openUrlInNewTab(false);
     }
-    
+
     public static function canView(): bool
     {
         return true;

@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Middleware\SetLocaleFromHeader;
 use App\Http\Middleware\SetRequestLocale;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
