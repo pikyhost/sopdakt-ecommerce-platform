@@ -139,17 +139,17 @@ class BostaService
                     'itemsCount' => $order->items->sum('quantity'),
                     'description' => 'تفاصيل الطلب رقم ' . $order->id . ': ' . PHP_EOL .
                         $order->items->map(function ($item, $index) {
-                            $productName = optional($item->product)->name;
-                            $bundleName = optional($item->bundle)->name;
+                            $product = optional($item->product);
+                            $bundle = optional($item->bundle);
                             $size = optional($item->size)->name;
                             $color = optional($item->color)->name;
 
                             $details = "المنتج رقم " . ($index + 1) . ": ";
 
-                            if ($productName) {
-                                $details .= "المنتج: $productName";
-                            } elseif ($bundleName) {
-                                $details .= "الباقة: $bundleName";
+                            if ($product->name) {
+                                $details .= "المنتج: {$product->name} (رمز المنتج: {$product->sku})";
+                            } elseif ($bundle->name) {
+                                $details .= "الباقة: {$bundle->name}";
                             }
 
                             if ($size) {
@@ -166,6 +166,7 @@ class BostaService
 
                             return $details;
                         })->implode(PHP_EOL),
+
                 ],
             ],
             'notes' => $order->notes ?? '',
