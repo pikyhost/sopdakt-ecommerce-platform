@@ -137,24 +137,35 @@ class BostaService
             'specs' => [
                 'packageDetails' => [
                     'itemsCount' => $order->items->sum('quantity'),
-                    'description' => collect($order->items)->map(function ($item, $index) {
-                        $productName = optional($item->product)->name;
-                        $bundleName = optional($item->bundle)->name;
-                        $size = optional($item->size)->name;
-                        $color = optional($item->color)->name;
+                    'description' => 'تفاصيل الطلب رقم ' . $order->id . ': ' . PHP_EOL .
+                        $order->items->map(function ($item, $index) {
+                            $productName = optional($item->product)->name;
+                            $bundleName = optional($item->bundle)->name;
+                            $size = optional($item->size)->name;
+                            $color = optional($item->color)->name;
 
-                        return sprintf(
-                            "Item #%d: %s%s%s%s, Qty: %d, Unit Price: %d, Subtotal: %d",
-                            $index + 1,
-                            $productName ? "Product: $productName" : '',
-                            $bundleName ? ", Bundle: $bundleName" : '',
-                            $size ? ", Size: $size" : '',
-                            $color ? ", Color: $color" : '',
-                            $item->quantity,
-                            $item->price_per_unit,
-                            $item->subtotal
-                        );
-                    })->prepend('Order #' . $order->id)->implode(" | "),
+                            $details = "المنتج رقم " . ($index + 1) . ": ";
+
+                            if ($productName) {
+                                $details .= "المنتج: $productName";
+                            } elseif ($bundleName) {
+                                $details .= "الباقة: $bundleName";
+                            }
+
+                            if ($size) {
+                                $details .= "، المقاس: $size";
+                            }
+
+                            if ($color) {
+                                $details .= "، اللون: $color";
+                            }
+
+                            $details .= "، الكمية: {$item->quantity}";
+                            $details .= "، سعر الوحدة: {$item->price_per_unit} جنيه";
+                            $details .= "، الإجمالي: {$item->subtotal} جنيه.";
+
+                            return $details;
+                        })->implode(PHP_EOL),
                 ],
             ],
             'notes' => $order->notes ?? '',
