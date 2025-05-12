@@ -136,8 +136,19 @@ class BostaService
             'businessLocationId' => config('services.bosta.business_location_id'),
             'specs' => [
                 'packageDetails' => [
-                    'itemsCount' => 1,
+                    'itemsCount' => $order->items->sum('quantity'),
                     'description' => 'Order #' . $order->id,
+                    'items' => $order->items->map(function ($item) {
+                        return [
+                            'product' => optional($item->product)->name,
+                            'bundle' => optional($item->bundle)->name,
+                            'size' => optional($item->size)->name,
+                            'color' => optional($item->color)->name,
+                            'quantity' => $item->quantity,
+                            'price_per_unit' => $item->price_per_unit,
+                            'subtotal' => $item->subtotal,
+                        ];
+                    })->values()->toArray(),
                 ],
             ],
             'notes' => $order->notes ?? '',
@@ -154,6 +165,7 @@ class BostaService
                 'email' => $contact->email ?? 'test@example.com',
             ],
         ];
+
     }
 
     /**
