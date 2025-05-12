@@ -49,6 +49,7 @@ use Filament\Tables\Table;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Parallax\FilamentComments\Tables\Actions\CommentsAction;
 
 class OrderResource extends Resource
 {
@@ -364,7 +365,9 @@ class OrderResource extends Resource
                         return $indicators;
                     }),
             ], Tables\Enums\FiltersLayout::Modal)
-            ->actions([Tables\Actions\Action::make('trackOrder')
+            ->actions([
+                CommentsAction::make(),
+                Tables\Actions\Action::make('trackOrder')
                 ->label(__('actions.track_order'))
                 ->icon('heroicon-o-map')
                 ->color('success')
