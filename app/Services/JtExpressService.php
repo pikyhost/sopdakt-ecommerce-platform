@@ -17,10 +17,10 @@ class JtExpressService
     public function __construct()
     {
         $this->baseUrl = env('JT_EXPRESS_BASE_URL', 'https://openapi.jtjms-eg.com/webopenplatformapi/api');
-        $this->apiAccount = env('JT_EXPRESS_API_ACCOUNT', '765199128979308601');
-        $this->privateKey = env('JT_EXPRESS_PRIVATE_KEY', '69024527c19c405a929fec5ae6a6ed46');
-        $this->customerCode = env('JT_EXPRESS_CUSTOMER_CODE', 'J0086006967');
-        $this->password = env('JT_EXPRESS_PASSWORD', 'Hanyhelmy11');
+        $this->apiAccount = env('JT_EXPRESS_API_ACCOUNT', '789507402494906427');
+        $this->privateKey = env('JT_EXPRESS_PRIVATE_KEY', '85e13bc999a6466f9b5d4e2c6015a35b');
+        $this->customerCode = env('JT_EXPRESS_CUSTOMER_CODE', 'J0086005129');
+        $this->password = env('JT_EXPRESS_PASSWORD', 'Hanyhelmy10');
     }
 
     protected function getAuthHeaders(array $requestBody)

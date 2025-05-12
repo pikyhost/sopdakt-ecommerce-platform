@@ -12,7 +12,7 @@ Artisan::command('inspire', function () {
 Artisan::command('jt-express:sync-statuses', function () {
     $this->call('jt-express:sync-statuses');
 })->purpose('Sync order statuses from J&T Express API')
-    ->everyFiveMinutes()
+    ->everyMinute()
     ->withoutOverlapping()
     ->appendOutputTo(storage_path('logs/schedule.log'));
 
@@ -20,9 +20,9 @@ Artisan::command('jt-express:sync-statuses', function () {
 Artisan::command('order:normalize-shipping-response', function () {
     $this->call('order:normalize-shipping-response');
 })->purpose('Sync order statuses from J&T Express API')
-    ->everyFiveMinutes()
+    ->everyMinute()
     ->withoutOverlapping()
-    ->appendOutputTo(storage_path('logs/schedule.log')); // aramex:update-statuses
+    ->appendOutputTo(storage_path('logs/schedule.log'));
 
 Artisan::command('aramex:check-shipments', function () {
     $this->call('aramex:check-shipments');
@@ -31,9 +31,9 @@ Artisan::command('aramex:check-shipments', function () {
     ->withoutOverlapping()
     ->appendOutputTo(storage_path('logs/schedule.log')); // aramex:update-statuses
 
-Artisan::command('test:log-cron', function () {
-    Log::info('✅ test:log-cron ran at ' . now());
-})->purpose('Log to test if cron is running')
-    ->everyMinute() // Run every minute
-    ->withoutOverlapping()
-    ->appendOutputTo(storage_path('logs/schedule.log'));
+//Artisan::command('test:log-cron', function () {
+//    Log::info('✅ test:log-cron ran at ' . now());
+//})->purpose('Log to test if cron is running')
+//    ->everyMinute() // Run every minute
+//    ->withoutOverlapping()
+//    ->appendOutputTo(storage_path('logs/schedule.log'));

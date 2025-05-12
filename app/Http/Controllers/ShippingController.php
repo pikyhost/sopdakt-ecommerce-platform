@@ -12,11 +12,14 @@ class ShippingController extends Controller
 {
     public function handleWebhook(Request $request)
     {
+        // Log initial receipt for debugging
+        Log::debug('JT Express Webhook: Endpoint hit', ['headers' => $request->headers->all()]);
+
         try {
             $data = $request->all();
             Log::info('JT Express Webhook Received', ['payload' => $data]);
 
-            // Extract relevant fields (adjust based on actual payload structure)
+            // Extract relevant fields
             $trackingNumber = $data['billCode'] ?? $data['txlogisticId'] ?? null;
             $newStatus = $data['status'] ?? $data['deliveryStatus'] ?? null;
 
@@ -33,31 +36,31 @@ class ShippingController extends Controller
                 return response()->json(['message' => 'Order not found'], 404);
             }
 
-            // Normalize webhook data to match API response structure
-            $normalizedData = [
-                'txlogisticId' => $data['txlogisticId'] ?? $trackingNumber,
-                'billCode' => $data['billCode'] ?? $trackingNumber,
-                'sortingCode' => $data['sortingCode'] ?? '',
-                'createOrderTime' => $data['createOrderTime'] ?? now()->toDateTimeString(),
-                'lastCenterName' => $data['lastCenterName'] ?? '',
-                'deliveryStatus' => $newStatus,
-                'raw' => $data, // Store original payload for debugging
-            ];
-
             // Update order with new status and response
             $order->update([
                 'shipping_status' => $newStatus,
-                'shipping_response' => json_encode($normalizedData),
+                'shipping_response' => json_encode($data),
             ]);
 
             // Map J&T status to OrderStatus enum
             $mappedStatus = $this->mapJtExpressStatusToOrderStatus($newStatus);
             if ($mappedStatus) {
                 $order->status = $mappedStatus;
-                $order->save();
+                if (!$order->save()) {
+                    Log::error('JT Express Webhook: Failed to save order status', [
+                        'order_id' => $order->id,
+                        'mapped_status' => $mappedStatus,
+                    ]);
+                }
+            } else {
+                Log::warning('JT Express Webhook: Unmapped status', [
+                    'tracking_number' => $trackingNumber,
+                    'status' => $newStatus,
+                ]);
             }
 
             Log::info('JT Express Webhook: Order updated successfully', [
+                'order_id' => $order->id,
                 'tracking_number' => $trackingNumber,
                 'new_status' => $newStatus,
             ]);
@@ -66,7 +69,6 @@ class ShippingController extends Controller
         } catch (\Exception $e) {
             Log::error('JT Express Webhook Error', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
                 'payload' => $data ?? null,
             ]);
             return response()->json(['message' => 'Error processing webhook'], 500);
@@ -75,10 +77,14 @@ class ShippingController extends Controller
 
     private function mapJtExpressStatusToOrderStatus(string $jtStatus): ?string
     {
+        // Map J&T Express statuses to your OrderStatus enum
         $statusMap = [
             'created' => OrderStatus::Pending->value,
             'picked_up' => OrderStatus::Preparing->value,
+            'pickedup' => OrderStatus::Preparing->value,
+            'pick_up' => OrderStatus::Preparing->value,
             'in_transit' => OrderStatus::Shipping->value,
+            'out_for_delivery' => OrderStatus::Shipping->value,
             'delivered' => OrderStatus::Completed->value,
             'cancelled' => OrderStatus::Cancelled->value,
             'returned' => OrderStatus::Refund->value,
@@ -95,21 +101,16 @@ class ShippingController extends Controller
             $landingPage = LandingPage::find($request->landing_page_id);
             $shippingType = ShippingType::find($request->shipping_type_id);
 
-            if (!$region || !$landingPage || !$shippingType) {
-                return response()->json(['message' => 'Invalid region, landing page, or shipping type'], 400);
-            }
-
             $shippingCost = $landingPage->shippingCost($region, $shippingType);
 
             return response()->json([
                 'shipping_cost' => $shippingCost,
-                'message' => 'Shipping cost calculated successfully.',
+                'message' => 'Shipping cost calculated successfully.'
             ]);
         } catch (\Exception $e) {
-            Log::error('Calculate Shipping Error', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return response()->json([
                 'message' => 'An error occurred while calculating shipping cost.',
-                'error' => $e->getMessage(),
+                'error' => $e->getMessage()
             ], 500);
         }
     }
