@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Exports\OrderExporter;
+use App\Models\Contact;
 use App\Models\User;
 use App\Services\AramexService;
 use App\Services\BostaService;
@@ -136,12 +137,12 @@ class OrderResource extends Resource
                     ->searchable()
                     ->weight(FontWeight::Bold),
 
-                TextColumn::make('bosta_delivery_id')
-                    ->copyable()
-                    ->placeholder('-')
-                    ->label(__('Bosta Delivery Number'))
-                    ->searchable()
-                    ->weight(FontWeight::Bold),
+//                TextColumn::make('bosta_delivery_id')
+//                    ->copyable()
+//                    ->placeholder('-')
+//                    ->label(__('Bosta Delivery Number'))
+//                    ->searchable()
+//                    ->weight(FontWeight::Bold),
 
                 Tables\Columns\TextColumn::make('user.name')
                     ->formatStateUsing(function ($record) {
@@ -604,42 +605,42 @@ class OrderResource extends Resource
                             Notification::make()->title('Cancellation Error')->body('An error occurred: ' . $e->getMessage())->danger()->send();
                         }
                     }),
-
-                Action::make('send_to_bosta')
-                    ->label('Send to Bosta')
-                    ->icon('heroicon-o-truck')
-                    ->color('primary')
-                    ->visible(fn(Order $record): bool => Setting::first()?->enable_bosta &&
-                        $record->status === OrderStatus::Preparing &&
-                        !$record->bosta_delivery_id &&
-                        ($record->user || $record->contact) &&
-                        ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
-                        $record->city?->bosta_code &&
-                        ($record->user?->phone ?? $record->contact?->phone)
-                    )
-                    ->requiresConfirmation()
-                    ->modalHeading('Send Order to Bosta')
-                    ->modalDescription('This will create a delivery in Bosta and set the order status to Shipping.')
-                    ->modalSubmitActionLabel('Confirm')
-                    ->action(function (Order $record) {
-                        $bostaService = new BostaService();
-                        $response = $bostaService->createDelivery($record);
-
-                        if ($response && isset($response['data']['_id'])) {
-                            $record->update([
-                                'status' => OrderStatus::Shipping,
-                                'bosta_delivery_id' => $response['data']['_id'], // Match Postman response
-                            ]);
-                            Notification::make()->title('Order sent to Bosta')->success()->send();
-                        } else {
-                            Notification::make()
-                                ->title('Failed to send order to Bosta')
-                                ->body('Check logs for API error details')
-                                ->danger()
-                                ->send();
-                            Log::error('Failed to create Bosta delivery for order.', ['order_id' => $record->id, 'response' => $response]);
-                        }
-                    }),
+//
+//                Action::make('send_to_bosta')
+//                    ->label('Send to Bosta')
+//                    ->icon('heroicon-o-truck')
+//                    ->color('primary')
+//                    ->visible(fn(Order $record): bool => Setting::first()?->enable_bosta &&
+//                        $record->status === OrderStatus::Preparing &&
+//                        !$record->bosta_delivery_id &&
+//                        ($record->user || $record->contact) &&
+//                        ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
+//                        $record->city?->bosta_code &&
+//                        ($record->user?->phone ?? $record->contact?->phone)
+//                    )
+//                    ->requiresConfirmation()
+//                    ->modalHeading('Send Order to Bosta')
+//                    ->modalDescription('This will create a delivery in Bosta and set the order status to Shipping.')
+//                    ->modalSubmitActionLabel('Confirm')
+//                    ->action(function (Order $record) {
+//                        $bostaService = new BostaService();
+//                        $response = $bostaService->createDelivery($record);
+//
+//                        if ($response && isset($response['data']['_id'])) {
+//                            $record->update([
+//                                'status' => OrderStatus::Shipping,
+//                                'bosta_delivery_id' => $response['data']['_id'], // Match Postman response
+//                            ]);
+//                            Notification::make()->title('Order sent to Bosta')->success()->send();
+//                        } else {
+//                            Notification::make()
+//                                ->title('Failed to send order to Bosta')
+//                                ->body('Check logs for API error details')
+//                                ->danger()
+//                                ->send();
+//                            Log::error('Failed to create Bosta delivery for order.', ['order_id' => $record->id, 'response' => $response]);
+//                        }
+//                    }),
 
 
                 Action::make('createAramexShipment')
@@ -1002,10 +1003,16 @@ class OrderResource extends Resource
                                 ->label(__('Customer')),
 
                             Select::make('contact_id')
-                                ->live()
-                                ->hidden(fn(Get $get) => $get('user_id'))
-                                ->relationship('contact', 'name')
-                                ->label(__('Contact')),
+                                ->label(__('Contact'))
+                                ->relationship(
+                                    name: 'contact',
+                                    titleAttribute: 'name',
+                                    modifyQueryUsing: fn (\Illuminate\Database\Eloquent\Builder $query) =>
+                                    $query->whereNotNull('name')
+                                )
+                                ->visible(fn(Get $get) => !$get('user_id'))
+                                ->live(),
+
 
                             Forms\Components\ToggleButtons::make('status')
                                 ->label(__('Status'))
@@ -1212,7 +1219,6 @@ class OrderResource extends Resource
                 ])->columnSpanFull()->skippable()
             ]);
     }
-
 
     private static function calculateProductShippingCost(Product $product, $cityId, $governorateId, $countryId): float
     {

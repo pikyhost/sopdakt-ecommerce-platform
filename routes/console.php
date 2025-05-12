@@ -2,6 +2,7 @@
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -29,3 +30,10 @@ Artisan::command('aramex:check-shipments', function () {
     ->everyFiveMinutes()
     ->withoutOverlapping()
     ->appendOutputTo(storage_path('logs/schedule.log')); // aramex:update-statuses
+
+Artisan::command('test:log-cron', function () {
+    Log::info('✅ test:log-cron ran at ' . now());
+})->purpose('Log to test if cron is running')
+    ->everyMinute() // Run every minute
+    ->withoutOverlapping()
+    ->appendOutputTo(storage_path('logs/schedule.log'));

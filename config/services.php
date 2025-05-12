@@ -48,21 +48,12 @@ return [
     ],
 
     'aramex' => [
-        'test_mode' => env('ARAMEX_TEST_MODE', true),
-        'username' => env('ARAMEX_USERNAME', 'testingapi@aramex.com'),
-        'password' => env('ARAMEX_PASSWORD', 'R123456789$r'),
-        'version' => env('ARAMEX_VERSION', 'v1'),
-        'account_number' => env('ARAMEX_ACCOUNT_NUMBER', '987654'),
-        'account_pin' => env('ARAMEX_ACCOUNT_PIN', '226321'),
-        'account_entity' => env('ARAMEX_ACCOUNT_ENTITY', 'CAI'),
-        'account_country_code' => env('ARAMEX_ACCOUNT_COUNTRY_CODE', 'EG'),
-        'test_urls' => [
-            'shipping' => 'https://ws.dev.aramex.net/shippingapi.v2/shipping/service_1_0.svc',
-            'tracking' => 'https://ws.dev.aramex.net/shippingapi.v2/tracking/service_1_0.svc',
-        ],
-        'live_urls' => [
-            'shipping' => 'https://ws.aramex.net/shippingapi.v2/shipping/service_1_0.svc',
-            'tracking' => 'https://ws.aramex.net/shippingapi.v2/tracking/service_1_0.svc',
-        ],
+        'username' => env('ARAMEX_USERNAME'),
+        'password' => env('ARAMEX_PASSWORD'),
+        'account_number' => env('ARAMEX_ACCOUNT_NUMBER'),
+        'account_pin' => env('ARAMEX_ACCOUNT_PIN'),
+        'account_entity' => env('ARAMEX_ACCOUNT_ENTITY'),
+        'account_country_code' => env('ARAMEX_ACCOUNT_COUNTRY_CODE'),
+        'url' => env('ARAMEX_URL'),
     ],
 ];
