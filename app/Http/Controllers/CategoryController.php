@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
@@ -89,5 +90,27 @@ class CategoryController extends Controller
                 }),
             ],
         ]);
+    }
+
+    protected function buildProductActionsWithMethods(Product $product): array
+    {
+        return [
+            'add_to_cart' => [
+                'method' => 'POST',
+                'url' => route('cart.add'),
+            ],
+            'toggle_love' => [
+                'method' => 'POST',
+                'url' => route('wishlist.toggle'),
+            ],
+            'compare' => [
+                'method' => 'POST',
+                'url' => route('compare.add'),
+            ],
+            'view' => [
+                'method' => 'GET',
+                'url' => route('products.show', ['slug' => $product->slug]),
+            ],
+        ];
     }
 }
