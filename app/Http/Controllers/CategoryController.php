@@ -31,7 +31,7 @@ class CategoryController extends Controller
      *   }
      * }
      */
-    public function showWithProducts(Request $request, Category $category): JsonResponse
+    public function showWithProducts(Request $request, Category $category)
     {
         $locale = $request->get('locale', app()->getLocale());
 
