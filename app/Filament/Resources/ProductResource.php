@@ -137,6 +137,7 @@ class ProductResource extends Resource
                                     ->maxLength(255),
                                 TextInput::make('quantity')
                                     ->minValue(1)
+                                    ->maxLength(null)
                                     ->label(__('Total Quantity'))
                                     ->numeric()
                                     ->default(1)
