@@ -202,4 +202,28 @@ class BostaService
             default => OrderStatus::Shipping,
         };
     }
+
+    public function getDeliveryStatus(string $bostaDeliveryId): ?string
+    {
+        try {
+            $response = $this->client->get("/api/v2/deliveries/track/$bostaDeliveryId");
+            $result = json_decode($response->getBody()->getContents(), true);
+
+            // Log the full response if needed
+            Log::debug("Bosta tracking response", ['delivery_id' => $bostaDeliveryId, 'result' => $result]);
+
+            return $result['CurrentStatus'] ?? null;
+        } catch (RequestException $e) {
+            Log::error("Bosta status fetch failed", [
+                'delivery_id' => $bostaDeliveryId,
+                'message' => $e->getMessage(),
+                'response' => $e->hasResponse()
+                    ? $e->getResponse()->getBody()->getContents()
+                    : 'No response from Bosta API',
+            ]);
+
+            return null;
+        }
+    }
+
 }

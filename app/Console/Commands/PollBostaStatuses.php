@@ -13,12 +13,33 @@ class PollBostaStatuses extends Command
 
     public function handle()
     {
-        $orders = Order::whereNotNull('bosta_delivery_id')->where('status', '!=', 'Completed')->get();
+        $orders = Order::whereNotNull('bosta_delivery_id')
+            ->where('status', '!=', \App\Enums\OrderStatus::Completed)
+            ->get();
+
         $bostaService = new BostaService();
 
         foreach ($orders as $order) {
-            // TODO: Call Bosta tracking API to get status
-            // Update order status using $bostaService->mapBostaStateCodeToOrderStatus
+            try {
+                $bostaStatus = $bostaService->getDeliveryStatus($order->bosta_delivery_id);
+
+                if ($bostaStatus) {
+                    $newStatus = $bostaService->mapBostaStatusToOrderStatus($bostaStatus);
+
+                    // Only update if changed
+                    if ($order->status !== $newStatus) {
+                        $order->status = $newStatus;
+                        $order->save();
+
+                        $this->info("Order #{$order->id} updated to status: {$newStatus->value}");
+                    }
+                } else {
+                    $this->warn("No status returned for Order #{$order->id}");
+                }
+            } catch (\Exception $e) {
+                $this->error("Failed to fetch status for Order #{$order->id}: " . $e->getMessage());
+            }
         }
     }
+
 }
