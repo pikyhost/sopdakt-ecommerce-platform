@@ -39,11 +39,10 @@ class HomeController extends Controller
      */
     public function featuredCategories(): JsonResponse
     {
-        // Eager load the media relationship and only select needed columns
         $categories = Category::with(['media' => function ($query) {
             $query->where('collection_name', 'main_category_image');
         }])
-            ->select('id', 'name')
+            ->select('id', 'name', 'slug')
             ->where('is_published', true)
             ->whereNull('parent_id')
             ->orderBy('created_at', 'desc')
@@ -51,14 +50,16 @@ class HomeController extends Controller
             ->get()
             ->map(function ($category) {
                 return [
+                    'id' => $category->id,
                     'name' => $category->name,
-                    'image_url' => $category->getFirstMediaUrl('main_category_image'),
+                    'slug' => $category->slug,
+                    'image_url' => $category->getMainCategoryImageUrl(),
                 ];
             });
 
         return response()->json([
             'success' => true,
-            'data' => $categories
+            'data' => $categories,
         ]);
     }
 

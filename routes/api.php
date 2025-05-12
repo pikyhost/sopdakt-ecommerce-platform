@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\TopNoticeController;
 use App\Http\Controllers\Api\WheelController;
 use App\Http\Controllers\Api\WishlistController;
 use App\Http\Controllers\BostaWebhookController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PaymentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -52,6 +53,8 @@ Route::post('/payment/process', [PaymentController::class, 'paymentProcess']);
 Route::match(['GET','POST'],'/payment/callback', [PaymentController::class, 'callBack']);
 
 Route::get('/home/featured-categories', [HomeController::class, 'featuredCategories']);
+Route::get('/categories/{category:slug}', [CategoryController::class, 'showWithProducts']);
+
 
 Route::get('products/{id}/colors-sizes', [ProductController::class, 'colorsSizes']);
 

@@ -157,10 +157,11 @@ class UserResource extends Resource
                 ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
                 ->required()
                 ->rules([
+                    'numeric',
                     // Dynamic validation based on country code
                     fn ($get) => function ($attribute, $value, $fail) use ($get) {
                         // Get the country code from the countryStatePath
-                        $countryCode =  'SA'; // Ensure uppercase and fallback to EG
+                        $countryCode =  geoip(request()->ip())['country_code2'] ?? 'US'; // Ensure uppercase and fallback to EG
 
                         // Define country-specific length rules (total length in E164 format, including +)
                         $lengthRules = [
@@ -224,10 +225,11 @@ class UserResource extends Resource
                 ->initialCountry(fn () => geoip(request()->ip())['country_code2'] ?? 'US')
                 ->required()
                 ->rules([
+                    'numeric',
                     // Dynamic validation based on country code
                     fn ($get) => function ($attribute, $value, $fail) use ($get) {
                         // Get the country code from the countryStatePath
-                        $countryCode =  'SA'; // Ensure uppercase and fallback to EG
+                        $countryCode =  geoip(request()->ip())['country_code2'] ?? 'US'; // Ensure uppercase and fallback to EG
 
                         // Define country-specific length rules (total length in E164 format, including +)
                         $lengthRules = [

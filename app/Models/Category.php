@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +13,7 @@ use Spatie\Translatable\HasTranslations;
 
 class Category extends Model implements HasMedia
 {
-    use HasFactory, HasTranslations, InteractsWithMedia;
+    use HasFactory, HasTranslations, InteractsWithMedia, Sluggable;
 
     public $translatable = [
         'name',
@@ -24,6 +25,24 @@ class Category extends Model implements HasMedia
     ];
 
     protected $guarded = [];
+
+    /**
+     * Configure the settings for generating slugs.
+     */
+    public function sluggable(): array
+    {
+        return [
+            'slug' => ['source' => 'title'],
+        ];
+    }
+
+    /**
+     * Get the route key name for Laravel routing.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
 
     /**
      * Get the parent category.
@@ -69,10 +88,5 @@ class Category extends Model implements HasMedia
     public function getMainCategoryImageUrl(): ?string
     {
         return $this->getFirstMediaUrl('main_category_image') ?: null;
-    }
-
-    public function getRouteKeyName()
-    {
-        return 'slug'; // This allows Laravel to automatically resolve routes by slug instead of ID
     }
 }

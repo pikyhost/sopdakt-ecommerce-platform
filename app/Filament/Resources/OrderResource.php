@@ -137,12 +137,12 @@ class OrderResource extends Resource
                     ->searchable()
                     ->weight(FontWeight::Bold),
 
-//                TextColumn::make('bosta_delivery_id')
-//                    ->copyable()
-//                    ->placeholder('-')
-//                    ->label(__('Bosta Delivery Number'))
-//                    ->searchable()
-//                    ->weight(FontWeight::Bold),
+                TextColumn::make('bosta_delivery_id')
+                    ->copyable()
+                    ->placeholder('-')
+                    ->label(__('Bosta Delivery Number'))
+                    ->searchable()
+                    ->weight(FontWeight::Bold),
 
                 Tables\Columns\TextColumn::make('user.name')
                     ->formatStateUsing(function ($record) {
@@ -605,42 +605,42 @@ class OrderResource extends Resource
                             Notification::make()->title('Cancellation Error')->body('An error occurred: ' . $e->getMessage())->danger()->send();
                         }
                     }),
-//
-//                Action::make('send_to_bosta')
-//                    ->label('Send to Bosta')
-//                    ->icon('heroicon-o-truck')
-//                    ->color('primary')
-//                    ->visible(fn(Order $record): bool => Setting::first()?->enable_bosta &&
-//                        $record->status === OrderStatus::Preparing &&
-//                        !$record->bosta_delivery_id &&
-//                        ($record->user || $record->contact) &&
-//                        ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
-//                        $record->city?->bosta_code &&
-//                        ($record->user?->phone ?? $record->contact?->phone)
-//                    )
-//                    ->requiresConfirmation()
-//                    ->modalHeading('Send Order to Bosta')
-//                    ->modalDescription('This will create a delivery in Bosta and set the order status to Shipping.')
-//                    ->modalSubmitActionLabel('Confirm')
-//                    ->action(function (Order $record) {
-//                        $bostaService = new BostaService();
-//                        $response = $bostaService->createDelivery($record);
-//
-//                        if ($response && isset($response['data']['_id'])) {
-//                            $record->update([
-//                                'status' => OrderStatus::Shipping,
-//                                'bosta_delivery_id' => $response['data']['_id'], // Match Postman response
-//                            ]);
-//                            Notification::make()->title('Order sent to Bosta')->success()->send();
-//                        } else {
-//                            Notification::make()
-//                                ->title('Failed to send order to Bosta')
-//                                ->body('Check logs for API error details')
-//                                ->danger()
-//                                ->send();
-//                            Log::error('Failed to create Bosta delivery for order.', ['order_id' => $record->id, 'response' => $response]);
-//                        }
-//                    }),
+
+                Action::make('send_to_bosta')
+                    ->label('Send to Bosta')
+                    ->icon('heroicon-o-truck')
+                    ->color('primary')
+                    ->visible(fn(Order $record): bool => Setting::first()?->enable_bosta &&
+                        $record->status === OrderStatus::Preparing &&
+                        !$record->bosta_delivery_id &&
+                        ($record->user || $record->contact) &&
+                        ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
+                        $record->city?->bosta_code &&
+                        ($record->user?->phone ?? $record->contact?->phone)
+                    )
+                    ->requiresConfirmation()
+                    ->modalHeading('Send Order to Bosta')
+                    ->modalDescription('This will create a delivery in Bosta and set the order status to Shipping.')
+                    ->modalSubmitActionLabel('Confirm')
+                    ->action(function (Order $record) {
+                        $bostaService = new BostaService();
+                        $response = $bostaService->createDelivery($record);
+
+                        if ($response && isset($response['data']['_id'])) {
+                            $record->update([
+                                'status' => OrderStatus::Shipping,
+                                'bosta_delivery_id' => $response['data']['_id'], // Match Postman response
+                            ]);
+                            Notification::make()->title('Order sent to Bosta')->success()->send();
+                        } else {
+                            Notification::make()
+                                ->title('Failed to send order to Bosta')
+                                ->body('Check logs for API error details')
+                                ->danger()
+                                ->send();
+                            Log::error('Failed to create Bosta delivery for order.', ['order_id' => $record->id, 'response' => $response]);
+                        }
+                    }),
 
 
                 Action::make('createAramexShipment')
