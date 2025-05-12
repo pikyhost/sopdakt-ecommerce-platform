@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.2",
         "ext-intl": "*",
+        "ext-soap": "*",
         "bezhansalleh/filament-google-analytics": "^2.1",
         "bezhansalleh/filament-language-switch": "*",
         "bezhansalleh/filament-shield": "^3.3",
@@ -31,6 +32,7 @@
         "mcamara/laravel-localization": "^2.2",
         "mokhosh/filament-rating": "^1.4",
         "octw/aramex": "*",
+        "parallax/filament-comments": "^1.5",
         "pxlrbt/filament-excel": "^2.4",
         "solution-forest/filament-simplelightbox": "^0.0.10",
         "spatie/laravel-analytics": "^5.5",
@@ -39,8 +41,7 @@
         "torann/geoip": "^3.0",
         "webbingbrasil/filament-advancedfilter": "^3.0",
         "ysfkaya/filament-phone-input": "^3.1",
-        "z3d0x/filament-logger": "^0.8.0",
-        "ext-soap": "*"
+        "z3d0x/filament-logger": "^0.8.0"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.14",
