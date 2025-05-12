@@ -366,7 +366,6 @@ class OrderResource extends Resource
                     }),
             ], Tables\Enums\FiltersLayout::Modal)
             ->actions([
-                CommentsAction::make(),
                 Tables\Actions\Action::make('trackOrder')
                 ->label(__('actions.track_order'))
                 ->icon('heroicon-o-map')
@@ -808,6 +807,7 @@ class OrderResource extends Resource
 
 
                 Tables\Actions\ActionGroup::make([
+                    CommentsAction::make(),
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
                     ...collect(OrderStatus::cases())->map(fn($status) => Tables\Actions\Action::make($status->value)
