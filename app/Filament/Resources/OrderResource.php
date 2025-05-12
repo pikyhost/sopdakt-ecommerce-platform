@@ -807,8 +807,8 @@ class OrderResource extends Resource
 
 
                 Tables\Actions\ActionGroup::make([
-                    CommentsAction::make(),
                     Tables\Actions\ViewAction::make(),
+                    CommentsAction::make()->color('primary'),
                     Tables\Actions\EditAction::make(),
                     ...collect(OrderStatus::cases())->map(fn($status) => Tables\Actions\Action::make($status->value)
                         ->label(__($status->getLabel()))
