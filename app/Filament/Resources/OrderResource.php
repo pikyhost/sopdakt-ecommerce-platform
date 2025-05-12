@@ -631,7 +631,7 @@ class OrderResource extends Resource
                         if ($response && isset($response['data']['_id'])) {
                             $record->update([
                                 'status' => OrderStatus::Shipping,
-                                'bosta_delivery_id' => $response['data']['_id'], // Match Postman response
+                                'bosta_delivery_id' => $response['data']['trackingNumber'], //  Use tracking number here
                             ]);
                             Notification::make()->title('Order sent to Bosta')->success()->send();
                         } else {
