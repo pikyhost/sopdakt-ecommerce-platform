@@ -26,11 +26,11 @@ class RedirectHomePage extends Widget
             ->button()
             ->icon('heroicon-o-home')
             ->color('primary')
-            ->label(__('Go to Website Homepage')) // Translated label
-            ->url('/')
+            ->label(__('Go to Website Homepage'))
+            ->url(config('app.frontend_url')) // Dynamically fetched
             ->openUrlInNewTab(false);
     }
-
+    
     public static function canView(): bool
     {
         return true;
