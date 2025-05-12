@@ -1064,6 +1064,7 @@ class OrderResource extends Resource
                                         ->visible(fn(Get $get) => Product::find($get('product_id'))?->productColors()->exists()),
 
                                     TextInput::make('quantity')
+                                        ->minValue(1)
                                         ->required()
                                         ->label(__('Quantity'))
                                         ->numeric()

@@ -136,6 +136,7 @@ class ProductResource extends Resource
                                     ->required()
                                     ->maxLength(255),
                                 TextInput::make('quantity')
+                                    ->minValue(1)
                                     ->label(__('Total Quantity'))
                                     ->numeric()
                                     ->default(1)
@@ -169,10 +170,12 @@ class ProductResource extends Resource
                                         };
                                     }),
                                 TextInput::make('price')
+                                    ->minValue(1)
                                     ->label(__('Price'))
                                     ->required()
                                     ->numeric(),
                                 TextInput::make('after_discount_price')
+                                    ->minValue(1)
                                     ->lt('price')
                                     ->label(__('After Discount Price'))
                                     ->numeric(),
@@ -319,6 +322,7 @@ class ProductResource extends Resource
                                                     ->required(),
 
                                                 TextInput::make('quantity')
+                                                    ->minValue(1)
                                                     ->label(__('Quantity'))
                                                     ->required()
                                                     ->numeric()

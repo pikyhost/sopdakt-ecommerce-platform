@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\HomePageSettingResource;
 use App\Models\Category;
 use App\Models\HomePageSetting;
 use App\Models\Product;
@@ -37,23 +36,28 @@ class HomeController extends Controller
      *   "message": "Server Error"
      * }
      */
-    public function featuredCategories(): JsonResponse
+    public function featuredCategories(Request $request): JsonResponse
     {
-        $categories = Category::with(['media' => function ($query) {
-            $query->where('collection_name', 'main_category_image');
-        }])
+        $locale = app()->getLocale();
+
+        $categories = Category::with(['media' => fn ($query) =>
+        $query->where('collection_name', 'main_category_image')
+        ])
             ->select('id', 'name', 'slug')
             ->where('is_published', true)
             ->whereNull('parent_id')
-            ->orderBy('created_at', 'desc')
+            ->orderByDesc('created_at')
             ->limit(8)
             ->get()
-            ->map(function ($category) {
+            ->map(function ($category) use ($locale) {
                 return [
                     'id' => $category->id,
-                    'name' => $category->name,
+                    'name' => $category->getTranslation('name', $locale),
                     'slug' => $category->slug,
                     'image_url' => $category->getMainCategoryImageUrl(),
+                    'actions' => [
+                        'web_url' => url("/categories/{$category->slug}"),
+                    ],
                 ];
             });
 
