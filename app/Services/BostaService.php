@@ -137,18 +137,24 @@ class BostaService
             'specs' => [
                 'packageDetails' => [
                     'itemsCount' => $order->items->sum('quantity'),
-                    'description' => 'Order #' . $order->id,
-                    'items' => $order->items->map(function ($item) {
-                        return [
-                            'product' => optional($item->product)->name,
-                            'bundle' => optional($item->bundle)->name,
-                            'size' => optional($item->size)->name,
-                            'color' => optional($item->color)->name,
-                            'quantity' => $item->quantity,
-                            'price_per_unit' => $item->price_per_unit,
-                            'subtotal' => $item->subtotal,
-                        ];
-                    })->values()->toArray(),
+                    'description' => collect($order->items)->map(function ($item, $index) {
+                        $productName = optional($item->product)->name;
+                        $bundleName = optional($item->bundle)->name;
+                        $size = optional($item->size)->name;
+                        $color = optional($item->color)->name;
+
+                        return sprintf(
+                            "Item #%d: %s%s%s%s, Qty: %d, Unit Price: %d, Subtotal: %d",
+                            $index + 1,
+                            $productName ? "Product: $productName" : '',
+                            $bundleName ? ", Bundle: $bundleName" : '',
+                            $size ? ", Size: $size" : '',
+                            $color ? ", Color: $color" : '',
+                            $item->quantity,
+                            $item->price_per_unit,
+                            $item->subtotal
+                        );
+                    })->prepend('Order #' . $order->id)->implode(" | "),
                 ],
             ],
             'notes' => $order->notes ?? '',
@@ -165,7 +171,6 @@ class BostaService
                 'email' => $contact->email ?? 'test@example.com',
             ],
         ];
-
     }
 
     /**
