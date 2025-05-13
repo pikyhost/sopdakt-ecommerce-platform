@@ -785,49 +785,32 @@ class OrderResource extends Resource
 //                            ->success()
 //                            ->send();
 //                    }),
-                Action::make('sendToAramex')
+                Tables\Actions\Action::make('send_to_aramex')
                     ->label('Send to Aramex')
-                    ->color('success')
-                    ->icon('heroicon-o-paper-airplane')
-                    ->visible(fn ($record) => $record->shipment_number === null) // Only if not yet sent
-                    ->requiresConfirmation()
-                    ->action(function ($record) {
-                        $aramex = app(AramexService::class);
+                    ->icon('heroicon-o-truck')
+                    ->color('primary')
+                    ->visible(fn (Order $record): bool => $record->status === OrderStatus::Preparing->value && !$record->aramex_tracking_number)
+                    ->action(function (Order $record, AramexService $aramexService) {
+                        $result = $aramexService->createShipment($record);
 
-                        $response = $aramex->createShipment([
-                            'Reference1' => 'ORDER-' . $record->id,
-                            'ConsigneeName' => $record->customer_name,
-                            'ConsigneePhone' => $record->customer_phone,
-                            'ConsigneeAddress' => $record->customer_address,
-                            'City' => 'Amman', // adjust as needed
-                            'CountryCode' => 'JO', // Jordan, adjust for your country
-                            'Weight' => 1, // or real weight
-                        ]);
-
-                        if (!empty($response['HasErrors'])) {
+                        if ($result['success']) {
                             Notification::make()
-                                ->title('Aramex Error')
-                                ->body($response['Notifications'][0]['Message'] ?? 'Failed to create shipment.')
-                                ->danger()
-                                ->send();
-                            return;
-                        }
-
-                        // Save shipment number and mark as "Shipped"
-                        $shipmentNumber = $response['Shipments'][0]['ID'] ?? null;
-                        if ($shipmentNumber) {
-                            $record->update([
-                                'shipment_number' => $shipmentNumber,
-                                'status' => 'shipped',
-                            ]);
-
-                            Notification::make()
-                                ->title('Shipment Sent')
-                                ->body("Shipment #$shipmentNumber sent to Aramex.")
+                                ->title('Success')
+                                ->body($result['message'])
                                 ->success()
                                 ->send();
+                        } else {
+                            Notification::make()
+                                ->title('Error')
+                                ->body($result['message'])
+                                ->danger()
+                                ->send();
                         }
-                    }),
+                    })
+                    ->requiresConfirmation()
+                    ->modalHeading('Send Order to Aramex')
+                    ->modalDescription('Are you sure you want to send this order to Aramex for shipping?'),
+
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
                     CommentsAction::make()->color('primary'),
