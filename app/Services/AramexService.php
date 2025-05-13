@@ -69,7 +69,7 @@ class AramexService
         try {
             Log::info('Aramex Shipment Request', $payload);
 
-            $response = Http::timeout(20)
+            $response = Http::timeout(30)
                 ->withHeaders([
                     'Content-Type' => 'application/json',
                     'Accept' => 'application/json',
@@ -114,7 +114,7 @@ class AramexService
         ];
 
         try {
-            $response = Http::timeout(20)
+            $response = Http::timeout(30)
                 ->withHeaders([
                     'Content-Type' => 'application/json',
                     'Accept' => 'application/json',

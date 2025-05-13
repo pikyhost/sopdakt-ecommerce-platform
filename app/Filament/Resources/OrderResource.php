@@ -646,7 +646,6 @@ class OrderResource extends Resource
 
 
 
-// File: app/Filament/Resources/OrderResource.php (relevant action)
                 Action::make('createAramexShipment')
                     ->label('Create ARAMEX Shipment')
                     ->icon('heroicon-o-truck')
@@ -700,7 +699,7 @@ class OrderResource extends Resource
                                 'product_group' => 'DOM',
                                 'product_type' => 'OND',
                                 'payment_type' => 'P',
-                                'cash_on_delivery_amount' => $record->total / 100, // Assuming total is in cents
+                                'cash_on_delivery_amount' => $record->total / 100, // Adjust if total is in dollars
                             ];
 
                             // Shipper data (your store info)
@@ -735,7 +734,7 @@ class OrderResource extends Resource
 
                             // Consignee data (customer info)
                             $consigneeData = [
-                                'Reference1' => 'CUSTOMER-' . $record->user_id,
+                                'Reference1' => 'CUSTOMER-' . ($record->user_id ?? 'unknown'),
                                 'Reference2' => '',
                                 'AccountNumber' => '',
                                 'PartyAddress' => [

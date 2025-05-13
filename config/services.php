@@ -48,12 +48,12 @@ return [
     ],
 
     'aramex' => [
-        'username' => env('ARAMEX_USERNAME'),
-        'password' => env('ARAMEX_PASSWORD'),
-        'account_number' => env('ARAMEX_ACCOUNT_NUMBER'),
-        'account_pin' => env('ARAMEX_ACCOUNT_PIN'),
-        'account_entity' => env('ARAMEX_ACCOUNT_ENTITY'),
-        'account_country_code' => env('ARAMEX_ACCOUNT_COUNTRY_CODE'),
-        'url' => env('ARAMEX_URL'),
+        'url' => env('ARAMEX_API_URL', 'https://ws.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc/json'),
+        'username' => env('ARAMEX_USERNAME', 'testingapi@aramex.com'),
+        'password' => env('ARAMEX_PASSWORD', 'R123456789$r'),
+        'account_number' => env('ARAMEX_ACCOUNT_NUMBER', '20016'),
+        'account_pin' => env('ARAMEX_ACCOUNT_PIN', '331421'),
+        'account_entity' => env('ARAMEX_ACCOUNT_ENTITY', 'AMM'),
+        'account_country_code' => env('ARAMEX_ACCOUNT_COUNTRY_CODE', 'JO'),
     ],
 ];
