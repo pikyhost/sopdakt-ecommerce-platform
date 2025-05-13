@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'api_url' => env('ARAMEX_API_URL', 'https://ws.dev.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc/json/'),
+    'api_url' => env('ARAMEX_API_URL', 'https://ws.aramex.net/ShippingAPI.V2/Shipping/Service_1_0.svc/json/'), // Update with correct UAT URL
     'client_info' => [
         'UserName' => env('ARAMEX_USERNAME', 'testingapi@aramex.com'),
         'Password' => env('ARAMEX_PASSWORD', 'R123456789$r'),

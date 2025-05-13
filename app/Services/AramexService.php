@@ -20,8 +20,8 @@ class AramexService
 
     public function createShipment(Order $order): array
     {
-        $contact = $order->user ?? $order->contact;
-        $items = $order->items; // Assuming you have an items relationship
+        $contact = $order->user?? $order->contact;
+        $items = $order->items;
 
         $payload = [
             'ClientInfo' => $this->clientInfo,
@@ -50,7 +50,7 @@ class AramexService
                     'Consignee' => [
                         'Reference1' => 'CNS-' . $order->id,
                         'PartyAddress' => [
-                            'Line1' => $contact->address ?? 'N/A',
+                            'Line1' => $contact->addresses()->first() ?? $contact->address ?? 'N/A',
                             'City' => $order->city->name ?? 'Cairo',
                             'CountryCode' => $order->country->code ?? 'EG',
                         ],
@@ -66,7 +66,7 @@ class AramexService
                     'Details' => [
                         'ActualWeight' => [
                             'Unit' => 'KG',
-                            'Value' => $items->sum('weight') ?: 0.5, // Sum item weights or default
+                            'Value' => $items->sum('weight') ?: 0.5,
                         ],
                         'DescriptionOfGoods' => 'Order #' . $order->id,
                         'GoodsOriginCountry' => 'EG',
@@ -92,39 +92,52 @@ class AramexService
             ],
         ];
 
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'Accept' => 'application/json',
-        ])->post($this->apiUrl . 'CreateShipments', $payload);
+        try {
+            $response = Http::timeout(30) // Increase timeout to 30 seconds
+            ->withHeaders([
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ])->post($this->apiUrl . 'CreateShipments', $payload);
 
-        $data = $response->json();
+            $data = $response->json();
 
-        if ($response->successful() && !isset($data['HasErrors'])) {
-            $shipment = $data['Shipments'][0];
-            $order->update([
-                'aramex_shipment_id' => $shipment['ID'],
-                'aramex_tracking_number' => $shipment['ID'],
-                'aramex_tracking_url' => $shipment['LabelInfo']['URL'] ?? null,
-                'aramex_response' => json_encode($data),
-                'status' => OrderStatus::Shipping->value,
+            if ($response->successful() && !isset($data['HasErrors'])) {
+                $shipment = $data['Shipments'][0];
+                $order->update([
+                    'aramex_shipment_id' => $shipment['ID'],
+                    'aramex_tracking_number' => $shipment['ID'],
+                    'aramex_tracking_url' => $shipment['LabelInfo']['URL'] ?? null,
+                    'aramex_response' => json_encode($data),
+                    'status' => OrderStatus::Shipping->value,
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => 'Shipment created successfully',
+                    'data' => $data,
+                ];
+            }
+
+            Log::error('Aramex shipment creation failed', [
+                'order_id' => $order->id,
+                'response' => $data,
             ]);
 
             return [
-                'success' => true,
-                'message' => 'Shipment created successfully',
-                'data' => $data,
+                'success' => false,
+                'message' => $data['Notifications'][0]['Message'] ?? 'Failed to create shipment',
+            ];
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('Aramex connection error', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Connection to Aramex API failed: ' . $e->getMessage(),
             ];
         }
-
-        Log::error('Aramex shipment creation failed', [
-            'order_id' => $order->id,
-            'response' => $data,
-        ]);
-
-        return [
-            'success' => false,
-            'message' => $data['Notifications'][0]['Message'] ?? 'Failed to create shipment',
-        ];
     }
 
     public function trackShipment(Order $order): array
@@ -137,49 +150,61 @@ class AramexService
             'Shipments' => [$order->aramex_tracking_number],
         ];
 
-        $response = Http::withHeaders([
-            'Content-Type' => 'application/json',
-            'Accept' => 'application/json',
-        ])->post('https://ws.dev.aramex.net/api/Track/Shipments', $payload);
+        try {
+            $response = Http::timeout(30) // Increase timeout to 30 seconds
+            ->withHeaders([
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+            ])->post('https://ws.aramex.net/api/Track/Shipments', $payload);
 
-        $data = $response->json();
+            $data = $response->json();
 
-        if ($response->successful() && !isset($data['HasErrors'])) {
-            $trackingInfo = $data['TrackingResults'][0]['TrackingUpdates'] ?? [];
-            $latestUpdate = end($trackingInfo);
+            if ($response->successful() && !isset($data['HasErrors'])) {
+                $trackingInfo = $data['TrackingResults'][0]['TrackingUpdates'] ?? [];
+                $latestUpdate = end($trackingInfo);
 
-            // Map Aramex status to your OrderStatus enum
-            $statusMap = [
-                'Shipped' => OrderStatus::Shipping,
-                'InTransit' => OrderStatus::Shipping,
-                'OutForDelivery' => OrderStatus::Shipping,
-                'Delivered' => OrderStatus::Completed,
-                'Cancelled' => OrderStatus::Cancelled,
-                'Delayed' => OrderStatus::Delayed,
-            ];
+                $statusMap = [
+                    'Shipped' => OrderStatus::Shipping,
+                    'InTransit' => OrderStatus::Shipping,
+                    'OutForDelivery' => OrderStatus::Shipping,
+                    'Delivered' => OrderStatus::Completed,
+                    'Cancelled' => OrderStatus::Cancelled,
+                    'Delayed' => OrderStatus::Delayed,
+                ];
 
-            $newStatus = $statusMap[$latestUpdate['UpdateDescription']] ?? OrderStatus::Shipping;
+                $newStatus = $statusMap[$latestUpdate['UpdateDescription']] ?? OrderStatus::Shipping;
 
-            $order->update([
-                'status' => $newStatus->value,
-                'aramex_response' => json_encode($data),
+                $order->update([
+                    'status' => $newStatus->value,
+                    'aramex_response' => json_encode($data),
+                ]);
+
+                return [
+                    'success' => true,
+                    'message' => 'Tracking updated successfully',
+                    'data' => $data,
+                ];
+            }
+
+            Log::error('Aramex tracking failed', [
+                'order_id' => $order->id,
+                'response' => $data,
             ]);
 
             return [
-                'success' => true,
-                'message' => 'Tracking updated successfully',
-                'data' => $data,
+                'success' => false,
+                'message' => $data['Notifications'][0]['Message'] ?? 'Failed to track shipment',
+            ];
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('Aramex tracking connection error', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Connection to Aramex tracking API failed: ' . $e->getMessage(),
             ];
         }
-
-        Log::error('Aramex tracking failed', [
-            'order_id' => $order->id,
-            'response' => $data,
-        ]);
-
-        return [
-            'success' => false,
-            'message' => $data['Notifications'][0]['Message'] ?? 'Failed to track shipment',
-        ];
     }
 }
