@@ -4,12 +4,17 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class AramexService
 {
     public function createShipment(array $shipmentData, array $shipperData, array $consigneeData, array $items): array
     {
         $url = config('services.aramex.url') . '/CreateShipments';
+
+        // تحويل التاريخ إلى صيغة JSON الخاصة بـ Aramex
+        $shippingDateTime = Carbon::now()->getTimestamp() * 1000;
+        $dueDate = Carbon::now()->addDay()->getTimestamp() * 1000;
 
         $payload = [
             'ClientInfo' => [
@@ -31,8 +36,8 @@ class AramexService
                     'Reference2' => '',
                     'Shipper' => $shipperData,
                     'Consignee' => $consigneeData,
-                    'ShippingDateTime' => now()->toDateTimeString(),
-                    'DueDate' => now()->addDays(1)->toDateTimeString(),
+                    'ShippingDateTime' => "\/Date($shippingDateTime)\/",
+                    'DueDate' => "\/Date($dueDate)\/",
                     'Details' => [
                         'Dimensions' => [
                             'Length' => 0,
@@ -77,15 +82,20 @@ class AramexService
                 ->post($url, $payload);
 
             $responseData = $response->json();
+            $responseBody = $response->body();
 
-            Log::info('Aramex API Response', $responseData ?? []);
+            Log::info('Aramex API Response', [
+                'status' => $response->status(),
+                'data' => $responseData ?? [],
+                'raw_body' => $responseBody,
+            ]);
 
             if (!$response->successful()) {
                 Log::error('Aramex API failed', [
                     'status' => $response->status(),
-                    'body' => $response->body(),
+                    'body' => $responseBody,
                 ]);
-                throw new \Exception('Aramex API request failed with status ' . $response->status());
+                throw new \Exception('Aramex API request failed with status ' . $response->status() . ': ' . $responseBody);
             }
 
             if (isset($responseData['HasErrors']) && $responseData['HasErrors']) {
@@ -135,13 +145,18 @@ class AramexService
                 ->post($url, $payload);
 
             $responseData = $response->json();
+            $responseBody = $response->body();
 
-            Log::info('Aramex Tracking Response', $responseData ?? []);
+            Log::info('Aramex Tracking Response', [
+                'status' => $response->status(),
+                'data' => $responseData ?? [],
+                'raw_body' => $responseBody,
+            ]);
 
             if (!$response->successful()) {
                 Log::error('Aramex tracking failed', [
                     'status' => $response->status(),
-                    'body' => $response->body(),
+                    'body' => $responseBody,
                 ]);
                 throw new \Exception('Tracking request failed with status ' . $response->status());
             }

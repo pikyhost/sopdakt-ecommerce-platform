@@ -660,8 +660,8 @@ class OrderResource extends Resource
                             // Validate required information
                             if (!$contact || !$city || !$country) {
                                 Notification::make()
-                                    ->title('Cannot create ARAMEX shipment')
-                                    ->body('Missing contact, city, or country information')
+                                    ->title('لا يمكن إنشاء شحنة ARAMEX')
+                                    ->body('معلومات الاتصال أو المدينة أو الدولة مفقودة')
                                     ->danger()
                                     ->send();
                                 return;
@@ -678,8 +678,8 @@ class OrderResource extends Resource
 
                             if (!$addressLine1) {
                                 Notification::make()
-                                    ->title('Cannot create ARAMEX shipment')
-                                    ->body('Missing contact address information')
+                                    ->title('لا يمكن إنشاء شحنة ARAMEX')
+                                    ->body('معلومات عنوان الاتصال مفقودة')
                                     ->danger()
                                     ->send();
                                 return;
@@ -702,7 +702,7 @@ class OrderResource extends Resource
                                 'product_group' => 'DOM',
                                 'product_type' => 'OND',
                                 'payment_type' => 'P',
-                                'cash_on_delivery_amount' => $record->total / 100, // Adjust if total is in dollars
+                                'cash_on_delivery_amount' => $record->total / 100, // تأكد إذا كان المبلغ بالدولار أو السنت
                             ];
 
                             // Shipper data (your store info)
@@ -744,9 +744,9 @@ class OrderResource extends Resource
                                     'Line1' => $addressLine1,
                                     'Line2' => $addressLine1,
                                     'Line3' => '',
-                                    'City' => $city->name,
+                                    'City' => $city->name, // تأكد أن المدينة صحيحة (مثل "Cairo" بدلاً من "Heliopolis")
                                     'StateOrProvinceCode' => $governorate->code ?? 'C',
-                                    'PostCode' => $contact->postal_code ?? '00000',
+                                    'PostCode' => $contact->postal_code ?? '', // استخدم رمز بريدي صالح أو اتركه فارغاً
                                     'CountryCode' => $country->code,
                                 ],
                                 'Contact' => [
@@ -754,12 +754,12 @@ class OrderResource extends Resource
                                     'PersonName' => $fullName,
                                     'Title' => '',
                                     'CompanyName' => '',
-                                    'PhoneNumber1' => preg_replace('/\s+/', '', $contact->phone) ?? '+201234567890',
+                                    'PhoneNumber1' => '+2' . preg_replace('/\s+/', '', $contact->phone) ?? '+201234567890',
                                     'PhoneNumber1Ext' => '',
                                     'PhoneNumber2' => '',
                                     'PhoneNumber2Ext' => '',
                                     'FaxNumber' => '',
-                                    'CellPhone' => preg_replace('/\s+/', '', $contact->phone) ?? '+201234567890',
+                                    'CellPhone' => '+2' . preg_replace('/\s+/', '', $contact->phone) ?? '+201234567890',
                                     'EmailAddress' => $contact->email ?? 'customer@example.com',
                                     'Type' => ''
                                 ],
@@ -785,7 +785,7 @@ class OrderResource extends Resource
 
                             // Check for errors
                             if (isset($response['HasErrors']) && $response['HasErrors']) {
-                                $errorMessage = $response['Notifications'][0]['Message'] ?? 'Unknown error';
+                                $errorMessage = $response['Notifications'][0]['Message'] ?? 'خطأ غير معروف';
                                 throw new \Exception($errorMessage);
                             }
 
@@ -799,21 +799,22 @@ class OrderResource extends Resource
                             ]);
 
                             Notification::make()
-                                ->title('Shipment Created Successfully')
+                                ->title('تم إنشاء الشحنة بنجاح')
                                 ->success()
                                 ->send();
                         } catch (\Exception $e) {
                             Notification::make()
-                                ->title('Failed to create shipment')
+                                ->title('فشل إنشاء الشحنة')
                                 ->body($e->getMessage())
                                 ->danger()
                                 ->send();
                         }
                     })
                     ->requiresConfirmation()
-                    ->modalHeading('Create ARAMEX Shipment')
-                    ->modalSubheading('Are you sure you want to create an ARAMEX shipment for this order?')
-                    ->modalButton('Create Shipment'),
+                    ->modalHeading('إنشاء شحنة ARAMEX')
+                    ->modalSubheading('هل أنت متأكد من إنشاء شحنة ARAMEX لهذا الطلب؟')
+                    ->modalButton('إنشاء الشحنة'),
+
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
                     CommentsAction::make()->color('primary'),
