@@ -685,6 +685,9 @@ class OrderResource extends Resource
                                 return;
                             }
 
+                            // Clean address
+                            $addressLine1 = str_replace("\n", ' ', trim($addressLine1));
+
                             // Prepare name
                             $fullName = $contact->name ?? $contact->full_name ?? 'Unknown Name';
                             $nameParts = explode(' ', $fullName);
@@ -739,7 +742,7 @@ class OrderResource extends Resource
                                 'AccountNumber' => '',
                                 'PartyAddress' => [
                                     'Line1' => $addressLine1,
-                                    'Line2' => $addressLine1 ?? '',
+                                    'Line2' => $addressLine1,
                                     'Line3' => '',
                                     'City' => $city->name,
                                     'StateOrProvinceCode' => $governorate->code ?? 'C',
@@ -751,12 +754,12 @@ class OrderResource extends Resource
                                     'PersonName' => $fullName,
                                     'Title' => '',
                                     'CompanyName' => '',
-                                    'PhoneNumber1' => $contact->phone ?? '+201234567890',
+                                    'PhoneNumber1' => preg_replace('/\s+/', '', $contact->phone) ?? '+201234567890',
                                     'PhoneNumber1Ext' => '',
                                     'PhoneNumber2' => '',
                                     'PhoneNumber2Ext' => '',
                                     'FaxNumber' => '',
-                                    'CellPhone' => $contact->phone ?? '+201234567890',
+                                    'CellPhone' => preg_replace('/\s+/', '', $contact->phone) ?? '+201234567890',
                                     'EmailAddress' => $contact->email ?? 'customer@example.com',
                                     'Type' => ''
                                 ],
@@ -811,8 +814,6 @@ class OrderResource extends Resource
                     ->modalHeading('Create ARAMEX Shipment')
                     ->modalSubheading('Are you sure you want to create an ARAMEX shipment for this order?')
                     ->modalButton('Create Shipment'),
-
-
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
                     CommentsAction::make()->color('primary'),

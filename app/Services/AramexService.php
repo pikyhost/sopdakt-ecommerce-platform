@@ -80,13 +80,26 @@ class AramexService
 
             Log::info('Aramex API Response', $responseData ?? []);
 
-            if ($response->successful() && isset($responseData['HasErrors']) && !$responseData['HasErrors']) {
-                return $responseData;
+            if (!$response->successful()) {
+                Log::error('Aramex API failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                throw new \Exception('Aramex API request failed with status ' . $response->status());
             }
 
-            $errorMessage = $responseData['Notifications'][0]['Message'] ?? 'Aramex API returned an error';
-            Log::error('Aramex API error', ['response' => $responseData]);
-            throw new \Exception($errorMessage);
+            if (isset($responseData['HasErrors']) && $responseData['HasErrors']) {
+                $errorMessage = $responseData['Notifications'][0]['Message'] ?? 'Unknown error';
+                Log::error('Aramex API error', ['response' => $responseData]);
+                throw new \Exception($errorMessage);
+            }
+
+            if (!isset($responseData['Shipments'][0]['ProcessedShipment']['ID'])) {
+                Log::error('Aramex API invalid response', ['response' => $responseData]);
+                throw new \Exception('Invalid response format from Aramex API');
+            }
+
+            return $responseData;
         } catch (\Throwable $e) {
             Log::error('Aramex shipment failed', [
                 'error' => $e->getMessage(),
@@ -125,23 +138,32 @@ class AramexService
 
             Log::info('Aramex Tracking Response', $responseData ?? []);
 
-            if ($response->successful() && isset($responseData['TrackingResults'])) {
-                $trackingResult = $responseData['TrackingResults'][0]['Value'][0] ?? null;
-                if ($trackingResult) {
-                    return [
-                        'success' => true,
-                        'status' => $trackingResult['UpdateDescription'] ?? 'Unknown',
-                        'last_update' => $trackingResult['UpdateDateTime'] ?? now(),
-                    ];
-                }
+            if (!$response->successful()) {
+                Log::error('Aramex tracking failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                throw new \Exception('Tracking request failed with status ' . $response->status());
+            }
+
+            if (isset($responseData['HasErrors']) && $responseData['HasErrors']) {
+                $errorMessage = $responseData['Notifications'][0]['Message'] ?? 'Tracking failed';
+                throw new \Exception($errorMessage);
+            }
+
+            if (isset($responseData['TrackingResults'][0]['Value'][0])) {
+                $trackingResult = $responseData['TrackingResults'][0]['Value'][0];
                 return [
-                    'success' => false,
-                    'error' => 'No tracking results found',
+                    'success' => true,
+                    'status' => $trackingResult['UpdateDescription'] ?? 'Unknown',
+                    'last_update' => $trackingResult['UpdateDateTime'] ?? now(),
                 ];
             }
 
-            $errorMessage = $responseData['Notifications'][0]['Message'] ?? 'Tracking failed';
-            throw new \Exception($errorMessage);
+            return [
+                'success' => false,
+                'error' => 'No tracking results found',
+            ];
         } catch (\Throwable $e) {
             Log::error('Aramex tracking failed', ['error' => $e->getMessage()]);
             throw new \Exception('Failed to track shipment: ' . $e->getMessage());
