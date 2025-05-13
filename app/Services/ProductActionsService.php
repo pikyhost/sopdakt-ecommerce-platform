@@ -77,8 +77,7 @@ class ProductActionsService
                 ->color('gray')
                 ->icon('heroicon-m-eye')
                 ->openUrlInNewTab(true)
-                ->action(fn (Product $record) => redirect(route('product.show', ['slug' => $record->slug]))),
-
+                ->action(fn (Product $record) => redirect(url(config('app.frontend_url'). '/product/' .$record->slug))),
 
             Action::make('add_to_cart')
                 ->icon('heroicon-o-shopping-cart')

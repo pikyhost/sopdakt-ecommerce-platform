@@ -645,6 +645,8 @@ class OrderResource extends Resource
                     }),
 
 
+
+// File: app/Filament/Resources/OrderResource.php (relevant action)
                 Action::make('createAramexShipment')
                     ->label('Create ARAMEX Shipment')
                     ->icon('heroicon-o-truck')
@@ -698,6 +700,7 @@ class OrderResource extends Resource
                                 'product_group' => 'DOM',
                                 'product_type' => 'OND',
                                 'payment_type' => 'P',
+                                'cash_on_delivery_amount' => $record->total / 100, // Assuming total is in cents
                             ];
 
                             // Shipper data (your store info)
@@ -749,12 +752,12 @@ class OrderResource extends Resource
                                     'PersonName' => $fullName,
                                     'Title' => '',
                                     'CompanyName' => '',
-                                    'PhoneNumber1' => $contact->phone ?? $contact->phone ?? '+201234567890',
+                                    'PhoneNumber1' => $contact->phone ?? '+201234567890',
                                     'PhoneNumber1Ext' => '',
                                     'PhoneNumber2' => '',
                                     'PhoneNumber2Ext' => '',
                                     'FaxNumber' => '',
-                                    'CellPhone' => $contact->phone ?? $contact->phone ?? '+201234567890',
+                                    'CellPhone' => $contact->phone ?? '+201234567890',
                                     'EmailAddress' => $contact->email ?? 'customer@example.com',
                                     'Type' => ''
                                 ],
@@ -775,14 +778,20 @@ class OrderResource extends Resource
                                 ];
                             }
 
-                            // Create shipment directly
+                            // Create shipment
                             $response = $aramexService->createShipment($shipmentData, $shipperData, $consigneeData, $items);
+
+                            // Check for errors
+                            if (isset($response['HasErrors']) && $response['HasErrors']) {
+                                $errorMessage = $response['Notifications'][0]['Message'] ?? 'Unknown error';
+                                throw new \Exception($errorMessage);
+                            }
 
                             // Update order
                             $record->update([
-                                'aramex_shipment_id' => $response->Shipments->ProcessedShipment->ID,
-                                'aramex_tracking_number' => $response->Shipments->ProcessedShipment->ShipmentNumber,
-                                'aramex_tracking_url' => 'https://www.aramex.com/track/results?ShipmentNumber=' . $response->Shipments->ProcessedShipment->ShipmentNumber,
+                                'aramex_shipment_id' => $response['Shipments'][0]['ProcessedShipment']['ID'],
+                                'aramex_tracking_number' => $response['Shipments'][0]['ProcessedShipment']['ShipmentNumber'],
+                                'aramex_tracking_url' => 'https://www.aramex.com/track/results?ShipmentNumber=' . $response['Shipments'][0]['ProcessedShipment']['ShipmentNumber'],
                                 'aramex_response' => json_encode($response),
                                 'status' => 'shipping',
                             ]);
@@ -791,7 +800,6 @@ class OrderResource extends Resource
                                 ->title('Shipment Created Successfully')
                                 ->success()
                                 ->send();
-
                         } catch (\Exception $e) {
                             Notification::make()
                                 ->title('Failed to create shipment')
