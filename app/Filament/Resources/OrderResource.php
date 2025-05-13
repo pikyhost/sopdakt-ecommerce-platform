@@ -643,68 +643,191 @@ class OrderResource extends Resource
                             Log::error('Failed to create Bosta delivery for order.', ['order_id' => $record->id, 'response' => $response]);
                         }
                     }),
-
-
-
-                Action::make('createAramexShipment')
-                    ->label('Create ARAMEX Shipment')
-                    ->icon('heroicon-o-truck')
+//                Action::make('printLabel')
+//                    ->label('Print Label')
+//                    ->color('primary')
+//                    ->icon('heroicon-o-printer')
+//                    ->action(function ($record) {
+//                        $shipmentNumber = $record->shipment_number;
+//
+//                        if (! $shipmentNumber) {
+//                            Notification::make()
+//                                ->title('Shipment number not found')
+//                                ->danger()
+//                                ->send();
+//                            return;
+//                        }
+//
+//                        $aramex = app(AramexService::class);
+//                        $response = $aramex->printLabel($shipmentNumber);
+//
+//                        if (!empty($response['HasErrors'])) {
+//                            Notification::make()
+//                                ->title('Error printing label')
+//                                ->body($response['Notifications'][0]['Message'] ?? 'Unknown error')
+//                                ->danger()
+//                                ->send();
+//                            return;
+//                        }
+//
+//                        $url = $response['ShipmentLabel']['LabelURL'] ?? null;
+//
+//                        if ($url) {
+//                            Notification::make()
+//                                ->title('Label Generated')
+//                                ->body('Click to download the label.')
+//                                ->success()
+//                                ->actions([
+//                                    \Filament\Notifications\Actions\Action::make('download')
+//                                        ->label('Download')
+//                                        ->url($url)
+//                                        ->openUrlInNewTab(),
+//                                ])
+//                                ->send();
+//                        } else {
+//                            Notification::make()
+//                                ->title('No label URL returned.')
+//                                ->danger()
+//                                ->send();
+//                        }
+//                    }),
+//                Action::make('reserveShipment')
+//                    ->label('Reserve Shipments')
+//                    ->icon('heroicon-o-plus-circle')
+//                    ->color('success')
+//                    ->action(function () {
+//                        $aramex = app(AramexService::class);
+//                        $response = $aramex->reserveShipmentNumberRange(100);
+//
+//                        if (!empty($response['HasErrors'])) {
+//                            Notification::make()
+//                                ->title('Error')
+//                                ->body($response['Notifications'][0]['Message'] ?? 'Unknown error')
+//                                ->danger()
+//                                ->send();
+//                            return;
+//                        }
+//
+//                        Notification::make()
+//                            ->title('Shipment Numbers Reserved')
+//                            ->body('New range: ' . ($response['ShipmentNumberRange']['LastNumber'] ?? 'N/A'))
+//                            ->success()
+//                            ->send();
+//                    })
+//                    ->requiresConfirmation(),
+//                Action::make('getLastShipments')
+//                    ->label('Last Shipments')
+//                    ->icon('heroicon-o-eye')
+//                    ->action(function () {
+//                        $aramex = app(AramexService::class);
+//                        $response = $aramex->getLastShipmentsNumbersRange();
+//
+//                        $lastNumber = $response['ShipmentNumberRange']['LastNumber'] ?? null;
+//
+//                        Notification::make()
+//                            ->title('Last Shipment Number')
+//                            ->body($lastNumber ? "Last Number: {$lastNumber}" : "No shipment found")
+//                            ->success()
+//                            ->send();
+//                    }),
+//                Action::make('createPickup')
+//                    ->form([
+//                        TextInput::make('PickupLocation')
+//                            ->required(),
+//                        TextInput::make('Reference1')
+//                            ->label('Reference')
+//                            ->required(),
+//                    ])
+//                    ->label('Create Pickup')
+//                    ->action(function (array $data) {
+//                        $aramex = app(AramexService::class);
+//
+//                        $pickupPayload = [
+//                            'Pickup' => [
+//                                'PickupLocation' => $data['PickupLocation'],
+//                                'PickupContact' => [
+//                                    'PersonName' => 'John Doe',
+//                                    'CompanyName' => 'Test Company',
+//                                    'PhoneNumber1' => '12345678',
+//                                    'Email' => 'test@example.com',
+//                                ],
+//                                'ReadyTime' => now()->addMinutes(30)->format('Y-m-d\TH:i:s'),
+//                                'LastPickupTime' => now()->addHours(2)->format('Y-m-d\TH:i:s'),
+//                                'ClosingTime' => now()->addHours(3)->format('Y-m-d\TH:i:s'),
+//                                'Reference1' => $data['Reference1'],
+//                                'PickupAddress' => [
+//                                    'Line1' => 'Amman, Jordan',
+//                                    'City' => 'Amman',
+//                                    'CountryCode' => 'JO',
+//                                ],
+//                                'Weight' => [
+//                                    'Value' => 5,
+//                                    'Unit' => 'KG',
+//                                ],
+//                                'NumberOfPieces' => 1,
+//                            ],
+//                        ];
+//
+//                        $response = $aramex->createPickup($pickupPayload);
+//
+//                        if (!empty($response['HasErrors'])) {
+//                            Notification::make()
+//                                ->title('Pickup Failed')
+//                                ->danger()
+//                                ->body($response['Notifications'][0]['Message'] ?? 'Unknown error')
+//                                ->send();
+//                            return;
+//                        }
+//
+//                        Notification::make()
+//                            ->title('Pickup Created')
+//                            ->body('Pickup reference: ' . $response['PickupGUID'] ?? 'N/A')
+//                            ->success()
+//                            ->send();
+//                    }),
+                Action::make('sendToAramex')
+                    ->label('Send to Aramex')
+                    ->color('success')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->visible(fn ($record) => $record->shipment_number === null) // Only if not yet sent
                     ->requiresConfirmation()
-                    ->color('primary')
-                    ->action(function (Order $record, array $data) {
-                        $aramex = new AramexService();
+                    ->action(function ($record) {
+                        $aramex = app(AramexService::class);
 
-                        $shipment = [
-                            'Shipper' => [/* your business details here */],
-                            'Consignee' => [
-                                'Name' => $record->contact->name,
-                                'EmailAddress' => $record->user->email,
-                                'PhoneNumber1' => $record->contact->phone,
-                                'Address' => [
-                                    'Line1' => $record->contact->address,
-                                    'City' => $record->city->name,
-                                    'CountryCode' => 'EG',
-                                ],
-                            ],
-                            'Reference1' => 'Order #' . $record->id,
-                            'ShippingDateTime' => now()->format('Y-m-d\TH:i:s'),
-                            'Details' => [
-                                'Dimensions' => ['Length' => 10, 'Width' => 10, 'Height' => 10, 'Unit' => 'cm'],
-                                'ActualWeight' => ['Value' => 1, 'Unit' => 'Kg'],
-                                'ProductGroup' => 'DOM',
-                                'ProductType' => 'OND',
-                                'PaymentType' => 'P',
-                                'NumberOfPieces' => 1,
-                                'DescriptionOfGoods' => 'Customer Order Shipment',
-                            ]
-                        ];
-
-                        $response = $aramex->createShipment($shipment);
+                        $response = $aramex->createShipment([
+                            'Reference1' => 'ORDER-' . $record->id,
+                            'ConsigneeName' => $record->customer_name,
+                            'ConsigneePhone' => $record->customer_phone,
+                            'ConsigneeAddress' => $record->customer_address,
+                            'City' => 'Amman', // adjust as needed
+                            'CountryCode' => 'JO', // Jordan, adjust for your country
+                            'Weight' => 1, // or real weight
+                        ]);
 
                         if (!empty($response['HasErrors'])) {
                             Notification::make()
                                 ->title('Aramex Error')
+                                ->body($response['Notifications'][0]['Message'] ?? 'Failed to create shipment.')
                                 ->danger()
-                                ->body(json_encode($response['Notifications']))
                                 ->send();
                             return;
                         }
 
-                        $record->update([
-                            'aramex_shipment_id' => $response['Shipments'][0]['ID'],
-                            'aramex_tracking_number' => $response['Shipments'][0]['ID'],
-                            'aramex_tracking_url' => $response['Shipments'][0]['ShipmentLabel']['LabelURL'] ?? null,
-                            'aramex_response' => json_encode($response),
-                            'status' => 'shipping',
-                        ]);
+                        // Save shipment number and mark as "Shipped"
+                        $shipmentNumber = $response['Shipments'][0]['ID'] ?? null;
+                        if ($shipmentNumber) {
+                            $record->update([
+                                'shipment_number' => $shipmentNumber,
+                                'status' => 'shipped',
+                            ]);
 
-                        Notification::make()
-                            ->title('Shipment Created')
-                            ->success()
-                            ->body('Shipment created successfully with Aramex.')
-                            ->send();
+                            Notification::make()
+                                ->title('Shipment Sent')
+                                ->body("Shipment #$shipmentNumber sent to Aramex.")
+                                ->success()
+                                ->send();
+                        }
                     }),
-
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
                     CommentsAction::make()->color('primary'),
