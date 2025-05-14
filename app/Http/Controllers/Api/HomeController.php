@@ -8,25 +8,54 @@ use App\Models\HomePageSetting;
 use App\Models\Product;
 use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
-    // footerInfo
-
+    /**
+     * Get Footer Information
+     *
+     * @group Common
+     *
+     * Retrieves contact details, address, and social media links for the website footer.
+     * Content is automatically returned in the current application locale.
+     *
+     * @response 200 {
+     *   "address": "123 Business Park, Dubai, UAE",
+     *   "phone": "+97141234567",
+     *   "email": "info@company.ae",
+     *   "social_media": {
+     *     "facebook": "https://facebook.com/company",
+     *     "instagram": "https://instagram.com/company.ae",
+     *     "linkedin": null,
+     *     "twitter": null,
+     *     "youtube": null,
+     *     "tiktok": null
+     *   }
+     * }
+     * @response 500 {
+     *   "success": false,
+     *   "message": "Server Error"
+     * }
+     */
     public function footerInfo(): JsonResponse
     {
-        $address = Setting::getSetting('address');
+        $locale = app()->getLocale();
+
+        $setting = Setting::first();
+
         $contact = Setting::getContactDetails();
         $socials = Setting::getSocialMediaLinks();
 
         return response()->json([
-            'address' => $address,
-            'phone'   => $contact['phone'],
-            'email'   => $contact['email'],
+            'address' => $setting?->getTranslation('address', $locale) ?? '',
+            'phone'   => $contact['phone'] ?? '',
+            'email'   => $contact['email'] ?? '',
             'social_media' => $socials,
         ]);
     }
+
     /**
      * Get Featured Categories
      *
