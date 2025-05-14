@@ -144,7 +144,7 @@ class TopProducts extends BaseWidget
                     ->color('gray')
                     ->icon('heroicon-o-eye')
                     ->label(__('View'))
-                    ->action(fn (Product $record) => redirect(url(config('app.frontend_url'). '/product/' .$record->slug))),
+                    ->action(fn (Product $record) => redirect(url(config('app.frontend_url'). '/product/' .$record->slug)), true),
 
                 Tables\Actions\Action::make('analyze')
                     ->color('primary')
