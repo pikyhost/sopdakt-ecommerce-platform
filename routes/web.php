@@ -2,6 +2,8 @@
 
 use App\Livewire\AcceptGuestInvitation;
 use App\Livewire\AcceptInvitation;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{Api\NewsletterSubscriberController,
     BostaWebhookController,
@@ -11,15 +13,6 @@ use App\Http\Controllers\{Api\NewsletterSubscriberController,
 use Spatie\Analytics\Facades\Analytics;
 use Spatie\Analytics\Period;
 
-
-Route::any('/client/{any?}', function ($any = null) {
-    $response = Http::withHeaders([
-        'Accept' => 'text/html',
-    ])->get("https://backend.sopdakt.com/client/{$any}");
-
-    return response($response->body(), $response->status())
-        ->withHeaders($response->headers());
-})->where('any', '.*');
 
 Route::post('/bosta/webhook', [BostaWebhookController::class, 'handle'])->name('bosta.webhook');
 
