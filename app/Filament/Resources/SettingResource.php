@@ -233,7 +233,12 @@ class SettingResource extends Resource
                         Forms\Components\TextInput::make('email')
                             ->columnSpanFull()
                             ->label(__('email'))
-                            ->email(),
+                            ->email(), //address
+
+                        Forms\Components\Textarea::make('address')
+                            ->maxLength(255)
+                            ->columnSpanFull()
+                            ->label(__('Address')),
                     ]),
 
                 Forms\Components\Section::make(__('Brand Colors'))

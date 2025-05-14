@@ -5,10 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
+use Spatie\Translatable\HasTranslations;
 
 class Setting extends Model
 {
+    use HasTranslations;
+
+    public $translatable = ['address']; // Define translatable fields
+
     protected $fillable = [
+        'address',
         'site_name',
         'currency_id',
         'country_id',

@@ -6,11 +6,27 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\HomePageSetting;
 use App\Models\Product;
+use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
+    // footerInfo
+
+    public function footerInfo(): JsonResponse
+    {
+        $address = Setting::getSetting('address');
+        $contact = Setting::getContactDetails();
+        $socials = Setting::getSocialMediaLinks();
+
+        return response()->json([
+            'address' => $address,
+            'phone'   => $contact['phone'],
+            'email'   => $contact['email'],
+            'social_media' => $socials,
+        ]);
+    }
     /**
      * Get Featured Categories
      *
