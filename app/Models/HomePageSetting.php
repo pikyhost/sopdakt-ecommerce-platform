@@ -24,6 +24,7 @@ class HomePageSetting extends Model implements HasMedia
         'button_url',
 
         'center_main_heading',
+        'center_title',
         'center_button_text',
         'center_button_url',
 
@@ -49,6 +50,7 @@ class HomePageSetting extends Model implements HasMedia
         'button_text',
 
         'center_main_heading',
+        'center_title',
         'center_button_text',
 
         'last1_heading',

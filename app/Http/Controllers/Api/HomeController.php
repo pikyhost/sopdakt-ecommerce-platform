@@ -373,7 +373,8 @@ class HomeController extends Controller
             ],
             'center_section' => [
                 'image_url' => $homePageSetting->getCenterImageUrl(),
-                'heading' => $homePageSetting->getTranslation('center_main_heading', $locale),
+                'heading' => $homePageSetting->getTranslation('center_main_heading', $locale), //center_title
+                'title' => $homePageSetting->getTranslation('center_title', $locale), //center_title,
                 'button_text' => $homePageSetting->getTranslation('center_button_text', $locale),
                 'button_url' => $homePageSetting->center_button_url,
             ],

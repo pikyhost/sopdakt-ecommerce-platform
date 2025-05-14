@@ -144,9 +144,11 @@ class TopProducts extends BaseWidget
                     ->color('gray')
                     ->icon('heroicon-o-eye')
                     ->label(__('View'))
-                    ->action(fn (Product $record) => redirect(url(config('app.frontend_url'). '/product/' .$record->slug)), true),
+                    ->url(fn (Product $record) => rtrim(config('app.frontend_url'), '/') . '/product/' . $record->slug)
+                    ->openUrlInNewTab(), // or remove this to open in same tab
 
-                Tables\Actions\Action::make('analyze')
+
+        Tables\Actions\Action::make('analyze')
                     ->color('primary')
                     ->icon('heroicon-o-chart-bar')
                     ->label(__('Detailed Analysis'))

@@ -128,6 +128,10 @@ class HomePageSettingResource extends Resource
                             ->label(__('Center Main Heading'))
                             ->required(),
 
+                        TextInput::make('center_title')
+                            ->label(__('Center Title'))
+                            ->required(),
+
                         TextInput::make('center_button_text')
                             ->label(__('Center Button Text'))
                             ->required(),

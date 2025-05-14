@@ -2,14 +2,11 @@
 
 use App\Livewire\AcceptGuestInvitation;
 use App\Livewire\AcceptInvitation;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{Api\NewsletterSubscriberController,
     BostaWebhookController,
     PaymentController,
     ShippingController};
-
 use Spatie\Analytics\Facades\Analytics;
 use Spatie\Analytics\Period;
 
