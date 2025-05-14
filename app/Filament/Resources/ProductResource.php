@@ -171,12 +171,12 @@ class ProductResource extends Resource
                                         };
                                     }),
                                 TextInput::make('price')
-                                    ->minValue(1)
+                                    ->minValue(0)
                                     ->label(__('Price'))
                                     ->required()
                                     ->numeric(),
                                 TextInput::make('after_discount_price')
-                                    ->minValue(1)
+                                    ->minValue(0)
                                     ->lt('price')
                                     ->label(__('After Discount Price'))
                                     ->numeric(),
