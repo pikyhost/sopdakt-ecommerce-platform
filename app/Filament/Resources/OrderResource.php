@@ -1455,3 +1455,4 @@ class OrderResource extends Resource
         return parent::getEloquentQuery();
     }
 }
+//final now
