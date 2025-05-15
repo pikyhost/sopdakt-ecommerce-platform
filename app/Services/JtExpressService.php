@@ -14,6 +14,7 @@ class JtExpressService
     protected $customerCode;
     protected $password;
 
+    // test
     public function __construct()
     {
         $this->baseUrl = env('JT_EXPRESS_BASE_URL', 'https://openapi.jtjms-eg.com/webopenplatformapi/api');
