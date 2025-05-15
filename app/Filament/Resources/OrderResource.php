@@ -936,10 +936,7 @@ class OrderResource extends Resource
 
             $order->save();
             self::updateJtExpressOrder($order, 'pending', $JtExpressOrderData, $jtExpressResponse);
-            // ✅ Update status to CONFIRMED after successful shipping integration
-            if ($trackingNumber) {
-                $order->status = OrderStatus::Shipping->value;
-            }
+
         } else {
             $order->save();
         }
