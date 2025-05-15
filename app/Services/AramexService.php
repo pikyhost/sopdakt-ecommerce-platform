@@ -23,6 +23,10 @@ class AramexService
         $contact = $order->user ?? $order->contact;
         $items = $order->items;
 
+        // Format DateTime as \/Date(<milliseconds>+<timezone>)\/
+        $shippingDateTime = sprintf('\/Date(%d+0200)\/', now()->timestamp * 1000); // EEST is +0200
+        $dueDate = sprintf('\/Date(%d+0200)\/', now()->addDays(3)->timestamp * 1000);
+
         $payload = [
             'ClientInfo' => $this->clientInfo,
             'LabelInfo' => [
@@ -62,7 +66,7 @@ class AramexService
                             'CompanyName' => 'Your Company', // Update with actual company
                             'PhoneNumber1' => '1234567890', // Update with actual phone
                             'PhoneNumber1Ext' => '',
-                            'PhoneNumber2' => '', // Required field
+                            'PhoneNumber2' => '',
                             'PhoneNumber2Ext' => '',
                             'FaxNumber' => '',
                             'CellPhone' => '1234567890', // Update with actual cell
@@ -98,7 +102,7 @@ class AramexService
                             'CompanyName' => $contact->company ?? 'N/A',
                             'PhoneNumber1' => $contact->phone ?? 'N/A',
                             'PhoneNumber1Ext' => '',
-                            'PhoneNumber2' => '', // Required field
+                            'PhoneNumber2' => '',
                             'PhoneNumber2Ext' => '',
                             'FaxNumber' => '',
                             'CellPhone' => $contact->phone ?? 'N/A',
@@ -142,8 +146,8 @@ class AramexService
                             'Type' => '',
                         ],
                     ],
-                    'ShippingDateTime' => now()->timestamp * 1000, // Format as Unix timestamp in milliseconds
-                    'DueDate' => now()->addDays(3)->timestamp * 1000, // Format as Unix timestamp in milliseconds
+                    'ShippingDateTime' => $shippingDateTime,
+                    'DueDate' => $dueDate,
                     'Comments' => '',
                     'PickupLocation' => '',
                     'OperationsInstructions' => '',
@@ -158,8 +162,8 @@ class AramexService
                         'DescriptionOfGoods' => 'Order #' . $order->id,
                         'GoodsOriginCountry' => 'EG',
                         'NumberOfPieces' => $items->count() ?: 1,
-                        'ProductGroup' => 'DOM', // Changed to match Postman example
-                        'ProductType' => 'CDS', // Changed to match Postman example
+                        'ProductGroup' => 'DOM',
+                        'ProductType' => 'CDS',
                         'PaymentType' => 'P',
                         'PaymentOptions' => '',
                         'CustomsValueAmount' => null,
@@ -199,6 +203,7 @@ class AramexService
 
         return $this->sendShipmentRequest($order, $payload);
     }
+
 
     public function testStaticShipment(Order $order): array
     {
