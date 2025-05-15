@@ -45,6 +45,7 @@ use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -784,7 +785,7 @@ class OrderResource extends Resource
                         ->action(fn($records) => $records->each(fn($record) => self::updateOrderStatus($record, $status)))
                     )->toArray(),
 
-                    BulkAction::make('bulk_send_to_jt_express')
+                    Tables\Actions\BulkAction::make('bulk_send_to_jt_express')
                         ->label(__('Send to J&T Express'))
                         ->icon('heroicon-o-paper-airplane')
                         ->requiresConfirmation()
@@ -1031,7 +1032,7 @@ class OrderResource extends Resource
         return $data;
     }
 
-    private static function updateJtExpressOrder(Order $order, string $shipping_status, $JtExpressOrderData, $jtExpressResponse)
+    public static function updateJtExpressOrder(Order $order, string $shipping_status, $JtExpressOrderData, $jtExpressResponse)
     {
         if (isset($jtExpressResponse['code']) && $jtExpressResponse['code'] == 1) {
             $order->update([
