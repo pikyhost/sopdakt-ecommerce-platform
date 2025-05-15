@@ -642,7 +642,7 @@ class OrderResource extends Resource
                         ($record->user?->phone ?? $record->contact?->phone)
                     )
                     ->label(__('Send to J&T Express'))
-                    ->icon('heroicon-o-paper-airplane')
+                    ->icon('heroicon-o-truck')
                     ->color('primary')
                     ->requiresConfirmation()
                     ->action(fn($record) => self::sendToJtExpress($record)),
@@ -777,12 +777,13 @@ class OrderResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    ...collect(OrderStatus::cases())->map(fn($status) =>
-                    Tables\Actions\BulkAction::make($status->value)
+                    collect(OrderStatus::cases())->map(fn($status) => Tables\Actions\Action::make($status->value)
                         ->label(__($status->getLabel()))
                         ->icon($status->getIcon())
                         ->color($status->getColor())
-                        ->action(fn($records) => $records->each(fn($record) => self::updateOrderStatus($record, $status)))
+                        ->action(fn($record) => $status === OrderStatus::Shipping
+                            ? self::sendToJtExpress($record)
+                            : self::updateOrderStatus($record, $status))
                     )->toArray(),
 
                     Tables\Actions\BulkAction::make('bulk_send_to_jt_express')
@@ -897,13 +898,46 @@ class OrderResource extends Resource
             ]);
     }
 
+    public static function sendToJtExpress($order)
+    {
+        $order->refresh(); // Ensure latest data
+
+        // First update status to Confirmed if not already
+        if ($order->status !== OrderStatus::Shipping->value) {
+            $order->status = OrderStatus::Shipping->value;
+            $order->save();
+        }
+
+        // Now handle J&T Express shipping
+        $JtExpressOrderData = self::prepareJtExpressOrderData($order);
+        $jtExpressResponse = app(JtExpressService::class)->createOrder($JtExpressOrderData);
+
+        // Extract billCode as the tracking number
+        $trackingNumber = $jtExpressResponse['data']['billCode'] ?? null;
+        if ($trackingNumber) {
+            $order->tracking_number = $trackingNumber;
+            $order->status = OrderStatus::Shipping->value;
+            $order->save();
+        }
+
+        // Update tracking details in J&T system
+        self::updateJtExpressOrder($order, 'pending', $JtExpressOrderData, $jtExpressResponse);
+
+        // Refresh and send email
+        $order->refresh();
+        $email = $order->user->email ?? $order->contact->email;
+        if ($email) {
+            Mail::to($email)->send(new OrderStatusMail($order, OrderStatus::Shipping));
+        }
+    }
+
     public static function updateOrderStatus($order, OrderStatus $status)
     {
         $previousStatus = $order->status;
         $newStatus = $status->value;
-
         $order->refresh();
 
+        // Restore inventory when canceling or refunding an order
         if (
             $previousStatus !== null &&
             in_array($previousStatus, [OrderStatus::Pending->value, OrderStatus::Preparing->value, OrderStatus::Shipping->value], true) &&
@@ -920,45 +954,17 @@ class OrderResource extends Resource
             }
         }
 
+        // Update order status
         $order->status = $newStatus;
         $order->save();
-        $order->refresh();
 
+        // Send email
         $email = $order->user->email ?? $order->contact->email;
         if ($email) {
             Mail::to($email)->send(new OrderStatusMail($order, $status));
         }
     }
-
-    public static function sendToJtExpress(Order $order): void
-    {
-        // Prevent duplicate send
-        if ($order->tracking_number) {
-            return;
-        }
-
-        $order->refresh();
-
-        $data = self::prepareJtExpressOrderData($order);
-        $response = app(JtExpressService::class)->createOrder($data);
-
-        $trackingNumber = $response['data']['billCode'] ?? null;
-
-        if ($trackingNumber) {
-            $order->tracking_number = $trackingNumber;
-            $order->status = OrderStatus::Shipping->value;
-            $order->save();
-
-            self::updateJtExpressOrder($order, 'pending', $data, $response);
-
-            // Send email
-            $email = $order->user->email ?? $order->contact->email;
-            if ($email) {
-                Mail::to($email)->send(new OrderStatusMail($order, OrderStatus::Shipping));
-            }
-        }
-    }
-
+    
     private static function prepareJtExpressOrderData($order): array
     {
         $data = [
