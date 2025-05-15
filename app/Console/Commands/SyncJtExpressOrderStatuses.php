@@ -43,7 +43,7 @@ class SyncJtExpressOrderStatuses extends Command
                         'billCode' => $order->tracking_number,
                     ]);
 
-                    if (!$statusInfo || !isset($statusInfo['status'])) {
+                    if (!$statusInfo) {
                         Log::warning('JT Express Sync: Invalid status response', [
                             'order_id' => $order->id,
                             'tracking_number' => $order->tracking_number,
@@ -51,7 +51,20 @@ class SyncJtExpressOrderStatuses extends Command
                         continue;
                     }
 
-                    $newStatus = $statusInfo['status'] ?? $statusInfo['deliveryStatus'] ?? null;
+                    Log::debug('JT Express Sync: API Response', [
+                        'order_id' => $order->id,
+                        'response' => $statusInfo,
+                    ]);
+
+                    // Extract new status
+                    $newStatus = null;
+                    if (isset($statusInfo['details']) && is_array($statusInfo['details']) && count($statusInfo['details']) > 0) {
+                        $detail = $statusInfo['details'][0];
+                        $newStatus = $detail['scanType'] ?? null;
+                    } else {
+                        $newStatus = $statusInfo['scanType'] ?? null;
+                    }
+
                     if (!$newStatus) {
                         Log::warning('JT Express Sync: Missing status', [
                             'order_id' => $order->id,
@@ -97,19 +110,36 @@ class SyncJtExpressOrderStatuses extends Command
 
     private function mapJtExpressStatusToOrderStatus(string $jtStatus): ?string
     {
-        $statusMap = [
-            'created' => OrderStatus::Pending->value,
-            'picked_up' => OrderStatus::Preparing->value,
-            'pickedup' => OrderStatus::Preparing->value,
-            'pick_up' => OrderStatus::Preparing->value,
-            'in_transit' => OrderStatus::Shipping->value,
-            'out_for_delivery' => OrderStatus::Shipping->value,
+        $englishMap = [
+            'pickup' => OrderStatus::Shipping->value,
+            'picked up' => OrderStatus::Shipping->value,
+            'in transit' => OrderStatus::Shipping->value,
+            'out for delivery' => OrderStatus::Shipping->value,
             'delivered' => OrderStatus::Completed->value,
             'cancelled' => OrderStatus::Cancelled->value,
             'returned' => OrderStatus::Refund->value,
             'delayed' => OrderStatus::Delayed->value,
         ];
 
-        return $statusMap[strtolower($jtStatus)] ?? null;
+        $chineseMap = [
+            '已调派业务员' => OrderStatus::Preparing->value,
+            '已入仓' => OrderStatus::Shipping->value,
+            '已取消' => OrderStatus::Cancelled->value,
+        ];
+
+        foreach ($englishMap as $key => $value) {
+            if (stripos(strtolower($jtStatus), strtolower($key)) !== false) {
+                return $value;
+            }
+        }
+
+        if (isset($chineseMap[$jtStatus])) {
+            return $chineseMap[$jtStatus];
+        }
+
+        Log::warning('JT Express Sync: Unmapped status', [
+            'status' => $jtStatus,
+        ]);
+        return null;
     }
 }

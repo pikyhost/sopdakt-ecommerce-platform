@@ -18,7 +18,7 @@ class AramexService
         $this->clientInfo = config('aramex.client_info');
     }
 
-    public function createShipment(Order $order): array
+    public function createShipment(Order $order, array $overrides = []): array
     {
         $contact = $order->user ?? $order->contact;
         $items = $order->items;
@@ -32,7 +32,7 @@ class AramexService
             'Shipments' => [
                 [
                     'Reference1' => (string)$order->id,
-                    'Shipper' => [
+                    'Shipper' => array_merge([
                         'Reference1' => 'SHP-' . $order->id,
                         'AccountNumber' => $this->clientInfo['AccountNumber'],
                         'PartyAddress' => [
@@ -53,7 +53,7 @@ class AramexService
                             'EmailAddress' => 'info@yourcompany.com',
                             'Type' => '',
                         ],
-                    ],
+                    ], $overrides['shipper'] ?? []),
                     'Consignee' => [
                         'Reference1' => 'CNS-' . $order->id,
                         'PartyAddress' => [
@@ -108,7 +108,7 @@ class AramexService
 
         return $this->sendShipmentRequest($order, $payload);
     }
-
+    
     public function testStaticShipment(Order $order): array
     {
         $payload = [

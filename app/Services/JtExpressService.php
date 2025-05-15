@@ -39,11 +39,13 @@ class JtExpressService
         ];
     }
 
-    protected function getBusinessDigest(): string
+    protected function getBusinessDigest()
     {
-        $hashedPassword = strtoupper(md5($this->password . 'jadada236t2'));
-        $signatureString = $this->customerCode . $hashedPassword . $this->privateKey;
-        return base64_encode(md5($signatureString, true));
+        $pwd = md5($this->password . 'jadada236t2');
+        $pwd = strtoupper($pwd);
+        $signatureString = $this->customerCode . $pwd . $this->privateKey;
+        $digest = base64_encode(md5($signatureString, true));
+        return $digest;
     }
 
     protected function makeRequest(string $endpoint, array $payload)

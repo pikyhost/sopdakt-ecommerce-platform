@@ -12,37 +12,59 @@ class ShippingController extends Controller
 {
     public function handleWebhook(Request $request)
     {
-        // Log initial receipt for debugging
         Log::debug('JT Express Webhook: Endpoint hit', ['headers' => $request->headers->all()]);
 
         try {
-            $data = $request->all();
-            Log::info('JT Express Webhook Received', ['payload' => $data]);
-
-            // Extract relevant fields
-            $trackingNumber = $data['billCode'] ?? $data['txlogisticId'] ?? null;
-            $newStatus = $data['status'] ?? $data['deliveryStatus'] ?? null;
-
-            if (!$trackingNumber || !$newStatus) {
-                Log::error('JT Express Webhook: Missing tracking number or status', ['payload' => $data]);
-                return response()->json(['message' => 'Invalid webhook data'], 400);
+            // Extract and decode bizContent
+            $bizContent = $request->input('bizContent');
+            if (!$bizContent) {
+                Log::error('JT Express Webhook: Missing bizContent');
+                return response()->json(['message' => 'Missing bizContent'], 400);
             }
 
-            // Find the order by tracking number
-            $order = Order::where('tracking_number', $trackingNumber)->first();
+            $data = json_decode($bizContent, true);
+            if (!$data) {
+                Log::error('JT Express Webhook: Failed to decode bizContent', ['bizContent' => $bizContent]);
+                return response()->json(['message' => 'Invalid bizContent'], 400);
+            }
 
+            Log::info('JT Express Webhook Received', ['payload' => $data]);
+
+            // Extract tracking number
+            $trackingNumber = $data['billCode'] ?? $data['txlogisticId'] ?? null;
+            if (!$trackingNumber) {
+                Log::error('JT Express Webhook: Missing tracking number', ['payload' => $data]);
+                return response()->json(['message' => 'Missing tracking number'], 400);
+            }
+
+            // Extract new status
+            $newStatus = null;
+            if (isset($data['details']) && is_array($data['details']) && count($data['details']) > 0) {
+                $detail = $data['details'][0];
+                $newStatus = $detail['scanType'] ?? null;
+            } else {
+                $newStatus = $data['scanType'] ?? null;
+            }
+
+            if (!$newStatus) {
+                Log::error('JT Express Webhook: Missing status', ['payload' => $data]);
+                return response()->json(['message' => 'Missing status'], 400);
+            }
+
+            // Find the order
+            $order = Order::where('tracking_number', $trackingNumber)->first();
             if (!$order) {
                 Log::error('JT Express Webhook: Order not found', ['tracking_number' => $trackingNumber]);
                 return response()->json(['message' => 'Order not found'], 404);
             }
 
-            // Update order with new status and response
+            // Update order
             $order->update([
                 'shipping_status' => $newStatus,
                 'shipping_response' => json_encode($data),
             ]);
 
-            // Map J&T status to OrderStatus enum
+            // Map to OrderStatus
             $mappedStatus = $this->mapJtExpressStatusToOrderStatus($newStatus);
             if ($mappedStatus) {
                 $order->status = $mappedStatus;
@@ -77,21 +99,37 @@ class ShippingController extends Controller
 
     private function mapJtExpressStatusToOrderStatus(string $jtStatus): ?string
     {
-        // Map J&T Express statuses to your OrderStatus enum
-        $statusMap = [
-            'created' => OrderStatus::Pending->value,
-            'picked_up' => OrderStatus::Preparing->value,
-            'pickedup' => OrderStatus::Preparing->value,
-            'pick_up' => OrderStatus::Preparing->value,
-            'in_transit' => OrderStatus::Shipping->value,
-            'out_for_delivery' => OrderStatus::Shipping->value,
+        $englishMap = [
+            'pickup' => OrderStatus::Shipping->value,
+            'picked up' => OrderStatus::Shipping->value,
+            'in transit' => OrderStatus::Shipping->value,
+            'out for delivery' => OrderStatus::Shipping->value,
             'delivered' => OrderStatus::Completed->value,
             'cancelled' => OrderStatus::Cancelled->value,
             'returned' => OrderStatus::Refund->value,
             'delayed' => OrderStatus::Delayed->value,
         ];
 
-        return $statusMap[strtolower($jtStatus)] ?? null;
+        $chineseMap = [
+            '已调派业务员' => OrderStatus::Preparing->value,
+            '已入仓' => OrderStatus::Shipping->value,
+            '已取消' => OrderStatus::Cancelled->value,
+        ];
+
+        foreach ($englishMap as $key => $value) {
+            if (stripos(strtolower($jtStatus), strtolower($key)) !== false) {
+                return $value;
+            }
+        }
+
+        if (isset($chineseMap[$jtStatus])) {
+            return $chineseMap[$jtStatus];
+        }
+
+        Log::warning('JT Express Webhook: Unmapped status', [
+            'status' => $jtStatus,
+        ]);
+        return null;
     }
 
     public function calculateShipping(CalculateShippingRequest $request)

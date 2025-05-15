@@ -136,12 +136,12 @@ class OrderResource extends Resource
                     ->searchable()
                     ->weight(FontWeight::Bold),
 
-//                TextColumn::make('bosta_delivery_id')
-//                    ->copyable()
-//                    ->placeholder('-')
-//                    ->label(__('Bosta Delivery Number'))
-//                    ->searchable()
-//                    ->weight(FontWeight::Bold),
+                TextColumn::make('bosta_delivery_id')
+                    ->copyable()
+                    ->placeholder('-')
+                    ->label(__('Bosta Delivery Number'))
+                    ->searchable()
+                    ->weight(FontWeight::Bold),
 
                 Tables\Columns\TextColumn::make('user.name')
                     ->formatStateUsing(function ($record) {
@@ -604,56 +604,53 @@ class OrderResource extends Resource
                             Notification::make()->title('Cancellation Error')->body('An error occurred: ' . $e->getMessage())->danger()->send();
                         }
                     }),
-//
-//                Action::make('send_to_bosta')
-//                    ->label('Send to Bosta')
-//                    ->icon('heroicon-o-truck')
-//                    ->color('primary')
-//                    ->visible(fn(Order $record): bool => Setting::first()?->enable_bosta &&
-//                        $record->status === OrderStatus::Preparing &&
-//                        !$record->bosta_delivery_id &&
-//                        ($record->user || $record->contact) &&
-//                        ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
-//                        $record->city?->bosta_code &&
-//                        ($record->user?->phone ?? $record->contact?->phone)
-//                    )
-//                    ->requiresConfirmation()
-//                    ->modalHeading('Send Order to Bosta')
-//                    ->modalDescription('This will create a delivery in Bosta and set the order status to Shipping.')
-//                    ->modalSubmitActionLabel('Confirm')
-//                    ->action(function (Order $record) {
-//                        $bostaService = new BostaService();
-//                        $response = $bostaService->createDelivery($record);
-//
-//                        if ($response && isset($response['data']['_id'])) {
-//                            $record->update([
-//                                'status' => OrderStatus::Shipping,
-//                                'bosta_delivery_id' => $response['data']['_id'], // Match Postman response
-//                            ]);
-//                            Notification::make()->title('Order sent to Bosta')->success()->send();
-//                        } else {
-//                            Notification::make()
-//                                ->title('Failed to send order to Bosta')
-//                                ->body('Check logs for API error details')
-//                                ->danger()
-//                                ->send();
-//                            Log::error('Failed to create Bosta delivery for order.', ['order_id' => $record->id, 'response' => $response]);
-//                        }
-//                    }),
 
+                Action::make('send_to_bosta')
+                    ->label('Send to Bosta')
+                    ->icon('heroicon-o-truck')
+                    ->color('primary')
+                    ->visible(fn(Order $record): bool => Setting::first()?->enable_bosta &&
+                        $record->status === OrderStatus::Preparing &&
+                        !$record->bosta_delivery_id &&
+                        ($record->user || $record->contact) &&
+                        ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
+                        $record->city?->bosta_code &&
+                        ($record->user?->phone ?? $record->contact?->phone)
+                    )
+                    ->requiresConfirmation()
+                    ->modalHeading('Send Order to Bosta')
+                    ->modalDescription('This will create a delivery in Bosta and set the order status to Shipping.')
+                    ->modalSubmitActionLabel('Confirm')
+                    ->action(function (Order $record) {
+                        $bostaService = new BostaService();
+                        $response = $bostaService->createDelivery($record);
+
+                        if ($response && isset($response['data']['_id'])) {
+                            $record->update([
+                                'status' => OrderStatus::Shipping,
+                                'bosta_delivery_id' => $response['data']['trackingNumber'], //  Use tracking number here
+                            ]);
+                            Notification::make()->title('Order sent to Bosta')->success()->send();
+                        } else {
+                            Notification::make()
+                                ->title('Failed to send order to Bosta')
+                                ->body('Check logs for API error details')
+                                ->danger()
+                                ->send();
+                            Log::error('Failed to create Bosta delivery for order.', ['order_id' => $record->id, 'response' => $response]);
+                        }
+                    }),
 
                 Action::make('createAramexShipment')
                     ->label('Create ARAMEX Shipment')
                     ->icon('heroicon-o-truck')
                     ->action(function (Order $record, AramexService $aramexService) {
                         try {
-                            // Get contact information safely
+                            // Validate required information
                             $contact = $record->user ?? $record->contact;
                             $city = $record->city;
                             $country = $record->country;
-                            $governorate = $record->governorate;
 
-                            // Validate required information
                             if (!$contact || !$city || !$country) {
                                 Notification::make()
                                     ->title('Cannot create ARAMEX shipment')
@@ -681,114 +678,21 @@ class OrderResource extends Resource
                                 return;
                             }
 
-                            // Prepare name
-                            $fullName = $contact->name ?? $contact->full_name ?? 'Unknown Name';
-                            $nameParts = explode(' ', $fullName);
-                            $firstName = $nameParts[0] ?? 'First';
-                            $lastName = $nameParts[1] ?? 'Last';
+                            // Call the AramexService createShipment method
+                            $response = $aramexService->createShipment($record);
 
-                            // Prepare shipment data
-                            $shipmentData = [
-                                'reference' => 'ORDER-' . $record->id,
-                                'weight' => $record->items->sum('weight') ?: 1,
-                                'description' => 'Order #' . $record->id,
-                                'product_group' => 'DOM',
-                                'product_type' => 'OND',
-                                'payment_type' => 'P',
-                            ];
-
-                            // Shipper data (your store info)
-                            $shipperData = [
-                                'Reference1' => 'STORE-' . $record->id,
-                                'Reference2' => '',
-                                'AccountNumber' => config('services.aramex.account_number'),
-                                'PartyAddress' => [
-                                    'Line1' => '123 Main St',
-                                    'Line2' => '',
-                                    'Line3' => '',
-                                    'City' => 'Cairo',
-                                    'StateOrProvinceCode' => 'C',
-                                    'PostCode' => '11511',
-                                    'CountryCode' => 'EG',
-                                ],
-                                'Contact' => [
-                                    'Department' => '',
-                                    'PersonName' => 'Store Manager',
-                                    'Title' => '',
-                                    'CompanyName' => 'Your Store Name',
-                                    'PhoneNumber1' => '+201000000000',
-                                    'PhoneNumber1Ext' => '',
-                                    'PhoneNumber2' => '',
-                                    'PhoneNumber2Ext' => '',
-                                    'FaxNumber' => '',
-                                    'CellPhone' => '+201000000000',
-                                    'EmailAddress' => 'store@example.com',
-                                    'Type' => ''
-                                ],
-                            ];
-
-                            // Consignee data (customer info)
-                            $consigneeData = [
-                                'Reference1' => 'CUSTOMER-' . $record->user_id,
-                                'Reference2' => '',
-                                'AccountNumber' => '',
-                                'PartyAddress' => [
-                                    'Line1' => $addressLine1,
-                                    'Line2' => $addressLine1 ?? '',
-                                    'Line3' => '',
-                                    'City' => $city->name,
-                                    'StateOrProvinceCode' => $governorate->code ?? 'C',
-                                    'PostCode' => $contact->postal_code ?? '00000',
-                                    'CountryCode' => $country->code,
-                                ],
-                                'Contact' => [
-                                    'Department' => '',
-                                    'PersonName' => $fullName,
-                                    'Title' => '',
-                                    'CompanyName' => '',
-                                    'PhoneNumber1' => $contact->phone ?? $contact->phone ?? '+201234567890',
-                                    'PhoneNumber1Ext' => '',
-                                    'PhoneNumber2' => '',
-                                    'PhoneNumber2Ext' => '',
-                                    'FaxNumber' => '',
-                                    'CellPhone' => $contact->phone ?? $contact->phone ?? '+201234567890',
-                                    'EmailAddress' => $contact->email ?? 'customer@example.com',
-                                    'Type' => ''
-                                ],
-                            ];
-
-                            // Prepare items
-                            $items = [];
-                            foreach ($record->items as $item) {
-                                $items[] = [
-                                    'PackageType' => 'Box',
-                                    'Quantity' => $item->quantity,
-                                    'Weight' => [
-                                        'Value' => $item->weight ?: 0.5,
-                                        'Unit' => 'kg'
-                                    ],
-                                    'Comments' => $item->product->name,
-                                    'Reference' => 'ITEM-' . $item->id,
-                                ];
+                            if ($response['success']) {
+                                Notification::make()
+                                    ->title('Shipment Created Successfully')
+                                    ->success()
+                                    ->send();
+                            } else {
+                                Notification::make()
+                                    ->title('Failed to create shipment')
+                                    ->body($response['message'])
+                                    ->danger()
+                                    ->send();
                             }
-
-                            // Create shipment directly
-                            $response = $aramexService->createShipment($shipmentData, $shipperData, $consigneeData, $items);
-
-                            // Update order
-                            $record->update([
-                                'aramex_shipment_id' => $response->Shipments->ProcessedShipment->ID,
-                                'aramex_tracking_number' => $response->Shipments->ProcessedShipment->ShipmentNumber,
-                                'aramex_tracking_url' => 'https://www.aramex.com/track/results?ShipmentNumber=' . $response->Shipments->ProcessedShipment->ShipmentNumber,
-                                'aramex_response' => json_encode($response),
-                                'status' => 'shipping',
-                            ]);
-
-                            Notification::make()
-                                ->title('Shipment Created Successfully')
-                                ->success()
-                                ->send();
-
                         } catch (\Exception $e) {
                             Notification::make()
                                 ->title('Failed to create shipment')
@@ -798,9 +702,7 @@ class OrderResource extends Resource
                         }
                     })
                     ->requiresConfirmation()
-                    ->modalHeading('Create ARAMEX Shipment')
-                    ->modalSubheading('Are you sure you want to create an ARAMEX shipment for this order?')
-                    ->modalButton('Create Shipment'),
+                    ->modalHeading('Create ARAMEX Shipment'),
 
 
                 Tables\Actions\ActionGroup::make([
