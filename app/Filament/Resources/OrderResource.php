@@ -144,12 +144,13 @@ class OrderResource extends Resource
                     ->weight(FontWeight::Bold),
 
                 TextColumn::make('aramex_shipment_id')
-                    ->label('Aramex Shipment ID')
+                    ->label(__('Aramex Shipment ID'))
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->copyable(),
 
                 TextColumn::make('aramex_tracking_number')
-                    ->label('Aramex Tracking Number')
+                    ->label(__('Aramex Tracking Number'))
                     ->searchable()
                     ->sortable()
                     ->color('primary')
@@ -634,132 +635,131 @@ class OrderResource extends Resource
 //                    }),
 
 
-               Tables\Actions\ActionGroup::make([
-                   Tables\Actions\Action::make('send_to_jt_express')
-                       ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt &&
-                           $record->status === OrderStatus::Preparing &&
-                           !$record->tracking_number &&
-                           ($record->user || $record->contact) &&
-                           ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
-                           ($record->user?->phone ?? $record->contact?->phone)
-                       )
-                       ->label(__('Send to J&T Express'))
-                       ->icon('heroicon-o-paper-airplane')
-                       ->color('primary')
-                       ->requiresConfirmation()
-                       ->action(fn($record) => self::sendToJtExpress($record)),
 
-                   Action::make('send_to_bosta')
-                       ->label(__('Send to Bosta'))
-                       ->icon('heroicon-o-truck')
-                       ->color('primary')
-                       ->visible(fn(Order $record): bool => Setting::first()?->enable_bosta &&
-                           $record->status === OrderStatus::Preparing &&
-                           !$record->bosta_delivery_id &&
-                           ($record->user || $record->contact) &&
-                           ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
-                           $record->city?->bosta_code &&
-                           ($record->user?->phone ?? $record->contact?->phone)
-                       )
-                       ->requiresConfirmation()
-                       ->action(function (Order $record) {
-                           $bostaService = new BostaService();
-                           $response = $bostaService->createDelivery($record);
+                Tables\Actions\Action::make('send_to_jt_express')
+                    ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt &&
+                        $record->status === OrderStatus::Preparing &&
+                        !$record->tracking_number &&
+                        ($record->user || $record->contact) &&
+                        ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
+                        ($record->user?->phone ?? $record->contact?->phone)
+                    )
+                    ->label(__('Send to J&T Express'))
+                    ->icon('heroicon-o-paper-airplane')
+                    ->color('primary')
+                    ->requiresConfirmation()
+                    ->action(fn($record) => self::sendToJtExpress($record)),
 
-                           if ($response && isset($response['data']['_id'])) {
-                               $record->update([
-                                   'status' => OrderStatus::Shipping,
-                                   'bosta_delivery_id' => $response['data']['trackingNumber'],
-                               ]);
-                               Notification::make()->title(__('Order sent to Bosta'))->success()->send();
+                Action::make('send_to_bosta')
+                    ->label(__('Send to Bosta'))
+                    ->icon('heroicon-o-truck')
+                    ->color('primary')
+                    ->visible(fn(Order $record): bool => Setting::first()?->enable_bosta &&
+                        $record->status === OrderStatus::Preparing &&
+                        !$record->bosta_delivery_id &&
+                        ($record->user || $record->contact) &&
+                        ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
+                        $record->city?->bosta_code &&
+                        ($record->user?->phone ?? $record->contact?->phone)
+                    )
+                    ->requiresConfirmation()
+                    ->action(function (Order $record) {
+                        $bostaService = new BostaService();
+                        $response = $bostaService->createDelivery($record);
 
-                               // ✅ Send email AFTER tracking number is updated
-                               $email = $order->user->email ?? $record->contact->email;
-                               if ($email) {
-                                   Mail::to($email)->send(new OrderStatusMail($record, $record->status));
-                               }
-                           } else {
-                               Notification::make()
-                                   ->title(__('Failed to send order to Bosta'))
-                                   ->body(__('Check logs for API error details'))
-                                   ->danger()
-                                   ->send();
-                               Log::error('Failed to create Bosta delivery for order.', ['order_id' => $record->id, 'response' => $response]);
-                           }
-                       }),
+                        if ($response && isset($response['data']['_id'])) {
+                            $record->update([
+                                'status' => OrderStatus::Shipping,
+                                'bosta_delivery_id' => $response['data']['trackingNumber'],
+                            ]);
+                            Notification::make()->title(__('Order sent to Bosta'))->success()->send();
 
-                   Action::make('createAramexShipment')
-                       ->visible(fn(Order $record): bool => Setting::first()?->enable_aramex &&
-                           $record->status === OrderStatus::Preparing &&
-                           !$record->aramex_shipment_id &&
-                           ($record->user || $record->contact) &&
-                           ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
-                           ($record->user?->phone ?? $record->contact?->phone)
-                       )
-                       ->label(__('Send to Aramex'))
-                       ->icon('heroicon-o-truck')
-                       ->action(function (Order $record, AramexService $aramexService) {
-                           try {
-                               $contact = $record->user ?? $record->contact;
-                               $city = $record->city;
-                               $country = $record->country;
+                            // ✅ Send email AFTER tracking number is updated
+                            $email = $order->user->email ?? $record->contact->email;
+                            if ($email) {
+                                Mail::to($email)->send(new OrderStatusMail($record, $record->status));
+                            }
+                        } else {
+                            Notification::make()
+                                ->title(__('Failed to send order to Bosta'))
+                                ->body(__('Check logs for API error details'))
+                                ->danger()
+                                ->send();
+                            Log::error('Failed to create Bosta delivery for order.', ['order_id' => $record->id, 'response' => $response]);
+                        }
+                    }),
 
-                               if (!$contact || !$city || !$country) {
-                                   Notification::make()
-                                       ->title(__('Cannot create ARAMEX shipment'))
-                                       ->body(__('Missing contact, city, or country information'))
-                                       ->danger()
-                                       ->send();
-                                   return;
-                               }
+                Action::make('createAramexShipment')
+                    ->visible(fn(Order $record): bool => Setting::first()?->enable_aramex &&
+                        $record->status === OrderStatus::Preparing &&
+                        !$record->aramex_shipment_id &&
+                        ($record->user || $record->contact) &&
+                        ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
+                        ($record->user?->phone ?? $record->contact?->phone)
+                    )
+                    ->label(__('Send to Aramex'))
+                    ->icon('heroicon-o-truck')
+                    ->action(function (Order $record, AramexService $aramexService) {
+                        try {
+                            $contact = $record->user ?? $record->contact;
+                            $city = $record->city;
+                            $country = $record->country;
 
-                               $addressLine1 = null;
-                               if ($contact instanceof \App\Models\User) {
-                                   $primaryAddress = $contact->addresses()->where('is_primary', true)->first();
-                                   $addressLine1 = $primaryAddress?->address;
-                               } else {
-                                   $addressLine1 = $contact->address ?? null;
-                               }
+                            if (!$contact || !$city || !$country) {
+                                Notification::make()
+                                    ->title(__('Cannot create ARAMEX shipment'))
+                                    ->body(__('Missing contact, city, or country information'))
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
 
-                               if (!$addressLine1) {
-                                   Notification::make()
-                                       ->title(__('Cannot create ARAMEX shipment'))
-                                       ->body(__('Missing contact address information'))
-                                       ->danger()
-                                       ->send();
-                                   return;
-                               }
+                            $addressLine1 = null;
+                            if ($contact instanceof \App\Models\User) {
+                                $primaryAddress = $contact->addresses()->where('is_primary', true)->first();
+                                $addressLine1 = $primaryAddress?->address;
+                            } else {
+                                $addressLine1 = $contact->address ?? null;
+                            }
 
-                               $response = $aramexService->createShipment($record);
+                            if (!$addressLine1) {
+                                Notification::make()
+                                    ->title(__('Cannot create ARAMEX shipment'))
+                                    ->body(__('Missing contact address information'))
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
 
-                               if ($response['success']) {
-                                   Notification::make()
-                                       ->title(__('Shipment Created Successfully'))
-                                       ->success()
-                                       ->send();
+                            $response = $aramexService->createShipment($record);
 
-                                   // ✅ Send email AFTER tracking number is updated
-                                   $email = $order->user->email ?? $record->contact->email;
-                                   if ($email) {
-                                       Mail::to($email)->send(new OrderStatusMail($order, $record->status));
-                                   }
-                               } else {
-                                   Notification::make()
-                                       ->title(__('Failed to create shipment'))
-                                       ->body($response['message'])
-                                       ->danger()
-                                       ->send();
-                               }
-                           } catch (\Exception $e) {
-                               Notification::make()
-                                   ->title(__('Failed to create shipment'))
-                                   ->body($e->getMessage())
-                                   ->danger()
-                                   ->send();
-                           }
-                       })
-                       ->requiresConfirmation(),
-               ]),
+                            if ($response['success']) {
+                                Notification::make()
+                                    ->title(__('Shipment Created Successfully'))
+                                    ->success()
+                                    ->send();
+
+                                // ✅ Send email AFTER tracking number is updated
+                                $email = $order->user->email ?? $record->contact->email;
+                                if ($email) {
+                                    Mail::to($email)->send(new OrderStatusMail($order, $record->status));
+                                }
+                            } else {
+                                Notification::make()
+                                    ->title(__('Failed to create shipment'))
+                                    ->body($response['message'])
+                                    ->danger()
+                                    ->send();
+                            }
+                        } catch (\Exception $e) {
+                            Notification::make()
+                                ->title(__('Failed to create shipment'))
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
+                    })
+                    ->requiresConfirmation(),
 
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
