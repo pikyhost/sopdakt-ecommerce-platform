@@ -147,6 +147,7 @@ class OrderResource extends Resource
                     ->copyMessage(__('Tracking number copied')),
 
                 TextColumn::make('aramex_tracking_number')
+                    ->placeholder('-')
                     ->label(__('Aramex Tracking Number'))
                     ->searchable()
                     ->sortable()
