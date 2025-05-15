@@ -156,20 +156,18 @@ class OrderResource extends Resource
                     ->copyable(),
 
                 TextColumn::make('aramex_tracking_url')
-                    ->label('Tracking URL')
+                    ->label(__('Shipment Waybill URL')) // Best universal term
+//                     or ->label(__('Shipment Waybill')) // More technical alternative
                     ->searchable()
                     ->sortable()
                     ->url(fn ($record) => $record->aramex_tracking_url, true)
                     ->openUrlInNewTab()
-                    ->icon('heroicon-o-link')
-                    ->color('primary')
-                    ->limit(50)
+                    ->icon('heroicon-o-document-text')
+                    ->color('info')
+                    ->limit(30)
                     ->tooltip(function (TextColumn $column): ?string {
                         $url = $column->getState();
-                        if (strlen($url) <= 50) {
-                            return null;
-                        }
-                        return $url;
+                        return strlen($url) > 30 ? $url : null;
                     }),
 
                 Tables\Columns\TextColumn::make('user.name')
