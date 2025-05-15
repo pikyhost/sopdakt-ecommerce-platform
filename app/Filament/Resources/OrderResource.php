@@ -937,6 +937,8 @@ class OrderResource extends Resource
             $order->save();
             self::updateJtExpressOrder($order, 'pending', $JtExpressOrderData, $jtExpressResponse);
 
+            Notification::make()->title(__('Order sent to J&T Express'))->success()->send();
+
         } else {
             $order->save();
         }
