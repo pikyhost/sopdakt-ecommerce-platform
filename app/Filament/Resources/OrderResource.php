@@ -777,14 +777,14 @@ class OrderResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    collect(OrderStatus::cases())->map(fn($status) => Tables\Actions\Action::make($status->value)
-                        ->label(__($status->getLabel()))
-                        ->icon($status->getIcon())
-                        ->color($status->getColor())
-                        ->action(fn($record) => $status === OrderStatus::Shipping
-                            ? self::sendToJtExpress($record)
-                            : self::updateOrderStatus($record, $status))
-                    )->toArray(),
+                    ...collect(OrderStatus::cases())
+                        ->filter(fn($status) => $status !== OrderStatus::Shipping) // Optionally exclude Shipping if you want to handle it differently
+                        ->map(fn($status) => Action::make($status->value)
+                            ->label(__($status->getLabel()))
+                            ->icon($status->getIcon())
+                            ->color($status->getColor())
+                            ->action(fn($record) => self::updateOrderStatus($record, $status))
+                        )->toArray(),
 
                     Tables\Actions\BulkAction::make('bulk_send_to_jt_express')
                         ->label(__('Send to J&T Express'))
@@ -898,44 +898,11 @@ class OrderResource extends Resource
             ]);
     }
 
-    public static function sendToJtExpress($order)
-    {
-        $order->refresh(); // Ensure latest data
-
-        // First update status to Confirmed if not already
-        if ($order->status !== OrderStatus::Shipping->value) {
-            $order->status = OrderStatus::Shipping->value;
-            $order->save();
-        }
-
-        // Now handle J&T Express shipping
-        $JtExpressOrderData = self::prepareJtExpressOrderData($order);
-        $jtExpressResponse = app(JtExpressService::class)->createOrder($JtExpressOrderData);
-
-        // Extract billCode as the tracking number
-        $trackingNumber = $jtExpressResponse['data']['billCode'] ?? null;
-        if ($trackingNumber) {
-            $order->tracking_number = $trackingNumber;
-            $order->status = OrderStatus::Shipping->value;
-            $order->save();
-        }
-
-        // Update tracking details in J&T system
-        self::updateJtExpressOrder($order, 'pending', $JtExpressOrderData, $jtExpressResponse);
-
-        // Refresh and send email
-        $order->refresh();
-        $email = $order->user->email ?? $order->contact->email;
-        if ($email) {
-            Mail::to($email)->send(new OrderStatusMail($order, OrderStatus::Shipping));
-        }
-    }
-
     public static function updateOrderStatus($order, OrderStatus $status)
     {
         $previousStatus = $order->status;
-        $newStatus = $status->value;
-        $order->refresh();
+        $newStatus = $status->value; // Convert Enum to string
+        $order->refresh(); // Ensure latest data before updating
 
         // Restore inventory when canceling or refunding an order
         if (
@@ -958,20 +925,84 @@ class OrderResource extends Resource
         $order->status = $newStatus;
         $order->save();
 
-        // Send email
+        // Refresh the order
+        $order->refresh();
+
+        // Send email notification
         $email = $order->user->email ?? $order->contact->email;
         if ($email) {
             Mail::to($email)->send(new OrderStatusMail($order, $status));
         }
     }
-    
+
+    public static function sendToJtExpress($order)
+    {
+        // Ensure the order is in Confirmed status
+        if ($order->status !== OrderStatus::Shipping->value) {
+            Notification::make()
+                ->title('Invalid Order Status')
+                ->body('Order must be in Confirmed status to send to J&T Express.')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        // Prepare J&T Express order data
+        $jtExpressOrderData = self::prepareJtExpressOrderData($order);
+
+        try {
+            // Create order with J&T Express
+            $jtExpressResponse = app(JtExpressService::class)->createOrder($jtExpressOrderData);
+
+            // Extract billCode as the tracking number
+            $trackingNumber = $jtExpressResponse['data']['billCode'] ?? null;
+
+            if (!$trackingNumber) {
+                Notification::make()
+                    ->title('J&T Express Error')
+                    ->body('Failed to retrieve tracking number from J&T Express.')
+                    ->danger()
+                    ->send();
+                return;
+            }
+
+            // Update order with tracking number and status
+            $order->status = OrderStatus::Shipping->value;
+            $order->tracking_number = $trackingNumber;
+            $order->save();
+
+            // Update J&T Express order details
+            self::updateJtExpressOrder($order, 'pending', $jtExpressOrderData, $jtExpressResponse);
+
+            // Refresh the order
+            $order->refresh();
+
+            // Send email notification
+            $email = $order->user->email ?? $order->contact->email;
+            if ($email) {
+                Mail::to($email)->send(new OrderStatusMail($order, OrderStatus::Shipping));
+            }
+
+            Notification::make()
+                ->title('Success')
+                ->body('Order successfully sent to J&T Express with tracking number: ' . $trackingNumber)
+                ->success()
+                ->send();
+        } catch (\Exception $e) {
+            Notification::make()
+                ->title('J&T Express Error')
+                ->body('Failed to send order to J&T Express: ' . $e->getMessage())
+                ->danger()
+                ->send();
+        }
+    }
+
     private static function prepareJtExpressOrderData($order): array
     {
         $data = [
             'tracking_number' => time() . rand(1000, 9999),
             'weight' => 1.0, // You might want to calculate the total weight dynamically
-            'quantity' => 1,  // $order->items->sum('quantity') Sum of all item quantities in the order
-
+            'quantity' => $order->items->sum('quantity'), // Sum of all item quantities
             'remark' => implode(' , ', array_filter([
                 'Notes: ' . ($order->notes ?? 'No notes'),
                 $order->user?->name ? 'User: ' . $order->user->name : null,
@@ -983,10 +1014,9 @@ class OrderResource extends Resource
                 $order->contact?->phone ? 'Contact Phone: ' . $order->contact->phone : null,
                 $order->contact?->address ? 'Contact Address: ' . $order->contact->address : null,
             ])),
-
-            'item_name' => $order->items->pluck('product.name')->implode(', '), // Concatenated product names
-            'item_quantity' => $order->items->count(), // Total distinct items in the order
-            'item_value' => $order->total, // Order total amount
+            'item_name' => $order->items->pluck('product.name')->implode(', '),
+            'item_quantity' => $order->items->count(),
+            'item_value' => $order->total,
             'item_currency' => 'EGP',
             'item_description' => $order->notes ?? 'No description provided',
         ];
@@ -1014,20 +1044,20 @@ class OrderResource extends Resource
         ];
 
         $data['receiver'] = [
-            'name' => 'test', // $order->name,
-            'prov' => 'أسيوط', // $order->region->governorate->name,
-            'city' => 'القوصية', // $order->region->name,
-            'address' => 'sdfsacdscdscdsa', // $order->address,
-            'mobile' => '1441234567', // $order->phone,
+            'name' => $order->name ?? 'test',
+            'prov' => $order->region->governorate->name ?? 'أسيوط',
+            'city' => $order->region->name ?? 'القوصية',
+            'address' => $order->address ?? 'sdfsacdscdscdsa',
+            'mobile' => $order->phone ?? '1441234567',
             'company' => 'guangdongshengshenzhe',
             'countryCode' => 'EGY',
             'area' => 'الصبحه',
             'town' => 'town',
-            'addressBak' => 'receivercdsfsafdsaf lkhdlksjlkfjkndskjfnhskjlkafdslkjdshflksjal',
+            'addressBak' => $order->address ?? 'receivercdsfsafdsaf lkhdlksjlkfjkndskjfnhskjlkafdslkjdshflksjal',
             'street' => 'street',
             'postCode' => '54830',
-            'phone' => '23423423423',
-            'mailBox' => 'ant_li123@qq.com',
+            'phone' => $order->phone ?? '23423423423',
+            'mailBox' => $order->user?->email ?? 'ant_li123@qq.com',
             'areaCode' => '2342343',
             'building' => '13',
             'floor' => '25',
@@ -1038,7 +1068,7 @@ class OrderResource extends Resource
         return $data;
     }
 
-    public static function updateJtExpressOrder(Order $order, string $shipping_status, $JtExpressOrderData, $jtExpressResponse)
+    private static function updateJtExpressOrder(Order $order, string $shipping_status, $jtExpressOrderData, $jtExpressResponse)
     {
         if (isset($jtExpressResponse['code']) && $jtExpressResponse['code'] == 1) {
             $order->update([
