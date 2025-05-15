@@ -24,7 +24,6 @@ class AramexService
         $items = $order->items;
 
         // Format DateTime as /Date(<milliseconds>+<timezone>)/
-        // Use raw string to avoid double-escaping backslashes
         $shippingDateTime = "/Date(" . (now()->timestamp * 1000) . "+0200)/";
         $dueDate = "/Date(" . (now()->addDays(3)->timestamp * 1000) . "+0200)/";
 
@@ -44,7 +43,7 @@ class AramexService
                         'Reference2' => '',
                         'AccountNumber' => $this->clientInfo['AccountNumber'],
                         'PartyAddress' => [
-                            'Line1' => config('aramex.shipper.address', 'Your Company Address'),
+                            'Line1' => config('aramex.shipper.address', '123 Main St, Cairo'),
                             'Line2' => '',
                             'Line3' => '',
                             'City' => 'Cairo',
@@ -80,7 +79,7 @@ class AramexService
                         'Reference2' => '',
                         'AccountNumber' => '',
                         'PartyAddress' => [
-                            'Line1' => $contact->addresses()->where('is_primary', true)->first()->address ?? 'N/A',
+                            'Line1' => preg_replace('/[\r\n]+/', ' ', $contact->addresses()->where('is_primary', true)->first()->address ?? 'N/A'),
                             'Line2' => '',
                             'Line3' => '',
                             'City' => $order->city->name ?? 'Cairo',
@@ -204,7 +203,105 @@ class AramexService
 
         return $this->sendShipmentRequest($order, $payload);
     }
-    
+
+    protected function sendShipmentRequest(Order $order, array $payload): array
+    {
+        Log::info('Aramex create shipment payload', ['order_id' => $order->id, 'payload' => $payload]);
+
+        try {
+            $response = Http::timeout(30)
+                ->withHeaders([
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                ])->post($this->apiUrl . 'CreateShipments', $payload);
+
+            Log::info('Aramex create shipment response', [
+                'order_id' => $order->id,
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            // Check if the response is HTML
+            if (str_contains($response->body(), '<html')) {
+                Log::error('Aramex returned HTML response', [
+                    'order_id' => $order->id,
+                    'body' => $response->body(),
+                ]);
+
+                return [
+                    'success' => false,
+                    'message' => 'Invalid response from Aramex: HTML returned instead of JSON',
+                ];
+            }
+
+            $data = $response->json();
+
+            // Check for successful response and no errors
+            if ($response->successful() && isset($data['HasErrors']) && !$data['HasErrors']) {
+                $shipment = $data['Shipments'][0] ?? null;
+
+                if ($shipment && isset($shipment['ID'])) {
+                    $order->update([
+                        'aramex_shipment_id' => $shipment['ID'],
+                        'aramex_tracking_number' => $shipment['ID'],
+                        'aramex_tracking_url' => $shipment['ShipmentLabel']['LabelURL'] ?? null,
+                        'aramex_response' => json_encode($data),
+                        'status' => OrderStatus::Shipping->value,
+                    ]);
+
+                    return [
+                        'success' => true,
+                        'message' => 'Shipment created successfully',
+                        'data' => $data,
+                    ];
+                }
+
+                Log::error('Aramex shipment creation failed: Invalid shipment data', [
+                    'order_id' => $order->id,
+                    'response' => $data,
+                ]);
+
+                return [
+                    'success' => false,
+                    'message' => 'Failed to create shipment: Invalid shipment data',
+                ];
+            }
+
+            // Handle API errors
+            Log::error('Aramex shipment creation failed', [
+                'order_id' => $order->id,
+                'response' => $data,
+                'status' => $response->status(),
+            ]);
+
+            return [
+                'success' => false,
+                'message' => $data['Notifications'][0]['Message'] ?? 'Failed to create shipment: Invalid response from Aramex',
+            ];
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('Aramex connection error', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to connect to Aramex API: ' . $e->getMessage(),
+            ];
+        } catch (\Exception $e) {
+            Log::error('Aramex unexpected error', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Unexpected error: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+
     public function testStaticShipment(Order $order): array
     {
         $payload = [
@@ -406,89 +503,7 @@ class AramexService
 
         return $this->sendShipmentRequest($order, $payload);
     }
-
-    protected function sendShipmentRequest(Order $order, array $payload): array
-    {
-        Log::info('Aramex create shipment payload', ['order_id' => $order->id, 'payload' => $payload]);
-
-        try {
-            $response = Http::timeout(30)
-                ->withHeaders([
-                    'Content-Type' => 'application/json',
-                    'Accept' => 'application/json',
-                ])->post($this->apiUrl . 'CreateShipments', $payload);
-
-            Log::info('Aramex create shipment response', [
-                'order_id' => $order->id,
-                'status' => $response->status(),
-                'body' => $response->body(),
-            ]);
-
-            // التحقق مما إذا كان الرد بتنسيق HTML
-            if (str_contains($response->body(), '<html')) {
-                Log::error('Aramex returned HTML response', [
-                    'order_id' => $order->id,
-                    'body' => $response->body(),
-                ]);
-
-                return [
-                    'success' => false,
-                    'message' => 'رد غير صالح من Aramex: تم إرجاع HTML بدلاً من JSON',
-                ];
-            }
-
-            $data = $response->json();
-
-            if ($response->successful() && !isset($data['HasErrors'])) {
-                $shipment = $data['Shipments'][0];
-                $order->update([
-                    'aramex_shipment_id' => $shipment['ID'],
-                    'aramex_tracking_number' => $shipment['ID'],
-                    'aramex_tracking_url' => $shipment['LabelInfo']['URL'] ?? null,
-                    'aramex_response' => json_encode($data),
-                    'status' => OrderStatus::Shipping->value,
-                ]);
-
-                return [
-                    'success' => true,
-                    'message' => 'تم إنشاء الشحنة بنجاح',
-                    'data' => $data,
-                ];
-            }
-
-            Log::error('Aramex shipment creation failed', [
-                'order_id' => $order->id,
-                'response' => $data,
-                'status' => $response->status(),
-            ]);
-
-            return [
-                'success' => false,
-                'message' => $data['Notifications'][0]['Message'] ?? 'فشل إنشاء الشحنة: رد غير صالح من Aramex',
-            ];
-        } catch (\Illuminate\Http\Client\ConnectionException $e) {
-            Log::error('Aramex connection error', [
-                'order_id' => $order->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return [
-                'success' => false,
-                'message' => 'فشل الاتصال بواجهة برمجة Aramex: ' . $e->getMessage(),
-            ];
-        } catch (\Exception $e) {
-            Log::error('Aramex unexpected error', [
-                'order_id' => $order->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return [
-                'success' => false,
-                'message' => 'خطأ غير متوقع: ' . $e->getMessage(),
-            ];
-        }
-    }
-
+    
     public function trackShipment(Order $order): array
     {
         $payload = [
