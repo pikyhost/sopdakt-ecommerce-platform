@@ -132,33 +132,29 @@ class OrderResource extends Resource
                 TextColumn::make('tracking_number')
                     ->copyable()
                     ->placeholder('-')
-                    ->label(__('Tracking Number'))
+                    ->label(__('J&T Express Tracking Number'))
                     ->searchable()
-                    ->weight(FontWeight::Bold),
+                    ->weight(FontWeight::Bold)
+                    ->copyMessage(__('Tracking number copied')),
 
                 TextColumn::make('bosta_delivery_id')
                     ->copyable()
                     ->placeholder('-')
-                    ->label(__('Bosta Delivery Number'))
+                    ->label(__('Bosta Tracking Number'))
                     ->searchable()
-                    ->weight(FontWeight::Bold),
-
-                TextColumn::make('aramex_shipment_id')
-                    ->label(__('Aramex Shipment ID'))
-                    ->searchable()
-                    ->sortable()
-                    ->copyable(),
+                    ->weight(FontWeight::Bold)
+                    ->copyMessage(__('Tracking number copied')),
 
                 TextColumn::make('aramex_tracking_number')
                     ->label(__('Aramex Tracking Number'))
                     ->searchable()
                     ->sortable()
-                    ->color('primary')
-                    ->copyable(),
+                    ->weight(FontWeight::Bold)
+                    ->copyable()
+                    ->copyMessage(__('Tracking number copied')),
 
                 TextColumn::make('aramex_tracking_url')
                     ->label(__('Aramex Shipment Waybill URL')) // Best universal term
-//                     or ->label(__('Shipment Waybill')) // More technical alternative
                     ->searchable()
                     ->sortable()
                     ->url(fn ($record) => $record->aramex_tracking_url, true)
@@ -781,12 +777,119 @@ class OrderResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     ...collect(OrderStatus::cases())->map(fn($status) =>
-                    Tables\Actions\Action::make($status->value)
+                    Tables\Actions\BulkAction::make($status->value)
                         ->label(__($status->getLabel()))
                         ->icon($status->getIcon())
                         ->color($status->getColor())
-                        ->action(fn($record) => self::updateOrderStatus($record, $status))
+                        ->action(fn($records) => $records->each(fn($record) => self::updateOrderStatus($record, $status)))
                     )->toArray(),
+
+                    BulkAction::make('bulk_send_to_jt_express')
+                        ->label(__('Send to J&T Express'))
+                        ->icon('heroicon-o-paper-airplane')
+                        ->requiresConfirmation()
+                        ->visible(fn() => Setting::first()?->enable_jnt)
+                        ->action(function (Collection $records) {
+                            $jtExpress = new JtExpressService();
+
+                            foreach ($records as $record) {
+                                if (
+                                    $record->status === OrderStatus::Preparing &&
+                                    !$record->tracking_number &&
+                                    ($record->user || $record->contact) &&
+                                    ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
+                                    ($record->user?->phone ?? $record->contact?->phone)
+                                ) {
+                                    try {
+                                        $response = $jtExpress->createOrder($record);
+
+                                        if (isset($response['data']['waybill_number'])) {
+                                            self::updateJtExpressOrder($record, $response);
+                                            $email = $record->user?->email ?? $record->contact?->email;
+                                            if ($email) {
+                                                Mail::to($email)->send(new OrderStatusMail($record, $record->status));
+                                            }
+                                        } else {
+                                            Log::error('J&T response error', ['order_id' => $record->id, 'response' => $response]);
+                                        }
+                                    } catch (\Exception $e) {
+                                        Log::error('Failed to send order to J&T', ['order_id' => $record->id, 'error' => $e->getMessage()]);
+                                    }
+                                }
+                            }
+
+                            Notification::make()->title(__('J&T Express bulk action completed'))->success()->send();
+                        }),
+
+                    Tables\Actions\BulkAction::make('bulk_send_to_bosta')
+                        ->label(__('Send to Bosta'))
+                        ->icon('heroicon-o-truck')
+                        ->color('primary')
+                        ->requiresConfirmation()
+                        ->action(function ($records) {
+                            foreach ($records as $record) {
+                                $bostaService = new \App\Services\BostaService();
+                                $response = $bostaService->createDelivery($record);
+
+                                if ($response && isset($response['data']['_id'])) {
+                                    $record->update([
+                                        'status' => \App\Enums\OrderStatus::Shipping,
+                                        'bosta_delivery_id' => $response['data']['trackingNumber'],
+                                    ]);
+
+                                    $email = $record->user->email ?? $record->contact->email;
+                                    if ($email) {
+                                        Mail::to($email)->send(new \App\Mail\OrderStatusMail($record, $record->status));
+                                    }
+                                } else {
+                                    Log::error('Failed to create Bosta delivery for order.', ['order_id' => $record->id, 'response' => $response]);
+                                }
+                            }
+                        }),
+
+                    Tables\Actions\BulkAction::make('bulk_send_to_aramex')
+                        ->label(__('Send to Aramex'))
+                        ->icon('heroicon-o-truck')
+                        ->color('primary')
+                        ->requiresConfirmation()
+                        ->action(function ($records) {
+                            $aramexService = new \App\Services\AramexService();
+
+                            foreach ($records as $record) {
+                                try {
+                                    $contact = $record->user ?? $record->contact;
+                                    $city = $record->city;
+                                    $country = $record->country;
+
+                                    if (!$contact || !$city || !$country) {
+                                        continue;
+                                    }
+
+                                    $addressLine1 = null;
+                                    if ($contact instanceof \App\Models\User) {
+                                        $primaryAddress = $contact->addresses()->where('is_primary', true)->first();
+                                        $addressLine1 = $primaryAddress?->address;
+                                    } else {
+                                        $addressLine1 = $contact->address ?? null;
+                                    }
+
+                                    if (!$addressLine1) {
+                                        continue;
+                                    }
+
+                                    $response = $aramexService->createShipment($record);
+
+                                    if ($response['success']) {
+                                        $email = $record->user->email ?? $record->contact->email;
+                                        if ($email) {
+                                            Mail::to($email)->send(new \App\Mail\OrderStatusMail($record, $record->status));
+                                        }
+                                    }
+                                } catch (\Exception $e) {
+                                    Log::error('Failed to create Aramex shipment.', ['order_id' => $record->id, 'error' => $e->getMessage()]);
+                                }
+                            }
+                        }),
 
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
