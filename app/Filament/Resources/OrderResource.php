@@ -156,7 +156,7 @@ class OrderResource extends Resource
                     ->copyable(),
 
                 TextColumn::make('aramex_tracking_url')
-                    ->label(__('Shipment Waybill URL')) // Best universal term
+                    ->label(__('Aramex Shipment Waybill URL')) // Best universal term
 //                     or ->label(__('Shipment Waybill')) // More technical alternative
                     ->searchable()
                     ->sortable()
