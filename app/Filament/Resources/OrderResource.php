@@ -143,6 +143,35 @@ class OrderResource extends Resource
                     ->searchable()
                     ->weight(FontWeight::Bold),
 
+                TextColumn::make('aramex_shipment_id')
+                    ->label('Aramex Shipment ID')
+                    ->searchable()
+                    ->sortable(),
+
+                TextColumn::make('aramex_tracking_number')
+                    ->label('Aramex Tracking Number')
+                    ->searchable()
+                    ->sortable()
+                    ->color('primary')
+                    ->copyable(),
+
+                TextColumn::make('aramex_tracking_url')
+                    ->label('Tracking URL')
+                    ->searchable()
+                    ->sortable()
+                    ->url(fn ($record) => $record->aramex_tracking_url, true)
+                    ->openUrlInNewTab()
+                    ->icon('heroicon-o-link')
+                    ->color('primary')
+                    ->limit(50)
+                    ->tooltip(function (TextColumn $column): ?string {
+                        $url = $column->getState();
+                        if (strlen($url) <= 50) {
+                            return null;
+                        }
+                        return $url;
+                    }),
+
                 Tables\Columns\TextColumn::make('user.name')
                     ->formatStateUsing(function ($record) {
                         return $record->user->name . ' (#' . $record->user_id . ')';
@@ -363,347 +392,376 @@ class OrderResource extends Resource
                         return $indicators;
                     }),
             ], Tables\Enums\FiltersLayout::Modal)
-            ->actions([Tables\Actions\Action::make('trackOrder')
-                ->label(__('actions.track_order'))
-                ->icon('heroicon-o-map')
-                ->color('success')
-                ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt && !is_null($record->tracking_number))
-                ->action(function (Order $record): void {
-                    try {
-                        $shipping_response = json_decode($record->shipping_response, true);
-                        if (json_last_error() !== JSON_ERROR_NONE || !is_array($shipping_response)) {
-                            Log::error('Invalid shipping_response', ['order_id' => $record->id, 'shipping_response' => $record->shipping_response]);
-                            Notification::make()->title('Tracking Error')->body('Invalid shipping response data')->danger()->send();
-                            return;
-                        }
+            ->actions([
+//                Tables\Actions\Action::make('trackOrder')
+//                ->label(__('actions.track_order'))
+//                ->icon('heroicon-o-map')
+//                ->color('success')
+//                ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt && !is_null($record->tracking_number))
+//                ->action(function (Order $record): void {
+//                    try {
+//                        $shipping_response = json_decode($record->shipping_response, true);
+//                        if (json_last_error() !== JSON_ERROR_NONE || !is_array($shipping_response)) {
+//                            Log::error('Invalid shipping_response', ['order_id' => $record->id, 'shipping_response' => $record->shipping_response]);
+//                            Notification::make()->title('Tracking Error')->body('Invalid shipping response data')->danger()->send();
+//                            return;
+//                        }
+//
+//                        $response_data = isset($shipping_response['data']) ? $shipping_response['data'] : $shipping_response;
+//                        $txlogisticId = $response_data['txlogisticId'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
+//                        $billCode = $response_data['billCode'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
+//
+//                        if (!$txlogisticId || !$billCode) {
+//                            Log::error('Missing tracking data', ['order_id' => $record->id, 'txlogisticId' => $txlogisticId, 'billCode' => $billCode, 'response_data' => $response_data]);
+//                            Notification::make()->title('Tracking Error')->body('Missing required tracking data (txlogisticId or billCode)')->danger()->send();
+//                            return;
+//                        }
+//
+//                        $tracking_data = (object) [
+//                            'txlogisticId' => $txlogisticId,
+//                            'billCode' => $billCode,
+//                            'sortingCode' => $response_data['sortingCode'] ?? '',
+//                            'createOrderTime' => $response_data['createOrderTime'] ?? now()->toDateTimeString(),
+//                            'lastCenterName' => $response_data['lastCenterName'] ?? '',
+//                        ];
+//
+//                        $trackingInfo = app(JtExpressService::class)->trackLogistics($tracking_data);
+//
+//                        if (($trackingInfo['code'] ?? 0) === 1) {
+//                            Notification::make()->title('Tracking Information')->body('Tracking details retrieved successfully: ' . ($trackingInfo['data']['billCode'] ?? $record->tracking_number))->success()->send();
+//                        } else {
+//                            Log::error('Track Order Failed', ['order_id' => $record->id, 'response' => $trackingInfo]);
+//                            Notification::make()->title('Tracking Error')->body($trackingInfo['msg'] ?? 'Unable to retrieve tracking information')->danger()->send();
+//                        }
+//                    } catch (\Exception $e) {
+//                        Log::error('Track Order Error', ['order_id' => $record->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+//                        Notification::make()->title('Tracking Error')->body('An error occurred: ' . $e->getMessage())->danger()->send();
+//                    }
+//                }),
+//
+//                Tables\Actions\Action::make('checkOrder')
+//                    ->label(__('actions.check_order'))
+//                    ->icon('heroicon-o-check-circle')
+//                    ->color('primary')
+//                    ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt && !is_null($record->tracking_number))
+//                    ->action(function (Order $record): void {
+//                        try {
+//                            $shipping_response = json_decode($record->shipping_response, true);
+//                            if (json_last_error() !== JSON_ERROR_NONE || !is_array($shipping_response)) {
+//                                Log::error('Invalid shipping_response', ['order_id' => $record->id, 'shipping_response' => $record->shipping_response]);
+//                                Notification::make()->title('Check Error')->body('Invalid shipping response data')->danger()->send();
+//                                return;
+//                            }
+//
+//                            $response_data = isset($shipping_response['data']) ? $shipping_response['data'] : $shipping_response;
+//                            $txlogisticId = $response_data['txlogisticId'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
+//                            $billCode = $response_data['billCode'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
+//
+//                            if (!$txlogisticId || !$billCode) {
+//                                Log::error('Missing check order data', ['order_id' => $record->id, 'txlogisticId' => $txlogisticId, 'billCode' => $billCode, 'response_data' => $response_data]);
+//                                Notification::make()->title('Check Error')->body('Missing required order data (txlogisticId or billCode)')->danger()->send();
+//                                return;
+//                            }
+//
+//                            $check_data = (object) [
+//                                'txlogisticId' => $txlogisticId,
+//                                'billCode' => $billCode,
+//                                'sortingCode' => $response_data['sortingCode'] ?? '',
+//                                'createOrderTime' => $response_data['createOrderTime'] ?? now()->toDateTimeString(),
+//                                'lastCenterName' => $response_data['lastCenterName'] ?? '',
+//                            ];
+//
+//                            $orderInfo = app(JtExpressService::class)->checkingOrder($check_data);
+//
+//                            if (($orderInfo['code'] ?? 0) === 1) {
+//                                Notification::make()->title('Order Status')->body('Order exists: ' . ($orderInfo['data']['isExist'] ?? 'Unknown'))->success()->send();
+//                            } else {
+//                                Log::error('Check Order Failed', ['order_id' => $record->id, 'response' => $orderInfo]);
+//                                Notification::make()->title('Check Error')->body($orderInfo['msg'] ?? 'Unable to check order status')->danger()->send();
+//                            }
+//                        } catch (\Exception $e) {
+//                            Log::error('Check Order Error', ['order_id' => $record->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+//                            Notification::make()->title('Check Error')->body('An error occurred: ' . $e->getMessage())->danger()->send();
+//                        }
+//                    }),
+//
+//                Tables\Actions\Action::make('getOrderStatus')
+//                    ->label(__('actions.get_order_status'))
+//                    ->icon('heroicon-o-clipboard-document-list')
+//                    ->color('info')
+//                    ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt && !is_null($record->tracking_number))
+//                    ->action(function (Order $record): void {
+//                        try {
+//                            $shipping_response = json_decode($record->shipping_response, true);
+//                            if (json_last_error() !== JSON_ERROR_NONE || !is_array($shipping_response)) {
+//                                Log::error('Invalid shipping_response', ['order_id' => $record->id, 'shipping_response' => $record->shipping_response]);
+//                                Notification::make()->title('Status Error')->body('Invalid shipping response data')->danger()->send();
+//                                return;
+//                            }
+//
+//                            $response_data = isset($shipping_response['data']) ? $shipping_response['data'] : $shipping_response;
+//                            $txlogisticId = $response_data['txlogisticId'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
+//                            $billCode = $response_data['billCode'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
+//
+//                            if (!$txlogisticId || !$billCode) {
+//                                Log::error('Missing status data', ['order_id' => $record->id, 'txlogisticId' => $txlogisticId, 'billCode' => $billCode, 'response_data' => $response_data]);
+//                                Notification::make()->title('Status Error')->body('Missing required status data (txlogisticId or billCode)')->danger()->send();
+//                                return;
+//                            }
+//
+//                            $status_data = (object) [
+//                                'txlogisticId' => $txlogisticId,
+//                                'billCode' => $billCode,
+//                                'sortingCode' => $response_data['sortingCode'] ?? '',
+//                                'createOrderTime' => $response_data['createOrderTime'] ?? now()->toDateTimeString(),
+//                                'lastCenterName' => $response_data['lastCenterName'] ?? '',
+//                            ];
+//
+//                            $statusInfo = app(JtExpressService::class)->getOrderStatus($status_data);
+//
+//                            if (($statusInfo['code'] ?? 0) === 1) {
+//                                $status = $statusInfo['data']['deliveryStatus'] ?? 'Unknown';
+//                                $record->update([
+//                                    'shipping_status' => $status,
+//                                    'shipping_response' => json_encode($statusInfo)
+//                                ]);
+//                                Notification::make()->title('Order Status Updated')->body('Current status: ' . $status)->success()->send();
+//                            } else {
+//                                Log::error('Get Status Failed', ['order_id' => $record->id, 'response' => $statusInfo]);
+//                                Notification::make()->title('Status Error')->body($statusInfo['msg'] ?? 'Unable to get order status')->danger()->send();
+//                            }
+//                        } catch (\Exception $e) {
+//                            Log::error('Get Status Error', ['order_id' => $record->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+//                            Notification::make()->title('Status Error')->body('An error occurred: ' . $e->getMessage())->danger()->send();
+//                        }
+//                    }),
+//
+//                Tables\Actions\Action::make('getTrajectory')
+//                    ->label(__('actions.get_trajectory'))
+//                    ->icon('heroicon-o-arrow-path')
+//                    ->color('gray')
+//                    ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt && !is_null($record->tracking_number))
+//                    ->action(function (Order $record): void {
+//                        try {
+//                            $shipping_response = json_decode($record->shipping_response, true);
+//                            if (json_last_error() !== JSON_ERROR_NONE || !is_array($shipping_response)) {
+//                                Log::error('Invalid shipping_response', ['order_id' => $record->id, 'shipping_response' => $record->shipping_response]);
+//                                Notification::make()->title('Trajectory Error')->body('Invalid shipping response data')->danger()->send();
+//                                return;
+//                            }
+//
+//                            $response_data = isset($shipping_response['data']) ? $shipping_response['data'] : $shipping_response;
+//                            $txlogisticId = $response_data['txlogisticId'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
+//                            $billCode = $response_data['billCode'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
+//
+//                            if (!$txlogisticId || !$billCode) {
+//                                Log::error('Missing trajectory data', ['order_id' => $record->id, 'txlogisticId' => $txlogisticId, 'billCode' => $billCode, 'response_data' => $response_data]);
+//                                Notification::make()->title('Trajectory Error')->body('Missing required trajectory data (txlogisticId or billCode)')->danger()->send();
+//                                return;
+//                            }
+//
+//                            $trajectory_data = (object) [
+//                                'txlogisticId' => $txlogisticId,
+//                                'billCode' => $billCode,
+//                                'sortingCode' => $response_data['sortingCode'] ?? '',
+//                                'createOrderTime' => $response_data['createOrderTime'] ?? now()->toDateTimeString(),
+//                                'lastCenterName' => $response_data['lastCenterName'] ?? '',
+//                            ];
+//
+//                            $trajectoryInfo = app(JtExpressService::class)->getLogisticsTrajectory($trajectory_data);
+//
+//                            if (($trajectoryInfo['code'] ?? 0) === 1) {
+//                                $steps = count($trajectoryInfo['data']['details'] ?? []);
+//                                Notification::make()->title('Delivery Trajectory')->body("Retrieved {$steps} tracking events for this shipment.")->success()->send();
+//                            } else {
+//                                Log::error('Get Trajectory Failed', ['order_id' => $record->id, 'response' => $trajectoryInfo]);
+//                                Notification::make()->title('Trajectory Error')->body($trajectoryInfo['msg'] ?? 'Unable to get trajectory information')->danger()->send();
+//                            }
+//                        } catch (\Exception $e) {
+//                            Log::error('Get Trajectory Error', ['order_id' => $record->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+//                            Notification::make()->title('Trajectory Error')->body('An error occurred: ' . $e->getMessage())->danger()->send();
+//                        }
+//                    }),
+//
+//                Tables\Actions\Action::make('cancelOrder')
+//                    ->label(__('actions.cancel_order'))
+//                    ->icon('heroicon-o-x-circle')
+//                    ->color('danger')
+//                    ->requiresConfirmation()
+//                    ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt && !is_null($record->tracking_number) && $record->shipping_status !== 'delivered' && $record->shipping_status !== 'cancelled')
+//                    ->action(function (Order $record): void {
+//                        try {
+//                            $shipping_response = json_decode($record->shipping_response, true);
+//                            if (json_last_error() !== JSON_ERROR_NONE || !is_array($shipping_response)) {
+//                                Log::error('Invalid shipping_response', ['order_id' => $record->id, 'shipping_response' => $record->shipping_response]);
+//                                Notification::make()->title('Cancellation Error')->body('Invalid shipping response data')->danger()->send();
+//                                return;
+//                            }
+//
+//                            $response_data = isset($shipping_response['data']) ? $shipping_response['data'] : $shipping_response;
+//                            $txlogisticId = $response_data['txlogisticId'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
+//                            $billCode = $response_data['billCode'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
+//
+//                            if (!$txlogisticId || !$billCode) {
+//                                Log::error('Missing cancel order data', ['order_id' => $record->id, 'txlogisticId' => $txlogisticId, 'billCode' => $billCode, 'response_data' => $response_data]);
+//                                Notification::make()->title('Cancellation Error')->body('Missing required cancel data (txlogisticId or billCode)')->danger()->send();
+//                                return;
+//                            }
+//
+//                            $cancel_data = (object) [
+//                                'txlogisticId' => $txlogisticId,
+//                                'billCode' => $billCode,
+//                                'sortingCode' => $response_data['sortingCode'] ?? '',
+//                                'createOrderTime' => $response_data['createOrderTime'] ?? now()->toDateTimeString(),
+//                                'lastCenterName' => $response_data['lastCenterName'] ?? '',
+//                            ];
+//
+//                            $cancelResult = app(JtExpressService::class)->cancelOrder($cancel_data);
+//
+//                            if (($cancelResult['code'] ?? 0) === 1) {
+//                                $record->update([
+//                                    'status' => OrderStatus::Cancelled,
+//                                    'shipping_status' => 'cancelled',
+//                                    'shipping_response' => json_encode($cancelResult)
+//                                ]);
+//                                Notification::make()->title('Order Cancelled')->body('The order has been successfully cancelled.')->success()->send();
+//                            } else {
+//                                Log::error('Cancel Order Failed', ['order_id' => $record->id, 'response' => $cancelResult]);
+//                                Notification::make()->title('Cancellation Error')->body($cancelResult['msg'] ?? 'Unable to cancel the order')->danger()->send();
+//                            }
+//                        } catch (\Exception $e) {
+//                            Log::error('Cancel Order Error', ['order_id' => $record->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+//                            Notification::make()->title('Cancellation Error')->body('An error occurred: ' . $e->getMessage())->danger()->send();
+//                        }
+//                    }),
 
-                        $response_data = isset($shipping_response['data']) ? $shipping_response['data'] : $shipping_response;
-                        $txlogisticId = $response_data['txlogisticId'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
-                        $billCode = $response_data['billCode'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
 
-                        if (!$txlogisticId || !$billCode) {
-                            Log::error('Missing tracking data', ['order_id' => $record->id, 'txlogisticId' => $txlogisticId, 'billCode' => $billCode, 'response_data' => $response_data]);
-                            Notification::make()->title('Tracking Error')->body('Missing required tracking data (txlogisticId or billCode)')->danger()->send();
-                            return;
-                        }
+               Tables\Actions\ActionGroup::make([
+                   Tables\Actions\Action::make('send_to_jt_express')
+                       ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt &&
+                           $record->status === OrderStatus::Preparing &&
+                           !$record->tracking_number &&
+                           ($record->user || $record->contact) &&
+                           ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
+                           ($record->user?->phone ?? $record->contact?->phone)
+                       )
+                       ->label(__('Send to J&T Express'))
+                       ->icon('heroicon-o-paper-airplane')
+                       ->color('primary')
+                       ->requiresConfirmation()
+                       ->action(fn($record) => self::sendToJtExpress($record)),
 
-                        $tracking_data = (object) [
-                            'txlogisticId' => $txlogisticId,
-                            'billCode' => $billCode,
-                            'sortingCode' => $response_data['sortingCode'] ?? '',
-                            'createOrderTime' => $response_data['createOrderTime'] ?? now()->toDateTimeString(),
-                            'lastCenterName' => $response_data['lastCenterName'] ?? '',
-                        ];
+                   Action::make('send_to_bosta')
+                       ->label(__('Send to Bosta'))
+                       ->icon('heroicon-o-truck')
+                       ->color('primary')
+                       ->visible(fn(Order $record): bool => Setting::first()?->enable_bosta &&
+                           $record->status === OrderStatus::Preparing &&
+                           !$record->bosta_delivery_id &&
+                           ($record->user || $record->contact) &&
+                           ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
+                           $record->city?->bosta_code &&
+                           ($record->user?->phone ?? $record->contact?->phone)
+                       )
+                       ->requiresConfirmation()
+                       ->action(function (Order $record) {
+                           $bostaService = new BostaService();
+                           $response = $bostaService->createDelivery($record);
 
-                        $trackingInfo = app(JtExpressService::class)->trackLogistics($tracking_data);
+                           if ($response && isset($response['data']['_id'])) {
+                               $record->update([
+                                   'status' => OrderStatus::Shipping,
+                                   'bosta_delivery_id' => $response['data']['trackingNumber'],
+                               ]);
+                               Notification::make()->title(__('Order sent to Bosta'))->success()->send();
 
-                        if (($trackingInfo['code'] ?? 0) === 1) {
-                            Notification::make()->title('Tracking Information')->body('Tracking details retrieved successfully: ' . ($trackingInfo['data']['billCode'] ?? $record->tracking_number))->success()->send();
-                        } else {
-                            Log::error('Track Order Failed', ['order_id' => $record->id, 'response' => $trackingInfo]);
-                            Notification::make()->title('Tracking Error')->body($trackingInfo['msg'] ?? 'Unable to retrieve tracking information')->danger()->send();
-                        }
-                    } catch (\Exception $e) {
-                        Log::error('Track Order Error', ['order_id' => $record->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-                        Notification::make()->title('Tracking Error')->body('An error occurred: ' . $e->getMessage())->danger()->send();
-                    }
-                }),
+                               // ✅ Send email AFTER tracking number is updated
+                               $email = $order->user->email ?? $record->contact->email;
+                               if ($email) {
+                                   Mail::to($email)->send(new OrderStatusMail($record, $record->status));
+                               }
+                           } else {
+                               Notification::make()
+                                   ->title(__('Failed to send order to Bosta'))
+                                   ->body(__('Check logs for API error details'))
+                                   ->danger()
+                                   ->send();
+                               Log::error('Failed to create Bosta delivery for order.', ['order_id' => $record->id, 'response' => $response]);
+                           }
+                       }),
 
-                Tables\Actions\Action::make('checkOrder')
-                    ->label(__('actions.check_order'))
-                    ->icon('heroicon-o-check-circle')
-                    ->color('primary')
-                    ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt && !is_null($record->tracking_number))
-                    ->action(function (Order $record): void {
-                        try {
-                            $shipping_response = json_decode($record->shipping_response, true);
-                            if (json_last_error() !== JSON_ERROR_NONE || !is_array($shipping_response)) {
-                                Log::error('Invalid shipping_response', ['order_id' => $record->id, 'shipping_response' => $record->shipping_response]);
-                                Notification::make()->title('Check Error')->body('Invalid shipping response data')->danger()->send();
-                                return;
-                            }
+                   Action::make('createAramexShipment')
+                       ->visible(fn(Order $record): bool => Setting::first()?->enable_aramex &&
+                           $record->status === OrderStatus::Preparing &&
+                           !$record->aramex_shipment_id &&
+                           ($record->user || $record->contact) &&
+                           ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
+                           ($record->user?->phone ?? $record->contact?->phone)
+                       )
+                       ->label(__('Send to Aramex'))
+                       ->icon('heroicon-o-truck')
+                       ->action(function (Order $record, AramexService $aramexService) {
+                           try {
+                               $contact = $record->user ?? $record->contact;
+                               $city = $record->city;
+                               $country = $record->country;
 
-                            $response_data = isset($shipping_response['data']) ? $shipping_response['data'] : $shipping_response;
-                            $txlogisticId = $response_data['txlogisticId'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
-                            $billCode = $response_data['billCode'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
+                               if (!$contact || !$city || !$country) {
+                                   Notification::make()
+                                       ->title(__('Cannot create ARAMEX shipment'))
+                                       ->body(__('Missing contact, city, or country information'))
+                                       ->danger()
+                                       ->send();
+                                   return;
+                               }
 
-                            if (!$txlogisticId || !$billCode) {
-                                Log::error('Missing check order data', ['order_id' => $record->id, 'txlogisticId' => $txlogisticId, 'billCode' => $billCode, 'response_data' => $response_data]);
-                                Notification::make()->title('Check Error')->body('Missing required order data (txlogisticId or billCode)')->danger()->send();
-                                return;
-                            }
+                               $addressLine1 = null;
+                               if ($contact instanceof \App\Models\User) {
+                                   $primaryAddress = $contact->addresses()->where('is_primary', true)->first();
+                                   $addressLine1 = $primaryAddress?->address;
+                               } else {
+                                   $addressLine1 = $contact->address ?? null;
+                               }
 
-                            $check_data = (object) [
-                                'txlogisticId' => $txlogisticId,
-                                'billCode' => $billCode,
-                                'sortingCode' => $response_data['sortingCode'] ?? '',
-                                'createOrderTime' => $response_data['createOrderTime'] ?? now()->toDateTimeString(),
-                                'lastCenterName' => $response_data['lastCenterName'] ?? '',
-                            ];
+                               if (!$addressLine1) {
+                                   Notification::make()
+                                       ->title(__('Cannot create ARAMEX shipment'))
+                                       ->body(__('Missing contact address information'))
+                                       ->danger()
+                                       ->send();
+                                   return;
+                               }
 
-                            $orderInfo = app(JtExpressService::class)->checkingOrder($check_data);
+                               $response = $aramexService->createShipment($record);
 
-                            if (($orderInfo['code'] ?? 0) === 1) {
-                                Notification::make()->title('Order Status')->body('Order exists: ' . ($orderInfo['data']['isExist'] ?? 'Unknown'))->success()->send();
-                            } else {
-                                Log::error('Check Order Failed', ['order_id' => $record->id, 'response' => $orderInfo]);
-                                Notification::make()->title('Check Error')->body($orderInfo['msg'] ?? 'Unable to check order status')->danger()->send();
-                            }
-                        } catch (\Exception $e) {
-                            Log::error('Check Order Error', ['order_id' => $record->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-                            Notification::make()->title('Check Error')->body('An error occurred: ' . $e->getMessage())->danger()->send();
-                        }
-                    }),
+                               if ($response['success']) {
+                                   Notification::make()
+                                       ->title(__('Shipment Created Successfully'))
+                                       ->success()
+                                       ->send();
 
-                Tables\Actions\Action::make('getOrderStatus')
-                    ->label(__('actions.get_order_status'))
-                    ->icon('heroicon-o-clipboard-document-list')
-                    ->color('info')
-                    ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt && !is_null($record->tracking_number))
-                    ->action(function (Order $record): void {
-                        try {
-                            $shipping_response = json_decode($record->shipping_response, true);
-                            if (json_last_error() !== JSON_ERROR_NONE || !is_array($shipping_response)) {
-                                Log::error('Invalid shipping_response', ['order_id' => $record->id, 'shipping_response' => $record->shipping_response]);
-                                Notification::make()->title('Status Error')->body('Invalid shipping response data')->danger()->send();
-                                return;
-                            }
-
-                            $response_data = isset($shipping_response['data']) ? $shipping_response['data'] : $shipping_response;
-                            $txlogisticId = $response_data['txlogisticId'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
-                            $billCode = $response_data['billCode'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
-
-                            if (!$txlogisticId || !$billCode) {
-                                Log::error('Missing status data', ['order_id' => $record->id, 'txlogisticId' => $txlogisticId, 'billCode' => $billCode, 'response_data' => $response_data]);
-                                Notification::make()->title('Status Error')->body('Missing required status data (txlogisticId or billCode)')->danger()->send();
-                                return;
-                            }
-
-                            $status_data = (object) [
-                                'txlogisticId' => $txlogisticId,
-                                'billCode' => $billCode,
-                                'sortingCode' => $response_data['sortingCode'] ?? '',
-                                'createOrderTime' => $response_data['createOrderTime'] ?? now()->toDateTimeString(),
-                                'lastCenterName' => $response_data['lastCenterName'] ?? '',
-                            ];
-
-                            $statusInfo = app(JtExpressService::class)->getOrderStatus($status_data);
-
-                            if (($statusInfo['code'] ?? 0) === 1) {
-                                $status = $statusInfo['data']['deliveryStatus'] ?? 'Unknown';
-                                $record->update([
-                                    'shipping_status' => $status,
-                                    'shipping_response' => json_encode($statusInfo)
-                                ]);
-                                Notification::make()->title('Order Status Updated')->body('Current status: ' . $status)->success()->send();
-                            } else {
-                                Log::error('Get Status Failed', ['order_id' => $record->id, 'response' => $statusInfo]);
-                                Notification::make()->title('Status Error')->body($statusInfo['msg'] ?? 'Unable to get order status')->danger()->send();
-                            }
-                        } catch (\Exception $e) {
-                            Log::error('Get Status Error', ['order_id' => $record->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-                            Notification::make()->title('Status Error')->body('An error occurred: ' . $e->getMessage())->danger()->send();
-                        }
-                    }),
-
-                Tables\Actions\Action::make('getTrajectory')
-                    ->label(__('actions.get_trajectory'))
-                    ->icon('heroicon-o-arrow-path')
-                    ->color('gray')
-                    ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt && !is_null($record->tracking_number))
-                    ->action(function (Order $record): void {
-                        try {
-                            $shipping_response = json_decode($record->shipping_response, true);
-                            if (json_last_error() !== JSON_ERROR_NONE || !is_array($shipping_response)) {
-                                Log::error('Invalid shipping_response', ['order_id' => $record->id, 'shipping_response' => $record->shipping_response]);
-                                Notification::make()->title('Trajectory Error')->body('Invalid shipping response data')->danger()->send();
-                                return;
-                            }
-
-                            $response_data = isset($shipping_response['data']) ? $shipping_response['data'] : $shipping_response;
-                            $txlogisticId = $response_data['txlogisticId'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
-                            $billCode = $response_data['billCode'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
-
-                            if (!$txlogisticId || !$billCode) {
-                                Log::error('Missing trajectory data', ['order_id' => $record->id, 'txlogisticId' => $txlogisticId, 'billCode' => $billCode, 'response_data' => $response_data]);
-                                Notification::make()->title('Trajectory Error')->body('Missing required trajectory data (txlogisticId or billCode)')->danger()->send();
-                                return;
-                            }
-
-                            $trajectory_data = (object) [
-                                'txlogisticId' => $txlogisticId,
-                                'billCode' => $billCode,
-                                'sortingCode' => $response_data['sortingCode'] ?? '',
-                                'createOrderTime' => $response_data['createOrderTime'] ?? now()->toDateTimeString(),
-                                'lastCenterName' => $response_data['lastCenterName'] ?? '',
-                            ];
-
-                            $trajectoryInfo = app(JtExpressService::class)->getLogisticsTrajectory($trajectory_data);
-
-                            if (($trajectoryInfo['code'] ?? 0) === 1) {
-                                $steps = count($trajectoryInfo['data']['details'] ?? []);
-                                Notification::make()->title('Delivery Trajectory')->body("Retrieved {$steps} tracking events for this shipment.")->success()->send();
-                            } else {
-                                Log::error('Get Trajectory Failed', ['order_id' => $record->id, 'response' => $trajectoryInfo]);
-                                Notification::make()->title('Trajectory Error')->body($trajectoryInfo['msg'] ?? 'Unable to get trajectory information')->danger()->send();
-                            }
-                        } catch (\Exception $e) {
-                            Log::error('Get Trajectory Error', ['order_id' => $record->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-                            Notification::make()->title('Trajectory Error')->body('An error occurred: ' . $e->getMessage())->danger()->send();
-                        }
-                    }),
-
-                Tables\Actions\Action::make('cancelOrder')
-                    ->label(__('actions.cancel_order'))
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->requiresConfirmation()
-                    ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt && !is_null($record->tracking_number) && $record->shipping_status !== 'delivered' && $record->shipping_status !== 'cancelled')
-                    ->action(function (Order $record): void {
-                        try {
-                            $shipping_response = json_decode($record->shipping_response, true);
-                            if (json_last_error() !== JSON_ERROR_NONE || !is_array($shipping_response)) {
-                                Log::error('Invalid shipping_response', ['order_id' => $record->id, 'shipping_response' => $record->shipping_response]);
-                                Notification::make()->title('Cancellation Error')->body('Invalid shipping response data')->danger()->send();
-                                return;
-                            }
-
-                            $response_data = isset($shipping_response['data']) ? $shipping_response['data'] : $shipping_response;
-                            $txlogisticId = $response_data['txlogisticId'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
-                            $billCode = $response_data['billCode'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
-
-                            if (!$txlogisticId || !$billCode) {
-                                Log::error('Missing cancel order data', ['order_id' => $record->id, 'txlogisticId' => $txlogisticId, 'billCode' => $billCode, 'response_data' => $response_data]);
-                                Notification::make()->title('Cancellation Error')->body('Missing required cancel data (txlogisticId or billCode)')->danger()->send();
-                                return;
-                            }
-
-                            $cancel_data = (object) [
-                                'txlogisticId' => $txlogisticId,
-                                'billCode' => $billCode,
-                                'sortingCode' => $response_data['sortingCode'] ?? '',
-                                'createOrderTime' => $response_data['createOrderTime'] ?? now()->toDateTimeString(),
-                                'lastCenterName' => $response_data['lastCenterName'] ?? '',
-                            ];
-
-                            $cancelResult = app(JtExpressService::class)->cancelOrder($cancel_data);
-
-                            if (($cancelResult['code'] ?? 0) === 1) {
-                                $record->update([
-                                    'status' => OrderStatus::Cancelled,
-                                    'shipping_status' => 'cancelled',
-                                    'shipping_response' => json_encode($cancelResult)
-                                ]);
-                                Notification::make()->title('Order Cancelled')->body('The order has been successfully cancelled.')->success()->send();
-                            } else {
-                                Log::error('Cancel Order Failed', ['order_id' => $record->id, 'response' => $cancelResult]);
-                                Notification::make()->title('Cancellation Error')->body($cancelResult['msg'] ?? 'Unable to cancel the order')->danger()->send();
-                            }
-                        } catch (\Exception $e) {
-                            Log::error('Cancel Order Error', ['order_id' => $record->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-                            Notification::make()->title('Cancellation Error')->body('An error occurred: ' . $e->getMessage())->danger()->send();
-                        }
-                    }),
-
-                Action::make('send_to_bosta')
-                    ->label('Send to Bosta')
-                    ->icon('heroicon-o-truck')
-                    ->color('primary')
-                    ->visible(fn(Order $record): bool => Setting::first()?->enable_bosta &&
-                        $record->status === OrderStatus::Preparing &&
-                        !$record->bosta_delivery_id &&
-                        ($record->user || $record->contact) &&
-                        ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
-                        $record->city?->bosta_code &&
-                        ($record->user?->phone ?? $record->contact?->phone)
-                    )
-                    ->requiresConfirmation()
-                    ->modalHeading('Send Order to Bosta')
-                    ->modalDescription('This will create a delivery in Bosta and set the order status to Shipping.')
-                    ->modalSubmitActionLabel('Confirm')
-                    ->action(function (Order $record) {
-                        $bostaService = new BostaService();
-                        $response = $bostaService->createDelivery($record);
-
-                        if ($response && isset($response['data']['_id'])) {
-                            $record->update([
-                                'status' => OrderStatus::Shipping,
-                                'bosta_delivery_id' => $response['data']['trackingNumber'], //  Use tracking number here
-                            ]);
-                            Notification::make()->title('Order sent to Bosta')->success()->send();
-                        } else {
-                            Notification::make()
-                                ->title('Failed to send order to Bosta')
-                                ->body('Check logs for API error details')
-                                ->danger()
-                                ->send();
-                            Log::error('Failed to create Bosta delivery for order.', ['order_id' => $record->id, 'response' => $response]);
-                        }
-                    }),
-
-                Action::make('createAramexShipment')
-                    ->label('Create ARAMEX Shipment')
-                    ->icon('heroicon-o-truck')
-                    ->action(function (Order $record, AramexService $aramexService) {
-                        try {
-                            // Validate required information
-                            $contact = $record->user ?? $record->contact;
-                            $city = $record->city;
-                            $country = $record->country;
-
-                            if (!$contact || !$city || !$country) {
-                                Notification::make()
-                                    ->title('Cannot create ARAMEX shipment')
-                                    ->body('Missing contact, city, or country information')
-                                    ->danger()
-                                    ->send();
-                                return;
-                            }
-
-                            // Get address line
-                            $addressLine1 = null;
-                            if ($contact instanceof \App\Models\User) {
-                                $primaryAddress = $contact->addresses()->where('is_primary', true)->first();
-                                $addressLine1 = $primaryAddress?->address;
-                            } else {
-                                $addressLine1 = $contact->address ?? null;
-                            }
-
-                            if (!$addressLine1) {
-                                Notification::make()
-                                    ->title('Cannot create ARAMEX shipment')
-                                    ->body('Missing contact address information')
-                                    ->danger()
-                                    ->send();
-                                return;
-                            }
-
-                            // Call the AramexService createShipment method
-                            $response = $aramexService->createShipment($record);
-
-                            if ($response['success']) {
-                                Notification::make()
-                                    ->title('Shipment Created Successfully')
-                                    ->success()
-                                    ->send();
-                            } else {
-                                Notification::make()
-                                    ->title('Failed to create shipment')
-                                    ->body($response['message'])
-                                    ->danger()
-                                    ->send();
-                            }
-                        } catch (\Exception $e) {
-                            Notification::make()
-                                ->title('Failed to create shipment')
-                                ->body($e->getMessage())
-                                ->danger()
-                                ->send();
-                        }
-                    })
-                    ->requiresConfirmation()
-                    ->modalHeading('Create ARAMEX Shipment'),
-
+                                   // ✅ Send email AFTER tracking number is updated
+                                   $email = $order->user->email ?? $record->contact->email;
+                                   if ($email) {
+                                       Mail::to($email)->send(new OrderStatusMail($order, $record->status));
+                                   }
+                               } else {
+                                   Notification::make()
+                                       ->title(__('Failed to create shipment'))
+                                       ->body($response['message'])
+                                       ->danger()
+                                       ->send();
+                               }
+                           } catch (\Exception $e) {
+                               Notification::make()
+                                   ->title(__('Failed to create shipment'))
+                                   ->body($e->getMessage())
+                                   ->danger()
+                                   ->send();
+                           }
+                       })
+                       ->requiresConfirmation(),
+               ]),
 
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
@@ -724,11 +782,12 @@ class OrderResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    ...collect(OrderStatus::cases())->map(fn($status) => Tables\Actions\BulkAction::make($status->value)
+                    ...collect(OrderStatus::cases())->map(fn($status) =>
+                    Tables\Actions\Action::make($status->value)
                         ->label(__($status->getLabel()))
                         ->icon($status->getIcon())
                         ->color($status->getColor())
-                        ->action(fn($records) => $records->each(fn($record) => $record->update(['status' => $status->value])))
+                        ->action(fn($record) => self::updateOrderStatus($record, $status))
                     )->toArray(),
 
                     Tables\Actions\DeleteBulkAction::make(),
@@ -739,10 +798,10 @@ class OrderResource extends Resource
     public static function updateOrderStatus($order, OrderStatus $status)
     {
         $previousStatus = $order->status;
-        $newStatus = $status->value; // Convert Enum to string
-        $order->refresh(); // Ensure latest data before updating
+        $newStatus = $status->value;
 
-        // Restore inventory when canceling or refunding an order
+        $order->refresh();
+
         if (
             $previousStatus !== null &&
             in_array($previousStatus, [OrderStatus::Pending->value, OrderStatus::Preparing->value, OrderStatus::Shipping->value], true) &&
@@ -759,37 +818,42 @@ class OrderResource extends Resource
             }
         }
 
-        // Update order status
         $order->status = $newStatus;
-
-        // ✅ If Shipping, first get the tracking number from J&T Express
-        if ($newStatus === OrderStatus::Shipping->value) {
-            $JtExpressOrderData = self::prepareJtExpressOrderData($order);
-            $jtExpressResponse = app(JtExpressService::class)->createOrder($JtExpressOrderData);
-
-            // Extract billCode as the tracking number
-            $trackingNumber = $jtExpressResponse['data']['billCode'] ?? null;
-            if ($trackingNumber) {
-                $order->tracking_number = $trackingNumber;
-            }
-
-            // Save order with updated tracking number
-            $order->save();
-
-            // Update tracking details in J&T system
-            self::updateJtExpressOrder($order, 'pending', $JtExpressOrderData, $jtExpressResponse);
-        } else {
-            // Save order if it's not Shipping
-            $order->save();
-        }
-
-        // ✅ Refresh the order to make sure tracking number is loaded
+        $order->save();
         $order->refresh();
 
-        // ✅ Send email AFTER tracking number is updated
         $email = $order->user->email ?? $order->contact->email;
         if ($email) {
             Mail::to($email)->send(new OrderStatusMail($order, $status));
+        }
+    }
+
+    public static function sendToJtExpress(Order $order): void
+    {
+        // Prevent duplicate send
+        if ($order->tracking_number) {
+            return;
+        }
+
+        $order->refresh();
+
+        $data = self::prepareJtExpressOrderData($order);
+        $response = app(JtExpressService::class)->createOrder($data);
+
+        $trackingNumber = $response['data']['billCode'] ?? null;
+
+        if ($trackingNumber) {
+            $order->tracking_number = $trackingNumber;
+            $order->status = OrderStatus::Shipping->value;
+            $order->save();
+
+            self::updateJtExpressOrder($order, 'pending', $data, $response);
+
+            // Send email
+            $email = $order->user->email ?? $order->contact->email;
+            if ($email) {
+                Mail::to($email)->send(new OrderStatusMail($order, OrderStatus::Shipping));
+            }
         }
     }
 
@@ -876,6 +940,7 @@ class OrderResource extends Resource
             ]);
         }
     }
+
     public static function getPages(): array
     {
         return [

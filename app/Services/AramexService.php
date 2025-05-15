@@ -503,7 +503,7 @@ class AramexService
 
         return $this->sendShipmentRequest($order, $payload);
     }
-    
+
     public function trackShipment(Order $order): array
     {
         $payload = [
