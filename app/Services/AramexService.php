@@ -18,7 +18,7 @@ class AramexService
         $this->clientInfo = config('aramex.client_info');
     }
 
-    public function createShipment(Order $order, array $overrides = []): array
+    public function createShipment(Order $order): array
     {
         $contact = $order->user ?? $order->contact;
         $items = $order->items;
@@ -32,11 +32,14 @@ class AramexService
             'Shipments' => [
                 [
                     'Reference1' => (string)$order->id,
-                    'Shipper' => array_merge([
+                    'Reference2' => '',
+                    'Reference3' => '',
+                    'Shipper' => [
                         'Reference1' => 'SHP-' . $order->id,
+                        'Reference2' => '',
                         'AccountNumber' => $this->clientInfo['AccountNumber'],
                         'PartyAddress' => [
-                            'Line1' => 'Your Company Address',
+                            'Line1' => 'Your Company Address', // Update with actual shipper address
                             'Line2' => '',
                             'Line3' => '',
                             'City' => 'Cairo',
@@ -45,17 +48,32 @@ class AramexService
                             'CountryCode' => 'EG',
                             'Longitude' => 0,
                             'Latitude' => 0,
+                            'BuildingNumber' => null,
+                            'BuildingName' => null,
+                            'Floor' => null,
+                            'Apartment' => null,
+                            'POBox' => null,
+                            'Description' => null,
                         ],
                         'Contact' => [
-                            'PersonName' => 'Your Company Name',
-                            'CompanyName' => 'Your Company',
-                            'PhoneNumber1' => '1234567890',
-                            'EmailAddress' => 'info@yourcompany.com',
+                            'Department' => '',
+                            'PersonName' => 'Your Company Name', // Update with actual name
+                            'Title' => '',
+                            'CompanyName' => 'Your Company', // Update with actual company
+                            'PhoneNumber1' => '1234567890', // Update with actual phone
+                            'PhoneNumber1Ext' => '',
+                            'PhoneNumber2' => '', // Required field
+                            'PhoneNumber2Ext' => '',
+                            'FaxNumber' => '',
+                            'CellPhone' => '1234567890', // Update with actual cell
+                            'EmailAddress' => 'info@yourcompany.com', // Update with actual email
                             'Type' => '',
                         ],
-                    ], $overrides['shipper'] ?? []),
+                    ],
                     'Consignee' => [
                         'Reference1' => 'CNS-' . $order->id,
+                        'Reference2' => '',
+                        'AccountNumber' => '',
                         'PartyAddress' => [
                             'Line1' => $contact->addresses()->where('is_primary', true)->first()->address ?? 'N/A',
                             'Line2' => '',
@@ -66,28 +84,90 @@ class AramexService
                             'CountryCode' => $order->country->code ?? 'EG',
                             'Longitude' => 0,
                             'Latitude' => 0,
+                            'BuildingNumber' => '',
+                            'BuildingName' => '',
+                            'Floor' => '',
+                            'Apartment' => '',
+                            'POBox' => null,
+                            'Description' => '',
                         ],
                         'Contact' => [
+                            'Department' => '',
                             'PersonName' => $contact->name ?? 'Customer',
+                            'Title' => '',
                             'CompanyName' => $contact->company ?? 'N/A',
                             'PhoneNumber1' => $contact->phone ?? 'N/A',
+                            'PhoneNumber1Ext' => '',
+                            'PhoneNumber2' => '', // Required field
+                            'PhoneNumber2Ext' => '',
+                            'FaxNumber' => '',
+                            'CellPhone' => $contact->phone ?? 'N/A',
                             'EmailAddress' => $contact->email ?? 'N/A',
                             'Type' => '',
                         ],
                     ],
-                    'ShippingDateTime' => now()->toDateTimeString(),
-                    'DueDate' => now()->addDays(3)->toDateTimeString(),
+                    'ThirdParty' => [
+                        'Reference1' => '',
+                        'Reference2' => '',
+                        'AccountNumber' => '',
+                        'PartyAddress' => [
+                            'Line1' => '',
+                            'Line2' => '',
+                            'Line3' => '',
+                            'City' => '',
+                            'StateOrProvinceCode' => '',
+                            'PostCode' => '',
+                            'CountryCode' => '',
+                            'Longitude' => 0,
+                            'Latitude' => 0,
+                            'BuildingNumber' => null,
+                            'BuildingName' => null,
+                            'Floor' => null,
+                            'Apartment' => null,
+                            'POBox' => null,
+                            'Description' => null,
+                        ],
+                        'Contact' => [
+                            'Department' => '',
+                            'PersonName' => '',
+                            'Title' => '',
+                            'CompanyName' => '',
+                            'PhoneNumber1' => '',
+                            'PhoneNumber1Ext' => '',
+                            'PhoneNumber2' => '',
+                            'PhoneNumber2Ext' => '',
+                            'FaxNumber' => '',
+                            'CellPhone' => '',
+                            'EmailAddress' => '',
+                            'Type' => '',
+                        ],
+                    ],
+                    'ShippingDateTime' => now()->timestamp * 1000, // Format as Unix timestamp in milliseconds
+                    'DueDate' => now()->addDays(3)->timestamp * 1000, // Format as Unix timestamp in milliseconds
+                    'Comments' => '',
+                    'PickupLocation' => '',
+                    'OperationsInstructions' => '',
+                    'AccountingInstrcutions' => '',
                     'Details' => [
+                        'Dimensions' => null,
                         'ActualWeight' => [
                             'Unit' => 'KG',
                             'Value' => $items->sum('weight') ?: 0.5,
                         ],
+                        'ChargeableWeight' => null,
                         'DescriptionOfGoods' => 'Order #' . $order->id,
                         'GoodsOriginCountry' => 'EG',
                         'NumberOfPieces' => $items->count() ?: 1,
-                        'ProductGroup' => 'EXP',
-                        'ProductType' => 'PDX',
+                        'ProductGroup' => 'DOM', // Changed to match Postman example
+                        'ProductType' => 'CDS', // Changed to match Postman example
                         'PaymentType' => 'P',
+                        'PaymentOptions' => '',
+                        'CustomsValueAmount' => null,
+                        'CashOnDeliveryAmount' => null,
+                        'InsuranceAmount' => null,
+                        'CashAdditionalAmount' => null,
+                        'CashAdditionalAmountDescription' => '',
+                        'CollectAmount' => null,
                         'Services' => '',
                         'Items' => $items->map(fn($item) => [
                             'PackageType' => 'Box',
@@ -97,18 +177,29 @@ class AramexService
                                 'Value' => $item->weight ?: 0.5,
                             ],
                             'Comments' => $item->name ?? 'N/A',
+                            'Reference' => 'ITEM-' . $item->id,
                         ])->toArray(),
                     ],
+                    'Attachments' => [],
+                    'ForeignHAWB' => '',
+                    'TransportType' => 0,
+                    'PickupGUID' => '',
+                    'Number' => null,
+                    'ScheduledDelivery' => null,
                 ],
             ],
             'Transaction' => [
                 'Reference1' => 'ORDER-' . $order->id,
+                'Reference2' => '',
+                'Reference3' => '',
+                'Reference4' => '',
+                'Reference5' => '',
             ],
         ];
 
         return $this->sendShipmentRequest($order, $payload);
     }
-    
+
     public function testStaticShipment(Order $order): array
     {
         $payload = [
