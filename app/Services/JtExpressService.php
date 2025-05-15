@@ -17,25 +17,22 @@ class JtExpressService
     public function __construct()
     {
         $this->baseUrl = env('JT_EXPRESS_BASE_URL', 'https://openapi.jtjms-eg.com/webopenplatformapi/api');
-        $this->apiAccount = env('JT_EXPRESS_API_ACCOUNT', '789507402494906427');
-        $this->privateKey = env('JT_EXPRESS_PRIVATE_KEY', '85e13bc999a6466f9b5d4e2c6015a35b');
-        $this->customerCode = env('JT_EXPRESS_CUSTOMER_CODE', 'J0086004385'); // Fixed to match .env
-        $this->password = env('JT_EXPRESS_PASSWORD', 'Hanyhelmy10');
+        $this->apiAccount = env('JT_EXPRESS_API_ACCOUNT', '765199128979308601');
+        $this->privateKey = env('JT_EXPRESS_PRIVATE_KEY', '69024527c19c405a929fec5ae6a6ed46');
+        $this->customerCode = env('JT_EXPRESS_CUSTOMER_CODE', 'J0086006967');
+        $this->password = env('JT_EXPRESS_PASSWORD', 'Hanyhelmy11');
     }
 
-    protected function generateDigest(array $requestBody): string
+    protected function getAuthHeaders(array $requestBody)
     {
-        $dataString = http_build_query($requestBody);
-        return base64_encode(md5($dataString . $this->privateKey, true));
-    }
+        $bizContent = json_encode($requestBody, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $digest = base64_encode(md5($bizContent . $this->privateKey, true));
 
-    protected function getAuthHeaders(array $requestBody): array
-    {
         return [
-            'apiAccount' => $this->apiAccount,
-            'digest' => $this->generateDigest($requestBody),
-            'timestamp' => time(),
-            'Content-Type' => 'application/x-www-form-urlencoded',
+            'apiAccount'    => $this->apiAccount,
+            'digest'        => $digest,
+            'timestamp'     => time(),
+            'Content-Type'  => 'application/json',
         ];
     }
 
@@ -48,142 +45,267 @@ class JtExpressService
         return $digest;
     }
 
-    protected function makeRequest(string $endpoint, array $payload)
+    public function createOrder(array $orderData)
     {
         try {
-            $headers = $this->getAuthHeaders($payload);
-
-            $response = Http::withHeaders($headers)
-                ->asForm()
-                ->post($this->baseUrl . $endpoint, $payload);
-
-            $responseData = $response->json();
-
-            Log::info("J&T Express Request to $endpoint", [
-                'headers' => $headers,
-                'payload' => $payload,
-                'response' => $responseData,
-            ]);
-
-            return $responseData;
-        } catch (Exception $e) {
-            Log::error("J&T Express Request Error to $endpoint", [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'payload' => $payload,
-            ]);
-
-            return [
-                'code' => 0,
-                'msg' => 'Request failed: ' . $e->getMessage(),
+            $requestBody = [
+                'customerCode'   => $this->customerCode,
+                'digest'         => $this->getBusinessDigest(),
+                'txlogisticId'   => $orderData['tracking_number'] ?? ('EGY' . time() . rand(1000, 9999)),
+                'serviceType'    => $orderData['service_type'] ?? '02',
+                'orderType'      => $orderData['order_type'] ?? '2',
+                'deliveryType'   => $orderData['delivery_type'] ?? '04',
+                'payType'        => $orderData['pay_type'] ?? 'PP_PM',
+                'expressType'    => $orderData['express_type'] ?? 'EZ',
+                'network'        => $orderData['network'] ?? '',
+                'length'         => $orderData['length'] ?? 30,
+                'width'          => $orderData['width'] ?? 10,
+                'height'         => $orderData['height'] ?? 60,
+                'weight'         => $orderData['weight'] ?? 5.02,
+                'totalQuantity'  => $orderData['quantity'],
+                'remark'         => $orderData['remark'] ?? '',
+                'operateType'    => $orderData['operate_type'] ?? 1,
+                'goodsType'      => $orderData['goods_type'] ?? 'ITN1',
+                'invoceNumber'   => $orderData['invoice_number'] ?? '',
+                'packingNumber'  => $orderData['packing_number'] ?? '',
+                'batchNumber'    => $orderData['batch_number'] ?? '',
+                'billCode'       => $orderData['bill_code'] ?? '',
+                'offerFee'       => $orderData['offer_fee'] ?? 0,
+                'sendStartTime'  => $orderData['send_start_time'] ?? date('Y-m-d H:i:s'),
+                'sendEndTime'    => $orderData['send_end_time'] ?? date('Y-m-d H:i:s', strtotime('+1 day')),
+                'sender'         => [
+                    'name'                   => $orderData['sender']['name'],
+                    'company'                => $orderData['sender']['company'],
+                    'city'                   => $orderData['sender']['city'],
+                    'address'                => $orderData['sender']['address'],
+                    'mobile'                 => $orderData['sender']['mobile'],
+                    'countryCode'            => $orderData['sender']['countryCode'],
+                    'prov'                   => $orderData['sender']['prov'],
+                    'area'                   => $orderData['sender']['area'],
+                    'town'                   => $orderData['sender']['town'],
+                    'street'                 => $orderData['sender']['street'],
+                    'addressBak'             => $orderData['sender']['addressBak'],
+                    'postCode'               => $orderData['sender']['postCode'],
+                    'phone'                  => $orderData['sender']['phone'],
+                    'mailBox'                => $orderData['sender']['mailBox'],
+                    'areaCode'               => $orderData['sender']['areaCode'],
+                    'building'               => $orderData['sender']['building'],
+                    'floor'                  => $orderData['sender']['floor'],
+                    'flats'                  => $orderData['sender']['flats'],
+                    'alternateSenderPhoneNo' => $orderData['sender']['alternateSenderPhoneNo'],
+                ],
+                'receiver'       => [
+                    'name'                      => $orderData['receiver']['name'],
+                    'prov'                      => $orderData['receiver']['prov'],
+                    'city'                      => $orderData['receiver']['city'],
+                    'address'                   => $orderData['receiver']['address'],
+                    'mobile'                    => $orderData['receiver']['mobile'],
+                    'company'                   => $orderData['receiver']['company'],
+                    'countryCode'               => $orderData['receiver']['countryCode'],
+                    'area'                      => $orderData['receiver']['area'],
+                    'town'                      => $orderData['receiver']['town'],
+                    'addressBak'                => $orderData['receiver']['addressBak'],
+                    'street'                    => $orderData['receiver']['street'],
+                    'postCode'                  => $orderData['receiver']['postCode'],
+                    'phone'                     => $orderData['receiver']['phone'],
+                    'mailBox'                   => $orderData['receiver']['mailBox'],
+                    'areaCode'                  => $orderData['receiver']['areaCode'],
+                    'building'                  => $orderData['receiver']['building'],
+                    'floor'                     => $orderData['receiver']['floor'],
+                    'flats'                     => $orderData['receiver']['flats'],
+                    'alternateReceiverPhoneNo'  => $orderData['receiver']['alternateReceiverPhoneNo'],
+                ],
+                'items'          => isset($orderData['items']) ? $orderData['items'] : [
+                    [
+                        'itemName'      => $orderData['item_name'] ?? 'Default Item',
+                        'number'        => $orderData['item_quantity'] ?? 1,
+                        'itemType'      => $orderData['item_type'] ?? 'ITN1',
+                        'itemValue'     => $orderData['item_value'] ?? '0',
+                        'priceCurrency' => $orderData['item_currency'] ?? 'EGP',
+                        'desc'          => $orderData['item_description'] ?? '',
+                        'englishName'   => $orderData['item_english_name'] ?? '',
+                        'chineseName'   => $orderData['item_chinese_name'] ?? '',
+                        'itemUrl'       => $orderData['item_url'] ?? '',
+                    ]
+                ],
             ];
+
+            $bizContent = json_encode($requestBody, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $headers = $this->getAuthHeaders($requestBody);
+            $response = Http::asForm()
+                ->withHeaders($headers)
+                ->post($this->baseUrl . '/order/addOrder', ['bizContent' => $bizContent]);
+
+            Log::info('create J&T Express order', $response->json());
+            return $response->json();
+        } catch (Exception $e) {
+            Log::error('create J&T Express order', [$e->getMessage()]);
+            throw new Exception('Failed to create J&T Express order: ' . $e->getMessage());
         }
     }
 
-
-    public function createOrder(array $orderData)
+    public function checkingOrder($shipping_response)
     {
-        $payload = [
-            'customerCode' => $this->customerCode,
-            'txlogisticId' => $orderData['tracking_number'] ?? ('EGY' . time() . rand(1000, 9999)),
-            'serviceType' => $orderData['service_type'] ?? '02',
-            'orderType' => $orderData['order_type'] ?? '2',
-            'deliveryType' => $orderData['delivery_type'] ?? '04',
-            'payType' => $orderData['pay_type'] ?? 'PP_PM',
-            'expressType' => $orderData['express_type'] ?? 'EZ',
-            'length' => $orderData['length'] ?? 30,
-            'width' => $orderData['width'] ?? 10,
-            'height' => $orderData['height'] ?? 60,
-            'weight' => $orderData['weight'] ?? 1.02,
-            'totalQuantity' => $orderData['quantity'] ?? 1,
-            'remark' => $orderData['remark'] ?? '',
-            'operateType' => $orderData['operate_type'] ?? 1,
-            'goodsType' => $orderData['goods_type'] ?? 'ITN1',
-            'sendStartTime' => $orderData['send_start_time'] ?? now()->format('Y-m-d H:i:s'),
-            'sendEndTime' => $orderData['send_end_time'] ?? now()->addDay()->format('Y-m-d H:i:s'),
-            'sender' => [
-                'name' => $orderData['sender']['name'] ?? 'Default Sender',
-                'company' => $orderData['sender']['company'] ?? '',
-                'city' => $orderData['sender']['city'] ?? '',
-                'address' => $orderData['sender']['address'] ?? '',
-                'mobile' => $orderData['sender']['mobile'] ?? '',
-                'countryCode' => $orderData['sender']['countryCode'] ?? 'EG',
-            ],
-            'receiver' => [
-                'name' => $orderData['receiver']['name'] ?? 'Default Receiver',
-                'city' => $orderData['receiver']['city'] ?? '',
-                'address' => $orderData['receiver']['address'] ?? '',
-                'mobile' => $orderData['receiver']['mobile'] ?? '',
-                'countryCode' => $orderData['receiver']['countryCode'] ?? 'EG',
-            ],
-            'items' => $orderData['items'] ?? [
-                    ['itemName' => 'Default Item', 'number' => 1, 'itemValue' => '0', 'priceCurrency' => 'EGP']
-                ],
-        ];
+        try {
+            $requestBody = [
+                'customerCode'      => $this->customerCode,
+                'digest'            => $this->getBusinessDigest(),
+                'txlogisticId'      => $shipping_response->txlogisticId,
+                'billCode'          => $shipping_response->billCode,
+                'sortingCode'       => $shipping_response->sortingCode,
+                'createOrderTime'   => $shipping_response->createOrderTime,
+                'lastCenterName'    => $shipping_response->lastCenterName,
+                'command'           => 2,
+            ];
 
-        return $this->makeRequest('/order/addOrder', $payload);
+            $bizContent = json_encode($requestBody, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $headers = $this->getAuthHeaders($requestBody);
+            $response = Http::asForm()
+                ->withHeaders($headers)
+                ->post($this->baseUrl . '/order/getOrders', ['bizContent' => $bizContent]);
+
+            Log::info('check J&T Express order', $response->json());
+            return $response->json();
+        } catch (Exception $e) {
+            Log::error('Failed to check J&T Express order', [$e->getMessage()]);
+            throw new Exception('Failed to check J&T Express order: ' . $e->getMessage());
+        }
     }
 
-
-    public function trackLogistics($trackingData)
+    public function cancelOrder($shipping_response, string $reason = '')
     {
-        $payload = [
-            'customerCode' => $this->customerCode,
-            'digest' => $this->getBusinessDigest(),
-            'txlogisticId' => $trackingData->txlogisticId,
-            'billCode' => $trackingData->billCode,
-        ];
+        try {
+            $requestBody = [
+                'customerCode'      => $this->customerCode,
+                'digest'            => $this->getBusinessDigest(),
+                'txlogisticId'      => $shipping_response->txlogisticId,
+                'billCode'          => $shipping_response->billCode,
+                'sortingCode'       => $shipping_response->sortingCode,
+                'createOrderTime'   => $shipping_response->createOrderTime,
+                'lastCenterName'    => $shipping_response->lastCenterName,
+                'reason'            => $reason ?: 'Cancellation requested by customer'
+            ];
 
-        return $this->makeRequest('/logistics/trace', $payload);
+            $bizContent = json_encode($requestBody, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $headers = $this->getAuthHeaders($requestBody);
+            $response = Http::asForm()
+                ->withHeaders($headers)
+                ->post($this->baseUrl . '/order/cancelOrder', ['bizContent' => $bizContent]);
+
+            Log::info('cancel J&T Express order', $response->json());
+            return $response->json();
+        } catch (Exception $e) {
+            Log::error('Failed to cancel J&T Express order', [$e->getMessage()]);
+            throw new Exception('Failed to cancel J&T Express order: ' . $e->getMessage());
+        }
     }
 
-    public function checkingOrder($orderData)
+    public function getOrderStatus($shipping_response)
     {
-        $payload = [
-            'customerCode' => $this->customerCode,
-            'digest' => $this->getBusinessDigest(),
-            'txlogisticId' => $orderData->txlogisticId,
-            'billCode' => $orderData->billCode,
-            'command' => 2,
-        ];
+        try {
+            $requestBody = [
+                'customerCode'      => $this->customerCode,
+                'digest'            => $this->getBusinessDigest(),
+                'txlogisticId'      => $shipping_response->txlogisticId,
+                'billCode'          => $shipping_response->billCode,
+                'sortingCode'       => $shipping_response->sortingCode,
+                'createOrderTime'   => $shipping_response->createOrderTime,
+                'lastCenterName'    => $shipping_response->lastCenterName,
+                'printSize'         => 'A4',
+            ];
 
-        return $this->makeRequest('/order/getOrders', $payload);
+            $bizContent = json_encode($requestBody, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $headers = $this->getAuthHeaders($requestBody);
+            $response = Http::asForm()
+                ->withHeaders($headers)
+                ->post($this->baseUrl . '/order/printOrder', ['bizContent' => $bizContent]);
+
+            Log::info('get J&T Express order status', $response->json());
+            return $response->json();
+        } catch (Exception $e) {
+            Log::error('Failed to get J&T Express order status', [$e->getMessage()]);
+            throw new Exception('Failed to get J&T Express order status: ' . $e->getMessage());
+        }
     }
 
-    public function getOrderStatus($orderData)
+    public function trackLogistics($shipping_response)
     {
-        $payload = [
-            'customerCode' => $this->customerCode,
-            'digest' => $this->getBusinessDigest(),
-            'txlogisticId' => $orderData->txlogisticId,
-            'billCode' => $orderData->billCode,
-        ];
+        try {
+            $requestBody = [
+                'customerCode'      => $this->customerCode,
+                'digest'            => $this->getBusinessDigest(),
+                'txlogisticId'      => $shipping_response->txlogisticId,
+                'billCode'          => $shipping_response->billCode,
+                'sortingCode'       => $shipping_response->sortingCode,
+                'createOrderTime'   => $shipping_response->createOrderTime,
+                'lastCenterName'    => $shipping_response->lastCenterName,
+            ];
 
-        return $this->makeRequest('/logistics/trace', $payload);
+            $bizContent = json_encode($requestBody, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $headers = $this->getAuthHeaders($requestBody);
+            $response = Http::asForm()
+                ->withHeaders($headers)
+                ->post($this->baseUrl . '/logistics/trace', ['bizContent' => $bizContent]);
+
+            Log::info('track J&T Express shipment', $response->json());
+            return $response->json();
+        } catch (Exception $e) {
+            Log::error('Failed to track J&T Express shipment', [$e->getMessage()]);
+            throw new Exception('Failed to track J&T Express shipment: ' . $e->getMessage());
+        }
     }
 
-    public function getLogisticsTrajectory($trackingData)
+    public function getLogisticsTrajectory($shipping_response)
     {
-        $payload = [
-            'customerCode' => $this->customerCode,
-            'digest' => $this->getBusinessDigest(),
-            'txlogisticId' => $trackingData->txlogisticId,
-            'billCode' => $trackingData->billCode,
-        ];
+        try {
+            $requestBody = [
+                'customerCode'      => $this->customerCode,
+                'digest'            => $this->getBusinessDigest(),
+                'txlogisticId'      => $shipping_response->txlogisticId,
+                'billCode'          => $shipping_response->billCode,
+                'sortingCode'       => $shipping_response->sortingCode,
+                'createOrderTime'   => $shipping_response->createOrderTime,
+                'lastCenterName'    => $shipping_response->lastCenterName,
+            ];
 
-        return $this->makeRequest('/logistics/trajectoryReturn', $payload);
+            $bizContent = json_encode($requestBody, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $headers = $this->getAuthHeaders($requestBody);
+            $response = Http::asForm()
+                ->withHeaders($headers)
+                ->post($this->baseUrl . '/logistics/trajectoryReturn', ['bizContent' => $bizContent]);
+
+            Log::info('get J&T Express trajectory', $response->json());
+            return $response->json();
+        } catch (Exception $e) {
+            Log::error('Failed to get J&T Express trajectory', [$e->getMessage()]);
+            throw new Exception('Failed to get J&T Express trajectory: ' . $e->getMessage());
+        }
     }
 
-    public function cancelOrder($orderData, string $reason = '')
+    public function searchThreeSegmentCode($shipping_response)
     {
-        $payload = [
-            'customerCode' => $this->customerCode,
-            'digest' => $this->getBusinessDigest(),
-            'txlogisticId' => $orderData->txlogisticId,
-            'billCode' => $orderData->billCode,
-            'reason' => $reason ?: 'Cancellation requested by customer',
-        ];
+        try {
+            $requestBody = [
+                'customerCode'      => $this->customerCode,
+                'digest'            => $this->getBusinessDigest(),
+                'txlogisticId'      => $shipping_response->txlogisticId,
+                'billCode'          => $shipping_response->billCode,
+                'sortingCode'       => $shipping_response->sortingCode,
+                'createOrderTime'   => $shipping_response->createOrderTime,
+                'lastCenterName'    => $shipping_response->lastCenterName,
+            ];
 
-        return $this->makeRequest('/order/cancelOrder', $payload);
+            $bizContent = json_encode($requestBody, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $headers = $this->getAuthHeaders($requestBody);
+            $response = Http::asForm()
+                ->withHeaders($headers)
+                ->post($this->baseUrl . '/other/threeSegmentCodeSearch', ['bizContent' => $bizContent]);
+
+            Log::info('search three-segment code', $response->json());
+            return $response->json();
+        } catch (Exception $e) {
+            Log::error('Failed to search three-segment code', [$e->getMessage()]);
+            throw new Exception('Failed to search three-segment code: ' . $e->getMessage());
+        }
     }
 }
