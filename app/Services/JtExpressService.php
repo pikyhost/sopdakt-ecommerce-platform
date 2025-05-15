@@ -51,24 +51,35 @@ class JtExpressService
     protected function makeRequest(string $endpoint, array $payload)
     {
         try {
-            $response = Http::withHeaders($this->getAuthHeaders($payload))
+            $headers = $this->getAuthHeaders($payload);
+
+            $response = Http::withHeaders($headers)
                 ->asForm()
                 ->post($this->baseUrl . $endpoint, $payload);
 
             $responseData = $response->json();
-            Log::info("J&T Express Request to $endpoint", ['payload' => $payload, 'response' => $responseData]);
+
+            Log::info("J&T Express Request to $endpoint", [
+                'headers' => $headers,
+                'payload' => $payload,
+                'response' => $responseData,
+            ]);
+
             return $responseData;
         } catch (Exception $e) {
             Log::error("J&T Express Request Error to $endpoint", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
+                'payload' => $payload,
             ]);
+
             return [
                 'code' => 0,
                 'msg' => 'Request failed: ' . $e->getMessage(),
             ];
         }
     }
+
 
     public function createOrder(array $orderData)
     {
@@ -110,11 +121,9 @@ class JtExpressService
                 ],
         ];
 
-        // Generate fresh digest for each request
-        $payload['digest'] = $this->generateDigest($payload);
-
         return $this->makeRequest('/order/addOrder', $payload);
     }
+
 
     public function trackLogistics($trackingData)
     {
