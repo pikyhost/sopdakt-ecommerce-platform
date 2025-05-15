@@ -23,9 +23,10 @@ class AramexService
         $contact = $order->user ?? $order->contact;
         $items = $order->items;
 
-        // Format DateTime as \/Date(<milliseconds>+<timezone>)\/
-        $shippingDateTime = sprintf('\/Date(%d+0200)\/', now()->timestamp * 1000); // EEST is +0200
-        $dueDate = sprintf('\/Date(%d+0200)\/', now()->addDays(3)->timestamp * 1000);
+        // Format DateTime as /Date(<milliseconds>+<timezone>)/
+        // Use raw string to avoid double-escaping backslashes
+        $shippingDateTime = "/Date(" . (now()->timestamp * 1000) . "+0200)/";
+        $dueDate = "/Date(" . (now()->addDays(3)->timestamp * 1000) . "+0200)/";
 
         $payload = [
             'ClientInfo' => $this->clientInfo,
@@ -43,7 +44,7 @@ class AramexService
                         'Reference2' => '',
                         'AccountNumber' => $this->clientInfo['AccountNumber'],
                         'PartyAddress' => [
-                            'Line1' => 'Your Company Address', // Update with actual shipper address
+                            'Line1' => config('aramex.shipper.address', 'Your Company Address'),
                             'Line2' => '',
                             'Line3' => '',
                             'City' => 'Cairo',
@@ -61,16 +62,16 @@ class AramexService
                         ],
                         'Contact' => [
                             'Department' => '',
-                            'PersonName' => 'Your Company Name', // Update with actual name
+                            'PersonName' => config('aramex.shipper.name', 'Your Company Name'),
                             'Title' => '',
-                            'CompanyName' => 'Your Company', // Update with actual company
-                            'PhoneNumber1' => '1234567890', // Update with actual phone
+                            'CompanyName' => config('aramex.shipper.company', 'Your Company'),
+                            'PhoneNumber1' => config('aramex.shipper.phone', '1234567890'),
                             'PhoneNumber1Ext' => '',
                             'PhoneNumber2' => '',
                             'PhoneNumber2Ext' => '',
                             'FaxNumber' => '',
-                            'CellPhone' => '1234567890', // Update with actual cell
-                            'EmailAddress' => 'info@yourcompany.com', // Update with actual email
+                            'CellPhone' => config('aramex.shipper.phone', '1234567890'),
+                            'EmailAddress' => config('aramex.shipper.email', 'info@yourcompany.com'),
                             'Type' => '',
                         ],
                     ],
@@ -100,12 +101,12 @@ class AramexService
                             'PersonName' => $contact->name ?? 'Customer',
                             'Title' => '',
                             'CompanyName' => $contact->company ?? 'N/A',
-                            'PhoneNumber1' => $contact->phone ?? 'N/A',
+                            'PhoneNumber1' => preg_replace('/\s+/', '', $contact->phone ?? 'N/A'),
                             'PhoneNumber1Ext' => '',
                             'PhoneNumber2' => '',
                             'PhoneNumber2Ext' => '',
                             'FaxNumber' => '',
-                            'CellPhone' => $contact->phone ?? 'N/A',
+                            'CellPhone' => preg_replace('/\s+/', '', $contact->phone ?? 'N/A'),
                             'EmailAddress' => $contact->email ?? 'N/A',
                             'Type' => '',
                         ],
@@ -203,8 +204,7 @@ class AramexService
 
         return $this->sendShipmentRequest($order, $payload);
     }
-
-
+    
     public function testStaticShipment(Order $order): array
     {
         $payload = [

@@ -12,4 +12,11 @@ return [
         'AccountCountryCode' => env('ARAMEX_ACCOUNT_COUNTRY_CODE', 'EG'),
         'Source' => 24,
     ],
+    'shipper' => [
+        'address' => env('ARAMEX_SHIPPER_ADDRESS', '123 Main St, Cairo'),
+        'name' => env('ARAMEX_SHIPPER_NAME', 'Your Company Name'),
+        'company' => env('ARAMEX_SHIPPER_COMPANY', 'Your Company'),
+        'phone' => env('ARAMEX_SHIPPER_PHONE', '1234567890'),
+        'email' => env('ARAMEX_SHIPPER_EMAIL', 'info@yourcompany.com'),
+    ],
 ];
