@@ -122,7 +122,7 @@ class BundlesRelationManager extends RelationManager
 
                     TextInput::make('buy_quantity')
                         ->live()
-                        ->label(__('bundles.buy_quantity'))
+                        ->label(__('Quantity'))
                         ->numeric()
                         ->visible(fn (Get $get) => $get('bundle_type') === 'buy_quantity_fixed_price')
                         ->afterStateUpdated(fn (Set $set, Get $get) => $this->updateDiscountPrice($set, $get)),
@@ -136,7 +136,7 @@ class BundlesRelationManager extends RelationManager
                         ->required()
                         ->preload()
                         ->searchable()
-                        ->maxItems(fn (Get $get) => $get('bundle_type') === 'buy_x_get_y' ? 1 : 10)
+                        ->maxItems(fn (Get $get) => in_array($get('bundle_type'), ['buy_x_get_y', 'buy_quantity_fixed_price']) ? 1 : 10)
                         ->label(__('bundles.products'))
                         ->multiple()
                         ->relationship('products', 'name')
