@@ -32,16 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
             'protect.docs' => \App\Http\Middleware\ProtectDocs::class,
         ]);
-
-        $middleware->alias([
-            /**** OTHER MIDDLEWARE ALIASES ****/
-            'localize'                => \Mcamara\LaravelLocalization\Middleware\LaravelLocalizationRoutes::class,
-            'localizationRedirect'    => \Mcamara\LaravelLocalization\Middleware\LaravelLocalizationRedirectFilter::class,
-            'localeSessionRedirect'   => \Mcamara\LaravelLocalization\Middleware\LocaleSessionRedirect::class,
-            'localeCookieRedirect'    => \Mcamara\LaravelLocalization\Middleware\LocaleCookieRedirect::class,
-            'localeViewPath'          => \Mcamara\LaravelLocalization\Middleware\LaravelLocalizationViewPath::class,
-        ]);
-
+        
         $middleware->prependToGroup('api', \App\Http\Middleware\AlwaysAcceptJson::class);
         $middleware->appendToGroup('api', \Illuminate\Session\Middleware\StartSession::class);
         $middleware->appendToGroup('api', \App\Http\Middleware\ApiKeyMiddleware::class);
@@ -49,17 +40,17 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('api', SetRequestLocale::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-//        $exceptions->renderable(function (NotFoundHttpException $e) {
-//            return response()->json(['message' => 'Page not found'], 404);
-//        });
-//
-//        $exceptions->renderable(function (MethodNotAllowedHttpException $e) {
-//            return response()->json([
-//                'message' => 'The method is not allowed for this endpoint.',
-//            ], 405);
-//        });
-//
-//         $exceptions->renderable(function (ModelNotFoundException $e) {
-//             return response()->json(['message' => 'Object not found.'], 404);
-//         });
+        $exceptions->renderable(function (NotFoundHttpException $e) {
+            return response()->json(['message' => 'Page not found'], 404);
+        });
+
+        $exceptions->renderable(function (MethodNotAllowedHttpException $e) {
+            return response()->json([
+                'message' => 'The method is not allowed for this endpoint.',
+            ], 405);
+        });
+
+         $exceptions->renderable(function (ModelNotFoundException $e) {
+             return response()->json(['message' => 'Object not found.'], 404);
+         });
     })->create();
