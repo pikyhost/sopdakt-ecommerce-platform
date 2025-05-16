@@ -57,12 +57,6 @@ class OrderExporter extends Exporter
                 ->label(__('Created At')),
             ExportColumn::make('updated_at')
                 ->label(__('Updated At')),
-            ExportColumn::make('shipping_status')
-                ->label(__('Shipping Status')),
-            ExportColumn::make('shipping_response')
-                ->label(__('Shipping Response')),
-            ExportColumn::make('bundle_id')
-                ->label(__('Bundle ID')),
         ];
     }
     public static function getCompletedNotificationBody(Export $export): string

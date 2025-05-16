@@ -115,6 +115,7 @@ class BundleResource extends Resource
                                     ->options([
                                         'fixed_price' => __('bundles.type.fixed_price'),
                                         'buy_x_get_y' => __('bundles.type.buy_x_get_y'),
+                                        'buy_quantity_fixed_price' => __('bundles.type.buy_quantity_fixed_price'),
                                     ])
                                     ->required(),
 
@@ -140,7 +141,7 @@ class BundleResource extends Resource
                                     ->live()
                                     ->label(__('bundles.buy_x'))
                                     ->numeric()
-                                    ->visible(fn ($get) => $get('bundle_type') === 'buy_x_get_y')
+                                    ->visible(fn ($get) => in_array($get('bundle_type'), ['buy_x_get_y', 'buy_quantity_fixed_price']))
                                     ->afterStateUpdated(fn (Set $set, Get $get) => self::updateDiscountPrice($set, $get)),
 
                                 TextInput::make('get_y')
@@ -148,18 +149,24 @@ class BundleResource extends Resource
                                     ->label(__('bundles.get_y_free'))
                                     ->numeric()
                                     ->visible(fn ($get) => $get('bundle_type') === 'buy_x_get_y')
-                                    ->afterStateUpdated(fn (Set $set, Get $get) => self::updateDiscountPrice($set, $get)), // Ensure discount updates
+                                    ->afterStateUpdated(fn (Set $set, Get $get) => self::updateDiscountPrice($set, $get)),
 
                                 TextInput::make('discount_price')
                                     ->live()
                                     ->label(__('bundles.discount_price'))
                                     ->numeric()
-                                    ->visible(fn ($get) => $get('bundle_type')) // Always visible
-                                    ->disabled(fn ($get) => $get('bundle_type') === 'buy_x_get_y' && $get('buy_x') !== null && $get('get_y') !== null)
-                                    ->default(fn (Get $get) => self::calculateDiscountPrice($get)) // Set default value for database
-                                    ->afterStateHydrated(fn (Set $set, Get $get) => $set('discount_price', self::calculateDiscountPrice($get))) // Ensure correct value is loaded
+                                    ->visible(fn ($get) => $get('bundle_type')) // Show for all types
+                                    ->disabled(fn ($get) =>
+                                        in_array($get('bundle_type'), ['buy_x_get_y', 'buy_quantity_fixed_price'])
+                                        && $get('buy_x') !== null
+                                    )
+                                    ->default(fn (Get $get) => self::calculateDiscountPrice($get))
+                                    ->afterStateHydrated(fn (Set $set, Get $get) =>
+                                    $set('discount_price', self::calculateDiscountPrice($get))
+                                    )
                                     ->dehydrated(fn ($get) => $get('bundle_type') === 'buy_x_get_y'),
-        ]),
+
+                            ]),
 
                         // Special Prices Tab
                         Forms\Components\Tabs\Tab::make(__('bundles.special_prices'))

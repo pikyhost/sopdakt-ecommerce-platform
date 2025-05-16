@@ -201,6 +201,7 @@ class OrderResource extends Resource
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('user.second_phone')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->label(__('Second Phone Number'))
                     ->searchable()
                     ->placeholder('-'),
@@ -289,123 +290,102 @@ class OrderResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                QueryBuilder::make()
-                    ->columnSpanFull()
-                    ->constraints([
-                        NumberConstraint::make('id')
-                            ->integer(),
-                    ]),
-                SelectFilter::make('status')
-                    ->label(__('Status'))
+        // First Row: Status and Date Range
+        SelectFilter::make('status')
+            ->label(__('Status'))
+            ->multiple()
+            ->options(
+                collect(OrderStatus::cases())
+                    ->mapWithKeys(fn($status) => [$status->value => $status->getLabel()])
+                    ->toArray()
+            )
+            ->columnSpan(['md' => 2, 'xl' => 1]),
+
+        Filter::make('created_at')
+            ->form([
+                DatePicker::make('created_from')
+                    ->label(__('From'))
+                    ->columnSpan(1),
+                DatePicker::make('created_until')
+                    ->label(__('To'))
+                    ->columnSpan(1),
+            ])
+            ->columns(2)
+            ->query(function (Builder $query, array $data): Builder {
+                return $query
+                    ->when($data['created_from'] ?? null,
+                        fn(Builder $q, $date) => $q->whereDate('created_at', '>=', $date))
+                    ->when($data['created_until'] ?? null,
+                        fn(Builder $q, $date) => $q->whereDate('created_at', '<=', $date));
+            })
+            ->columnSpanFull(),
+
+        // Second Row: Location Filters
+        Filter::make('location')
+            ->form([
+                Select::make('country_ids')
+                    ->label(__('Countries'))
                     ->multiple()
-                    ->options(
-                        collect(OrderStatus::cases())
-                            ->mapWithKeys(fn($status) => [$status->value => $status->getLabel()])
-                            ->toArray()
-                    ),
+                    ->live()
+                    ->options(fn() => Country::pluck('name', 'id'))
+                    ->columnSpan(1),
 
-                Filter::make('location')
-                    ->form([
-                        Select::make('country_ids')
-                            ->label(__('Countries'))
-                            ->multiple()
-                            ->live()
-                            ->options(fn() => Country::pluck('name', 'id')),
-
-                        Select::make('governorate_ids')
-                            ->label(__('Governorates'))
-                            ->multiple()
-                            ->live()
-                            ->searchable()
-                            ->options(function (callable $get) {
-                                $countryIds = $get('country_ids');
-
-                                if (!is_array($countryIds) || empty($countryIds)) {
-                                    return [];
-                                }
-
-                                return Governorate::whereIn('country_id', $countryIds)
-                                    ->pluck('name', 'id');
-                            }),
-
-                        Select::make('city_ids')
-                            ->label(__('Cities'))
-                            ->multiple()
-                            ->searchable()
-                            ->options(function (callable $get) {
-                                $governorateIds = $get('governorate_ids');
-
-                                if (!is_array($governorateIds) || empty($governorateIds)) {
-                                    return [];
-                                }
-
-                                return City::whereIn('governorate_id', $governorateIds)
-                                    ->pluck('name', 'id');
-                            }),
-                    ])
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(filled($data['country_ids'] ?? null), function (Builder $q) use ($data) {
-                                $q->whereIn('country_id', $data['country_ids']);
-                            })
-                            ->when(filled($data['governorate_ids'] ?? null), function (Builder $q) use ($data) {
-                                $q->whereIn('governorate_id', $data['governorate_ids']);
-                            })
-                            ->when(filled($data['city_ids'] ?? null), function (Builder $q) use ($data) {
-                                $q->whereIn('city_id', $data['city_ids']);
-                            });
+                Select::make('governorate_ids')
+                    ->label(__('Governorates'))
+                    ->multiple()
+                    ->live()
+                    ->searchable()
+                    ->options(function (callable $get) {
+                        $countryIds = $get('country_ids');
+                        return empty($countryIds) ? [] : Governorate::whereIn('country_id', $countryIds)->pluck('name', 'id');
                     })
-                    ->indicateUsing(function (array $data) {
-                        $indicators = [];
+                    ->columnSpan(1),
 
-                        if (!empty($data['country_ids'])) {
-                            $countries = Country::whereIn('id', $data['country_ids'])->pluck('name')->implode(', ');
-                            $indicators[] = Indicator::make("Countries: $countries")->removeField('country_ids');
-                        }
-
-                        if (!empty($data['governorate_ids'])) {
-                            $governorates = Governorate::whereIn('id', $data['governorate_ids'])->pluck('name')->implode(', ');
-                            $indicators[] = Indicator::make("Governorates: $governorates")->removeField('governorate_ids');
-                        }
-
-                        if (!empty($data['city_ids'])) {
-                            $cities = City::whereIn('id', $data['city_ids'])->pluck('name')->implode(', ');
-                            $indicators[] = Indicator::make("Cities: $cities")->removeField('city_ids');
-                        }
-
-                        return $indicators;
-                    }),
-
-                Tables\Filters\Filter::make('created_at')
-                    ->form([
-                        DatePicker::make('created_from')
-                            ->label(__('filters.created_from')),
-                        DatePicker::make('created_until')
-                            ->label(__('filters.created_until')),
-                    ])
-                    ->query(function (\Illuminate\Contracts\Database\Eloquent\Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['created_from'] ?? null,
-                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
-                            )
-                            ->when(
-                                $data['created_until'] ?? null,
-                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
-                            );
+                Select::make('city_ids')
+                    ->label(__('Cities'))
+                    ->multiple()
+                    ->searchable()
+                    ->options(function (callable $get) {
+                        $governorateIds = $get('governorate_ids');
+                        return empty($governorateIds) ? [] : City::whereIn('governorate_id', $governorateIds)->pluck('name', 'id');
                     })
-                    ->indicateUsing(function (array $data): array {
-                        $indicators = [];
-                        if ($data['created_from'] ?? null) {
-                            $indicators['created_from'] = __('filters.indicator_from', ['date' => Carbon::parse($data['created_from'])->toFormattedDateString()]);
-                        }
-                        if ($data['created_until'] ?? null) {
-                            $indicators['created_until'] = __('filters.indicator_until', ['date' => Carbon::parse($data['created_until'])->toFormattedDateString()]);
-                        }
+                    ->columnSpan(1),
+            ])
+            ->columns(['md' => 3])
+            ->query(function (Builder $query, array $data): Builder {
+                return $query
+                    ->when($data['country_ids'] ?? null,
+                        fn(Builder $q) => $q->whereIn('country_id', $data['country_ids']))
+                    ->when($data['governorate_ids'] ?? null,
+                        fn(Builder $q) => $q->whereIn('governorate_id', $data['governorate_ids']))
+                    ->when($data['city_ids'] ?? null,
+                        fn(Builder $q) => $q->whereIn('city_id', $data['city_ids']));
+            })
+            ->indicateUsing(function (array $data) {
+                $indicators = [];
+                if (!empty($data['country_ids'])) {
+                    $countries = Country::whereIn('id', $data['country_ids'])->pluck('name')->implode(', ');
+                    $indicators[] = Indicator::make("Countries: $countries")->removeField('country_ids');
+                }
+                if (!empty($data['governorate_ids'])) {
+                    $governorates = Governorate::whereIn('id', $data['governorate_ids'])->pluck('name')->implode(', ');
+                    $indicators[] = Indicator::make("Governorates: $governorates")->removeField('governorate_ids');
+                }
+                if (!empty($data['city_ids'])) {
+                    $cities = City::whereIn('id', $data['city_ids'])->pluck('name')->implode(', ');
+                    $indicators[] = Indicator::make("Cities: $cities")->removeField('city_ids');
+                }
+                return $indicators;
+            })
+            ->columnSpanFull(),
 
-                        return $indicators;
-                    }),
-            ], Tables\Enums\FiltersLayout::Modal)
+        // Third Row: Query Builder
+        QueryBuilder::make()
+            ->columnSpanFull()
+            ->constraints([
+                NumberConstraint::make('id')->integer(),
+            ]),
+    ], Tables\Enums\FiltersLayout::AboveContentCollapsible)
             ->actions([
 //                Tables\Actions\Action::make('trackOrder')
 //                ->label(__('actions.track_order'))

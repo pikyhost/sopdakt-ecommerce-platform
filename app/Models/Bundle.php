@@ -13,12 +13,9 @@ class Bundle extends Model
 {
     use HasFactory, HasTranslations;
 
-    public $translatable = [
-        'name',
-    ];
+    public $translatable = ['name'];
 
     protected $guarded = [];
-
 
     protected $casts = [
         'bundle_type' => BundleType::class,
@@ -29,11 +26,58 @@ class Bundle extends Model
         return $this->hasMany(BundleSpecialPrice::class);
     }
 
+    public function mainProduct()
+    {
+        return $this->belongsTo(Product::class, 'main_product_id');
+    }
+
+    public function products()
+    {
+        return $this->belongsToMany(Product::class, 'bundle_product');
+    }
+
+    public function landingPages()
+    {
+        return $this->belongsToMany(LandingPage::class, 'bundle_landing_page');
+    }
+
+    public function getFormattedDiscountAttribute()
+    {
+        return match ($this->bundle_type) {
+            'fixed_price' => "Bundle Price: $" . number_format($this->discount_price, 2),
+            'buy_x_get_y' => "Buy {$this->buy_x}, Get {$this->get_y} Free!",
+            'buy_quantity_fixed_price' => "Buy {$this->buy_x} for $" . number_format($this->discount_price, 2),
+            default => "Special Offer",
+        };
+    }
+
+    public function getTotalPriceAttribute()
+    {
+        $productsTotal = $this->products->sum(fn($product) => $product->discount_price_for_current_country);
+
+        return match ($this->bundle_type) {
+            'fixed_price' => $this->discount_price,
+            'buy_x_get_y' => $this->buy_x * optional($this->products->first())->price,
+            'buy_quantity_fixed_price' => $this->discount_price,
+            default => $productsTotal,
+        };
+    }
+
+    public function getBundlePriceForCurrentCountryAttribute()
+    {
+        return GeneralHelper::getBundlePriceForCountry($this);
+    }
+
+    public function getBundleDiscountPriceForCurrentCountryAttribute()
+    {
+        return GeneralHelper::getBundlePriceForCountryWithDiscount($this);
+    }
+
     public function formatPrice(): string
     {
         $countryId = GeneralHelper::getCountryId();
-        $currency = Setting::getCurrency()?->code ?? 'USD'; // Default currency
-        $amount = $this->default_price ?? 0; // Default price
+        $currency = Setting::getCurrency()?->code ?? 'USD';
+        $amount = $this->discount_price ?? 0;
 
         $specialPrice = BundleSpecialPrice::where('bundle_id', $this->id)
             ->where(function ($query) use ($countryId) {
@@ -58,61 +102,6 @@ class Bundle extends Model
         return GeneralHelper::formatBundlePrice($amount, $currency);
     }
 
-
-    public function mainProduct()
-    {
-        return $this->belongsTo(Product::class, 'main_product_id');
-    }
-
-    public function products()
-    {
-        return $this->belongsToMany(Product::class, 'bundle_product');
-    }
-
-    public function landingPages()
-    {
-        return $this->belongsToMany(LandingPage::class, 'bundle_landing_page');
-    }
-
-    public function getFormattedDiscountAttribute()
-    {
-        if ($this->bundle_type === 'fixed_price') {
-            return "Bundle Price: $" . number_format($this->discount_price, 2);
-        }
-
-        if ($this->bundle_type === 'buy_x_get_y') {
-            return "Buy {$this->buy_x}, Get {$this->get_y} Free!";
-        }
-
-        return "Special Offer";
-    }
-
-    public function getTotalPriceAttribute()
-    {
-        $productsTotal = $this->products->sum(fn($product) => $product->discount_price_for_current_country);
-
-        switch ($this->bundle_type) {
-            case 'fixed_price':
-                return $this->discount_price;
-
-            case 'buy_x_get_y':
-                return ($this->buy_x * $this->products->first()->price);
-
-            default:
-                return $productsTotal;
-        }
-    }
-
-    public function getBundlePriceForCurrentCountryAttribute()
-    {
-        return \App\Helpers\GeneralHelper::getBundlePriceForCountry($this); // bundle_discount_price_for_current_country
-    }
-
-    public function getBundleDiscountPriceForCurrentCountryAttribute()
-    {
-        return \App\Helpers\GeneralHelper::getBundlePriceForCountryWithDiscount($this);
-    }
-
     /**
      * Calculate the discount price for BUY_X_GET_Y bundles.
      */
@@ -120,7 +109,7 @@ class Bundle extends Model
     {
         $bundleType = $bundle->bundle_type->value ?? null;
 
-        if ($bundleType === \App\Enums\BundleType::BUY_X_GET_Y->value && $bundle->buy_x) {
+        if ($bundleType === BundleType::BUY_X_GET_Y->value && $bundle->buy_x) {
             $firstProduct = $bundle->products()->first();
 
             if ($firstProduct && !is_null($firstProduct->discount_price_for_current_country)) {
@@ -128,5 +117,4 @@ class Bundle extends Model
             }
         }
     }
-
 }
