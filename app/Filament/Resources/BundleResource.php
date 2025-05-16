@@ -91,160 +91,162 @@ class BundleResource extends Resource
     }
 
 
-    public static function form(Form $form): Form
-    {
-        return $form
-            ->schema([
-                Forms\Components\Tabs::make()
-                    ->columnSpanFull()
-                    ->tabs([
-                        // General Information Tab
-                        Forms\Components\Tabs\Tab::make(__('bundles.general_information'))
-                            ->columnSpanFull()
-                            ->schema([
-                                TextInput::make('name')
-                                    ->label(__('bundles.name'))
-                                    ->required(),
-
-                                TextInput::make('name_for_admin')
-                                    ->label(__('bundles.name_for_admin'))
-                                    ->required(),
-
-                                Select::make('bundle_type')
-                                    ->live()
-                                    ->label(__('bundles.type'))
-                                    ->options(BundleType::class)
-                                    ->required(),
-
-                                Select::make('products')
-                                    ->maxItems(fn (Get $get) =>
-                                    ($get('bundle_type') instanceof BundleType
-                                        ? $get('bundle_type') === BundleType::FIXED_PRICE
-                                        : $get('bundle_type') === BundleType::FIXED_PRICE->value
-                                    ) ? 10 : 1
-                                    )
-                                    ->searchable()
-                                    ->preload()
-                                    ->label(__('bundles.products'))
-                                    ->multiple()
-                                    ->relationship('products', 'name'),
-
-                                Select::make('landing_pages')
-                                    ->searchable()
-                                    ->preload()
-                                    ->label(__('bundles.landingPages'))
-                                    ->multiple()
-                                    ->relationship('landingPages', 'slug'),
-
-                                TextInput::make('buy_x')
-                                    ->live()
-                                    ->label(__('bundles.buy_x'))
-                                    ->numeric()
-                                    ->visible(fn (Get $get) => in_array(
-                                        $get('bundle_type') instanceof BundleType ? $get('bundle_type') : $get('bundle_type'),
-                                        [BundleType::BUY_X_GET_Y, BundleType::BUY_QUANTITY_FIXED_PRICE]
-                                    ))
-                                    ->afterStateUpdated(fn (Set $set, Get $get) => self::updateDiscountPrice($set, $get)),
-
-                                TextInput::make('get_y')
-                                    ->live()
-                                    ->label(__('bundles.get_y_free'))
-                                    ->numeric()
-                                    ->visible(fn (Get $get) =>
-                                    ($get('bundle_type') instanceof BundleType
-                                        ? $get('bundle_type') === BundleType::BUY_X_GET_Y
-                                        : $get('bundle_type') === BundleType::BUY_X_GET_Y->value
-                                    )
-                                    )
-                                    ->afterStateUpdated(fn (Set $set, Get $get) => self::updateDiscountPrice($set, $get)),
-
-                                TextInput::make('discount_price')
-                                    ->live()
-                                    ->label(__('bundles.discount_price'))
-                                    ->numeric()
-                                    ->visible(fn (Get $get) => filled($get('bundle_type')))
-                                    ->disabled(fn (Get $get) =>
-                                        ($get('bundle_type') instanceof BundleType
-                                            ? $get('bundle_type') === BundleType::BUY_X_GET_Y
-                                            : $get('bundle_type') === BundleType::BUY_X_GET_Y->value
-                                        ) && filled($get('buy_x')) && filled($get('get_y'))
-                                    )
-                                    ->default(fn (Get $get) => self::calculateDiscountPrice($get))
-                                    ->afterStateHydrated(fn (Set $set, Get $get) =>
-                                    $set('discount_price', self::calculateDiscountPrice($get))
-                                    )
-                                    ->dehydrated(fn (Get $get) =>
-                                    $get('bundle_type') instanceof BundleType
-                                        ? $get('bundle_type') !== BundleType::BUY_X_GET_Y
-                                        : $get('bundle_type') !== BundleType::BUY_X_GET_Y->value
-                                    ),
-                            ]),
-
-                        // Special Prices Tab
-                        Forms\Components\Tabs\Tab::make(__('bundles.special_prices'))
-                            ->schema([
-                                Forms\Components\Repeater::make('specialPrices')
-                                    ->defaultItems(0)
-                                    ->label(__('bundles.special_prices'))
-                                    ->relationship('specialPrices')
-                                    ->columns(2)
-                                    ->schema([
-                                        Forms\Components\Placeholder::make('country_or_group_info')
-                                            ->label(__('country_or_group_info'))
-                                            ->content(__('messages.select_country_or_group'))
-                                            ->columnSpanFull(),
-
-                                        Forms\Components\Select::make('country_id')
-                                            ->label(__('fields.select_country'))
-                                            ->relationship('country', 'name')
-                                            ->nullable()
-                                            ->live()
-                                            ->afterStateUpdated(fn (Forms\Set $set) => $set('country_group_id', null))
-                                            ->hidden(fn (Forms\Get $get) => filled($get('country_group_id')))
-                                            ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
-
-                                        Forms\Components\Select::make('country_group_id')
-                                            ->label(__('fields.select_country_group'))
-                                            ->relationship('countryGroup', 'name')
-                                            ->preload()
-                                            ->createOptionForm([
-                                                Forms\Components\TextInput::make('name')
-                                                    ->label(__('name'))
-                                                    ->required()
-                                                    ->maxLength(255),
-                                                Forms\Components\Select::make('countries')
-                                                    ->label(__('countries'))
-                                                    ->relationship('countries', 'name')
-                                                    ->multiple()
-                                                    ->searchable()
-                                                    ->preload(),
-                                            ])
-                                            ->nullable()
-                                            ->live()
-                                            ->afterStateUpdated(fn (Forms\Set $set) => $set('country_id', null))
-                                            ->hidden(fn (Forms\Get $get) => filled($get('country_id')))
-                                            ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
-
-                                        Forms\Components\Select::make('currency_id')
-                                            ->label(__('fields.currency'))
-                                            ->relationship('currency', 'name')
-                                            ->required(),
-
-                                        Forms\Components\TextInput::make('special_price')
-                                            ->label(__('bundles.special_price'))
-                                            ->numeric()
-                                            ->required(),
-
-                                        Forms\Components\TextInput::make('special_price_after_discount')
-                                            ->lt('special_price')
-                                            ->label(__('bundles.after_discount_price'))
-                                            ->numeric()
-                                            ->nullable(),
-                                    ])->columnSpanFull(),
-                            ]),
-                    ]),
-            ]);
-    }
+//    public static function form(Form $form): Form
+//    {
+//        return $form
+//            ->schema([
+//                Forms\Components\Tabs::make()
+//                    ->columnSpanFull()
+//                    ->tabs([
+//                        // General Information Tab
+//                        Forms\Components\Tabs\Tab::make(__('bundles.general_information'))
+//                            ->columnSpanFull()
+//                            ->schema([
+//                                TextInput::make('name')
+//                                    ->label(__('bundles.name'))
+//                                    ->required(),
+//
+//                                TextInput::make('name_for_admin')
+//                                    ->label(__('bundles.name_for_admin'))
+//                                    ->required(),
+//
+//                                Select::make('bundle_type')
+//                                    ->reactive()
+//                                    ->live()
+//                                    ->label(__('bundles.type'))
+//                                    ->options(BundleType::class)
+//                                    ->required(),
+//
+//
+//                                Select::make('products')
+//                                    ->maxItems(fn (Get $get) =>
+//                                    ($get('bundle_type') instanceof BundleType
+//                                        ? $get('bundle_type')->value
+//                                        : $get('bundle_type')
+//                                    ) === BundleType::FIXED_PRICE->value ? 10 : 1
+//                                    )
+//                                    ->searchable()
+//                                    ->preload()
+//                                    ->label(__('bundles.products'))
+//                                    ->multiple()
+//                                    ->relationship('products', 'name'),
+//
+//                                Select::make('landing_pages')
+//                                    ->searchable()
+//                                    ->preload()
+//                                    ->label(__('bundles.landingPages'))
+//                                    ->multiple()
+//                                    ->relationship('landingPages', 'slug'),
+//
+//                                TextInput::make('buy_x')
+//                                    ->live()
+//                                    ->label(__('bundles.buy_x'))
+//                                    ->numeric()
+//                                    ->visible(fn (Get $get) => in_array(
+//                                        $get('bundle_type') instanceof BundleType ? $get('bundle_type') : $get('bundle_type'),
+//                                        [BundleType::BUY_X_GET_Y, BundleType::BUY_QUANTITY_FIXED_PRICE]
+//                                    ))
+//                                    ->afterStateUpdated(fn (Set $set, Get $get) => self::updateDiscountPrice($set, $get)),
+//
+//                                TextInput::make('get_y')
+//                                    ->live()
+//                                    ->label(__('bundles.get_y_free'))
+//                                    ->numeric()
+//                                    ->visible(fn (Get $get) =>
+//                                    ($get('bundle_type') instanceof BundleType
+//                                        ? $get('bundle_type') === BundleType::BUY_X_GET_Y
+//                                        : $get('bundle_type') === BundleType::BUY_X_GET_Y->value
+//                                    )
+//                                    )
+//                                    ->afterStateUpdated(fn (Set $set, Get $get) => self::updateDiscountPrice($set, $get)),
+//
+//                                TextInput::make('discount_price')
+//                                    ->live()
+//                                    ->label(__('bundles.discount_price'))
+//                                    ->numeric()
+//                                    ->visible(fn (Get $get) => filled($get('bundle_type')))
+//                                    ->disabled(fn (Get $get) =>
+//                                        ($get('bundle_type') instanceof BundleType
+//                                            ? $get('bundle_type') === BundleType::BUY_X_GET_Y
+//                                            : $get('bundle_type') === BundleType::BUY_X_GET_Y->value
+//                                        ) && filled($get('buy_x')) && filled($get('get_y'))
+//                                    )
+//                                    ->default(fn (Get $get) => self::calculateDiscountPrice($get))
+//                                    ->afterStateHydrated(fn (Set $set, Get $get) =>
+//                                    $set('discount_price', self::calculateDiscountPrice($get))
+//                                    )
+//                                    ->dehydrated(fn (Get $get) =>
+//                                    $get('bundle_type') instanceof BundleType
+//                                        ? $get('bundle_type') !== BundleType::BUY_X_GET_Y
+//                                        : $get('bundle_type') !== BundleType::BUY_X_GET_Y->value
+//                                    ),
+//                            ]),
+//
+//                        // Special Prices Tab
+//                        Forms\Components\Tabs\Tab::make(__('bundles.special_prices'))
+//                            ->schema([
+//                                Forms\Components\Repeater::make('specialPrices')
+//                                    ->defaultItems(0)
+//                                    ->label(__('bundles.special_prices'))
+//                                    ->relationship('specialPrices')
+//                                    ->columns(2)
+//                                    ->schema([
+//                                        Forms\Components\Placeholder::make('country_or_group_info')
+//                                            ->label(__('country_or_group_info'))
+//                                            ->content(__('messages.select_country_or_group'))
+//                                            ->columnSpanFull(),
+//
+//                                        Forms\Components\Select::make('country_id')
+//                                            ->label(__('fields.select_country'))
+//                                            ->relationship('country', 'name')
+//                                            ->nullable()
+//                                            ->live()
+//                                            ->afterStateUpdated(fn (Forms\Set $set) => $set('country_group_id', null))
+//                                            ->hidden(fn (Forms\Get $get) => filled($get('country_group_id')))
+//                                            ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
+//
+//                                        Forms\Components\Select::make('country_group_id')
+//                                            ->label(__('fields.select_country_group'))
+//                                            ->relationship('countryGroup', 'name')
+//                                            ->preload()
+//                                            ->createOptionForm([
+//                                                Forms\Components\TextInput::make('name')
+//                                                    ->label(__('name'))
+//                                                    ->required()
+//                                                    ->maxLength(255),
+//                                                Forms\Components\Select::make('countries')
+//                                                    ->label(__('countries'))
+//                                                    ->relationship('countries', 'name')
+//                                                    ->multiple()
+//                                                    ->searchable()
+//                                                    ->preload(),
+//                                            ])
+//                                            ->nullable()
+//                                            ->live()
+//                                            ->afterStateUpdated(fn (Forms\Set $set) => $set('country_id', null))
+//                                            ->hidden(fn (Forms\Get $get) => filled($get('country_id')))
+//                                            ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
+//
+//                                        Forms\Components\Select::make('currency_id')
+//                                            ->label(__('fields.currency'))
+//                                            ->relationship('currency', 'name')
+//                                            ->required(),
+//
+//                                        Forms\Components\TextInput::make('special_price')
+//                                            ->label(__('bundles.special_price'))
+//                                            ->numeric()
+//                                            ->required(),
+//
+//                                        Forms\Components\TextInput::make('special_price_after_discount')
+//                                            ->lt('special_price')
+//                                            ->label(__('bundles.after_discount_price'))
+//                                            ->numeric()
+//                                            ->nullable(),
+//                                    ])->columnSpanFull(),
+//                            ]),
+//                    ]),
+//            ]);
+//    }
 
     public static function table(Table $table): Table
     {
@@ -292,7 +294,7 @@ class BundleResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+//                Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
