@@ -666,7 +666,7 @@
     "bundles.name": "Name at frontend",
     "bundles.name_for_admin": "Name at dashboard",
     "bundles.type": "Bundle Type",
-    "bundles.type.fixed_price": "Fixed Price",
+    "bundles.type.fixed_price": "Fixed Price Product Set",
     "type.buy_quantity_fixed_price": "Buy Quantity for Fixed Price",
     "bundles.type.discount_percentage": "Discount Percentage",
     "bundles.type.buy_x_get_y": "Buy X Get Y",
