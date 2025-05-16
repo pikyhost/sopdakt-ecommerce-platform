@@ -30,156 +30,127 @@ class ProductController extends Controller
 
 
     /**
-     * Retrieve all active products with pagination.
+     * @group Products
      *
-     * This endpoint fetches a paginated list of all active (published) products, including their
-     * categories, variants (colors and sizes), ratings, and media URLs. The response is localized
-     * based on the current application locale (e.g., 'en', 'fr'). It is designed for frontend
-     * consumption, providing all necessary data to display product listings with pagination, such
-     * as in an e-commerce catalog or product grid.
+     * Get all active products with filtering and pagination
      *
-     * ### Request Details
-     * - **Method**: GET
-     * - **URL**: `/api/products/active`
-     * - **Query Parameters**:
-     *   - `page` (optional): The page number to retrieve (integer, default: 1).
-     *   - `per_page` (optional): Number of products per page (integer, default: 15, max: 100).
-     * - **Headers**:
-     *   - `Accept: application/json`
-     *   - `X-Locale: <locale>` (optional, defaults to app locale, e.g., 'en')
+     * This endpoint returns a paginated list of all published products with their details, variants, and available filters.
+     * Products can be filtered by various criteria like color, size, category, and rating.
      *
-     * ### Response Structure
-     * The response contains two main keys:
-     * - **products**: An array of product objects for the current page.
-     *   - **id**: The product's unique identifier (integer).
-     *   - **category_id**: The ID of the product's category (integer).
-     *   - **category_name**: The localized name of the category (string, nullable).
-     *   - **name**: The localized name of the product (string).
-     *   - **price**: The original price of the product (float).
-     *   - **after_discount_price**: The discounted price, if applicable (float, nullable).
-     *   - **description**: The localized description of the product (string).
-     *   - **slug**: The URL-friendly slug for the product (string).
-     *   - **views**: Number of views for the product (integer).
-     *   - **sales**: Number of sales for the product (integer).
-     *   - **fake_average_rating**: A manually set average rating for display (float, nullable).
-     *   - **label_id**: The ID of the product's label, if any (integer, nullable).
-     *   - **summary**: The localized summary of the product (string).
-     *   - **quantity**: Total available quantity of the product (integer).
-     *   - **created_at**: Timestamp when the product was created (ISO 8601 string).
-     *   - **updated_at**: Timestamp when the product was last updated (ISO 8601 string).
-     *   - **media**: Object containing product images.
-     *     - **feature_product_image**: URL of the primary feature image (string, nullable).
-     *     - **second_feature_product_image**: URL of the secondary feature image (string, nullable).
-     *   - **variants**: Array of product variants (colors and sizes).
-     *     - **id**: Variant ID (integer).
-     *     - **color_id**: Color ID (integer).
-     *     - **color_name**: Name of the color (string, nullable).
-     *     - **image_url**: URL of the variant image (string).
-     *     - **sizes**: Array of size options for the variant.
-     *       - **id**: Product color size ID (integer).
-     *       - **size_id**: Size ID (integer).
-     *       - **size_name**: Name of the size (string, nullable).
-     *       - **quantity**: Available quantity for this size (integer).
-     *   - **real_average_rating**: Computed average rating from user ratings, rounded to 1 decimal (float).
-     *   - **actions**: Array of available actions for the product (implementation-specific, e.g., URLs or methods).
-     * - **pagination**: Pagination metadata.
-     *   - **current_page**: The current page number (integer).
-     *   - **last_page**: The last page number (integer).
-     *   - **per_page**: Number of products per page (integer).
-     *   - **total**: Total number of active products (integer).
-     *
-     * ### Notes for Frontend Developers
-     * - **Pagination**: Use the `pagination` object to build a paginated UI. The `page` query parameter
-     *   controls the current page, and `per_page` adjusts items per page (default: 15, max: 100).
-     *   Example: `/api/products/active?page=2&per_page=20`.
-     * - **Locale Handling**: The `name`, `category_name`, `description`, and `summary` fields are localized
-     *   based on the current app locale. Use the `X-Locale` header to override the default locale if needed.
-     * - **Nullable Fields**: Fields like `category_name`, `color_name`, `size_name`, `after_discount_price`,
-     *   `feature_product_image`, and `second_feature_product_image` may be `null`. Provide fallback values
-     *   (e.g., "N/A" or a default image).
-     * - **Image URLs**: The `image_url` in `variants` and media URLs are absolute URLs using the `storage`
-     *   directory. Ensure `/storage/` is accessible (run `php artisan storage:link` on the server).
-     * - **Ratings**: `real_average_rating` is computed from user ratings, while `fake_average_rating` is a
-     *   preset value. Prefer `real_average_rating` for authenticity, or use `fake_average_rating` for display
-     *   if set.
-     * - **Actions**: The `actions` field is implementation-specific and may contain URLs or methods for actions
-     *   like "add to cart" or "view details". Parse this field based on your frontend requirements.
-     * - **Empty Pages**: If there are no active products or the requested page is beyond the last page,
-     *   the `products` array will be empty, but the `pagination` object will still provide metadata.
-     *
-     * @return JsonResponse The JSON response containing the paginated list of active products.
+     * @queryParam color_id integer optional Filter products by color ID. Example: 1
+     * @queryParam size_id integer optional Filter products by size ID. Example: 2
+     * @queryParam category_id integer optional Filter products by category ID (includes subcategories). Example: 3
+     * @queryParam min_rating float optional Filter products by minimum fake rating (1-5). Example: 4.5
+     * @queryParam sort_by string optional Sort products by creation date. Possible values: 'latest', 'oldest'. Default: 'latest'. Example: latest
      *
      * @response 200 {
-     *     "products": [
+     *   "products": [
+     *     {
+     *       "id": 1,
+     *       "category_id": 3,
+     *       "category_name": "T-Shirts",
+     *       "name": "Premium Cotton T-Shirt",
+     *       "price": 29.99,
+     *       "after_discount_price": 24.99,
+     *       "description": "High quality cotton t-shirt...",
+     *       "slug": "premium-cotton-t-shirt",
+     *       "views": 150,
+     *       "sales": 30,
+     *       "fake_average_rating": 4.5,
+     *       "label_id": null,
+     *       "summary": "Comfortable and stylish...",
+     *       "quantity": 100,
+     *       "created_at": "2023-01-15T10:00:00.000000Z",
+     *       "updated_at": "2023-01-20T12:30:00.000000Z",
+     *       "media": {
+     *         "feature_product_image": "https://example.com/storage/products/image1.jpg",
+     *         "second_feature_product_image": "https://example.com/storage/products/image2.jpg"
+     *       },
+     *       "variants": [
      *         {
-     *             "id": 1,
-     *             "category_id": 2,
-     *             "category_name": "Clothing",
-     *             "name": "Summer T-Shirt",
-     *             "price": 29.99,
-     *             "after_discount_price": 24.99,
-     *             "description": "A comfortable cotton t-shirt for summer wear.",
-     *             "slug": "summer-t-shirt",
-     *             "views": 150,
-     *             "sales": 30,
-     *             "fake_average_rating": 4.5,
-     *             "label_id": 1,
-     *             "summary": "Lightweight and breathable t-shirt.",
-     *             "quantity": 100,
-     *             "created_at": "2025-05-04T12:00:00Z",
-     *             "updated_at": "2025-05-04T12:00:00Z",
-     *             "media": {
-     *                 "feature_product_image": "https://yourapp.com/storage/images/tshirt.jpg",
-     *                 "second_feature_product_image": "https://yourapp.com/storage/images/tshirt-side.jpg"
+     *           "id": 5,
+     *           "color_id": 1,
+     *           "color_name": "Red",
+     *           "image_url": "https://example.com/storage/variants/red.jpg",
+     *           "sizes": [
+     *             {
+     *               "id": 10,
+     *               "size_id": 2,
+     *               "size_name": "M",
+     *               "quantity": 25
      *             },
-     *             "variants": [
-     *                 {
-     *                     "id": 1,
-     *                     "color_id": 3,
-     *                     "color_name": "Blue",
-     *                     "image_url": "https://yourapp.com/storage/variants/tshirt-blue.jpg",
-     *                     "sizes": [
-     *                         {
-     *                             "id": 1,
-     *                             "size_id": 2,
-     *                             "size_name": "Medium",
-     *                             "quantity": 50
-     *                         },
-     *                         {
-     *                             "id": 2,
-     *                             "size_id": 3,
-     *                             "size_name": "Large",
-     *                             "quantity": 30
-     *                         }
-     *                     ]
-     *                 }
-     *             ],
-     *             "real_average_rating": 4.2,
-     *             "actions": {
-     *                 "view": "https://yourapp.com/api/products/1",
-     *                 "add_to_cart": "https://yourapp.com/api/cart/add/1"
+     *             {
+     *               "id": 11,
+     *               "size_id": 3,
+     *               "size_name": "L",
+     *               "quantity": 30
      *             }
+     *           ]
      *         }
+     *       ],
+     *       "real_average_rating": 4.3,
+     *       "actions": {
+     *         "view": "https://example.com/api/products/1",
+     *         "edit": "https://example.com/api/products/1/edit",
+     *         "delete": "https://example.com/api/products/1"
+     *       }
+     *     }
+     *   ],
+     *   "pagination": {
+     *     "current_page": 1,
+     *     "last_page": 5,
+     *     "per_page": 15,
+     *     "total": 75
+     *   },
+     *   "filters": {
+     *     "colors": [
+     *       {
+     *         "id": 1,
+     *         "name": "Red"
+     *       },
+     *       {
+     *         "id": 2,
+     *         "name": "Blue"
+     *       }
      *     ],
-     *     "pagination": {
-     *         "current_page": 1,
-     *         "last_page": 3,
-     *         "per_page": 15,
-     *         "total": 42
-     *     }
+     *     "sizes": [
+     *       {
+     *         "id": 1,
+     *         "name": "S"
+     *       },
+     *       {
+     *         "id": 2,
+     *         "name": "M"
+     *       }
+     *     ],
+     *     "categories": [
+     *       {
+     *         "id": 1,
+     *         "name": "Men",
+     *         "parent_id": null
+     *       },
+     *       {
+     *         "id": 3,
+     *         "name": "T-Shirts",
+     *         "parent_id": 1
+     *       }
+     *     ]
+     *   }
      * }
-     * @response 200 {
-     *     "products": [],
-     *     "pagination": {
-     *         "current_page": 5,
-     *         "last_page": 3,
-     *         "per_page": 15,
-     *         "total": 42
-     *     }
-     * }
-     * @response 500 {
-     *     "error": "Failed to retrieve products. Please try again later."
-     * }
+     *
+     * @responseField products The list of active products with their details.
+     * @responseField pagination Pagination information.
+     * @responseField filters Available filters for products (colors, sizes, categories).
+     * @responseField products.id The product ID.
+     * @responseField products.name The product name (translated to current locale).
+     * @responseField products.price The original product price.
+     * @responseField products.after_discount_price The discounted price if available.
+     * @responseField products.media.feature_product_image The URL of the main product image.
+     * @responseField products.variants Array of product variants with color and size information.
+     * @responseField products.real_average_rating The actual average rating from customer reviews.
+     * @responseField filters.colors Array of available colors for filtering.
+     * @responseField filters.sizes Array of available sizes for filtering.
+     * @responseField filters.categories Array of available categories for filtering.
      */
     public function getAllActiveProducts(Request $request): JsonResponse
     {
@@ -305,7 +276,6 @@ class ProductController extends Controller
         ]);
 
     }
-
 
     /**
      * Retrieve a list of recommended products.
