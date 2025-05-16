@@ -807,6 +807,46 @@ class ProductResource extends Resource
                     ->hidden(fn () => url()->previous() === url()->current()),
             ])
             ->filters([
+                Filter::make('category')
+                  ->columnSpanFull()
+                    ->form([
+                        SelectTree::make('category_id')
+                            ->placeholder(__('Search for a Category...'))
+                            ->enableBranchNode()
+                            ->hiddenLabel()
+                            ->relationship('category', 'name', 'parent_id')
+                            ->searchable(),
+                    ])
+                    ->query(function (Builder $query, array $data) {
+                        if (!empty($data['category_id'])) {
+                            $selectedCategoryId = $data['category_id'];
+
+                            // Check if the selected category has children
+                            $hasChildren = Category::where('parent_id', $selectedCategoryId)->exists();
+
+                            if ($hasChildren) {
+                                // Get all descendant category IDs
+                                $categoryIds = self::getCategoryWithDescendants($selectedCategoryId);
+                                $query->whereIn('category_id', $categoryIds);
+                            } else {
+                                $query->where('category_id', $selectedCategoryId);
+                            }
+                        }
+                    })
+                    ->indicateUsing(function (array $data): ?string {
+                        if (empty($data['category_id'])) {
+                            return null;
+                        }
+
+                        $category = Category::find($data['category_id']);
+                        $categoryName = $category->name ?? __('Unknown Category');
+
+                        $isParent = Category::where('parent_id', $data['category_id'])->exists();
+
+                        return $isParent
+                            ? __('Showing products in category and subcategories:') . " {$categoryName}"
+                            : __('Showing products in category:') . " {$categoryName}";
+                    }),
                 DateFilter::make('created_at')
                     ->columnSpanFull()
                     ->label(__('Creation date')),

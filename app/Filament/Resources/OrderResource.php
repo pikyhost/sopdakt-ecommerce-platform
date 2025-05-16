@@ -750,7 +750,7 @@ class OrderResource extends Resource
                                 $email = $record->user?->email ?? $record->contact?->email ?? null;
 
                                 if ($email) {
-                                    Mail::to($email)->send(new OrderStatusMail($order, $record->status));
+                                    Mail::to($email)->send(new OrderStatusMail($record, $record->status));
                                 }
                             } else {
                                 Notification::make()
