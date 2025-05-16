@@ -867,8 +867,6 @@ class ProductResource extends Resource
                     ->toggle()
                     ->label(__('Must be Collection?'))
                     ->query(fn ($query) => $query->where('must_be_collection', true)),
-
-
             ], Tables\Enums\FiltersLayout::AboveContentCollapsible)
             ->filtersFormColumns(3)
             ->actions([

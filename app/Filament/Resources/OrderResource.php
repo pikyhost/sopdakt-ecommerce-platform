@@ -10,6 +10,8 @@ use Filament\Forms\Components\Select;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\Indicator;
+use Filament\Tables\Filters\QueryBuilder;
+use Filament\Tables\Filters\QueryBuilder\Constraints\NumberConstraint;
 use Illuminate\Database\Eloquent\Builder;
 use App\Enums\OrderStatus;
 use App\Filament\Resources\OrderResource\Pages;
@@ -116,11 +118,13 @@ class OrderResource extends Resource
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('country.name')
+                      ->toggleable(isToggledHiddenByDefault: true)
                     ->label(__('Country'))
                     ->placeholder('-')
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('governorate.name')
+                      ->toggleable(isToggledHiddenByDefault: true)
                     ->label(__('governorate'))
                     ->placeholder('-')
                     ->searchable(),
@@ -214,6 +218,7 @@ class OrderResource extends Resource
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('shippingType.name')
+                      ->toggleable(isToggledHiddenByDefault: true)
                     ->label(__('Shipping Type'))
                     ->searchable()
                     ->numeric()
@@ -221,6 +226,7 @@ class OrderResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('paymentMethod.name')
+                      ->toggleable(isToggledHiddenByDefault: true)
                     ->label(__('Payment Method'))
                     ->searchable()
                     ->numeric()
@@ -228,6 +234,7 @@ class OrderResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('coupon.id')
+                      ->toggleable(isToggledHiddenByDefault: true)
                     ->label(__('Coupon ID'))
                     ->searchable()
                     ->numeric()
@@ -235,18 +242,21 @@ class OrderResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('shipping_cost')
+                      ->toggleable(isToggledHiddenByDefault: true)
                     ->label(__('Shipping Cost'))
                     ->numeric()
                     ->placeholder('-')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('tax_percentage')
+                      ->toggleable(isToggledHiddenByDefault: true)
                     ->label(__('Tax Percentage'))
                     ->numeric()
                     ->placeholder('-')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('tax_amount')
+                      ->toggleable(isToggledHiddenByDefault: true)
                     ->label(__('Tax Amount'))
                     ->numeric()
                     ->placeholder('-')
@@ -256,6 +266,7 @@ class OrderResource extends Resource
                     ->label(__('Subtotal'))
                     ->numeric()
                     ->placeholder('-')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('total')
@@ -278,6 +289,11 @@ class OrderResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                QueryBuilder::make()
+                    ->constraints([
+                        NumberConstraint::make('id')
+                            ->integer(),
+                    ]),
                 SelectFilter::make('status')
                     ->label(__('Status'))
                     ->multiple()
