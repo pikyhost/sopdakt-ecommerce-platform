@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\Country;
 use App\Models\Governorate;
 use App\Models\City;
 use Illuminate\Auth\Events\Registered;
@@ -18,10 +17,11 @@ class RegisteredUserController extends Controller
 {
     public function store(Request $request): JsonResponse
     {
-        if (Auth::check()) {
+        // Prevent registration if already authenticated
+        if ($request->user()) {
             return response()->json([
                 'status' => 'error',
-                'message' => __('auth.already_logged_in'),
+                'message' => 'You are already logged in.',
             ], 403);
         }
 
@@ -79,7 +79,7 @@ class RegisteredUserController extends Controller
         ]);
 
         event(new Registered($user));
-//        Auth::login($user); removed
+        Auth::login($user);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
