@@ -4,11 +4,9 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\Country;
 use App\Models\Governorate;
 use App\Models\City;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -25,8 +23,6 @@ class RegisteredUserController extends Controller
                     'message' => 'You are already logged in.',
                 ], 403);
             }
-
-            return redirect(config('app.frontend_url', 'https://sopdakt.com'));
         }
 
         $request->validate([
@@ -82,7 +78,10 @@ class RegisteredUserController extends Controller
             'is_active' => true,
         ]);
 
+        $user->assignRole('client');
+
         event(new Registered($user));
+
         Auth::login($user);
 
         $token = $user->createToken('auth_token')->plainTextToken;
