@@ -343,6 +343,7 @@ class BlogController extends Controller
                 'author' => [
                     'id' => $blog->author->id,
                     'name' => $blog->author->name,
+                    'avatar' => asset('storage/' . $blog->author->avatar_url)
                 ],
                 'image_url' => $blog->getMainBlogImageUrl(),
                 'likes_count' => $blog->likers()->count(),

@@ -117,15 +117,7 @@ Route::get('/all-products', [ProductController::class, 'getAllActiveProducts']);
 
 Route::get('/recommended-products', [ProductController::class, 'getRecommendedProducts']);
 
-Route::group(['prefix' => 'blogs', 'as' => 'api.blogs.'], function () {
-    Route::get('categories', [BlogController::class, 'getCategories'])->name('categories');
-    Route::get('/', [BlogController::class, 'getBlogs'])->name('index');
-    Route::get('{slug}', [BlogController::class, 'getBlogBySlug'])->name('show');
-    Route::get('tags', [BlogController::class, 'getTags'])->name('tags');
-    Route::post('{blogId}/toggle-like', [BlogController::class, 'toggleLike'])
-        ->name('toggle-like')->middleware('auth:sanctum');
-});
-
+// use this
 Route::middleware('api')->group(function () {
     // Public blog endpoints
     Route::get('/blogs', [BlogController::class, 'index']);
