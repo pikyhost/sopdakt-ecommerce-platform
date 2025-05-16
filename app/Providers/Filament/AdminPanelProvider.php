@@ -166,6 +166,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->spa()
             ->spaUrlExceptions([
+                '*/admin/products',
                 '*/admin/products/*/edit',
                 '*/admin/categories/*/edit',
                 '*/admin/products/create',
