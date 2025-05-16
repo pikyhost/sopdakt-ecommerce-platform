@@ -99,8 +99,8 @@ class BundlesRelationManager extends RelationManager
                         ->live()
                         ->label(__('bundles.type'))
                         ->options([
-                            'fixed_price' => __('bundles.type.fixed_price'),
-                            'buy_x_get_y' => __('bundles.type.buy_x_get_y'),
+                            'fixed_price' => __('bundles.fixed_price'),
+                            'buy_x_get_y' => __('bundles.buy_x_get_y'),
                             'buy_quantity_fixed_price' => __('type.buy_quantity_fixed_price'), // New type
                         ])
                         ->required()
