@@ -3,24 +3,48 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\RegisterRequest;
 use App\Models\User;
+use App\Models\Country;
 use App\Models\Governorate;
 use App\Models\City;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules;
 
 class RegisteredUserController extends Controller
 {
-    public function store(RegisterRequest $request): JsonResponse
+    public function store(Request $request)
     {
-        // Validation is handled by RegisterRequest
-        $validated = $request->validated();
+        if ($request->user()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'You are already logged in.',
+                ], 403);
+            }
 
-        // Additional validation for governorate and city relationships
-        if ($validated['country_id'] && $validated['governorate_id']) {
-            $governorateBelongsToCountry = Governorate::where('id', $validated['governorate_id'])
-                ->where('country_id', $validated['country_id'])
+            return redirect(config('app.frontend_url', 'https://sopdakt.com'));
+        }
+
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'phone' => ['nullable', 'string'],
+            'second_phone' => ['nullable', 'string'],
+            'preferred_language' => ['nullable', 'string', 'max:5'],
+            'avatar_url' => ['nullable', 'url'],
+            'country_id' => ['nullable', 'exists:countries,id'],
+            'governorate_id' => ['nullable', 'exists:governorates,id'],
+            'city_id' => ['nullable', 'exists:cities,id'],
+        ]);
+
+        if ($request->country_id && $request->governorate_id) {
+            $governorateBelongsToCountry = Governorate::where('id', $request->governorate_id)
+                ->where('country_id', $request->country_id)
                 ->exists();
 
             if (!$governorateBelongsToCountry) {
@@ -31,9 +55,9 @@ class RegisteredUserController extends Controller
             }
         }
 
-        if ($validated['governorate_id'] && $validated['city_id']) {
-            $cityBelongsToGovernorate = City::where('id', $validated['city_id'])
-                ->where('governorate_id', $validated['governorate_id'])
+        if ($request->governorate_id && $request->city_id) {
+            $cityBelongsToGovernorate = City::where('id', $request->city_id)
+                ->where('governorate_id', $request->governorate_id)
                 ->exists();
 
             if (!$cityBelongsToGovernorate) {
@@ -44,25 +68,23 @@ class RegisteredUserController extends Controller
             }
         }
 
-        // Create the user
         $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => \Illuminate\Support\Facades\Hash::make($validated['password']),
-            'phone' => $validated['phone'],
-            'second_phone' => $validated['second_phone'],
-            'preferred_language' => $validated['preferred_language'] ?? 'en',
-            'avatar_url' => $validated['avatar_url'],
-            'country_id' => $validated['country_id'],
-            'governorate_id' => $validated['governorate_id'],
-            'city_id' => $validated['city_id'],
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'phone' => $request->phone,
+            'second_phone' => $request->second_phone,
+            'preferred_language' => $request->preferred_language ?? 'en',
+            'avatar_url' => $request->avatar_url,
+            'country_id' => $request->country_id,
+            'governorate_id' => $request->governorate_id,
+            'city_id' => $request->city_id,
             'is_active' => true,
         ]);
 
-        // Trigger the Registered event
         event(new Registered($user));
+        Auth::login($user);
 
-        // Generate an API token
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -72,8 +94,7 @@ class RegisteredUserController extends Controller
                 'id', 'name', 'email', 'phone', 'second_phone', 'preferred_language',
                 'avatar_url', 'country_id', 'governorate_id', 'city_id', 'is_active', 'created_at'
             ]),
-            'token' => $token,
-            'redirect_to' => '/dashboard' // Optional: Suggest frontend route
+            'token' => $token
         ], 201);
     }
 }

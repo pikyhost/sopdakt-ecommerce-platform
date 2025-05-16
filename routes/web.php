@@ -8,9 +8,9 @@ use App\Http\Controllers\{Api\NewsletterSubscriberController,
     PaymentController,
     ShippingController};
 
-Route::get('/', function () {
-    return redirect(config('app.frontend_url'));
-});
+//Route::get('/', function () {
+//    return redirect(config('app.frontend_url'));
+//});
 
 Route::post('/bosta/webhook', [BostaWebhookController::class, 'handle'])->name('bosta.webhook');
 
