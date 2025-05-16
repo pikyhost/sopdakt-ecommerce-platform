@@ -667,6 +667,7 @@
     "bundles.name_for_admin": "Name at dashboard",
     "bundles.type": "Bundle Type",
     "bundles.type.fixed_price": "Fixed Price",
+    "type.buy_quantity_fixed_price": "Buy Quantity for Fixed Price",
     "bundles.type.discount_percentage": "Discount Percentage",
     "bundles.type.buy_x_get_y": "Buy X Get Y",
     "bundles.discount_price": "Discount Price",

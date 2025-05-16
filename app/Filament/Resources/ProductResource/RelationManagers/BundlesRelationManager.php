@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ProductResource\RelationManagers;
 
+use Filament\Forms\Components\Section;
 use Filament\Resources\RelationManagers\Concerns\Translatable;
 use Filament\Resources\RelationManagers\RelationManager;
 use Closure;
@@ -81,12 +82,11 @@ class BundlesRelationManager extends RelationManager
         }
     }
 
-
     public function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Section::make()->schema([
+                Section::make()->schema([
                     TextInput::make('name')
                         ->label(__('bundles.name'))
                         ->required(),
@@ -101,9 +101,10 @@ class BundlesRelationManager extends RelationManager
                         ->options([
                             'fixed_price' => __('bundles.type.fixed_price'),
                             'buy_x_get_y' => __('bundles.type.buy_x_get_y'),
+                            'buy_quantity_fixed_price' => __('type.buy_quantity_fixed_price'), // New type
                         ])
                         ->required()
-                        ->afterStateUpdated(fn (Set $set) => $set('discount_price', null)), // Reset discount price when type changes
+                        ->afterStateUpdated(fn (Set $set) => $set('discount_price', null)),
 
                     TextInput::make('buy_x')
                         ->live()
@@ -117,6 +118,13 @@ class BundlesRelationManager extends RelationManager
                         ->label(__('bundles.get_y_free'))
                         ->numeric()
                         ->visible(fn (Get $get) => $get('bundle_type') === 'buy_x_get_y')
+                        ->afterStateUpdated(fn (Set $set, Get $get) => $this->updateDiscountPrice($set, $get)),
+
+                    TextInput::make('buy_quantity')
+                        ->live()
+                        ->label(__('bundles.buy_quantity'))
+                        ->numeric()
+                        ->visible(fn (Get $get) => $get('bundle_type') === 'buy_quantity_fixed_price')
                         ->afterStateUpdated(fn (Set $set, Get $get) => $this->updateDiscountPrice($set, $get)),
 
                     Hidden::make('products')
@@ -142,17 +150,22 @@ class BundlesRelationManager extends RelationManager
                                 }
                             }
                         ])
-                        ->visible(fn (Get $get) => $get('bundle_type') === 'fixed_price'),
+                        ->visible(fn (Get $get) =>
+                        in_array($get('bundle_type'), ['fixed_price', 'buy_quantity_fixed_price'])
+                        ),
 
                     TextInput::make('discount_price')
                         ->live()
                         ->label(__('bundles.discount_price'))
                         ->numeric()
                         ->visible(fn (Get $get) => $get('bundle_type') !== null)
-                        ->disabled(fn (Get $get) => $get('bundle_type') === 'buy_x_get_y' && $get('buy_x') !== null && $get('get_y') !== null)
-                        ->dehydrated() // Ensures value is saved even if disabled
+                        ->disabled(fn (Get $get) =>
+                            ($get('bundle_type') === 'buy_x_get_y' && $get('buy_x') !== null && $get('get_y') !== null) ||
+                            ($get('bundle_type') === 'buy_quantity_fixed_price' && $get('buy_quantity') !== null)
+                        )
+                        ->dehydrated()
                         ->afterStateUpdated(fn (Set $set, Get $get) => $this->handleDiscountUpdated($set, $get)),
-                ])
+                ]),
             ]);
     }
 
