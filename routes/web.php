@@ -8,6 +8,10 @@ use App\Http\Controllers\{Api\NewsletterSubscriberController,
     PaymentController,
     ShippingController};
 
+Route::get('/', function () {
+    return response()->json(['message' => 'Welcome to API'], 200);
+});
+
 Route::post('/bosta/webhook', [BostaWebhookController::class, 'handle'])->name('bosta.webhook');
 
 Route::get('/invitation/guest/{invitation}', AcceptGuestInvitation::class)
