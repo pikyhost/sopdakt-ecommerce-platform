@@ -290,6 +290,7 @@ class OrderResource extends Resource
             ])
             ->filters([
                 QueryBuilder::make()
+                    ->columnSpanFull()
                     ->constraints([
                         NumberConstraint::make('id')
                             ->integer(),
