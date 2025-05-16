@@ -106,27 +106,6 @@ class BundlesRelationManager extends RelationManager
                         ->required()
                         ->afterStateUpdated(fn (Set $set) => $set('discount_price', null)),
 
-                    TextInput::make('buy_x')
-                        ->live()
-                        ->label(__('bundles.buy_x'))
-                        ->numeric()
-                        ->visible(fn (Get $get) => $get('bundle_type') === 'buy_x_get_y')
-                        ->afterStateUpdated(fn (Set $set, Get $get) => $this->updateDiscountPrice($set, $get)),
-
-                    TextInput::make('get_y')
-                        ->live()
-                        ->label(__('bundles.get_y_free'))
-                        ->numeric()
-                        ->visible(fn (Get $get) => $get('bundle_type') === 'buy_x_get_y')
-                        ->afterStateUpdated(fn (Set $set, Get $get) => $this->updateDiscountPrice($set, $get)),
-
-                    TextInput::make('buy_quantity')
-                        ->live()
-                        ->label(__('Quantity'))
-                        ->numeric()
-                        ->visible(fn (Get $get) => $get('bundle_type') === 'buy_quantity_fixed_price')
-                        ->afterStateUpdated(fn (Set $set, Get $get) => $this->updateDiscountPrice($set, $get)),
-
                     Hidden::make('products')
                         ->default(fn () => $this->getOwnerRecord()->id)
                         ->visible(fn (Get $get) => $get('bundle_type') !== 'buy_x_get_y'),
@@ -153,6 +132,27 @@ class BundlesRelationManager extends RelationManager
                         ->visible(fn (Get $get) =>
                         in_array($get('bundle_type'), ['fixed_price', 'buy_quantity_fixed_price'])
                         ),
+
+                    TextInput::make('buy_x')
+                        ->live()
+                        ->label(__('bundles.buy_x'))
+                        ->numeric()
+                        ->visible(fn (Get $get) => $get('bundle_type') === 'buy_x_get_y')
+                        ->afterStateUpdated(fn (Set $set, Get $get) => $this->updateDiscountPrice($set, $get)),
+
+                    TextInput::make('get_y')
+                        ->live()
+                        ->label(__('bundles.get_y_free'))
+                        ->numeric()
+                        ->visible(fn (Get $get) => $get('bundle_type') === 'buy_x_get_y')
+                        ->afterStateUpdated(fn (Set $set, Get $get) => $this->updateDiscountPrice($set, $get)),
+
+                    TextInput::make('buy_quantity')
+                        ->live()
+                        ->label(__('Quantity'))
+                        ->numeric()
+                        ->visible(fn (Get $get) => $get('bundle_type') === 'buy_quantity_fixed_price')
+                        ->afterStateUpdated(fn (Set $set, Get $get) => $this->updateDiscountPrice($set, $get)),
 
                     TextInput::make('discount_price')
                         ->live()
