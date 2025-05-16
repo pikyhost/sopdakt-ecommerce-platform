@@ -93,6 +93,7 @@ class RegisteredUserController extends Controller
                 'id', 'name', 'email', 'phone', 'second_phone', 'preferred_language',
                 'avatar_url', 'country_id', 'governorate_id', 'city_id', 'is_active', 'created_at'
             ]),
+            'role' => auth()->user()->roles()->first()->name,
             'token' => $token
         ], 201);
     }
