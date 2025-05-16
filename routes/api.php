@@ -43,8 +43,10 @@ Route::prefix('aramex')->group(function () {
 Route::post('/payment/process', [PaymentController::class, 'paymentProcess']);
 Route::match(['GET','POST'],'/payment/callback', [PaymentController::class, 'callBack']);
 
+
+Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
 Route::get('/home/featured-categories', [HomeController::class, 'featuredCategories']);
-Route::get('/categories/{category:slug}', [CategoryController::class, 'showWithProducts']);
+Route::get('/categories/{category:slug}', [CategoryController::class, 'showWithProducts'])->name('categories.show');
 
 Route::get('products/{id}/colors-sizes', [ProductController::class, 'colorsSizes']);
 

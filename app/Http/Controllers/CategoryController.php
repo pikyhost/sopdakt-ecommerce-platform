@@ -29,9 +29,9 @@ class CategoryController extends Controller
      *   }
      * }
      */
-    public function showWithProducts(Request $request, Category $category)
+    public function showWithProducts(Category $category)
     {
-        $locale = $request->get('locale', app()->getLocale());
+        $locale =app()->getLocale();
 
         $category->load([
             'products' => [
@@ -112,5 +112,40 @@ class CategoryController extends Controller
                 'url' => route('products.show', ['slug' => $product->slug]),
             ],
         ];
+    }
+
+    public function index(Request $request)
+    {
+        $locale = app()->getLocale();
+
+        $categories = Category::where('is_published', true)
+            ->withCount('products')
+            ->latest()
+            ->paginate(10);
+
+        $transformedCategories = $categories->getCollection()->map(function ($category) use ($locale) {
+            return [
+                'id' => $category->id,
+                'name' => $category->getTranslation('name', $locale),
+                'slug' => $category->slug,
+                'description' => $category->getTranslation('description', $locale),
+                'image_url' => $category->getMainCategoryImageUrl(),
+                'products_count' => $category->products_count,
+                'url' => route('categories.show', $category->slug),
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'categories' => $transformedCategories,
+                'pagination' => [
+                    'current_page' => $categories->currentPage(),
+                    'last_page' => $categories->lastPage(),
+                    'per_page' => $categories->perPage(),
+                    'total' => $categories->total(),
+                ],
+            ],
+        ]);
     }
 }
