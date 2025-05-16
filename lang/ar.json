@@ -1,10 +1,9 @@
 {
-
+    "bundles.type.buy_quantity_fixed_price": "اشترِ كمية بسعر ثابت",
     "Order sent to J&T Express": "تم إرسال الطلب إلى J&T Express",
     "Shipping to J&T Express failed": "فشل إرسال الطلب إلى J&T Express",
     "J&T Express Tracking Number": "رقم تتبع J&T اكسبريس",
-    "Bosta Tracking Number": "رقم تتبع Bosta",
-    "Aramex Tracking Number": "رقم تتبع Aramex",
+    "Bosta Tracking Number": "رقم تتبع بوستا",
     "Aramex Shipment ID": "رقم شحنة ارامكس",
     "Aramex Tracking Number": "رقم تتبع ارامكس",
     "Aramex Shipment Waybill URL": " رابط بوليصة الشحن لارامكس",

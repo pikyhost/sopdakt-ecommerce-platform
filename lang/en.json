@@ -1,4 +1,5 @@
 {
+    "bundles.type.buy_quantity_fixed_price": "Buy quantity for a fixed price",
     "auth.already_logged_in": "You are already logged in.",
     "auth.invalid_governorate": "The selected governorate does not belong to the selected country.",
     "auth.invalid_city": "The selected city does not belong to the selected governorate.",

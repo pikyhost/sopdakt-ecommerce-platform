@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\BundleType;
 use App\Filament\Resources\BundleResource\Pages;
 use App\Models\Bundle;
 use Filament\Forms;
@@ -112,17 +113,15 @@ class BundleResource extends Resource
                                 Select::make('bundle_type')
                                     ->live()
                                     ->label(__('bundles.type'))
-                                    ->options([
-                                        'fixed_price' => __('bundles.type.fixed_price'),
-                                        'buy_x_get_y' => __('bundles.type.buy_x_get_y'),
-                                        'buy_quantity_fixed_price' => __('bundles.type.buy_quantity_fixed_price'),
-                                    ])
+                                    ->options(BundleType::class)
                                     ->required(),
 
                                 Select::make('products')
-                                    ->maxItems(fn (Get $get) => ($get('bundle_type') instanceof \App\Enums\BundleType
-                                        ? $get('bundle_type')->value
-                                        : $get('bundle_type')) === 'fixed_price' ? 10 : 1
+                                    ->maxItems(fn (Get $get) =>
+                                    ($get('bundle_type') instanceof BundleType
+                                        ? $get('bundle_type') === BundleType::FIXED_PRICE
+                                        : $get('bundle_type') === BundleType::FIXED_PRICE->value
+                                    ) ? 10 : 1
                                     )
                                     ->searchable()
                                     ->preload()
@@ -141,31 +140,44 @@ class BundleResource extends Resource
                                     ->live()
                                     ->label(__('bundles.buy_x'))
                                     ->numeric()
-                                    ->visible(fn ($get) => in_array($get('bundle_type'), ['buy_x_get_y', 'buy_quantity_fixed_price']))
+                                    ->visible(fn (Get $get) => in_array(
+                                        $get('bundle_type') instanceof BundleType ? $get('bundle_type') : $get('bundle_type'),
+                                        [BundleType::BUY_X_GET_Y, BundleType::BUY_QUANTITY_FIXED_PRICE]
+                                    ))
                                     ->afterStateUpdated(fn (Set $set, Get $get) => self::updateDiscountPrice($set, $get)),
 
                                 TextInput::make('get_y')
                                     ->live()
                                     ->label(__('bundles.get_y_free'))
                                     ->numeric()
-                                    ->visible(fn ($get) => $get('bundle_type') === 'buy_x_get_y')
+                                    ->visible(fn (Get $get) =>
+                                    ($get('bundle_type') instanceof BundleType
+                                        ? $get('bundle_type') === BundleType::BUY_X_GET_Y
+                                        : $get('bundle_type') === BundleType::BUY_X_GET_Y->value
+                                    )
+                                    )
                                     ->afterStateUpdated(fn (Set $set, Get $get) => self::updateDiscountPrice($set, $get)),
 
                                 TextInput::make('discount_price')
                                     ->live()
                                     ->label(__('bundles.discount_price'))
                                     ->numeric()
-                                    ->visible(fn ($get) => $get('bundle_type')) // Show for all types
-                                    ->disabled(fn ($get) =>
-                                        in_array($get('bundle_type'), ['buy_x_get_y', 'buy_quantity_fixed_price'])
-                                        && $get('buy_x') !== null
+                                    ->visible(fn (Get $get) => filled($get('bundle_type')))
+                                    ->disabled(fn (Get $get) =>
+                                        ($get('bundle_type') instanceof BundleType
+                                            ? $get('bundle_type') === BundleType::BUY_X_GET_Y
+                                            : $get('bundle_type') === BundleType::BUY_X_GET_Y->value
+                                        ) && filled($get('buy_x')) && filled($get('get_y'))
                                     )
                                     ->default(fn (Get $get) => self::calculateDiscountPrice($get))
                                     ->afterStateHydrated(fn (Set $set, Get $get) =>
                                     $set('discount_price', self::calculateDiscountPrice($get))
                                     )
-                                    ->dehydrated(fn ($get) => $get('bundle_type') === 'buy_x_get_y'),
-
+                                    ->dehydrated(fn (Get $get) =>
+                                    $get('bundle_type') instanceof BundleType
+                                        ? $get('bundle_type') !== BundleType::BUY_X_GET_Y
+                                        : $get('bundle_type') !== BundleType::BUY_X_GET_Y->value
+                                    ),
                             ]),
 
                         // Special Prices Tab
