@@ -1,4 +1,5 @@
 {
+    "type.buy_quantity_fixed_price": "اشترِ كمية بسعر ثابت",
     "bundles.type.buy_quantity_fixed_price": "اشترِ كمية بسعر ثابت",
     "Order sent to J&T Express": "تم إرسال الطلب إلى J&T Express",
     "Shipping to J&T Express failed": "فشل إرسال الطلب إلى J&T Express",
