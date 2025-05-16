@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Exports\ProductExporter;
+use App\Models\Category;
 use Closure;
 use App\Filament\Resources\ProductResource\Pages;
 use App\Filament\Resources\ProductResource\RelationManagers\BundlesRelationManager;
@@ -889,6 +890,18 @@ class ProductResource extends Resource
             ->defaultSort('order_items_count', 'desc'); //order_items_count
     }
 
+    public static function getCategoryWithDescendants($categoryId): array
+    {
+        $ids = [$categoryId];
+        $children = Category::where('parent_id', $categoryId)->pluck('id');
+
+        foreach ($children as $childId) {
+            $ids = array_merge($ids, self::getCategoryWithDescendants($childId));
+        }
+
+        return $ids;
+    }
+    
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
