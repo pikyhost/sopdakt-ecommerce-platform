@@ -16,7 +16,7 @@ enum BundleType: string implements HasColor, HasLabel
         return match ($this) {
             self::FIXED_PRICE => __('bundles.fixed_price'),
             self::BUY_X_GET_Y => __('bundles.buy_x_get_y'),
-            self::BUY_QUANTITY_FIXED_PRICE => __('bundles.buy_quantity_fixed_price'),
+            self::BUY_QUANTITY_FIXED_PRICE => __('type.buy_quantity_fixed_price'),
         };
     }
 

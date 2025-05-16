@@ -197,6 +197,8 @@ class BundlesRelationManager extends RelationManager
                     ->label(__('bundles.discount_price'))
                     ->numeric()
                     ->sortable(),
+
+                Tables\Columns\TextColumn::make('buy_quantity')->label(__('Quantity')),
                 Tables\Columns\TextColumn::make('buy_x')
                     ->placeholder('-')
                     ->label(__('bundles.buy_x'))
