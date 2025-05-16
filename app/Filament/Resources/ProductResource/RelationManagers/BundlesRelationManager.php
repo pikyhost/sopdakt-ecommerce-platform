@@ -160,8 +160,7 @@ class BundlesRelationManager extends RelationManager
                         ->numeric()
                         ->visible(fn (Get $get) => $get('bundle_type') !== null)
                         ->disabled(fn (Get $get) =>
-                            ($get('bundle_type') === 'buy_x_get_y' && $get('buy_x') !== null && $get('get_y') !== null) ||
-                            ($get('bundle_type') === 'buy_quantity_fixed_price' && $get('buy_quantity') !== null)
+                            ($get('bundle_type') === 'buy_x_get_y' && $get('buy_x') !== null && $get('get_y') !== null)
                         )
                         ->dehydrated()
                         ->afterStateUpdated(fn (Set $set, Get $get) => $this->handleDiscountUpdated($set, $get)),
