@@ -13,11 +13,12 @@ class ContactSettingController extends Controller
      * Retrieve all contact settings
      *
      * This endpoint fetches all contact settings stored in the system, such as phone numbers, email addresses,
-     * and Skype handles. The settings are returned as an associative array where the key is the setting identifier
-     * (e.g., phone1, email1) and the value is the corresponding setting value. If no settings are found, an error
-     * message is returned indicating that the contact settings are null or empty.
+     * Skype handles, and social media links. The settings are returned as an associative array where the key is
+     * the setting identifier (e.g., phone1, email1), and the value is the corresponding setting value. Social media
+     * links are returned in a nested `social_media` object. If no settings are found, an error message is returned.
      *
      * @group Contact Settings
+     *
      * @response 200 {
      *     "data": {
      *         "phone1": "0201 203 2032",
@@ -29,16 +30,27 @@ class ContactSettingController extends Controller
      *         "skype1": "porto_skype",
      *         "skype2": "porto_templete"
      *     },
+     *     "social_media": {
+     *         "facebook": "https://facebook.com/company",
+     *         "instagram": "https://instagram.com/company.ae",
+     *         "linkedin": null,
+     *         "twitter": null,
+     *         "youtube": null,
+     *         "tiktok": null
+     *     },
      *     "message": "Contact settings retrieved successfully"
      * }
+     *
      * @response 404 {
      *     "error": "Contact settings are null or empty",
      *     "support_link": "https://your-domain.com/contact-us"
      * }
+     *
      * @response 500 {
      *     "error": "An unexpected error occurred while retrieving contact settings. Please try again.",
      *     "support_link": "https://your-domain.com/contact-us"
      * }
+     *
      * @return JsonResponse
      */
     public function index(): JsonResponse
@@ -55,8 +67,12 @@ class ContactSettingController extends Controller
                 ], 404);
             }
 
+            // Fetch social media links
+            $socials = Setting::getSocialMediaLinks();
+
             return response()->json([
                 'data' => $settings,
+                'social_media' => $socials,
                 'message' => 'Contact settings retrieved successfully',
             ], 200);
 
