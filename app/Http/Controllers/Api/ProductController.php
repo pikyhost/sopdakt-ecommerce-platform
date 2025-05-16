@@ -9,11 +9,25 @@ use App\Models\Product;
 use App\Models\Color;
 use App\Models\Size;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
+    protected function getCategoryWithChildrenIds($categoryId): array
+    {
+        $ids = [$categoryId];
+
+        $childIds = \App\Models\Category::where('parent_id', $categoryId)->pluck('id')->toArray();
+        foreach ($childIds as $childId) {
+            $ids = array_merge($ids, $this->getCategoryWithChildrenIds($childId));
+        }
+
+        return $ids;
+    }
+
+
     /**
      * Retrieve all active products with pagination.
      *
@@ -166,9 +180,15 @@ class ProductController extends Controller
      *     "error": "Failed to retrieve products. Please try again later."
      * }
      */
-    public function getAllActiveProducts(): JsonResponse
+    public function getAllActiveProducts(Request $request): JsonResponse
     {
         $locale = app()->getLocale();
+
+        $colorId = $request->input('color_id');
+        $sizeId = $request->input('size_id');
+        $categoryId = $request->input('category_id');
+        $minRating = $request->input('min_rating');
+        $sortBy = $request->input('sort_by'); // 'latest' or 'oldest'
 
         $products = Product::with([
             'category',
@@ -177,7 +197,30 @@ class ProductController extends Controller
             'ratings',
         ])
             ->where('is_published', true)
-            ->paginate(15); // You can change the number per page
+
+            // Filter by color
+            ->when($colorId, fn($query) =>
+            $query->whereHas('productColors', fn($q) => $q->where('color_id', $colorId)))
+
+            // Filter by size
+            ->when($sizeId, fn($query) =>
+            $query->whereHas('productColors.productColorSizes', fn($q) => $q->where('size_id', $sizeId)))
+
+            // Filter by category (including subcategories)
+            ->when($categoryId, function ($query, $categoryId) {
+                $categoryIds = $this->getCategoryWithChildrenIds($categoryId);
+                $query->whereIn('category_id', $categoryIds);
+            })
+
+            // Filter by minimum fake rating
+            ->when($minRating, fn($query) =>
+            $query->where('fake_average_rating', '>=', $minRating))
+
+            // Sorting
+            ->when($sortBy === 'oldest', fn($query) => $query->orderBy('created_at', 'asc'))
+            ->when($sortBy === 'latest' || !$sortBy, fn($query) => $query->orderBy('created_at', 'desc'))
+
+            ->paginate(15);
 
         $result = $products->getCollection()->map(function ($product) use ($locale) {
             return [
@@ -197,12 +240,10 @@ class ProductController extends Controller
                 'quantity' => $product->quantity,
                 'created_at' => $product->created_at,
                 'updated_at' => $product->updated_at,
-
                 'media' => [
                     'feature_product_image' => $product->getFeatureProductImageUrl(),
                     'second_feature_product_image' => $product->getSecondFeatureProductImageUrl(),
                 ],
-
                 'variants' => $product->productColors->map(fn($variant) => [
                     'id' => $variant->id,
                     'color_id' => $variant->color_id,
@@ -215,9 +256,7 @@ class ProductController extends Controller
                         'quantity' => $pcs->quantity,
                     ]),
                 ]),
-
                 'real_average_rating' => round($product->ratings->avg('rating'), 1),
-
                 'actions' => $this->buildProductActionsWithMethods($product),
             ];
         });
@@ -232,6 +271,7 @@ class ProductController extends Controller
             ],
         ]);
     }
+
 
     /**
      * Retrieve a list of recommended products.
