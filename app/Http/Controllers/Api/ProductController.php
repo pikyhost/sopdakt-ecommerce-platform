@@ -28,7 +28,6 @@ class ProductController extends Controller
         return $ids;
     }
 
-
     /**
      * @group Products
      *

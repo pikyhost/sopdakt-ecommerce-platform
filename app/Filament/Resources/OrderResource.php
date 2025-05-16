@@ -130,7 +130,7 @@ class OrderResource extends Resource
                     ->placeholder('-')
                     ->searchable(),
 
-                TextColumn::make('tracking_number')
+                TextColumn::make('tracking_number')  // this is thetracking_number of j and t
                     ->copyable()
                     ->placeholder('-')
                     ->label(__('J&T Express Tracking Number'))
@@ -636,6 +636,9 @@ class OrderResource extends Resource
 
                 Tables\Actions\Action::make('send_to_jt_express')
                     ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt &&
+                        is_null($record->tracking_number) &&
+                        is_null($record->bosta_delivery_id) &&
+                        is_null($record->aramex_shipment_id) &&
                         $record->status == OrderStatus::Preparing &&
                         !$record->tracking_number &&
                         ($record->user || $record->contact) &&
@@ -653,6 +656,9 @@ class OrderResource extends Resource
                     ->icon('heroicon-o-truck')
                     ->color('primary')
                     ->visible(fn(Order $record): bool => Setting::first()?->enable_bosta &&
+                        is_null($record->tracking_number) &&
+                        is_null($record->bosta_delivery_id) &&
+                        is_null($record->aramex_shipment_id) &&
                         $record->status === OrderStatus::Preparing &&
                         !$record->bosta_delivery_id &&
                         ($record->user || $record->contact) &&
@@ -673,7 +679,7 @@ class OrderResource extends Resource
                             Notification::make()->title(__('Order sent to Bosta'))->success()->send();
 
                             // ✅ Send email AFTER tracking number is updated
-                            $email = $order->user->email ?? $record->contact->email;
+                            $email = $record->user?->email ?? $record->contact?->email ?? null;
                             if ($email) {
                                 Mail::to($email)->send(new OrderStatusMail($record, $record->status));
                             }
@@ -689,6 +695,9 @@ class OrderResource extends Resource
 
                 Action::make('createAramexShipment')
                     ->visible(fn(Order $record): bool => Setting::first()?->enable_aramex &&
+                        is_null($record->tracking_number) &&
+                        is_null($record->bosta_delivery_id) &&
+                        is_null($record->aramex_shipment_id) &&
                         $record->status === OrderStatus::Preparing &&
                         !$record->aramex_shipment_id &&
                         ($record->user || $record->contact) &&
@@ -738,7 +747,8 @@ class OrderResource extends Resource
                                     ->send();
 
                                 // ✅ Send email AFTER tracking number is updated
-                                $email = $order->user->email ?? $record->contact->email;
+                                $email = $record->user?->email ?? $record->contact?->email ?? null;
+
                                 if ($email) {
                                     Mail::to($email)->send(new OrderStatusMail($order, $record->status));
                                 }
