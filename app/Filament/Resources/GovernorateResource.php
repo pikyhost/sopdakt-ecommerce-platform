@@ -18,9 +18,11 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Actions\ExportBulkAction;
 use Filament\Tables\Actions\ImportAction;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\DB;
 use Filament\Tables\Actions\ExportAction;
@@ -131,6 +133,12 @@ class GovernorateResource extends Resource
                     ->exporter(GovernorateExporter::class)
             ])
             ->columns([
+                TextColumn::make('id')
+                    ->toggleable(true, true)
+                    ->weight(FontWeight::Bold)
+                    ->label(__('id'))
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->label(__('name')),

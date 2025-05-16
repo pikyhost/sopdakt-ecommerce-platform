@@ -26,6 +26,7 @@ use Filament\Tables;
 use Filament\Tables\Actions\ExportAction;
 use Filament\Tables\Actions\ExportBulkAction;
 use Filament\Tables\Actions\ImportAction;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
@@ -139,6 +140,12 @@ class CityResource extends Resource
             ])
             ->recordUrl(false)
             ->columns([
+                TextColumn::make('id')
+                    ->toggleable(true, true)
+                    ->weight(FontWeight::Bold)
+                    ->label(__('id'))
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->label(__('name')),
