@@ -1,4 +1,8 @@
 {
+    "auth.already_logged_in": "You are already logged in.",
+    "auth.invalid_governorate": "The selected governorate does not belong to the selected country.",
+    "auth.invalid_city": "The selected city does not belong to the selected governorate.",
+    "auth.registration_success": "Account registered successfully.",
     "Send to Bosta": "Send to Bosta",
     "Order sent to Bosta": "Order sent to Bosta",
     "Failed to send order to Bosta": "Failed to send order to Bosta",
