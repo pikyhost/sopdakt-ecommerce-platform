@@ -781,8 +781,6 @@ class OrderResource extends Resource
                     )->toArray(),
 
 
-
-
                     Tables\Actions\DeleteAction::make(),
                 ])->label(__('Actions'))
                     ->icon('heroicon-m-ellipsis-vertical')

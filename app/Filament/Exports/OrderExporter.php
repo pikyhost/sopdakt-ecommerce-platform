@@ -20,6 +20,12 @@ class OrderExporter extends Exporter
                 ->label(__('User Name')),
             ExportColumn::make('contact.name')
                 ->label(__('Contact Name')),
+            ExportColumn::make('tracking_number')
+                ->label(__('J&T Express Tracking Number')),
+            ExportColumn::make('bosta_delivery_id')
+                ->label(__('Bosta Tracking Number')),
+            ExportColumn::make('aramex_tracking_number')
+                ->label(__('Aramex Tracking Number')),
             ExportColumn::make('paymentMethod.name')
                 ->label(__('Payment Method')),
             ExportColumn::make('coupon.id')
@@ -51,8 +57,6 @@ class OrderExporter extends Exporter
                 ->label(__('Created At')),
             ExportColumn::make('updated_at')
                 ->label(__('Updated At')),
-            ExportColumn::make('tracking_number')
-                ->label(__('Tracking Number')),
             ExportColumn::make('shipping_status')
                 ->label(__('Shipping Status')),
             ExportColumn::make('shipping_response')
