@@ -86,71 +86,73 @@ class BundlesRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                TextInput::make('name')
-                    ->label(__('bundles.name'))
-                    ->required(),
+                Forms\Components\Section::make()->schema([
+                    TextInput::make('name')
+                        ->label(__('bundles.name'))
+                        ->required(),
 
-                TextInput::make('name_for_admin')
-                    ->label(__('bundles.name_for_admin'))
-                    ->required(),
+                    TextInput::make('name_for_admin')
+                        ->label(__('bundles.name_for_admin'))
+                        ->required(),
 
-                Select::make('bundle_type')
-                    ->live()
-                    ->label(__('bundles.type'))
-                    ->options([
-                        'fixed_price' => __('bundles.type.fixed_price'),
-                        'buy_x_get_y' => __('bundles.type.buy_x_get_y'),
-                    ])
-                    ->required()
-                    ->afterStateUpdated(fn (Set $set) => $set('discount_price', null)), // Reset discount price when type changes
+                    Select::make('bundle_type')
+                        ->live()
+                        ->label(__('bundles.type'))
+                        ->options([
+                            'fixed_price' => __('bundles.type.fixed_price'),
+                            'buy_x_get_y' => __('bundles.type.buy_x_get_y'),
+                        ])
+                        ->required()
+                        ->afterStateUpdated(fn (Set $set) => $set('discount_price', null)), // Reset discount price when type changes
 
-                TextInput::make('buy_x')
-                    ->live()
-                    ->label(__('bundles.buy_x'))
-                    ->numeric()
-                    ->visible(fn (Get $get) => $get('bundle_type') === 'buy_x_get_y')
-                    ->afterStateUpdated(fn (Set $set, Get $get) => $this->updateDiscountPrice($set, $get)),
+                    TextInput::make('buy_x')
+                        ->live()
+                        ->label(__('bundles.buy_x'))
+                        ->numeric()
+                        ->visible(fn (Get $get) => $get('bundle_type') === 'buy_x_get_y')
+                        ->afterStateUpdated(fn (Set $set, Get $get) => $this->updateDiscountPrice($set, $get)),
 
-                TextInput::make('get_y')
-                    ->live()
-                    ->label(__('bundles.get_y_free'))
-                    ->numeric()
-                    ->visible(fn (Get $get) => $get('bundle_type') === 'buy_x_get_y')
-                    ->afterStateUpdated(fn (Set $set, Get $get) => $this->updateDiscountPrice($set, $get)),
+                    TextInput::make('get_y')
+                        ->live()
+                        ->label(__('bundles.get_y_free'))
+                        ->numeric()
+                        ->visible(fn (Get $get) => $get('bundle_type') === 'buy_x_get_y')
+                        ->afterStateUpdated(fn (Set $set, Get $get) => $this->updateDiscountPrice($set, $get)),
 
-                Hidden::make('products')
-                    ->default(fn () => $this->getOwnerRecord()->id)
-                    ->visible(fn (Get $get) => $get('bundle_type') !== 'buy_x_get_y'),
+                    Hidden::make('products')
+                        ->default(fn () => $this->getOwnerRecord()->id)
+                        ->visible(fn (Get $get) => $get('bundle_type') !== 'buy_x_get_y'),
 
-                Select::make('products')
-                    ->live()
-                    ->required()
-                    ->preload()
-                    ->searchable()
-                    ->maxItems(fn (Get $get) => $get('bundle_type') === 'buy_x_get_y' ? 1 : 10)
-                    ->label(__('bundles.products'))
-                    ->multiple()
-                    ->relationship('products', 'name')
-                    ->rules([
-                        fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) {
-                            $ownerId = $this->getOwnerRecord()->id;
-                            if (!in_array($ownerId, (array) $value)) {
-                                $fail(__('The selected products must include the current product you are editing: :name.', [
-                                    'name' => $this->getOwnerRecord()->name
-                                ]));
+                    Select::make('products')
+                        ->live()
+                        ->required()
+                        ->preload()
+                        ->searchable()
+                        ->maxItems(fn (Get $get) => $get('bundle_type') === 'buy_x_get_y' ? 1 : 10)
+                        ->label(__('bundles.products'))
+                        ->multiple()
+                        ->relationship('products', 'name')
+                        ->rules([
+                            fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) {
+                                $ownerId = $this->getOwnerRecord()->id;
+                                if (!in_array($ownerId, (array) $value)) {
+                                    $fail(__('The selected products must include the current product you are editing: :name.', [
+                                        'name' => $this->getOwnerRecord()->name
+                                    ]));
+                                }
                             }
-                        }
-                    ])
-                    ->visible(fn (Get $get) => $get('bundle_type') === 'fixed_price'),
+                        ])
+                        ->visible(fn (Get $get) => $get('bundle_type') === 'fixed_price'),
 
-                TextInput::make('discount_price')
-                    ->live()
-                    ->label(__('bundles.discount_price'))
-                    ->numeric()
-                    ->visible(fn (Get $get) => $get('bundle_type') !== null)
-                    ->disabled(fn (Get $get) => $get('bundle_type') === 'buy_x_get_y' && $get('buy_x') !== null && $get('get_y') !== null)
-                    ->dehydrated() // Ensures value is saved even if disabled
-                    ->afterStateUpdated(fn (Set $set, Get $get) => $this->handleDiscountUpdated($set, $get)),
+                    TextInput::make('discount_price')
+                        ->live()
+                        ->label(__('bundles.discount_price'))
+                        ->numeric()
+                        ->visible(fn (Get $get) => $get('bundle_type') !== null)
+                        ->disabled(fn (Get $get) => $get('bundle_type') === 'buy_x_get_y' && $get('buy_x') !== null && $get('get_y') !== null)
+                        ->dehydrated() // Ensures value is saved even if disabled
+                        ->afterStateUpdated(fn (Set $set, Get $get) => $this->handleDiscountUpdated($set, $get)),
+                ])
             ]);
     }
 
