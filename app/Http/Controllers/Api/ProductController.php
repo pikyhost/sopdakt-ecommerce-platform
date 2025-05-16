@@ -262,19 +262,35 @@ class ProductController extends Controller
             ];
         });
 
-        // Fetch only colors used by published products
-        $usedColorIds = \App\Models\ProductColor::whereHas('product', function ($q) {
-            $q->where('is_published', true);
-        })->pluck('color_id')->unique();
+        // Get only used color and size IDs
+        $usedColorIds = ProductColor::whereHas('product', fn($q) => $q->where('is_published', true))
+            ->pluck('color_id')->unique();
 
-        $usedSizeIds = \App\Models\ProductColorSize::whereHas('productColor.product', function ($q) {
-            $q->where('is_published', true);
-        })->pluck('size_id')->unique();
+        $usedSizeIds = ProductColorSize::whereHas('productColor.product', fn($q) => $q->where('is_published', true))
+            ->pluck('size_id')->unique();
 
         $filters = [
-            'colors' => Color::whereIn('id', $usedColorIds)->select('id', 'name')->get(),
-            'sizes' => Size::whereIn('id', $usedSizeIds)->select('id', 'name')->get(),
-            'categories' => Category::where('is_published', true)->select('id', 'name', 'parent_id')->get(),
+            'colors' => Color::whereIn('id', $usedColorIds)
+                ->get()
+                ->map(fn($color) => [
+                    'id' => $color->id,
+                    'name' => $color->getTranslation('name', $locale),
+                ]),
+
+            'sizes' => Size::whereIn('id', $usedSizeIds)
+                ->get()
+                ->map(fn($size) => [
+                    'id' => $size->id,
+                    'name' => $size->getTranslation('name', $locale),
+                ]),
+
+            'categories' => Category::where('is_published', true)
+                ->get()
+                ->map(fn($category) => [
+                    'id' => $category->id,
+                    'name' => $category->getTranslation('name', $locale),
+                    'parent_id' => $category->parent_id,
+                ]),
         ];
 
         return response()->json([
