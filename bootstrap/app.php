@@ -76,7 +76,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 };
             }
         });
-        
+
         $exceptions->renderable(function (NotFoundHttpException $e) {
             return response()->json(['message' => 'Page not found'], 404);
         });

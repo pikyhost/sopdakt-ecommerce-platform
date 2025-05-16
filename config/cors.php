@@ -1,32 +1,29 @@
 <?php
 
 return [
-
     'paths' => [
         'api/*',
-        'docs',
-        'docs/*',
-        'docs.openapi',
-        'docs.postman',
-        '*', // allow all routes if needed
+        'login',
+        'logout',
+        'forgot-password',
+        'reset-password',
+        'sanctum/csrf-cookie', // If using Sanctum
     ],
 
-    'allowed_methods' => ['*'], // Allow all HTTP methods
+    'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-        'http://localhost:5173',          // Local frontend
-        'https://sopdakt.com',    // Live Netlify frontend
-        'http://sopdakt.com',    // Live Netlify frontend
+        'http://localhost:5173',          // Local dev
+        'https://sopdakt.com',            // Production (HTTPS only)
     ],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => [],     // Optional for subdomains
 
-    'allowed_headers' => ['*'],
+    'allowed_headers' => ['*'],           // Allows Authorization, Content-Type, etc.
 
-    'exposed_headers' => [],
+    'exposed_headers' => [],              // Add custom headers if needed
 
-    'max_age' => 0,
+    'max_age' => 0,                       // Preflight cache duration (0 = no cache)
 
-    'supports_credentials' => true,
-
+    'supports_credentials' => true,       // Needed for cookies/auth headers
 ];
