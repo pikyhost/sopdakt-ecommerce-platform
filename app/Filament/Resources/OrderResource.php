@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Exports\OrderExporter;
-use App\Models\User;
 use App\Services\AramexService;
 use App\Services\BostaService;
 use Filament\Actions\Exports\Enums\ExportFormat;
@@ -96,6 +95,7 @@ class OrderResource extends Resource
                 ExportAction::make()
                     ->formats([
                         ExportFormat::Xlsx,
+                        ExportFormat::Csv,
                     ])
                     ->icon('heroicon-o-arrow-down-tray')
                     ->color('success')
@@ -792,6 +792,14 @@ class OrderResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\ExportBulkAction::make()
+                        ->formats([
+                        ExportFormat::Xlsx,
+                        ExportFormat::Csv,
+                    ])
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->exporter(OrderExporter::class),
                     ...collect(OrderStatus::cases())
                         ->filter(fn($status) => $status !== OrderStatus::Shipping) // Optionally exclude Shipping if you want to handle it differently
                         ->map(fn($status) => Action::make($status->value)

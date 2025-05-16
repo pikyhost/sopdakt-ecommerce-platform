@@ -488,6 +488,14 @@ class UserResource extends Resource
             ])
             ->bulkActions([
                 BulkActionGroup::make([
+                    Tables\Actions\ExportBulkAction::make()
+                        ->formats([
+                            ExportFormat::Xlsx,
+                            ExportFormat::Csv,
+                        ])
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->exporter(UserExporter::class),
                     DeleteBulkAction::make()
                         ->modalHeading(__('Delete Selected Users'))
                         ->requiresConfirmation()

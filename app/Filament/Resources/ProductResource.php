@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Exports\ProductExporter;
+use App\Filament\Exports\UserExporter;
 use App\Models\Category;
 use Closure;
 use App\Filament\Resources\ProductResource\Pages;
@@ -884,6 +885,14 @@ class ProductResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\ExportBulkAction::make()
+                        ->formats([
+                            ExportFormat::Xlsx,
+                            ExportFormat::Csv,
+                        ])
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->exporter(ProductExporter::class),
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
@@ -901,7 +910,7 @@ class ProductResource extends Resource
 
         return $ids;
     }
-    
+
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()
