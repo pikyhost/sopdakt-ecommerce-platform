@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\ProductColor;
 use App\Models\ProductColorSize;
 use App\Models\Product;
@@ -261,6 +262,21 @@ class ProductController extends Controller
             ];
         });
 
+        // Fetch only colors used by published products
+        $usedColorIds = \App\Models\ProductColor::whereHas('product', function ($q) {
+            $q->where('is_published', true);
+        })->pluck('color_id')->unique();
+
+        $usedSizeIds = \App\Models\ProductColorSize::whereHas('productColor.product', function ($q) {
+            $q->where('is_published', true);
+        })->pluck('size_id')->unique();
+
+        $filters = [
+            'colors' => Color::whereIn('id', $usedColorIds)->select('id', 'name')->get(),
+            'sizes' => Size::whereIn('id', $usedSizeIds)->select('id', 'name')->get(),
+            'categories' => Category::where('is_published', true)->select('id', 'name', 'parent_id')->get(),
+        ];
+
         return response()->json([
             'products' => $result,
             'pagination' => [
@@ -269,7 +285,9 @@ class ProductController extends Controller
                 'per_page' => $products->perPage(),
                 'total' => $products->total(),
             ],
+            'filters' => $filters,
         ]);
+
     }
 
 
