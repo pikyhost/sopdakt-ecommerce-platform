@@ -6,6 +6,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\HandleCors;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -32,7 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
             'protect.docs' => \App\Http\Middleware\ProtectDocs::class,
         ]);
-        
+
         $middleware->prependToGroup('api', \App\Http\Middleware\AlwaysAcceptJson::class);
         $middleware->appendToGroup('api', \Illuminate\Session\Middleware\StartSession::class);
         $middleware->appendToGroup('api', \App\Http\Middleware\ApiKeyMiddleware::class);
@@ -40,6 +41,42 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->appendToGroup('api', SetRequestLocale::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
+        $exceptions->renderable(function (ValidationException $e, $request) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Validation failed.',
+                    'errors' => $e->errors(),
+                ], 422);
+            }
+        });
+
+        $exceptions->renderable(function (Throwable $e, $request) {
+            if ($request->expectsJson()) {
+                return match (true) {
+                    $e instanceof NotFoundHttpException => response()->json([
+                        'status' => 'error',
+                        'message' => 'Endpoint not found.',
+                    ], 404),
+
+                    $e instanceof MethodNotAllowedHttpException => response()->json([
+                        'status' => 'error',
+                        'message' => 'HTTP method not allowed.',
+                    ], 405),
+
+                    $e instanceof ModelNotFoundException => response()->json([
+                        'status' => 'error',
+                        'message' => 'Resource not found.',
+                    ], 404),
+
+                    default => response()->json([
+                        'status' => 'error',
+                        'message' => $e->getMessage(),
+                    ], method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500),
+                };
+            }
+        });
+        
         $exceptions->renderable(function (NotFoundHttpException $e) {
             return response()->json(['message' => 'Page not found'], 404);
         });
