@@ -18,50 +18,23 @@ class ServiceFeatureResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-sparkles';
 
-    protected static ?string $modelLabel = 'Service Feature';
-
-    protected static ?string $navigationGroup = 'Services';
-
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\Tabs::make('Label')
-                    ->tabs([
-                        Forms\Components\Tabs\Tab::make('General')
-                            ->schema([
-                                Forms\Components\TextInput::make('title')
-                                    ->required()
-                                    ->live(onBlur: true)
-                                    ->maxLength(255),
+                Forms\Components\Section::make()->schema([
+                    Forms\Components\TextInput::make('title')
+                        ->required()
+                        ->live(onBlur: true)
+                        ->maxLength(255),
 
-                                Forms\Components\TextInput::make('subtitle')
-                                    ->maxLength(255),
+                    Forms\Components\TextInput::make('subtitle')
+                        ->maxLength(255),
 
-                                Forms\Components\TextInput::make('icon')
-                                    ->maxLength(255)
-                                    ->hint('Use Heroicons or any other icon library class names'),
-                            ]),
-
-                        Forms\Components\Tabs\Tab::make('Translations')
-                            ->schema([
-                                Forms\Components\Repeater::make('translations')
-                                    ->schema([
-                                        Forms\Components\TextInput::make('title')
-                                            ->label('Title Translation')
-                                            ->required(),
-
-                                        Forms\Components\TextInput::make('subtitle')
-                                            ->label('Subtitle Translation'),
-
-                                        Forms\Components\Select::make('locale')
-                                            ->label('Language')
-                                            ->required()
-                                            ->options(config('app.available_locales')),
-                                    ])
-                                    ->columns(1),
-                            ]),
-                    ]),
+                    Forms\Components\TextInput::make('icon')
+                        ->maxLength(255)
+                        ->hint('Use Heroicons or any other icon library class names'),
+                ])
             ]);
     }
 

@@ -42,6 +42,7 @@ use App\Filament\Resources\PopupResource;
 use App\Filament\Resources\ProductRatingResource;
 use App\Filament\Resources\ProductResource;
 use App\Filament\Resources\RoleResource;
+use App\Filament\Resources\ServiceFeatureResource;
 use App\Filament\Resources\SettingResource;
 use App\Filament\Resources\ShippingCostResource;
 use App\Filament\Resources\ShippingTypeResource;
@@ -307,6 +308,7 @@ class AdminPanelProvider extends PanelProvider
                     TopNoticeResource::getNavigationItems(),
                     BannerResource::getNavigationItems(),
                     HomePageSettingResource::getNavigationItems(),
+                    ServiceFeatureResource::getNavigationItems(),
                     PopupResource::getNavigationItems(),
                     PolicyResource::getNavigationItems(),
                 ],
