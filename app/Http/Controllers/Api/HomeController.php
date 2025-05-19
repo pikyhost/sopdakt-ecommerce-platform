@@ -192,19 +192,18 @@ class HomeController extends Controller
                     'slug' => $product->slug,
                     'image_url' => $product->getFirstMediaUrl(),
                     'category' => $product->category?->only(['name', 'slug']),
-                    'colors_with_sizes' => $product->productColors->map(function ($productColor) {
-                        return [
-                            'color_name' => $productColor->color->name ?? null,
-                            'color_code' => $productColor->color->code ?? null,
-                            'color_image' => $productColor->image ? asset('storage/' . $productColor->image) : null,
-                            'sizes' => $productColor->productColorSizes->map(function ($productColorSize) {
-                                return [
-                                    'size_name' => $productColorSize->size->name ?? null,
-                                    'quantity' => $productColorSize->quantity,
-                                ];
-                            })->filter(fn ($size) => $size['quantity'] > 0)->values(),
-                        ];
-                    }),
+                    'variants' => $product->productColors->map(fn($variant) => [
+                        'id' => $variant->id,
+                        'color_id' => $variant->color_id,
+                        'color_name' => optional($variant->color)->name,
+                        'image_url' => asset('storage/' . $variant->image),
+                        'sizes' => $variant->productColorSizes->map(fn($pcs) => [
+                            'id' => $pcs->id,
+                            'size_id' => $pcs->size_id,
+                            'size_name' => optional($pcs->size)->name,
+                            'quantity' => $pcs->quantity,
+                        ]),
+                    ]),
                     'actions' => [
                         'add_to_cart' => route('cart.add'), // No parameter passed
                         'toggle_love' => route('wishlist.toggle'), // Also doesn't accept params in URL

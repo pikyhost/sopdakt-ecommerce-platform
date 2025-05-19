@@ -7,7 +7,7 @@ return [
         'logout',
         'forgot-password',
         'reset-password',
-        'sanctum/csrf-cookie', // If using Sanctum
+        'sanctum/csrf-cookie',
     ],
 
     'allowed_methods' => ['*'],
