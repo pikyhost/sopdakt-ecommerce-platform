@@ -8,6 +8,8 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListServiceFeatures extends ListRecords
 {
+    use ListRecords\Concerns\Translatable;
+    
     protected static string $resource = ServiceFeatureResource::class;
 
     protected function getHeaderActions(): array

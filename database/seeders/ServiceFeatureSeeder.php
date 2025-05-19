@@ -9,27 +9,31 @@ class ServiceFeatureSeeder extends Seeder
 {
     public function run(): void
     {
-        ServiceFeature::insert([
+        $features = [
             [
-                'title' => 'Customer Support',
-                'subtitle' => 'Need Assistance?',
+                'title' => ['en' => 'Customer Support', 'ar' => 'دعم العملاء'],
+                'subtitle' => ['en' => 'Need Assistance?', 'ar' => 'هل تحتاج إلى مساعدة؟'],
                 'icon' => 'support-icon.svg',
             ],
             [
-                'title' => 'Secured Payment',
-                'subtitle' => 'Safe & Fast',
+                'title' => ['en' => 'Secured Payment', 'ar' => 'دفع آمن'],
+                'subtitle' => ['en' => 'Safe & Fast', 'ar' => 'آمن وسريع'],
                 'icon' => 'payment-icon.svg',
             ],
             [
-                'title' => 'Free Returns',
-                'subtitle' => 'Easy & Free',
+                'title' => ['en' => 'Free Returns', 'ar' => 'إرجاع مجاني'],
+                'subtitle' => ['en' => 'Easy & Free', 'ar' => 'سهل ومجاني'],
                 'icon' => 'returns-icon.svg',
             ],
             [
-                'title' => 'Free Shipping',
-                'subtitle' => 'Made To Help You',
+                'title' => ['en' => 'Free Shipping', 'ar' => 'شحن مجاني'],
+                'subtitle' => ['en' => 'Made To Help You', 'ar' => 'مصمم لمساعدتك'],
                 'icon' => 'shipping-icon.svg',
             ],
-        ]);
+        ];
+
+        foreach ($features as $feature) {
+            ServiceFeature::create($feature);
+        }
     }
 }
