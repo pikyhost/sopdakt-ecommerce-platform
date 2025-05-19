@@ -44,7 +44,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->prependToGroup('api', \App\Http\Middleware\AlwaysAcceptJson::class);
-        $middleware->appendToGroup('api', \Illuminate\Session\Middleware\StartSession::class);
+//        $middleware->appendToGroup('api', \Illuminate\Session\Middleware\StartSession::class);
         $middleware->appendToGroup('api', \App\Http\Middleware\ApiKeyMiddleware::class);
         $middleware->appendToGroup('api', HandleCors::class);
         $middleware->appendToGroup('api', SetRequestLocale::class);
