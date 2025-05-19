@@ -796,6 +796,24 @@ class ProductController extends Controller
                     'created_at' => $product->created_at,
                     'updated_at' => $product->updated_at,
 
+                    // Variants with color and sizes
+                    'variants' => $product->productColors->map(function ($variant) {
+                        return [
+                            'id' => $variant->id,
+                            'color_id' => $variant->color_id,
+                            'color_name' => optional($variant->color)->name,
+                            'image_url' => asset('storage/' . $variant->image),
+                            'sizes' => $variant->productColorSizes->map(function ($pcs) {
+                                return [
+                                    'id' => $pcs->id,
+                                    'size_id' => $pcs->size_id,
+                                    'size_name' => optional($pcs->size)->name,
+                                    'quantity' => $pcs->quantity,
+                                ];
+                            }),
+                        ];
+                    }),
+
                     'media' => [
                         'feature_product_image' => $product->getFeatureProductImageUrl(),
                         'second_feature_product_image' => $product->getSecondFeatureProductImageUrl(),

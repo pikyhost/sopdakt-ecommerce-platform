@@ -177,6 +177,7 @@ class HomeController extends Controller
                             'color_image' => $productColor->image ? asset('storage/' . $productColor->image) : null,
                             'sizes' => $productColor->productColorSizes->map(function ($productColorSize) {
                                 return [
+                                    'size_id' => $productColorSize->size->id ?? null,
                                     'size_name' => $productColorSize->size->name ?? null,
                                     'quantity' => $productColorSize->quantity,
                                 ];
@@ -294,6 +295,7 @@ class HomeController extends Controller
                             'color_image' => $productColor->image ? asset('storage/' . $productColor->image) : null,
                             'sizes' => $productColor->productColorSizes->map(function ($productColorSize) {
                                 return [
+                                    'size_id' => $productColorSize->size->id ?? null,
                                     'size_name' => $productColorSize->size->name ?? null,
                                     'quantity' => $productColorSize->quantity,
                                 ];
@@ -402,6 +404,7 @@ class HomeController extends Controller
                 'image_url' => $homePageSetting->getCenterImageUrl(),
                 'heading' => $homePageSetting->getTranslation('center_main_heading', $locale),
                 'button_text' => $homePageSetting->getTranslation('center_button_text', $locale),
+                'title' => $homePageSetting->getTranslation('center_title', $locale),
                 'button_url' => $homePageSetting->center_button_url,
             ],
             'last_sections' => [
