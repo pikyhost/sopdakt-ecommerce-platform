@@ -217,6 +217,7 @@ class ProductController extends Controller
                 ],
                 'variants' => $product->productColors->map(fn($variant) => [
                     'id' => $variant->id,
+                    'color_code' =>  optional($variant->color)->code,
                     'color_id' => $variant->color_id,
                     'color_name' => optional($variant->color)->name,
                     'image_url' => asset('storage/' . $variant->image),
