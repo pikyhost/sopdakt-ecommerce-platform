@@ -6,56 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\HomePageSetting;
 use App\Models\Product;
-use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
 {
-    /**
-     * Get Footer Information
-     *
-     * @group Common
-     *
-     * Retrieves contact details, address, and social media links for the website footer.
-     * Content is automatically returned in the current application locale.
-     *
-     * @response 200 {
-     *   "address": "123 Business Park, Dubai, UAE",
-     *   "phone": "+97141234567",
-     *   "email": "info@company.ae",
-     *   "social_media": {
-     *     "facebook": "https://facebook.com/company",
-     *     "instagram": "https://instagram.com/company.ae",
-     *     "linkedin": null,
-     *     "twitter": null,
-     *     "youtube": null,
-     *     "tiktok": null
-     *   }
-     * }
-     * @response 500 {
-     *   "success": false,
-     *   "message": "Server Error"
-     * }
-     */
-    public function footerInfo(): JsonResponse
-    {
-        $locale = app()->getLocale();
-
-        $setting = Setting::first();
-
-        $contact = Setting::getContactDetails();
-        $socials = Setting::getSocialMediaLinks();
-
-        return response()->json([
-            'address' => $setting?->getTranslation('address', $locale) ?? '',
-            'phone'   => $contact['phone'] ?? '',
-            'email'   => $contact['email'] ?? '',
-            'social_media' => $socials,
-        ]);
-    }
-
     /**
      * Get Featured Categories
      *
@@ -190,20 +146,25 @@ class HomeController extends Controller
                     'after_discount_price' => $product->after_discount_price,
                     'sales' => $product->sales,
                     'slug' => $product->slug,
-                    'image_url' => $product->getFirstMediaUrl(),
+                    'media' => [
+                        'feature_product_image' => $product->getFeatureProductImageUrl(),
+                        'second_feature_product_image' => $product->getSecondFeatureProductImageUrl(),
+                    ],
                     'category' => $product->category?->only(['name', 'slug']),
-                    'variants' => $product->productColors->map(fn($variant) => [
-                        'id' => $variant->id,
-                        'color_id' => $variant->color_id,
-                        'color_name' => optional($variant->color)->name,
-                        'image_url' => asset('storage/' . $variant->image),
-                        'sizes' => $variant->productColorSizes->map(fn($pcs) => [
-                            'id' => $pcs->id,
-                            'size_id' => $pcs->size_id,
-                            'size_name' => optional($pcs->size)->name,
-                            'quantity' => $pcs->quantity,
-                        ]),
-                    ]),
+                    'colors_with_sizes' => $product->productColors->map(function ($productColor) {
+                        return [
+                            'color_id' => $productColor->color->id ?? null,
+                            'color_name' => $productColor->color->name ?? null,
+                            'color_code' => $productColor->color->code ?? null,
+                            'color_image' => $productColor->image ? asset('storage/' . $productColor->image) : null,
+                            'sizes' => $productColor->productColorSizes->map(function ($productColorSize) {
+                                return [
+                                    'size_name' => $productColorSize->size->name ?? null,
+                                    'quantity' => $productColorSize->quantity,
+                                ];
+                            })->filter(fn ($size) => $size['quantity'] > 0)->values(),
+                        ];
+                    }),
                     'actions' => [
                         'add_to_cart' => route('cart.add'), // No parameter passed
                         'toggle_love' => route('wishlist.toggle'), // Also doesn't accept params in URL
@@ -302,10 +263,14 @@ class HomeController extends Controller
                     'after_discount_price' => $product->after_discount_price,
                     'sales' => $product->sales,
                     'slug' => $product->slug,
-                    'image_url' => $product->getFirstMediaUrl(),
+                    'media' => [
+                        'feature_product_image' => $product->getFeatureProductImageUrl(),
+                        'second_feature_product_image' => $product->getSecondFeatureProductImageUrl(),
+                    ],
                     'category' => $product->category?->only(['name', 'slug']),
                     'colors_with_sizes' => $product->productColors->map(function ($productColor) {
                         return [
+                            'color_id' => $productColor->color->id ?? null,
                             'color_name' => $productColor->color->name ?? null,
                             'color_code' => $productColor->color->code ?? null,
                             'color_image' => $productColor->image ? asset('storage/' . $productColor->image) : null,
@@ -417,8 +382,7 @@ class HomeController extends Controller
             ],
             'center_section' => [
                 'image_url' => $homePageSetting->getCenterImageUrl(),
-                'heading' => $homePageSetting->getTranslation('center_main_heading', $locale), //center_title
-                'title' => $homePageSetting->getTranslation('center_title', $locale), //center_title,
+                'heading' => $homePageSetting->getTranslation('center_main_heading', $locale),
                 'button_text' => $homePageSetting->getTranslation('center_button_text', $locale),
                 'button_url' => $homePageSetting->center_button_url,
             ],
