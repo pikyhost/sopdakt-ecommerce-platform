@@ -10,7 +10,16 @@ class ServiceFeatureController extends Controller
 {
     public function index(): JsonResponse
     {
-        $features = ServiceFeature::limit(4)->get();
+        $locale = app()->getLocale();
+
+        $features = ServiceFeature::limit(4)->get()->map(function ($feature) use ($locale) {
+            return [
+                'id' => $feature->id,
+                'title' => $feature->getTranslation('title', $locale),
+                'subtitle' => $feature->getTranslation('subtitle', $locale),
+                'image_icon' => $feature->icon, asset('storage/' . $feature->icon)
+            ];
+        });
 
         return response()->json($features);
     }
