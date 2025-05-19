@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\NewsletterSubscriberController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\ServiceFeatureController;
 use App\Http\Controllers\Api\TopNoticeController;
 use App\Http\Controllers\Api\WheelController;
 use App\Http\Controllers\Api\WishlistController;
@@ -141,3 +142,6 @@ Route::get('/global-search', [GlobalSearchController::class, 'search'])->middlew
 Route::get('/top-bars', [TopNoticeController::class, 'index']);
 
 Route::get('/footer/contact-info', [HomeController::class, 'footerInfo']);
+
+
+Route::get('/service-features', [ServiceFeatureController::class, 'index']);

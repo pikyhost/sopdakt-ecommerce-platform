@@ -31,9 +31,8 @@ class ServiceFeatureResource extends Resource
                     Forms\Components\TextInput::make('subtitle')
                         ->maxLength(255),
 
-                    Forms\Components\TextInput::make('icon')
-                        ->maxLength(255)
-                        ->hint('Use Heroicons or any other icon library class names'),
+                    Forms\Components\FileUpload::make('icon')
+                        ->hint('Use Heroicons or any other icon library SVG'),
                 ])
             ]);
     }
@@ -51,8 +50,7 @@ class ServiceFeatureResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                Tables\Columns\IconColumn::make('icon')
-                    ->icon(fn (string $state): string => $state),
+                Tables\Columns\ImageColumn::make('icon')->circular(),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
@@ -63,9 +61,6 @@ class ServiceFeatureResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
-                //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
