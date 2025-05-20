@@ -11,20 +11,22 @@ class ProductRatingController extends Controller
 {
     public function index(Product $product)
     {
-        $user = Auth::user();
-        $isAdmin = $user->hasRole(['admin', 'super_admin']);
+        $user = auth('sanctum')->user();
+        $isAdmin = $user && $user->hasRole(['admin', 'super_admin']);
 
         $reviews = ProductRating::where('product_id', $product->id)
             ->where(function ($query) use ($user, $isAdmin) {
                 $query->where('status', 'approved');
 
                 if ($user) {
+                    // Authenticated users see their own pending review
                     $query->orWhere(function ($q) use ($user) {
                         $q->where('status', 'pending')->where('user_id', $user->id);
                     });
                 }
 
                 if ($isAdmin) {
+                    // Admins see everything
                     $query->orWhereNotNull('id');
                 }
             })

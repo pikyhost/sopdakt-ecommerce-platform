@@ -146,8 +146,11 @@ Route::get('/footer/contact-info', [HomeController::class, 'footerInfo']);
 
 Route::get('/service-features', [ServiceFeatureController::class, 'index']);
 
+// Public route: guests can see approved product ratings
+Route::get('/products/{product}/ratings', [ProductRatingController::class, 'index']);
+
+// Authenticated-only routes: only logged-in users can create/update/delete
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/products/{product}/ratings', [ProductRatingController::class, 'index']);
     Route::post('/products/{product}/ratings', [ProductRatingController::class, 'store']);
     Route::put('/products/{product}/ratings/{rating}', [ProductRatingController::class, 'update']);
     Route::delete('/products/{product}/ratings/{rating}', [ProductRatingController::class, 'destroy']);
