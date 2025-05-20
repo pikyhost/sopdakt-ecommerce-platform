@@ -11,18 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Make user_id nullable
-        $table->unsignedBigInteger('user_id')->nullable()->change();
+        Schema::table('saved_products', function (Blueprint $table) {
+            // Make user_id nullable
+            $table->unsignedBigInteger('user_id')->nullable()->change();
 
-        // Add session_id
-        $table->string('session_id')->nullable()->after('user_id')->index();
+            // Add session_id
+            $table->string('session_id')->nullable()->after('user_id')->index();
 
-        // Drop existing unique constraint
-        $table->dropUnique(['product_id', 'user_id']);
+            // Drop existing unique constraint
+            $table->dropUnique(['product_id', 'user_id']);
 
-        // Add new unique constraints for user and session
-        $table->unique(['product_id', 'user_id']);
-        $table->unique(['product_id', 'session_id']);
+            // Add new unique constraints for user and session
+            $table->unique(['product_id', 'user_id']);
+            $table->unique(['product_id', 'session_id']);
+        });
     }
 
     /**
