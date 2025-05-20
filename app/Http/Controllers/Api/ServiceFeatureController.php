@@ -17,7 +17,7 @@ class ServiceFeatureController extends Controller
                 'id' => $feature->id,
                 'title' => $feature->getTranslation('title', $locale),
                 'subtitle' => $feature->getTranslation('subtitle', $locale),
-                'image_icon' => $feature->icon, asset('storage/' . $feature->icon)
+                'image_url' => asset('storage/' . $feature->icon),
             ];
         });
 
