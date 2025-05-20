@@ -690,6 +690,8 @@ class ProductController extends Controller
                     ]),
                 ]),
 
+                'custom_attributes' => json_decode(json_encode($product->getTranslation('custom_attributes', $locale))),
+
                 // Real average rating
                 'real_average_rating' => round($product->ratings->avg('rating'), 1),
 
