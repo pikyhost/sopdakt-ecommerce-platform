@@ -626,7 +626,7 @@ class ProductController extends Controller
                 'label_id' => $product->label_id,
                 'summary' => $product->getTranslation('summary', $locale),
                 'quantity' => $product->quantity,
-                'custom_attributes' => $product->getTranslation('custom_attributes', $locale),
+                'custom_attributes' => json_decode(json_encode($product->getTranslation('custom_attributes', $locale))),
                 'is_published' => $product->is_published,
                 'is_featured' => $product->is_featured,
                 'is_free_shipping' => $product->is_free_shipping,
@@ -689,8 +689,6 @@ class ProductController extends Controller
                         'image' => $bundleProduct->getFeatureProductImageUrl(),
                     ]),
                 ]),
-
-                'custom_attributes' => json_decode(json_encode($product->getTranslation('custom_attributes', $locale))),
 
                 // Real average rating
                 'real_average_rating' => round($product->ratings->avg('rating'), 1),
