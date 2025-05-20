@@ -435,12 +435,10 @@ class ProductController extends Controller
                 'quantity' => $product->quantity,
                 'created_at' => $product->created_at,
                 'updated_at' => $product->updated_at,
-
                 'media' => [
                     'feature_product_image' => $product->getFeatureProductImageUrl(),
                     'second_feature_product_image' => $product->getSecondFeatureProductImageUrl(),
                 ],
-
                 'variants' => $product->productColors->map(fn($variant) => [
                     'id' => $variant->id,
                     'color_id' => $variant->color_id,
@@ -634,14 +632,12 @@ class ProductController extends Controller
                 'is_free_shipping' => $product->is_free_shipping,
                 'created_at' => $product->created_at,
                 'updated_at' => $product->updated_at,
-
                 // Media section
                 'media' => [
                     'feature_product_image' => $product->getFeatureProductImageUrl(),
                     'second_feature_product_image' => $product->getSecondFeatureProductImageUrl(),
                     'more_product_images_and_videos' => $product->getMoreProductImagesAndVideosUrls(),
                 ],
-
                 // Size guide section
                 'size_guide' => $product->sizeGuide ? [
                     'title' => $product->sizeGuide->title,
@@ -686,6 +682,7 @@ class ProductController extends Controller
                     'formatted_price' => $bundle->formatPrice(),
                     'buy_x' => $bundle->buy_x,
                     'get_y' => $bundle->get_y,
+                    'buy_quantity' => $bundle->buy_quantity,
                     'products' => $bundle->products->map(fn($bundleProduct) => [
                         'id' => $bundleProduct->id,
                         'name' => $bundleProduct->getTranslation('name', $locale),

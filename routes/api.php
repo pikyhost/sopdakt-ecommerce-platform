@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\WishlistController;
 use App\Http\Controllers\BostaWebhookController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ProductRatingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ShippingController;
@@ -60,7 +61,7 @@ Route::get('/products/{slug}', [ProductController::class, 'showBySlug'])->name('
 Route::get('/homepage/slider', [HomeController::class, 'sliderWithCta']);
 
 // Wishlist
-Route::post('/wishlist/toggle', [WishlistController::class, 'toggle']);
+Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
 Route::get('/wishlist', [WishlistController::class, 'index']);
 Route::get('/wishlist/check', [WishlistController::class, 'checkMultiple']);
 
@@ -138,9 +139,16 @@ Route::middleware('api')->group(function () {
 });
 
 Route::get('/global-search', [GlobalSearchController::class, 'search'])->middleware('throttle:60,1');
+
 Route::get('/top-bars', [TopNoticeController::class, 'index']);
 
 Route::get('/footer/contact-info', [HomeController::class, 'footerInfo']);
 
-
 Route::get('/service-features', [ServiceFeatureController::class, 'index']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/products/{product}/ratings', [ProductRatingController::class, 'index']);
+    Route::post('/products/{product}/ratings', [ProductRatingController::class, 'store']);
+    Route::put('/products/{product}/ratings/{rating}', [ProductRatingController::class, 'update']);
+    Route::delete('/products/{product}/ratings/{rating}', [ProductRatingController::class, 'destroy']);
+});
