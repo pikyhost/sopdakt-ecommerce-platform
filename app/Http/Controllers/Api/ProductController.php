@@ -245,6 +245,7 @@ class ProductController extends Controller
                 ->get()
                 ->map(fn($color) => [
                     'id' => $color->id,
+                    'code' => $color->code,
                     'name' => $color->getTranslation('name', $locale),
                 ]),
 
