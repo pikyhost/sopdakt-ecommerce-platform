@@ -32,3 +32,5 @@ Route::get('/payment-success', [PaymentController::class, 'success'])->name('pay
 Route::get('/payment-failed', [PaymentController::class, 'failed'])->name('payment.failed');
 
 Route::post('/payment/callback', [App\Http\Controllers\PaymentController::class, 'callback'])->name('payment.callback');
+
+Route::post('/api/newsletter/subscribe', [NewsletterSubscriberController::class, 'store'])->name('newsletter.subscribe');
