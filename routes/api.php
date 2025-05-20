@@ -60,11 +60,10 @@ Route::get('/products/{slug}', [ProductController::class, 'showBySlug'])->name('
 Route::get('/homepage/slider', [HomeController::class, 'sliderWithCta']);
 
 // Wishlist
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
-    Route::get('/wishlist', [WishlistController::class, 'index']);
-    Route::get('/wishlist/{productId}', [WishlistController::class, 'isWishlisted']);
-});
+Route::post('/wishlist/toggle', [WishlistController::class, 'toggle']);
+Route::get('/wishlist', [WishlistController::class, 'index']);
+Route::get('/wishlist/check', [WishlistController::class, 'checkMultiple']);
+
 
 // Cart (Add to cart and operations)
 Route::prefix('cart')->group(function () {

@@ -2,78 +2,55 @@
 
 namespace App\Http\Controllers\Api;
 
+namespace App\Http\Controllers\Api;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class WishlistController extends Controller
 {
-    /**
-     * Toggle Product in Wishlist
-     *
-     * @group Wishlist
-     * @authenticated
-     *
-     * Adds or removes a product from the authenticated user's wishlist.
-     *
-     * @bodyParam product_id integer required The ID of the product to toggle. Example: 42
-     *
-     * @response 200 {
-     *   "status": "added",
-     *   "message": "Product added to wishlist."
-     * }
-     * @response 200 {
-     *   "status": "removed",
-     *   "message": "Product removed from wishlist."
-     * }
-     * @response 401 {
-     *   "message": "Unauthorized"
-     * }
-     * @response 422 {
-     *   "message": "The given data was invalid.",
-     *   "errors": {
-     *     "product_id": [
-     *       "The selected product id is invalid."
-     *     ]
-     *   }
-     * }
-     */
+    protected function getSessionOrUserIdentifier(Request $request): array
+    {
+        $sessionId = $request->session()->getId();
+        $userId = Auth::id();
+
+        return [$userId, $sessionId];
+    }
+
     public function toggle(Request $request)
     {
-        if (!Auth::check()) {
-            return response()->json(['message' => 'Unauthorized'], 401);
-        }
-
         $request->validate([
             'product_id' => 'required|exists:products,id',
         ]);
 
-        $userId = Auth::id();
-        $productId = $request->product_id;
+        [$userId, $sessionId] = $this->getSessionOrUserIdentifier($request);
 
-        $exists = DB::table('saved_products')
-            ->where('user_id', $userId)
-            ->where('product_id', $productId)
-            ->exists();
+        $query = DB::table('saved_products')
+            ->where('product_id', $request->product_id)
+            ->where(function ($q) use ($userId, $sessionId) {
+                if ($userId) {
+                    $q->where('user_id', $userId);
+                } else {
+                    $q->where('session_id', $sessionId);
+                }
+            });
+
+        $exists = $query->exists();
 
         if ($exists) {
-            // Remove from wishlist
-            DB::table('saved_products')
-                ->where('user_id', $userId)
-                ->where('product_id', $productId)
-                ->delete();
+            $query->delete();
 
             return response()->json([
                 'status' => 'removed',
                 'message' => 'Product removed from wishlist.',
             ]);
         } else {
-            // Add to wishlist
             DB::table('saved_products')->insert([
+                'product_id' => $request->product_id,
                 'user_id' => $userId,
-                'product_id' => $productId,
+                'session_id' => $userId ? null : $sessionId,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -85,46 +62,20 @@ class WishlistController extends Controller
         }
     }
 
-    /**
-     * Get User Wishlist
-     *
-     * @group Wishlist
-     * @authenticated
-     *
-     * Retrieves all products in the authenticated user's wishlist,
-     * ordered by most recently added first.
-     *
-     * @response 200 {
-     *   "wishlist": [
-     *     {
-     *       "id": 1,
-     *       "name": "Premium Headphones",
-     *       "price": 199.99,
-     *       "after_discount_price": 99.99,
-     *       "slug": "premium-headphones",
-     *       "saved_at": "2023-05-15 10:30:00"
-     *     },
-     *     {
-     *       "id": 2,
-     *       "name": "Wireless Mouse",
-     *       "price": 29.99,
-     *       "after_discount_price": 20.99,
-     *       "slug": "wireless-mouse",
-     *       "saved_at": "2023-05-10 14:15:00"
-     *     }
-     *   ]
-     * }
-     * @response 401 {
-     *   "message": "Unauthorized"
-     * }
-     */
-    public function index()
+    public function index(Request $request)
     {
-        $locale = App::getLocale();
+        $locale = app()->getLocale();
+        [$userId, $sessionId] = $this->getSessionOrUserIdentifier($request);
 
         $wishlist = DB::table('saved_products')
             ->join('products', 'products.id', '=', 'saved_products.product_id')
-            ->where('saved_products.user_id', Auth::id())
+            ->where(function ($q) use ($userId, $sessionId) {
+                if ($userId) {
+                    $q->where('saved_products.user_id', $userId);
+                } else {
+                    $q->where('saved_products.session_id', $sessionId);
+                }
+            })
             ->select([
                 'products.id',
                 DB::raw("JSON_UNQUOTE(JSON_EXTRACT(products.name, '$.\"$locale\"')) as name"),
@@ -141,35 +92,31 @@ class WishlistController extends Controller
         ]);
     }
 
-    /**
-     * Check if Product is in Wishlist
-     *
-     * @group Wishlist
-     * @authenticated
-     *
-     * Checks whether a specific product exists in the authenticated user's wishlist.
-     *
-     * @urlParam productId integer required The ID of the product to check. Example: 42
-     *
-     * @response 200 {
-     *   "isWishlisted": true
-     * }
-     * @response 200 {
-     *   "isWishlisted": false
-     * }
-     * @response 401 {
-     *   "message": "Unauthorized"
-     * }
-     */
-    public function isWishlisted($productId)
+    // Efficient batch check
+    public function isWishlisted(Request $request)
     {
-        $isWishlisted = DB::table('saved_products')
-            ->where('user_id', Auth::id())
-            ->where('product_id', $productId)
-            ->exists();
+        $productIds = explode(',', $request->query('product_ids', ''));
+
+        if (empty($productIds)) {
+            return response()->json(['wishlisted' => []]);
+        }
+
+        [$userId, $sessionId] = $this->getSessionOrUserIdentifier($request);
+
+        $wishlisted = DB::table('saved_products')
+            ->whereIn('product_id', $productIds)
+            ->where(function ($q) use ($userId, $sessionId) {
+                if ($userId) {
+                    $q->where('user_id', $userId);
+                } else {
+                    $q->where('session_id', $sessionId);
+                }
+            })
+            ->pluck('product_id')
+            ->toArray();
 
         return response()->json([
-            'isWishlisted' => $isWishlisted,
+            'wishlisted' => $wishlisted,
         ]);
     }
 }
