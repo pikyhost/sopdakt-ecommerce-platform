@@ -623,7 +623,6 @@ class ProductController extends Controller
                 'views' => $product->views,
                 'sales' => $product->sales,
                 'fake_average_rating' => $product->fake_average_rating,
-                'label_id' => $product->label_id,
                 'summary' => $product->getTranslation('summary', $locale),
                 'quantity' => $product->quantity,
                 'custom_attributes' => json_decode(json_encode($product->getTranslation('custom_attributes', $locale))),

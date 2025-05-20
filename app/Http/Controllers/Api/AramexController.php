@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Services\AramexService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class AramexController extends Controller
 {
@@ -168,7 +169,7 @@ class AramexController extends Controller
     {
         try {
             $data = $request->all();
-            \Log::info('ARAMEX Webhook Received:', $data);
+            Log::info('ARAMEX Webhook Received:', $data);
 
             // Validate webhook data
             if (empty($data['ShipmentNumber']) || empty($data['Status'])) {
@@ -187,7 +188,7 @@ class AramexController extends Controller
             return response()->json(['success' => true]);
 
         } catch (\Exception $e) {
-            \Log::error('ARAMEX Webhook Error:', ['error' => $e->getMessage()]);
+            Log::error('ARAMEX Webhook Error:', ['error' => $e->getMessage()]);
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
