@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\SavedProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -64,31 +65,34 @@ class WishlistController extends Controller
 
     public function index(Request $request)
     {
-        $locale = app()->getLocale();
         [$userId, $sessionId] = $this->getSessionOrUserIdentifier($request);
+        $locale = app()->getLocale();
 
-        $wishlist = DB::table('saved_products')
-            ->join('products', 'products.id', '=', 'saved_products.product_id')
+        $wishlistItems = SavedProduct::with(['product' => function ($query) use ($locale) {
+            $query->select('id', 'name', 'price', 'after_discount_price', 'slug');
+        }])
             ->where(function ($q) use ($userId, $sessionId) {
                 if ($userId) {
-                    $q->where('saved_products.user_id', $userId);
+                    $q->where('user_id', $userId);
                 } else {
-                    $q->where('saved_products.session_id', $sessionId);
+                    $q->where('session_id', $sessionId);
                 }
             })
-            ->select([
-                'products.id',
-                DB::raw("JSON_UNQUOTE(JSON_EXTRACT(products.name, '$.\"$locale\"')) as name"),
-                'products.price',
-                'products.after_discount_price',
-                'products.slug',
-                'saved_products.created_at as saved_at',
-            ])
-            ->orderBy('saved_products.created_at', 'desc')
-            ->get();
+            ->latest()
+            ->get()
+            ->map(function ($savedProduct) {
+                return [
+                    'id' => $savedProduct->product->id,
+                    'name' => $savedProduct->product->name,
+                    'price' => $savedProduct->product->price,
+                    'after_discount_price' => $savedProduct->product->after_discount_price,
+                    'slug' => $savedProduct->product->slug,
+                    'saved_at' => $savedProduct->created_at->toDateTimeString(),
+                ];
+            });
 
         return response()->json([
-            'wishlist' => $wishlist,
+            'wishlist' => $wishlistItems,
         ]);
     }
 
