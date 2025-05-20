@@ -114,7 +114,7 @@ Route::prefix('wheel')->group(function () {
 
 Route::get('/discounts', [DiscountController::class, 'index']);
 
-//Route::post('/newsletter/subscribe', [NewsletterSubscriberController::class, 'store'])->name('newsletter.subscribe');
+Route::post('/newsletter/subscribe', [NewsletterSubscriberController::class, 'store'])->name('newsletter.subscribe');
 
 Route::get('/all-products', [ProductController::class, 'getAllActiveProducts']);
 
