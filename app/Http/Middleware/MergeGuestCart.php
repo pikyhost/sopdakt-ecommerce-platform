@@ -16,7 +16,7 @@ class MergeGuestCart
             $sessionId = $request->header('X-Guest-Session') ?? session()->getId();
 
             if ($sessionId) {
-                app(\App\Services\CartService::class)->mergeGuestCart(
+                app(\App\Services\CartServiceApi::class)->mergeGuestCart(
                     Auth::user()->cart ?: Auth::user()->cart()->create(),
                     $sessionId
                 );

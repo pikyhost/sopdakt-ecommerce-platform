@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
+use App\Models\Setting;
 use Illuminate\Support\Facades\Auth;
 
 class CartServiceApi
@@ -77,6 +78,7 @@ class CartServiceApi
                 'quantity' => $quantity,
                 'price_per_unit' => $price,
                 'subtotal' => $quantity * $price,
+                'currency_id' => optional(Setting::getCurrency())->id, // 🔁 Add this line
             ]);
         }
 
