@@ -15,8 +15,8 @@ class AboutUs extends Model
     protected $guarded = [];
 
     protected $casts = [
-        'team_members' => 'array', // English default
-        'team_members_ar' => 'array', // Add it at new migration
+        'team_members' => 'array',
+        'team_members_ar' => 'array',
     ];
 
     public $translatable = [
@@ -29,6 +29,12 @@ class AboutUs extends Model
         'breadcrumb_current',
         'about_description_1',
         'about_description_2',
+        'vision_title',
+        'vision_content',
+        'mission_title',
+        'mission_content',
+        'values_title',
+        'values_content',
         'accordion_title_1',
         'accordion_content_1',
         'accordion_title_2',

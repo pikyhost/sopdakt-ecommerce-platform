@@ -115,10 +115,8 @@ class AboutUsController extends Controller
     public function index(): JsonResponse
     {
         try {
-            // Fetch the AboutUs record
             $about = AboutUs::first();
 
-            // Check if record exists and has meaningful data
             if (!$about || $this->isEmpty($about)) {
                 return response()->json([
                     'error' => 'About Us data is null or empty',
@@ -126,21 +124,14 @@ class AboutUsController extends Controller
                 ], 404);
             }
 
-            // Determine locale and direction
             $locale = App::getLocale();
             $direction = $locale === 'ar' ? 'rtl' : 'ltr';
 
-            // Select team members based on locale
             $teamMembers = $locale === 'ar' ? ($about->team_members_ar ?? []) : ($about->team_members ?? []);
 
-            // Format team members with proper image URLs
             $formattedTeamMembers = collect($teamMembers)->map(function ($member) {
                 $imagePath = $member['image'] ?? null;
-                $imageUrl = $imagePath
-                    ? (Str::startsWith($imagePath, 'http') || Str::startsWith($imagePath, 'assets/')
-                        ? asset($imagePath)
-                        : Storage::url($imagePath))
-                    : null;
+                $imageUrl = $imagePath ? asset('storage/' . $imagePath) : null;
 
                 return [
                     'name' => $member['name'] ?? null,
@@ -150,7 +141,6 @@ class AboutUsController extends Controller
                 return !is_null($member['name']) && !is_null($member['image']);
             })->values()->toArray();
 
-            // Prepare response data
             $data = [
                 'direction' => $direction,
                 'header' => [
@@ -171,7 +161,15 @@ class AboutUsController extends Controller
                     'title' => $about->about_title ?? null,
                     'description_1' => $about->about_description_1 ?? null,
                     'description_2' => $about->about_description_2 ?? null,
-                    'image' => $about->about_image ? Storage::url($about->about_image) : null,
+                    'image' => $about->about_image ? asset('storage/' . $about->about_image) : null,
+                ],
+                'vision_mission' => [
+                    'vision_title' => $about->vision_title ?? null,
+                    'vision_content' => $about->vision_content ?? null,
+                    'mission_title' => $about->mission_title ?? null,
+                    'mission_content' => $about->mission_content ?? null,
+                    'values_title' => $about->values_title ?? null,
+                    'values_content' => $about->values_content ?? null,
                 ],
                 'accordion' => [
                     [
@@ -210,7 +208,7 @@ class AboutUsController extends Controller
                             'content' => $about->testimonial_content ?? null,
                             'name' => $about->testimonial_name ?? null,
                             'role' => $about->testimonial_role ?? null,
-                            'image' => $about->testimonial_image ? Storage::url($about->about_image) : null,
+                            'image' => $about->testimonial_image ? asset('storage/' . $about->testimonial_image) : null,
                             'rating' => $about->testimonial_rating ?? null,
                         ],
                     ] : [],
@@ -234,7 +232,7 @@ class AboutUsController extends Controller
             ], 500);
         }
     }
-
+    
     /**
      * Check if the AboutUs record is empty or lacks meaningful data
      *

@@ -5,6 +5,8 @@ namespace App\Filament\Resources;
 use App\Models\AboutUs;
 use Filament\Forms;
 
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
@@ -198,7 +200,40 @@ class AboutUsResource extends Resource
                                     ->preserveFilenames()
                                     ->maxFiles(1),
                             ]),
-                    ])
+
+                        Forms\Components\Tabs\Tab::make(__('Vision, Mission & Values'))
+                            ->schema([
+                                TextInput::make('vision_title')
+                                    ->label('Vision Title')
+                                    ->required()
+                                    ->maxLength(255),
+
+                                TextInput::make('vision_content')
+                                    ->label('Vision Content')
+                                    ->required()
+                                    ->maxLength(255),
+
+                                TextInput::make('mission_title')
+                                    ->label('Mission Title')
+                                    ->required()
+                                    ->maxLength(255),
+
+                                TextInput::make('mission_content')
+                                    ->label('Mission Content')
+                                    ->required()
+                                    ->maxLength(255),
+
+                                TextInput::make('values_title')
+                                    ->label('Values Title')
+                                    ->required()
+                                    ->maxLength(255),
+
+                                TextInput::make('values_content')
+                                    ->label('Values Content')
+                                    ->required()
+                                    ->maxLength(255),
+                            ]),
+                     ])
             ]);
     }
 
