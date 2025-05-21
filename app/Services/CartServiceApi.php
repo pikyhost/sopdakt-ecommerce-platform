@@ -37,7 +37,7 @@ class CartServiceApi
         return $cart;
     }
 
-    protected function mergeGuestCart(Cart $userCart, string $sessionId)
+    public function mergeGuestCart(Cart $userCart, string $sessionId)
     {
         $guestCart = Cart::where('session_id', $sessionId)->first();
 
