@@ -155,3 +155,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/products/{product}/ratings/{rating}', [ProductRatingController::class, 'update']);
     Route::delete('/products/{product}/ratings/{rating}', [ProductRatingController::class, 'destroy']);
 });
+
+Route::get('/get-user-id', function () {
+   if (auth()->check()) {
+       return auth()->id();
+   }
+   return 'user not login to get his id';
+});

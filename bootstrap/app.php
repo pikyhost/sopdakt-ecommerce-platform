@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\SetRequestLocale;
+use App\Http\Middleware\MergeGuestCart;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -28,7 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // API middleware configuration
         $middleware->api(prepend: [
-            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+//            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             HandleCors::class,
         ]);
 
@@ -41,7 +42,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'localeSessionRedirect' => \Mcamara\LaravelLocalization\Middleware\LocaleSessionRedirect::class,
             'localeCookieRedirect' => \Mcamara\LaravelLocalization\Middleware\LocaleCookieRedirect::class,
             'localeViewPath' => \Mcamara\LaravelLocalization\Middleware\LaravelLocalizationViewPath::class,
+            'merge.guest.cart' => MergeGuestCart::class,
         ]);
+
+        // Add middleware to both web and api groups
+        $middleware->appendToGroup('web', MergeGuestCart::class);
+        $middleware->appendToGroup('api', MergeGuestCart::class);
 
         // API middleware group
         $middleware->prependToGroup('api', \App\Http\Middleware\AlwaysAcceptJson::class);

@@ -119,19 +119,22 @@ class CartListController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $cart = $this->getOrCreateCart();
+        $cart = $this->getCart(); // ✅ only get if it exists
+
+        if (!$cart) {
+            return response()->json(['message' => __('Cart is empty')]);
+        }
+
         $cartItems = $this->loadCartItems($cart);
 
         if ($cartItems->isEmpty()) {
-            return response()->json([
-                'message' => __('Cart is empty'),
-            ]);
+            return response()->json(['message' => __('Cart is empty')]);
         }
 
         $totals = $this->calculateTotals($cart, $cartItems, $request->coupon_code);
         $productIds = collect($cartItems)->pluck('product.id')->filter()->unique();
 
-        // Fetch complementary product IDs from related products
+        // Fetch complementary products
         $complementaryProductIds = Product::whereIn('id', $productIds)
             ->with('complementaryProducts:id')
             ->get()
@@ -139,7 +142,6 @@ class CartListController extends Controller
             ->flatten()
             ->unique();
 
-        // Fetch actual complementary products
         $complementaryProducts = Product::whereIn('id', $complementaryProductIds)
             ->whereNotIn('id', $productIds)
             ->inRandomOrder()
@@ -183,6 +185,7 @@ class CartListController extends Controller
             'complementary_products' => ComplementaryProductResource::collection($complementaryProducts),
         ]);
     }
+
 
     /**
      * Update cart shipping and location details
@@ -725,30 +728,13 @@ class CartListController extends Controller
     /**
      * Get or create cart with enhanced validation
      */
-    private function getOrCreateCart(): Cart
+    private function getCart(): ?Cart
     {
         if (Auth::check()) {
-            return Cart::firstOrCreate(
-                ['user_id' => Auth::id()],
-                [
-                    'session_id' => session()->getId(),
-                    'country_id' => request('country_id'),
-                    'governorate_id' => request('governorate_id'),
-                ]
-            );
+            return Cart::where('user_id', Auth::id())->first();
         }
 
-        // Use consistent session ID for guest
-        $sessionId = session()->getId();
-
-        return Cart::firstOrCreate(
-            ['session_id' => $sessionId],
-            [
-                'user_id' => null,
-                'country_id' => request('country_id'),
-                'governorate_id' => request('governorate_id'),
-            ]
-        );
+        return Cart::where('session_id', session()->getId())->first();
     }
 
 
