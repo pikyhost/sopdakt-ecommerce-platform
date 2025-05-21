@@ -21,7 +21,10 @@ use App\Http\Controllers\BostaWebhookController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductRatingController;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Http\Request;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ShippingController;
 
@@ -61,10 +64,17 @@ Route::get('/products/{slug}', [ProductController::class, 'showBySlug'])->name('
 Route::get('/homepage/slider', [HomeController::class, 'sliderWithCta']);
 
 // Wishlist
-Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
-Route::get('/wishlist', [WishlistController::class, 'index']);
-Route::get('/wishlist/check', [WishlistController::class, 'checkMultiple']);
-
+Route::middleware([
+    EncryptCookies::class,
+    AddQueuedCookiesToResponse::class,
+    StartSession::class,
+    // Optional: Include auth:sanctum if you want to support token-based auth
+    'auth:sanctum', // Remove this line if you want guest users without any token
+])->group(function () {
+    Route::post('/wishlist/toggle', [WishlistController::class, 'toggle']);
+    Route::get('/wishlist', [WishlistController::class, 'index']);
+    Route::get('/wishlist/check', [WishlistController::class, 'isWishlisted']);
+});
 
 // Cart (Add to cart and operations)
 Route::middleware('auth:sanctum')->prefix('cart')->group(function () {

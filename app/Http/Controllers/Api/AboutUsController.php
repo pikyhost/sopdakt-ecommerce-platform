@@ -232,7 +232,7 @@ class AboutUsController extends Controller
             ], 500);
         }
     }
-    
+
     /**
      * Check if the AboutUs record is empty or lacks meaningful data
      *

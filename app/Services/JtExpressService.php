@@ -62,7 +62,7 @@ class JtExpressService
                 'width'          => $orderData['width'] ?? 10,
                 'height'         => $orderData['height'] ?? 60,
                 'weight'         => $orderData['weight'] ?? 5.02,
-                'totalQuantity'  => $orderData['quantity'],
+                'totalQuantity'  => $orderData['quantity']?? 1,
                 'remark'         => $orderData['remark'] ?? '',
                 'operateType'    => $orderData['operate_type'] ?? 1,
                 'goodsType'      => $orderData['goods_type'] ?? 'ITN1',
