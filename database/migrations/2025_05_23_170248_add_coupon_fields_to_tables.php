@@ -13,10 +13,10 @@ return new class extends Migration
     {
         // Add columns to carts table
         Schema::table('carts', function (Blueprint $table) {
-            $table->foreignId('coupon_id')
-                ->nullable()
-                ->constrained('coupons')
-                ->nullOnDelete();
+//            $table->foreignId('coupon_id')
+//                ->nullable()
+//                ->constrained('coupons')
+//                ->nullOnDelete();
 
             $table->unsignedInteger('discount_amount')
                 ->default(0)
