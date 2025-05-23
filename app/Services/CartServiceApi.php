@@ -105,7 +105,7 @@ class CartServiceApi
 
 
 
-    protected function getSessionId()
+    public function getSessionId()
     {
         // For API requests
         if (request()->header('x-session-id')) {
