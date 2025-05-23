@@ -71,13 +71,12 @@ Route::middleware([
     // Optional: Include auth:sanctum if you want to support token-based auth
     'auth:sanctum', // Remove this line if you want guest users without any token
 ])->group(function () {
-    Route::post('/wishlist/toggle', [WishlistController::class, 'toggle']);
+    Route::post('/wishlist/toggle', [WishlistController::class, 'toggle'])->name('wishlist.toggle');
     Route::get('/wishlist', [WishlistController::class, 'index']);
     Route::get('/wishlist/check', [WishlistController::class, 'isWishlisted']);
 });
 
 // Cart (Add to cart and operations)
-// middleware('auth:sanctum')->
 Route::prefix('cart')->group(function () {
     Route::post('/', [CartController::class, 'store'])->name('cart.add');
     Route::put('/{itemId}', [CartController::class, 'updateQuantity']);
@@ -173,3 +172,8 @@ Route::get('/get-user-id', function () {
    }
    return 'user not login to get his id';
 });
+
+Route::get('/cart/related-data', [CartListController::class, 'getRelatedCartData']);
+
+
+Route::get('/cart/nested-related-data', [CartController::class, 'getNestedCartData']);

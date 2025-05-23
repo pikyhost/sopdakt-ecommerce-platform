@@ -17,6 +17,8 @@ class AboutUs extends Model
     protected $casts = [
         'team_members' => 'array',
         'team_members_ar' => 'array',
+        'happy_clients_ar'=> 'array',
+        'happy_clients'=> 'array',
     ];
 
     public $translatable = [

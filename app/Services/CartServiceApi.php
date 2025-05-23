@@ -18,7 +18,7 @@ class CartServiceApi
         $sessionId = $this->getSessionId();
 
         if ($user) {
-            // For authenticated users - find or create user cart
+          dd(19);
             $cart = Cart::firstOrCreate(
                 ['user_id' => $user->id],
                 ['session_id' => null]
@@ -26,11 +26,10 @@ class CartServiceApi
 
             // Merge any existing guest cart
             if ($sessionId) {
+                dd(27);
                 $this->mergeGuestCart($cart, $sessionId);
             }
         } else {
-//            SQXqIqsXhIti9pH3QuiROVe0aMxUd60LTf3cbujA
-            // T0lL0yetRrq4FrCxZSbjIhtjbhV2lucbNDyWsmY5
             // For guests - use session-based cart
             $cart = Cart::firstOrCreate(
                 ['session_id' => $sessionId],

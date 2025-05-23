@@ -30,8 +30,8 @@ class StoreContactMessageRequest extends FormRequest
                 'min:3',
                 'max:255',
             ],
-            'email' => ['required', 'email', 'max:255'],
-            'phone' => ['nullable', 'string', 'min:10', 'max:20'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'phone' => ['required', 'string', 'min:10', 'max:20'],
             'subject' => ['required', 'string', 'max:255'],
             'message' => ['required', 'string', 'min:10', 'max:5000'],
         ];

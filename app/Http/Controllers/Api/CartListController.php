@@ -154,20 +154,87 @@ class CartListController extends Controller
             'cart' => new CartResource($cart),
             'cartItems' => CartItemResource::collection($cartItems),
             'totals' => $totals,
+//            'countries' => Country::all()->map(fn ($country) => [
+//                'id' => $country->id,
+//                'name' => $country->getTranslation('name', $locale),
+//            ]),
+//            'governorates' => $cart->country_id
+//                ? Governorate::where('country_id', $cart->country_id)
+//                    ->get()
+//                    ->map(fn ($gov) => [
+//                        'id' => $gov->id,
+//                        'name' => $gov->getTranslation('name', $locale),
+//                    ])
+//                : [],
+//            'cities' => $cart->governorate_id
+//                ? City::where('governorate_id', $cart->governorate_id)
+//                    ->get()
+//                    ->map(fn ($city) => [
+//                        'id' => $city->id,
+//                        'name' => $city->getTranslation('name', $locale),
+//                    ])
+//                : [],
+//            'shipping_types' => Setting::isShippingEnabled()
+//                ? ShippingType::where('status', true)
+//                    ->get()
+//                    ->map(fn ($type) => [
+//                        'id' => $type->id,
+//                        'name' => $type->getTranslation('name', $locale),
+//                    ])
+//                : [],
+            'complementary_products' => ComplementaryProductResource::collection($complementaryProducts),
+        ]);
+    }
+
+    private function getOrCreateCart(): Cart
+    {
+        if (Auth::check()) {
+            return Cart::firstOrCreate(
+                ['user_id' => Auth::id()],
+                [
+                    'session_id' => session()->getId(),
+                    'country_id' => request('country_id'),
+                    'governorate_id' => request('governorate_id'),
+                ]
+            );
+        }
+
+        // Use consistent session ID for guest
+        $sessionId = session()->getId();
+
+        return Cart::firstOrCreate(
+            ['session_id' => $sessionId],
+            [
+                'user_id' => null,
+                'country_id' => request('country_id'),
+                'governorate_id' => request('governorate_id'),
+            ]
+        );
+    }
+
+
+    public function getRelatedCartData(Request $request)
+    {
+        $locale = app()->getLocale(); // or use $request->input('locale')
+
+        $countryId = $request->input('country_id');
+        $governorateId = $request->input('governorate_id');
+
+        return response()->json([
             'countries' => Country::all()->map(fn ($country) => [
                 'id' => $country->id,
                 'name' => $country->getTranslation('name', $locale),
             ]),
-            'governorates' => $cart->country_id
-                ? Governorate::where('country_id', $cart->country_id)
+            'governorates' => $countryId
+                ? Governorate::where('country_id', $countryId)
                     ->get()
                     ->map(fn ($gov) => [
                         'id' => $gov->id,
                         'name' => $gov->getTranslation('name', $locale),
                     ])
                 : [],
-            'cities' => $cart->governorate_id
-                ? City::where('governorate_id', $cart->governorate_id)
+            'cities' => $governorateId
+                ? City::where('governorate_id', $governorateId)
                     ->get()
                     ->map(fn ($city) => [
                         'id' => $city->id,
@@ -182,9 +249,10 @@ class CartListController extends Controller
                         'name' => $type->getTranslation('name', $locale),
                     ])
                 : [],
-            'complementary_products' => ComplementaryProductResource::collection($complementaryProducts),
+            'currency' => Setting::getCurrency(),
         ]);
     }
+
 
 
     /**
@@ -549,7 +617,7 @@ class CartListController extends Controller
                     DB::rollBack();
                     return response()->json([
                         'error' => 'Please enter a valid quantity for all products.',
-                        'support_link' => route('contact.us'),
+
                     ], 422);
                 }
 
@@ -557,7 +625,7 @@ class CartListController extends Controller
                     DB::rollBack();
                     return response()->json([
                         'error' => 'The maximum quantity allowed per product is 10. Contact us via our support page.',
-                        'support_link' => route('contact.us'),
+
                     ], 422);
                 }
             }
@@ -608,7 +676,6 @@ class CartListController extends Controller
 
             return response()->json([
                 'message' => 'Cart ready for checkout',
-                'checkout_url' => route('checkout.index'),
                 'cart' => new CartResource($cart),
             ]);
 
@@ -617,7 +684,7 @@ class CartListController extends Controller
             Log::error('Checkout error: ' . $e->getMessage());
             return response()->json([
                 'error' => 'An unexpected error occurred during checkout. Please try again.',
-                'support_link' => route('contact.us'),
+
             ], 500);
         }
     }
@@ -697,13 +764,12 @@ class CartListController extends Controller
                             'available_methods' => $availableMethods,
                             'your_country_id' => $request->country_id
                         ],
-                        'support_link' => route('contact.us')
+
                     ], 422);
                 }
             }
 
             $updateResult = $cart->update([
-                'shipping_type_id' => $request->selected_shipping,
                 'country_id' => $request->country_id,
                 'governorate_id' => $request->governorate_id,
                 'city_id' => $request->city_id,
@@ -1113,4 +1179,4 @@ class CartListController extends Controller
         return 0.0;
     }
 }
-?>
+
