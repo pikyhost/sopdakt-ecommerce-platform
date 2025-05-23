@@ -195,6 +195,10 @@ class HomePageSettingResource extends Resource
                 Section::make(__('Latest Section'))
                     ->collapsed()
                     ->schema([
+                        SpatieMediaLibraryFileUpload::make('last1_image')
+                            ->collection('last1_image')
+                            ->label(__('Last First Image'))
+                            ->image(),
                         TextInput::make('latest_heading')
                             ->label(__('Latest Heading'))
                             ->required(),

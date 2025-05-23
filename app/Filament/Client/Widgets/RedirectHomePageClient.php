@@ -25,7 +25,7 @@ class RedirectHomePageClient extends Widget
             ->icon('heroicon-o-home')
             ->color('primary')
             ->label(__('Go to Website Homepage')) // Translated label
-            ->url('/')
+            ->url(config('app.frontend_url')) // Dynamically fetched
             ->openUrlInNewTab(false);
     }
 
