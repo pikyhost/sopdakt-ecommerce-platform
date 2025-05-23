@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\CartListController;
 use App\Http\Controllers\Api\CompareController;
 use App\Http\Controllers\Api\ContactMessageController;
 use App\Http\Controllers\Api\ContactSettingController;
+use App\Http\Controllers\Api\CouponController;
 use App\Http\Controllers\Api\DiscountController;
 use App\Http\Controllers\Api\GlobalSearchController;
 use App\Http\Controllers\Api\HomeController;
@@ -123,8 +124,6 @@ Route::prefix('wheel')->group(function () {
     Route::post('/spin', [WheelController::class, 'spin'])->name('wheel.spin');
 });
 
-Route::get('/discounts', [DiscountController::class, 'index']);
-
 Route::post('/newsletter/subscribe', [NewsletterSubscriberController::class, 'store'])->name('newsletter.subscribe');
 
 Route::get('/all-products', [ProductController::class, 'getAllActiveProducts']);
@@ -174,7 +173,14 @@ Route::get('/get-user-id', function () {
    return 'user not login to get his id';
 });
 
-Route::get('/cart/related-data', [CartListController::class, 'getRelatedCartData']);
 
 
 Route::get('/cart/nested-related-data', [CartController::class, 'getNestedCartData']);
+
+
+Route::get('/cart/related-data', [CartListController::class, 'getRelatedCartData']);
+Route::get('/discounts', [DiscountController::class, 'index']);
+Route::prefix('coupons')->group(function () {
+    Route::post('/apply', [CouponController::class, 'apply']);
+    Route::post('/remove', [CouponController::class, 'remove']);
+});

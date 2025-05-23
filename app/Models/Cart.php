@@ -37,4 +37,11 @@ class Cart extends Model
     {
         return $this->belongsTo(City::class);
     }
+    /**
+     * Get the coupon applied to this cart
+     */
+    public function coupon(): BelongsTo
+    {
+        return $this->belongsTo(Coupon::class);
+    }
 }

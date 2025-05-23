@@ -30,64 +30,6 @@ use Spatie\Permission\Models\Role;
 
 class CheckoutController extends Controller
 {
-    /**
-     * Process the checkout and place an order
-     *
-     * This endpoint handles the checkout process, validating user or guest contact details, processing payments,
-     * and creating an order. It supports both authenticated users and guests, with optional account creation for guests.
-     * Payment methods include Paymob (returns a payment iframe URL) and Cash on Delivery (creates the order directly).
-     * The endpoint updates user/contact information, manages cart items, updates stock, sends email/WhatsApp notifications,
-     * and integrates with JT Express for shipping. It also validates and applies any coupons associated with the cart.
-     * The response includes the order details or payment URL on success, or an error message for failures (e.g., empty cart, invalid payment, invalid coupon).
-     *
-     * @group Checkout
-     * @bodyParam payment_method_id integer required The ID of the payment method (1 for COD, 2 for Paymob). Example: 1
-     * @bodyParam name string required The name of the customer. Example: John Doe
-     * @bodyParam email string required The email address of the customer. Must be unique if creating an account. Example: john.doe@example.com
-     * @bodyParam phone string required The primary phone number of the customer (min 10 characters). Example: 01025263865
-     * @bodyParam second_phone string required A secondary phone number, different from the primary (min 10 characters). Example: 01125263865
-     * @bodyParam address string required The shipping address. Example: 123 Main St, Cairo
-     * @bodyParam notes string|null Optional notes for the order. Example: Please deliver after 5 PM
-     * @bodyParam create_account boolean Whether to create a user account for guests. Example: true
-     * @bodyParam password string|null Required if create_account is true (min 6 characters). Example: password123
-     * @response 201 {
-     *     "data": {
-     *         "order_id": 1,
-     *         "total": 150.00,
-     *         "status": "shipping",
-     *         "tracking_number": null,
-     *         "created_at": "2025-04-30T12:00:00.000000Z"
-     *     },
-     *     "message": "Order placed successfully"
-     * }
-     * @response 200 {
-     *     "data": {
-     *         "payment_url": "https://paymob.com/iframe/123456"
-     *     },
-     *     "message": "Payment initiated successfully"
-     * }
-     * @response 422 {
-     *     "message": "The given data was invalid.",
-     *     "errors": {
-     *         "email": ["The email has already been taken."],
-     *         "phone": ["The phone number is blocked. Please contact support."],
-     *         "payment_method_id": ["The selected payment method is invalid."]
-     *     }
-     * }
-     * @response 422 {
-     *     "error": "Invalid or expired coupon."
-     * }
-     * @response 404 {
-     *     "error": "Cart is empty or not found",
-     *     "support_link": "https://your-domain.com/contact-us"
-     * }
-     * @response 500 {
-     *     "error": "An unexpected error occurred during checkout. Please try again.",
-     *     "support_link": "https://your-domain.com/contact-us"
-     * }
-     * @param StoreCheckoutRequest $request
-     * @return JsonResponse
-     */
     public function store(StoreCheckoutRequest $request): JsonResponse
     {
         try {
@@ -488,11 +430,6 @@ class CheckoutController extends Controller
                 Mail::to($contact->email)->locale($locale)->send(new GuestInvitationMail($invitation));
             }
 
-            // JT Express integration (prepare data but do not assign tracking number yet)
-            $jtExpressData = $this->prepareJtExpressOrderData($order);
-            $jtExpressResponse = $this->sendJtExpressRequest($jtExpressData); // Implement as needed
-            $this->updateJtExpressOrder($order, 'pending', $jtExpressData, $jtExpressResponse);
-
             DB::commit();
 
             return response()->json([
@@ -513,105 +450,6 @@ class CheckoutController extends Controller
                 'error' => 'We encountered an issue: ' . $e->getMessage(),
 
             ], 500);
-        }
-    }
-
-    /**
-     * Prepare JT Express order data
-     */
-    private function prepareJtExpressOrderData(Order $order): array
-    {
-        $data = [
-            // Do not generate tracking_number here to keep it null in the order
-            'weight' => 1.0, // Dynamic calculation needed
-            'quantity' => $order->items->sum('quantity'),
-            'remark' => implode(' , ', array_filter([
-                'Notes: ' . ($order->notes ?? 'No notes'),
-                $order->user?->name ? 'User: ' . $order->user->name : null,
-                'Email: ' . ($order->user?->email ?? $order->contact?->email ?? null),
-                'Phone: ' . ($order->user?->phone ?? $order->contact?->phone ?? null),
-                'Address: ' . ($order->user?->address ?? $order->contact?->address ?? null),
-            ])),
-            'item_name' => $order->items->pluck('product.name')->implode(', '),
-            'item_quantity' => $order->items->count(),
-            'item_value' => $order->total,
-            'item_currency' => 'EGP',
-            'item_description' => $order->notes ?? 'No description provided',
-        ];
-
-        $data['sender'] = [
-            'name' => 'Your Company Name',
-            'company' => 'Your Company',
-            'city' => 'Your City',
-            'address' => 'Your Full Address',
-            'mobile' => 'Your Contact Number',
-            'countryCode' => 'Your Country Code',
-            'prov' => 'Your Prov',
-            'area' => 'Your Area',
-            'town' => 'Your Town',
-            'street' => 'Your Street',
-            'addressBak' => 'Your Address Bak',
-            'postCode' => 'Your Post Code',
-            'phone' => 'Your Phone',
-            'mailBox' => 'Your Mail Box',
-            'areaCode' => 'Your Area Code',
-            'building' => 'Your Building',
-            'floor' => 'Your Floor',
-            'flats' => 'Your Flats',
-            'alternateSenderPhoneNo' => 'Your Alternate Sender Phone No',
-        ];
-
-        $data['receiver'] = [
-            'name' => $order->user?->name ?? $order->contact?->name ?? 'Customer',
-            'prov' => $order->governorate?->name ?? 'Unknown',
-            'city' => $order->city?->name ?? 'Unknown',
-            'address' => $order->user?->address ?? $order->contact?->address ?? 'Unknown',
-            'mobile' => $order->user?->phone ?? $order->contact?->phone ?? 'Unknown',
-            'company' => 'N/A',
-            'countryCode' => $order->country?->code ?? 'EGY',
-            'area' => 'Unknown',
-            'town' => 'Unknown',
-            'addressBak' => 'N/A',
-            'street' => 'Unknown',
-            'postCode' => 'Unknown',
-            'phone' => $order->user?->phone ?? $order->contact?->phone ?? 'Unknown',
-            'mailBox' => $order->user?->email ?? $order->contact?->email ?? 'N/A',
-            'areaCode' => 'Unknown',
-            'building' => 'Unknown',
-            'floor' => 'Unknown',
-            'flats' => 'Unknown',
-            'alternateReceiverPhoneNo' => $order->user?->second_phone ?? $order->contact?->second_phone ?? 'Unknown',
-        ];
-
-        return $data;
-    }
-
-    /**
-     * Send JT Express request (placeholder)
-     */
-    private function sendJtExpressRequest(array $data): array
-    {
-        // Implement actual JT Express API call here
-        // This is a placeholder returning a mock response
-        // Assume the API returns a tracking number if successful
-        return [
-            'code' => 1,
-            'message' => 'JT Express order created',
-            'tracking_number' => '#JT' . time() . rand(1000, 9999), // Example tracking number from API
-        ];
-    }
-
-    /**
-     * Update order with JT Express data
-     */
-    private function updateJtExpressOrder(Order $order, string $shippingStatus, array $jtExpressData, array $jtExpressResponse): void
-    {
-        if (isset($jtExpressResponse['code']) && $jtExpressResponse['code'] == 1) {
-            $order->update([
-                // Only update shipping_status and shipping_response, not tracking_number
-                'shipping_status' => $shippingStatus,
-                'shipping_response' => json_encode($jtExpressResponse),
-            ]);
         }
     }
 }
