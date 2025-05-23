@@ -77,7 +77,8 @@ Route::middleware([
 });
 
 // Cart (Add to cart and operations)
-Route::middleware('auth:sanctum')->prefix('cart')->group(function () {
+// middleware('auth:sanctum')->
+Route::prefix('cart')->group(function () {
     Route::post('/', [CartController::class, 'store'])->name('cart.add');
     Route::put('/{itemId}', [CartController::class, 'updateQuantity']);
     Route::delete('/{itemId}', [CartController::class, 'destroy']);

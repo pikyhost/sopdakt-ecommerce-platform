@@ -6,6 +6,8 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
 use App\Models\Setting;
+use Google\Api\Http;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Support\Facades\Auth;
 
 class CartServiceApi
@@ -27,11 +29,14 @@ class CartServiceApi
                 $this->mergeGuestCart($cart, $sessionId);
             }
         } else {
+//            SQXqIqsXhIti9pH3QuiROVe0aMxUd60LTf3cbujA
+            // T0lL0yetRrq4FrCxZSbjIhtjbhV2lucbNDyWsmY5
             // For guests - use session-based cart
             $cart = Cart::firstOrCreate(
                 ['session_id' => $sessionId],
                 ['user_id' => null]
             );
+
         }
 
         return $cart;
@@ -96,14 +101,15 @@ class CartServiceApi
         ]);
     }
 
+
+
+
     protected function getSessionId()
     {
         // For API requests
-        if (request()->header('X-Guest-Session')) {
-            return request()->header('X-Guest-Session');
+        if (request()->header('x-session-id')) {
+            return request()->header('x-session-id');
         }
-
-        // For web requests
-        return session()->getId();
+        throw new HttpException(400, 'Invalid session handling - x-session-id header required');
     }
 }

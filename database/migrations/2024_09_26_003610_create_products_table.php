@@ -40,10 +40,7 @@ return new class extends Migration
             $table->boolean('is_featured')->default(false);
             $table->boolean('is_free_shipping')->default(false);
 
-            $table->foreignId('size_guide_id')
-                ->nullable()
-                ->constrained('size_guides')
-                ->nullOnDelete(); // Optional: automatically nullify on deletion
+
             $table->timestamps();
         });
     }
