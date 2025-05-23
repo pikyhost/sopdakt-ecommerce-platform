@@ -18,7 +18,7 @@ class CartServiceApi
         $sessionId = $this->getSessionId();
 
         if ($user) {
-          dd(19);
+
             $cart = Cart::firstOrCreate(
                 ['user_id' => $user->id],
                 ['session_id' => null]
@@ -26,11 +26,11 @@ class CartServiceApi
 
             // Merge any existing guest cart
             if ($sessionId) {
-                dd(27);
+
                 $this->mergeGuestCart($cart, $sessionId);
             }
         } else {
-            dd(30);
+
             // For guests - use session-based cart
             $cart = Cart::firstOrCreate(
                 ['session_id' => $sessionId],
@@ -110,6 +110,6 @@ class CartServiceApi
         if (request()->header('x-session-id')) {
             return request()->header('x-session-id');
         }
-        throw new HttpException(400, 'Invalid session handling - x-session-id header required');
+        throw new HttpException(403, 'Invalid session handling - x-session-id header required');
     }
 }
