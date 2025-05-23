@@ -100,7 +100,7 @@ class CheckoutController extends Controller
                 Log::warning('Inactive user attempted checkout', ['user_id' => Auth::id()]);
                 return response()->json([
                     'error' => 'Your account is not active. Please contact support.',
-                    'support_link' => route('contact.us'),
+            
                 ], 403);
             }
 
@@ -125,7 +125,7 @@ class CheckoutController extends Controller
                 Log::info('Empty cart during checkout', ['user_id' => Auth::id(), 'session_id' => $sessionId]);
                 return response()->json([
                     'error' => 'Cart is empty or not found',
-                    'support_link' => route('contact.us'),
+                 
                 ], 404);
             }
 
@@ -148,7 +148,7 @@ class CheckoutController extends Controller
                     Log::warning('Invalid or expired coupon during checkout', ['coupon_id' => $cart->coupon_id]);
                     return response()->json([
                         'error' => 'Invalid or expired coupon.',
-                        'support_link' => route('contact.us'),
+                     
                     ], 422);
                 }
 
@@ -159,7 +159,7 @@ class CheckoutController extends Controller
                         Log::warning('Coupon usage limit reached', ['coupon_id' => $cart->coupon_id]);
                         return response()->json([
                             'error' => 'Coupon usage limit reached.',
-                            'support_link' => route('contact.us'),
+                       
                         ], 422);
                     }
                 }
@@ -170,7 +170,7 @@ class CheckoutController extends Controller
                         Log::warning('Coupon usage limit per user reached', ['coupon_id' => $cart->coupon_id, 'user_id' => Auth::id()]);
                         return response()->json([
                             'error' => 'Coupon usage limit per user reached.',
-                            'support_link' => route('contact.us'),
+                       
                         ], 422);
                     }
                 }
@@ -208,7 +208,7 @@ class CheckoutController extends Controller
             ]);
             return response()->json([
                 'error' => 'An unexpected error occurred during checkout. Please try again.',
-                'support_link' => route('contact.us'),
+             
             ], 500);
         }
     }
@@ -497,7 +497,7 @@ class CheckoutController extends Controller
             Log::error('Order creation failed', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return response()->json([
                 'error' => 'We encountered an issue: ' . $e->getMessage(),
-                'support_link' => route('contact.us'),
+               
             ], 500);
         }
     }

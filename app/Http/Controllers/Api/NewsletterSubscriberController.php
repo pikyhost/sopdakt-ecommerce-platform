@@ -49,7 +49,7 @@ class NewsletterSubscriberController extends Controller
     {
         // Validate the request
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email:rfc,dns|max:255|unique:newsletter_subscribers,email',
+            'email' => 'required|email|max:255|unique:newsletter_subscribers,email',
         ]);
 
         if ($validator->fails()) {
