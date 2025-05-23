@@ -11,10 +11,6 @@ class DiscountsAndCouponsSeeder extends Seeder
 {
     public function run()
     {
-        // Clear existing data
-        Discount::truncate();
-        Coupon::truncate();
-
         // Create discounts
         $discounts = [
             [
