@@ -51,3 +51,4 @@ class ProductCoupon extends Model
     {
         return round((($this->original_price - $this->discounted_price) / $this->original_price) * 100, 2);
     }
+}
