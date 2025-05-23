@@ -168,7 +168,7 @@ class BannerController extends Controller
                 // Add related items based on banner type
                 if ($type === 'product') {
                     $data['products'] = Product::latest()
-                        ->take(6)
+                        ->take(10)
                         ->get()
                         ->map(function ($product) {
                             return [
@@ -179,7 +179,7 @@ class BannerController extends Controller
                         });
                 } elseif ($type === 'category') {
                     $data['categories'] = Category::latest()
-                        ->take(6)
+                        ->take(10)
                         ->get()
                         ->map(function ($category) {
                             return [

@@ -8,6 +8,7 @@ use App\Models\ProductColor;
 use App\Models\ProductColorSize;
 use App\Models\Product;
 use App\Models\Color;
+use App\Models\ProductRating;
 use App\Models\Size;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -601,9 +602,33 @@ class ProductController extends Controller
             return response()->json(['message' => 'Product not found.'], 404);
         }
 
+        $user = auth('sanctum')->user();
+        $isAdmin = $user && $user->hasRole(['admin', 'super_admin']);
+
+        // Fetch all ratings based on user role
+        $ratingsQuery = ProductRating::where('product_id', $product->id)
+            ->where(function ($query) use ($user, $isAdmin) {
+                $query->where('status', 'approved');
+
+                if ($user) {
+                    // Authenticated users see their own pending review
+                    $query->orWhere(function ($q) use ($user) {
+                        $q->where('status', 'pending')->where('user_id', $user->id);
+                    });
+                }
+
+                if ($isAdmin) {
+                    // Admins see everything
+                    $query->orWhereNotNull('id');
+                }
+            })
+            ->latest()
+            ->get(); // Get all results without pagination
+
         return response()->json([
             'product' => [
                 'id' => $product->id,
+                'ratings' => $ratingsQuery,
                 'user_id' => $product->user_id,
                 'user_name' => optional($product->user)->name,
                 'category_id' => $product->category_id,
