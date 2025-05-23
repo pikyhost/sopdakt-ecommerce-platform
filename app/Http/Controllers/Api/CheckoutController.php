@@ -93,14 +93,14 @@ class CheckoutController extends Controller
         try {
             $data = $request->validated();
             $checkoutToken = (string) Str::uuid();
-            $sessionId = session()->getId();
+            $sessionId = $request->header('x-session-id');
 
             // Block inactive users
-            if (Auth::check() && !Auth::user()->is_active) {
-                Log::warning('Inactive user attempted checkout', ['user_id' => Auth::id()]);
+            if (Auth::guard('sanctum')->check() && !Auth::guard('sanctum')->user()->is_active) {
+                Log::warning('Inactive user attempted checkout', ['user_id' => Auth::guard('sanctum')->id()]);
                 return response()->json([
                     'error' => 'Your account is not active. Please contact support.',
-            
+
                 ], 403);
             }
 
@@ -114,8 +114,8 @@ class CheckoutController extends Controller
 
             // Get cart
             $cart = Cart::where(function ($query) use ($sessionId) {
-                if (Auth::check()) {
-                    $query->where('user_id', Auth::id());
+                if (Auth::guard('sanctum')->check()) {
+                    $query->where('user_id', Auth::guard('sanctum')->id());
                 } else {
                     $query->where('session_id', $sessionId);
                 }
@@ -125,7 +125,7 @@ class CheckoutController extends Controller
                 Log::info('Empty cart during checkout', ['user_id' => Auth::id(), 'session_id' => $sessionId]);
                 return response()->json([
                     'error' => 'Cart is empty or not found',
-                 
+
                 ], 404);
             }
 
@@ -148,7 +148,7 @@ class CheckoutController extends Controller
                     Log::warning('Invalid or expired coupon during checkout', ['coupon_id' => $cart->coupon_id]);
                     return response()->json([
                         'error' => 'Invalid or expired coupon.',
-                     
+
                     ], 422);
                 }
 
@@ -159,32 +159,47 @@ class CheckoutController extends Controller
                         Log::warning('Coupon usage limit reached', ['coupon_id' => $cart->coupon_id]);
                         return response()->json([
                             'error' => 'Coupon usage limit reached.',
-                       
+
                         ], 422);
                     }
                 }
 
-                if ($coupon->usage_limit_per_user && Auth::check()) {
-                    $userUsages = $coupon->usages()->where('user_id', Auth::id())->count();
+                if ($coupon->usage_limit_per_user && Auth::guard('sanctum')->check()) {
+                    $userUsages = $coupon->usages()->where('user_id', Auth::guard('sanctum')->id())->count();
                     if ($userUsages >= $coupon->usage_limit_per_user) {
                         Log::warning('Coupon usage limit per user reached', ['coupon_id' => $cart->coupon_id, 'user_id' => Auth::id()]);
                         return response()->json([
                             'error' => 'Coupon usage limit per user reached.',
-                       
+
                         ], 422);
                     }
                 }
             }
 
             // Save contact data
-            $contact = $this->saveContact($data, $cart);
-            Log::info('Contact info saved', ['contact_id' => $contact->id ?? null, 'user_id' => Auth::id()]);
+
+            /* Issue When User Contact Saved */
+//            Contact
+
+            $contact = Contact::create([
+                'session_id' => $sessionId.rand(1000, 9999),
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'phone' => $data['phone'],
+                'second_phone' => $data['second_phone'],
+                'address' => $data['address'],
+                'country_id' => $cart->country_id,
+                'governorate_id' => $cart->governorate_id,
+                'city_id' => $cart->city_id,
+            ]);
+            Log::info('Contact info saved', ['contact_id' => $contact->id ?? null, 'user_id' => Auth::guard('sanctum')->id()]);
+
 
             // Store checkout session data
             session([
                 'pending_checkout' => [
-                    'user_id' => Auth::id(),
-                    'contact_id' => Auth::check() ? null : $contact->id,
+                    'user_id' => Auth::guard('sanctum')->id(),
+                    'contact_id' => null,
                     'cart_id' => $cart->id,
                     'notes' => $data['notes'] ?? null,
                     'checkout_token' => $checkoutToken,
@@ -197,7 +212,6 @@ class CheckoutController extends Controller
             if ($data['payment_method_id'] == 2) {
                 return $this->processPaymobPayment($cart, $contact, $checkoutToken);
             }
-
             // Handle COD or other methods
             return $this->createOrderManually($cart, $contact, $data, $checkoutToken);
 
@@ -207,8 +221,8 @@ class CheckoutController extends Controller
                 'trace' => $e->getTraceAsString(),
             ]);
             return response()->json([
-                'error' => 'An unexpected error occurred during checkout. Please try again.',
-             
+                'error' => $e->getMessage(),
+
             ], 500);
         }
     }
@@ -220,7 +234,7 @@ class CheckoutController extends Controller
     {
         if (Auth::check()) {
             // Update authenticated user
-            $user = Auth::user();
+            $user = Auth::guard('sanctum')->user();
 
             if ($user->email !== $data['email'] && User::where('email', $data['email'])->exists()) {
                 throw new \Exception('This email is already in use by another user.');
@@ -255,7 +269,7 @@ class CheckoutController extends Controller
 
             return $user;
         } else {
-            $sessionId = session()->getId();
+            $sessionId = request()->header('x-session-id');
 
             if ($data['create_account']) {
                 // Create new user
@@ -271,7 +285,7 @@ class CheckoutController extends Controller
                     'city_id' => $cart->city_id,
                 ]);
 
-                Auth::login($user);
+                Auth::guard('sanctum')->login($user);
 
                 $user->addresses()->create([
                     'address' => $data['address'],
@@ -371,7 +385,7 @@ class CheckoutController extends Controller
         try {
             $orderData = [
                 'payment_method_id' => $data['payment_method_id'],
-                'user_id' => Auth::id(),
+                'user_id' => Auth::guard('sanctum')->id(),
                 'shipping_type_id' => $cart->shipping_type_id,
                 'coupon_id' => $cart->coupon_id,
                 'shipping_cost' => $cart->shipping_cost,
@@ -388,16 +402,16 @@ class CheckoutController extends Controller
                 'tracking_number' => null, // Explicitly set to null
             ];
 
-            if (!Auth::check() && $contact instanceof Contact) {
+            if (!Auth::guard('sanctum')->check() && $contact instanceof Contact) {
                 $orderData['contact_id'] = $contact->id;
             }
 
             $order = Order::create($orderData);
 
             // Record coupon usage if applicable
-            if ($cart->coupon_id && Auth::check()) {
+            if ($cart->coupon_id && Auth::guard('sanctum')->check()) {
                 Coupon::find($cart->coupon_id)->usages()->create([
-                    'user_id' => Auth::id(),
+                    'user_id' => Auth::guard('sanctum')->id(),
                     'order_id' => $order->id,
                 ]);
             }
@@ -453,15 +467,15 @@ class CheckoutController extends Controller
             $cart->delete();
 
             // Send email notification
-            $recipientEmail = Auth::check() ? Auth::user()->email : ($contact->email ?? null);
-            $language = Auth::check() ? Auth::user()->preferred_language : (request()->getPreferredLanguage(['en', 'ar']) ?? 'en');
+            $recipientEmail = Auth::guard('sanctum')->check() ? Auth::guard('sanctum')->user()->email : ($contact->email ?? null);
+            $language = Auth::guard('sanctum')->check() ? Auth::guard('sanctum')->user()->preferred_language : (request()->getPreferredLanguage(['en', 'ar']) ?? 'en');
 
             if ($recipientEmail) {
                 Mail::to($recipientEmail)->locale($language)->send(new OrderStatusMail($order, $order->status));
             }
 
             // Send guest invitation
-            if (!Auth::check() && $contact instanceof Contact) {
+            if (!Auth::guard('sanctum')->check() && $contact instanceof Contact) {
                 $locale = request()->getPreferredLanguage(['en', 'ar']) ?? 'en';
                 $invitation = Invitation::create([
                     'email' => $contact->email,
@@ -497,7 +511,7 @@ class CheckoutController extends Controller
             Log::error('Order creation failed', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return response()->json([
                 'error' => 'We encountered an issue: ' . $e->getMessage(),
-               
+
             ], 500);
         }
     }
