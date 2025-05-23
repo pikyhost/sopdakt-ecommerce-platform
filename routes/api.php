@@ -183,4 +183,8 @@ Route::get('/discounts', [DiscountController::class, 'index']);
 Route::prefix('coupons')->group(function () {
     Route::post('/apply', [CouponController::class, 'apply']);
     Route::post('/remove', [CouponController::class, 'remove']);
+
+// New product coupon routes
+    Route::post('/apply-to-product', [CouponController::class, 'applyToProduct']);
+    Route::post('/apply-to-cart-item', [CouponController::class, 'applyProductCouponToCart']);
 });

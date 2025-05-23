@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\Coupon;
 use App\Models\Discount;
 use Illuminate\Http\Request;
@@ -277,5 +278,85 @@ class CouponController extends Controller
     {
         // Implement your shipping calculation logic here
         return 0;
+    }
+
+    /**
+     * Apply coupon directly to a product
+     */
+    public function applyToProduct(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string',
+            'product_id' => 'required|exists:products,id',
+        ]);
+
+        $coupon = ProductCoupon::where('code', $request->code)
+            ->where('product_id', $request->product_id)
+            ->where('is_active', true)
+            ->first();
+
+        if (!$coupon) {
+            return response()->json(['message' => 'Invalid coupon code for this product'], 404);
+        }
+
+        // Validate coupon
+        $now = now();
+        if ($coupon->starts_at && $now->lt($coupon->starts_at)) {
+            return response()->json(['message' => 'This coupon is not valid yet'], 422);
+        }
+        if ($coupon->ends_at && $now->gt($coupon->ends_at)) {
+            return response()->json(['message' => 'This coupon has expired'], 422);
+        }
+        if ($coupon->usage_limit && $coupon->used_count >= $coupon->usage_limit) {
+            return response()->json(['message' => 'This coupon has reached its usage limit'], 422);
+        }
+
+        // Return the discounted price without modifying cart
+        return response()->json([
+            'message' => 'Coupon applied successfully',
+            'original_price' => $coupon->original_price,
+            'discounted_price' => $coupon->discounted_price,
+            'valid_until' => $coupon->ends_at,
+        ]);
+    }
+
+    /**
+     * Apply product coupon to cart item
+     */
+    public function applyProductCouponToCart(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|string',
+            'cart_item_id' => 'required|exists:cart_items,id',
+        ]);
+
+        $cartItem = CartItem::findOrFail($request->cart_item_id);
+
+        $coupon = ProductCoupon::where('code', $request->code)
+            ->where('product_id', $cartItem->product_id)
+            ->where('is_active', true)
+            ->first();
+
+        // ... same validation as above ...
+
+        // Apply to cart item
+        DB::transaction(function () use ($cartItem, $coupon) {
+            $cartItem->price_per_unit = $coupon->discounted_price;
+            $cartItem->subtotal = $coupon->discounted_price * $cartItem->quantity;
+            $cartItem->save();
+
+            $coupon->increment('used_count');
+
+            // Update cart totals
+            $cart = $cartItem->cart;
+            $cart->subtotal = $cart->items()->sum('subtotal');
+            $cart->total = $cart->subtotal + ($cart->shipping_cost ?? 0);
+            $cart->save();
+        });
+
+        return response()->json([
+            'message' => 'Product coupon applied to cart item',
+            'cart' => $cartItem->cart->fresh()->load('items'),
+        ]);
     }
 }
