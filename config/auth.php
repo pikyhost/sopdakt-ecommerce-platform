@@ -43,9 +43,13 @@ return [
 
         // Add this if using Sanctum
         'api' => [
-            'driver' => 'sanctum', // or 'passport' if using Passport
+            'driver' => 'token', // or 'passport' if using Passport
             'provider' => 'users',
             'hash' => false, // Optional: disable hashing for tokens
+        ],
+        'sanctum' => [
+            'driver' => 'sanctum',
+            'provider' => 'users',
         ],
     ],
 

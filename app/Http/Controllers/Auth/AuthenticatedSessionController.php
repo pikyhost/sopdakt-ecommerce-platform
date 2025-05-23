@@ -120,10 +120,11 @@ class AuthenticatedSessionController extends Controller
      *   "error": "An unexpected error occurred"
      * }
      */
+
     public function destroy(Request $request)
     {
         try {
-            // Rate limit logout attempts (optional)
+            // Rate limit logout attempts
             $key = 'logout|' . $request->ip();
             if (RateLimiter::tooManyAttempts($key, 5)) {
                 return response()->json([
@@ -131,27 +132,23 @@ class AuthenticatedSessionController extends Controller
                 ], 429);
             }
 
-            // Check if user is authenticated
-            if (!Auth::check()) {
+            // Check if user is authenticated via token
+            $user = $request->user(); // equivalent to Auth::user() in this context
+
+            if (!$user || !$user->currentAccessToken()) {
                 return response()->json([
-                    'message' => 'No active session found'
+                    'message' => 'No active session or token found'
                 ], 401);
             }
 
-            // Store user data before logout
-            $user = Auth::user();
+            // Revoke the current access token
+            $user->currentAccessToken()->delete();
 
-            // Perform logout
-            Auth::guard('web')->logout();
+            // Do NOT call session-related methods for token-based auth
+            // This would cause the "Session store not set" error
 
-            // Invalidate session
-            $request->session()->invalidate();
-
-            // Regenerate CSRF token
-            $request->session()->regenerateToken();
-
-            // Increment rate limiter
-            RateLimiter::hit($key, 60); // 60 seconds decay
+            // Rate limit hit
+            RateLimiter::hit($key, 60); // 60 seconds
 
             // Return success response
             return response()->json([
@@ -166,4 +163,5 @@ class AuthenticatedSessionController extends Controller
             ], 500);
         }
     }
+
 }
