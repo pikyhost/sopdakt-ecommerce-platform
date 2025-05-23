@@ -39,6 +39,7 @@ use App\Filament\Resources\OrderResource;
 use App\Filament\Resources\PaymentMethodResource;
 use App\Filament\Resources\PolicyResource;
 use App\Filament\Resources\PopupResource;
+use App\Filament\Resources\ProductCouponResource;
 use App\Filament\Resources\ProductRatingResource;
 use App\Filament\Resources\ProductResource;
 use App\Filament\Resources\RoleResource;
@@ -116,7 +117,7 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
                 Dashboard::class,
-             
+
             ])
             ->resources([
                 config('filament-logger.activity_resource')
@@ -246,6 +247,7 @@ class AdminPanelProvider extends PanelProvider
                 'label' => __('Offers'),
                 'items' => [
                    DiscountResource::getNavigationItems(),
+                    ProductCouponResource::getNavigationItems(),
                     CouponResource::getNavigationItems(),
                     CouponUsageResource::getNavigationItems(),
                     WheelResource::getNavigationItems(),
