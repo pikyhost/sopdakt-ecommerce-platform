@@ -16,6 +16,7 @@ use App\Models\Setting;
 use App\Models\ShippingType;
 use App\Models\Discount;
 use App\Models\Coupon;
+use App\Services\CartServiceApi;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -185,8 +186,8 @@ class CartListController extends Controller
             'complementary_products' => ComplementaryProductResource::collection($complementaryProducts),
         ]);
     }
-    
-      private function getOrCreateCart(): Cart
+
+      private function getOrCreateCart()
     {
         if (Auth::check()) {
             return Cart::firstOrCreate(
@@ -791,13 +792,13 @@ class CartListController extends Controller
     /**
      * Get or create cart with enhanced validation
      */
-    private function getCart(): ?Cart
+    private function getCart()
     {
-        if (Auth::check()) {
-            return Cart::where('user_id', Auth::id())->first();
+        if (Auth::guard('sanctum')->check()) {
+            return Cart::where('user_id', Auth::guard('sanctum')->id())->first();
         }
-
-        return Cart::where('session_id', session()->getId())->first();
+        return Cart::where('session_id',app(CartServiceApi::class)->getSessionId())
+            ->first();
     }
 
 
@@ -806,9 +807,9 @@ class CartListController extends Controller
      */
     private function loadCartItems(Cart $cart): \Illuminate\Database\Eloquent\Collection
     {
-        // Verify the cart belongs to the current user/session
-        if (Auth::check()) {
-            if ($cart->user_id !== Auth::id()) {
+      /*  // Verify the cart belongs to the current user/session
+        if (Auth::guard('sanctum')->check()) {
+            if ($cart->user_id !== Auth::guard('sanctum')->id()) {
                 return new \Illuminate\Database\Eloquent\Collection();
             }
         } else {
@@ -816,7 +817,7 @@ class CartListController extends Controller
             if ($cart->session_id !== $sessionId) {
                 return new \Illuminate\Database\Eloquent\Collection();
             }
-        }
+        }*/
 
         return $cart->items()
             ->with(['product', 'bundle', 'size', 'color'])
