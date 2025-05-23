@@ -2,6 +2,8 @@
 
 namespace App\Livewire;
 
+use App\Models\City;
+use App\Models\Governorate;
 use App\Models\Transaction;
 use App\Services\StockLevelNotifier;
 use Illuminate\Support\Facades\Http;
@@ -31,7 +33,7 @@ use Spatie\Permission\Models\Role;
 
 class Checkout extends Component
 {
-    public string|null $paymentUrl = null; // Add this at the top of your Livewire component class
+    public string|null $paymentUrl = null;
     public $payment_method_id;
     public string $checkoutToken;
     public $currentRoute;
@@ -568,6 +570,8 @@ class Checkout extends Component
     {
         return view('livewire.checkout', [
             'countries' => Country::all(),
+            'governorate' => Governorate::all(),
+            'cities' => City::all(),
             'currentRoute' => $this->currentRoute,
             'isCheckoutReady' => $this->isCheckoutReady,
             'paymentMethods' => PaymentMethod::all(),

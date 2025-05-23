@@ -111,9 +111,14 @@ class CartServiceApi
         if (request()->header('x-session-id')) {
             return request()->header('x-session-id');
         }
-        if(request()->user()->id) {
-            return request()->user()->id;
+
+        $user = request()->user();
+
+        if ($user) {
+            return $user->id;
         }
+
         throw new HttpException(403, 'Invalid session handling - x-session-id header required');
     }
+
 }

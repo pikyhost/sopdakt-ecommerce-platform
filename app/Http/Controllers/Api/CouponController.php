@@ -7,6 +7,7 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Coupon;
 use App\Models\Discount;
+use App\Models\ProductCoupon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -352,6 +353,13 @@ class CouponController extends Controller
             $cart->subtotal = $cart->items()->sum('subtotal');
             $cart->total = $cart->subtotal + ($cart->shipping_cost ?? 0);
             $cart->save();
+            // In applyProductCouponToCart method, update the cart item:
+            $cartItem->update([
+                'price_per_unit' => $coupon->discounted_price,
+                'subtotal' => $coupon->discounted_price * $cartItem->quantity,
+                'coupon_id' => $coupon->id, // Track which coupon was applied
+                'original_price' => $cartItem->price_per_unit // Store original price
+            ]);
         });
 
         return response()->json([

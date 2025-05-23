@@ -47,14 +47,11 @@ class ProductCouponResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('original_price')
                             ->required()
-                            ->numeric()
-                            ->prefix('$'),
+                            ->numeric(),
 
                         Forms\Components\TextInput::make('discounted_price')
                             ->required()
-                            ->numeric()
-                            ->prefix('$')
-                            ->rules(['lt:original_price']),
+                            ->numeric(),
                     ])->columns(2),
 
                 Forms\Components\Section::make('Availability')
