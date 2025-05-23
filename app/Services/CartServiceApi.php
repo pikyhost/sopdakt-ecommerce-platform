@@ -30,6 +30,7 @@ class CartServiceApi
                 $this->mergeGuestCart($cart, $sessionId);
             }
         } else {
+            dd(30);
             // For guests - use session-based cart
             $cart = Cart::firstOrCreate(
                 ['session_id' => $sessionId],

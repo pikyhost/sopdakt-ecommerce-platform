@@ -1,0 +1,71 @@
+name: Categories
+description: 'Display a category and its associated products with translations and details.'
+endpoints:
+  -
+    httpMethods:
+      - GET
+    uri: 'api/categories/{slug}'
+    metadata:
+      groupName: Categories
+      groupDescription: 'Display a category and its associated products with translations and details.'
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Show Category with Products'
+      description: ''
+      authenticated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      slug:
+        name: slug
+        description: 'The slug of the category.'
+        required: true
+        example: architecto
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      slug: architecto
+    queryParameters:
+      locale:
+        name: locale
+        description: 'The locale to use for translations (default: en).'
+        required: false
+        example: sr_BA
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanQueryParameters:
+      locale: sr_BA
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+            "success": true,
+            "data": {
+              "id": 1,
+              "name": "Electronics",
+              "slug": "electronics",
+              "description": "Localized description",
+              "products": [ ... ]
+            }
+          }
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []

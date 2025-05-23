@@ -185,8 +185,8 @@ class CartListController extends Controller
             'complementary_products' => ComplementaryProductResource::collection($complementaryProducts),
         ]);
     }
-
-    private function getOrCreateCart(): Cart
+    
+      private function getOrCreateCart(): Cart
     {
         if (Auth::check()) {
             return Cart::firstOrCreate(
@@ -617,7 +617,6 @@ class CartListController extends Controller
                     DB::rollBack();
                     return response()->json([
                         'error' => 'Please enter a valid quantity for all products.',
-
                     ], 422);
                 }
 
@@ -625,7 +624,6 @@ class CartListController extends Controller
                     DB::rollBack();
                     return response()->json([
                         'error' => 'The maximum quantity allowed per product is 10. Contact us via our support page.',
-
                     ], 422);
                 }
             }
@@ -684,7 +682,6 @@ class CartListController extends Controller
             Log::error('Checkout error: ' . $e->getMessage());
             return response()->json([
                 'error' => 'An unexpected error occurred during checkout. Please try again.',
-
             ], 500);
         }
     }

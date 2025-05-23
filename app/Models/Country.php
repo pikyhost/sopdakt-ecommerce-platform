@@ -22,4 +22,10 @@ class Country extends Model
     {
         return $this->hasMany(Order::class);
     }
+    
+    public function governorates()
+{
+    return $this->hasMany(Governorate::class);
+}
+
 }
