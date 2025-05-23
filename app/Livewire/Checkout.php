@@ -356,7 +356,7 @@ class Checkout extends Component
 
             // Validate input fields
             $this->validate([
-                'payment_method_id' => 'required|in:1,2',
+                'payment_method_id' => 'nullalbe|in:1,2',
                 // Add other fields as needed
             ]);
             Log::info('Validation passed for checkout', ['payment_method_id' => $this->payment_method_id]);
@@ -573,89 +573,4 @@ class Checkout extends Component
             'paymentMethods' => PaymentMethod::all(),
         ]);
     }
-
-    private function prepareJtExpressOrderData($order): array
-    {
-        $data = [
-            'tracking_number'   => '#'. $order->id. ' EGY' . time() . rand(1000, 9999),
-            'weight'            => 1.0, // You might want to calculate the total weight dynamically
-            'quantity'          => $order->items->sum('quantity'), // Sum of all item quantities in the order
-
-            'remark'            => implode(' , ', array_filter([
-                'Notes: ' . ($order->notes ?? 'No notes'),
-                $order->user?->name ? 'User: ' . $order->user->name : null,
-                $order->user?->email ? 'Email: ' . $order->user->email : null,
-                $order->user?->phone ? 'Phone: ' . $order->user->phone : null,
-                $order->user?->address ? 'Address: ' . $order->user->address : null,
-                $order->contact?->name ? 'Contact: ' . $order->contact->name : null,
-                $order->contact?->email ? 'Contact Email: ' . $order->contact->email : null,
-                $order->contact?->phone ? 'Contact Phone: ' . $order->contact->phone : null,
-                $order->contact?->address ? 'Contact Address: ' . $order->contact->address : null,
-            ])),
-
-            'item_name'         => $order->items->pluck('product.name')->implode(', '), // Concatenated product names
-            'item_quantity'     => $order->items->count(), // Total distinct items in the order
-            'item_value'        => $order->total, // Order total amount
-            'item_currency'     => 'EGP',
-            'item_description'  => $order->notes ?? 'No description provided',
-        ];
-
-        $data['sender'] = [
-            'name'                   => 'Your Company Name',
-            'company'                => 'Your Company',
-            'city'                   => 'Your City',
-            'address'                => 'Your Full Address',
-            'mobile'                 => 'Your Contact Number',
-            'countryCode'            => 'Your Country Code',
-            'prov'                   => 'Your Prov',
-            'area'                   => 'Your Area',
-            'town'                   => 'Your Town',
-            'street'                 => 'Your Street',
-            'addressBak'             => 'Your Address Bak',
-            'postCode'               => 'Your Post Code',
-            'phone'                  => 'Your Phone',
-            'mailBox'                => 'Your Mail Box',
-            'areaCode'               => 'Your Area Code',
-            'building'               => 'Your Building',
-            'floor'                  => 'Your Floor',
-            'flats'                  => 'Your Flats',
-            'alternateSenderPhoneNo' => 'Your Alternate Sender Phone No',
-        ];
-
-        $data['receiver'] = [
-            'name'                      => 'test', // $order->name,
-            'prov'                      => 'أسيوط', // $order->region->governorate->name,
-            'city'                      => 'القوصية', // $order->region->name,
-            'address'                   => 'sdfsacdscdscdsa', // $order->address,
-            'mobile'                    => '1441234567', // $order->phone,
-            'company'                   => 'guangdongshengshenzhe',
-            'countryCode'               => 'EGY',
-            'area'                      => 'الصبحه',
-            'town'                      => 'town',
-            'addressBak'                => 'receivercdsfsafdsaf lkhdlksjlkfjkndskjfnhskjlkafdslkjdshflksjal',
-            'street'                    => 'street',
-            'postCode'                  => '54830',
-            'phone'                     => '23423423423',
-            'mailBox'                   => 'ant_li123@qq.com',
-            'areaCode'                  => '2342343',
-            'building'                  => '13',
-            'floor'                     => '25',
-            'flats'                     => '47',
-            'alternateReceiverPhoneNo'  => $order->another_phone ?? '1231321322',
-        ];
-
-        return $data;
-    }
-
-    private function updateJtExpressOrder(Order $order, string $shipping_status, $JtExpressOrderData, $jtExpressResponse)
-    {
-        if (isset($jtExpressResponse['code']) && $jtExpressResponse['code'] == 1) {
-            $order->update([
-                'tracking_number'   => $JtExpressOrderData['tracking_number'] ?? null,
-                'shipping_status'   => $shipping_status,
-                'shipping_response' => json_encode($jtExpressResponse)
-            ]);
-        }
-    }
 }
-//done

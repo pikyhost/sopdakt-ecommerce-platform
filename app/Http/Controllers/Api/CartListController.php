@@ -617,7 +617,6 @@ class CartListController extends Controller
                     DB::rollBack();
                     return response()->json([
                         'error' => 'Please enter a valid quantity for all products.',
-            
                     ], 422);
                 }
 
@@ -625,7 +624,6 @@ class CartListController extends Controller
                     DB::rollBack();
                     return response()->json([
                         'error' => 'The maximum quantity allowed per product is 10. Contact us via our support page.',
-                    
                     ], 422);
                 }
             }
@@ -684,7 +682,6 @@ class CartListController extends Controller
             Log::error('Checkout error: ' . $e->getMessage());
             return response()->json([
                 'error' => 'An unexpected error occurred during checkout. Please try again.',
-             
             ], 500);
         }
     }
@@ -764,7 +761,7 @@ class CartListController extends Controller
                             'available_methods' => $availableMethods,
                             'your_country_id' => $request->country_id
                         ],
-                    
+
                     ], 422);
                 }
             }
@@ -1179,4 +1176,4 @@ class CartListController extends Controller
         return 0.0;
     }
 }
-?>
+
