@@ -189,9 +189,9 @@ class CartListController extends Controller
 
       private function getOrCreateCart()
     {
-        if (Auth::check()) {
+        if (Auth::guard('sanctum')->check()) {
             return Cart::firstOrCreate(
-                ['user_id' => Auth::id()],
+                ['user_id' => Auth::guard('sanctum')->id()],
                 [
                     'session_id' => session()->getId(),
                     'country_id' => request('country_id'),
@@ -201,7 +201,7 @@ class CartListController extends Controller
         }
 
         // Use consistent session ID for guest
-        $sessionId = session()->getId();
+        $sessionId = request()->header('x-session-id') ?? session()->getId();
 
         return Cart::firstOrCreate(
             ['session_id' => $sessionId],
@@ -601,7 +601,9 @@ class CartListController extends Controller
             }
 
             $cart = $this->getOrCreateCart();
+
             $cartItems = $this->loadCartItems($cart);
+
 
             // Validate cart is not empty
             if ($cartItems->isEmpty()) {
@@ -664,9 +666,9 @@ class CartListController extends Controller
             ]);
 
             // Record coupon usage if applicable
-            if ($totals['coupon'] && Auth::check()) {
+            if ($totals['coupon'] && Auth::guard('sanctum')->check()) {
                 $totals['coupon']->usages()->create([
-                    'user_id' => Auth::id(),
+                    'user_id' => Auth::guard('sanctum')->id(),
                     'order_id' => null, // Will be updated when order is created
                 ]);
             }
@@ -807,7 +809,9 @@ class CartListController extends Controller
      */
     private function loadCartItems(Cart $cart): \Illuminate\Database\Eloquent\Collection
     {
-      /*  // Verify the cart belongs to the current user/session
+
+
+        /*// Verify the cart belongs to the current user/session
         if (Auth::guard('sanctum')->check()) {
             if ($cart->user_id !== Auth::guard('sanctum')->id()) {
                 return new \Illuminate\Database\Eloquent\Collection();
@@ -863,8 +867,8 @@ class CartListController extends Controller
                 }
             }
 
-            if ($coupon->usage_limit_per_user && Auth::check()) {
-                $userUsages = $coupon->usages()->where('user_id', Auth::id())->count();
+            if ($coupon->usage_limit_per_user && Auth::guard('sanctum')->check()) {
+                $userUsages = $coupon->usages()->where('user_id', Auth::guard('sanctum')->id())->count();
                 if ($userUsages >= $coupon->usage_limit_per_user) {
                     throw new \Exception('Coupon usage limit per user reached.');
                 }

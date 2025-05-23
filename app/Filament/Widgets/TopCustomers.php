@@ -37,10 +37,26 @@ class TopCustomers extends BaseWidget
             ->paginated(false)
             ->query(
                 \App\Models\User::query()
-                    ->select('users.*')
+                    ->select([
+                        'users.id',
+                        'users.name',
+                        'users.email',
+                        'users.phone',
+                        'users.avatar_url',
+                        'users.updated_at',
+                        'users.created_at',
+                    ])
                     ->selectRaw('COUNT(orders.id) as total_orders, SUM(orders.total) as total_spent')
                     ->join('orders', 'users.id', '=', 'orders.user_id')
-                    ->groupBy('users.id', 'users.name')
+                    ->groupBy([
+                        'users.id',
+                        'users.name',
+                        'users.email',
+                        'users.phone',
+                        'users.avatar_url',
+                        'users.updated_at',
+                        'users.created_at'
+                    ])
                     ->orderByDesc('total_spent') // Sort by total spending first
                     ->orderByDesc('total_orders')
                     ->limit(10)

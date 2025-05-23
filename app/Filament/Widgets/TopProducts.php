@@ -58,13 +58,29 @@ class TopProducts extends BaseWidget
             )
             ->query(
                 Product::query()
-                    ->select('products.*')
+                    ->select([
+                        'products.id',
+                        'products.name',
+                        'products.price',
+                        'products.after_discount_price',
+                        'products.created_at',
+                        'products.fake_average_rating',
+                        'products.slug',
+                    ])
                     ->selectRaw('SUM(order_items.quantity) as total_sold')
                     ->join('order_items', 'products.id', '=', 'order_items.product_id')
                     ->join('orders', 'order_items.order_id', '=', 'orders.id')
                     ->whereBetween('products.created_at', [$this->fromDate, $this->toDate])
-                    // ->where('orders.status', 'completed') // Uncomment if you want to only consider completed orders
-                    ->groupBy('products.id')
+                    // ->where('orders.status', 'completed')
+                    ->groupBy([
+                        'products.id',
+                        'products.name',
+                        'products.price',
+                        'products.after_discount_price',
+                        'products.created_at',
+                        'products.fake_average_rating',
+                        'products.slug',
+                    ])
                     ->orderByDesc('total_sold')
                     ->limit(10)
             )
@@ -101,8 +117,8 @@ class TopProducts extends BaseWidget
                     ->formatStateUsing(function ($state) {
                         $locale = app()->getLocale();
                         return $locale === 'ar'
-                            ? "{$state} طلب مبيع"  // Example: "100 طلب مبيع"
-                            : "{$state} units sold"; // Example: "$100 units sold"
+                            ? "{$state} طلب مبيع"
+                            : "{$state} units sold";
                     })
                     ->color('success')
                     ->badge()
@@ -145,19 +161,17 @@ class TopProducts extends BaseWidget
                     ->icon('heroicon-o-eye')
                     ->label(__('View'))
                     ->url(fn (Product $record) => rtrim(config('app.frontend_url'), '/') . '/product/' . $record->slug)
-                    ->openUrlInNewTab(), // or remove this to open in same tab
+                    ->openUrlInNewTab(),
 
-
-        Tables\Actions\Action::make('analyze')
+                Tables\Actions\Action::make('analyze')
                     ->color('primary')
                     ->icon('heroicon-o-chart-bar')
                     ->label(__('Detailed Analysis'))
-                    ->url(fn (Product $record): string => ProductAnalysis::getUrl([
-                        'product' => $record->slug,
-                        'from' => now()->subMonth()->toDateString(),  // temporary test
-                        'to' => now()->toDateString(),                // temporary test
+                    ->url(fn (Product $record) => ProductAnalysis::getUrl([
+                        'product' => $record->id,
+                        'from' => $this->fromDate->format('Y-m-d'),
+                        'to' => $this->toDate->format('Y-m-d')
                     ]))
-                    ->openUrlInNewTab(),
             ]);
     }
 }
