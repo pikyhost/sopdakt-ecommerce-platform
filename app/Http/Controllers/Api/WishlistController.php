@@ -5,20 +5,27 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\SavedProduct;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class WishlistController extends Controller
 {
     /**
-     * Return [user_id, session_id] tuple
+     * Return user ID or session ID
      */
-    protected function getSessionOrUserIdentifier(Request $request): array
+    protected function getSessionOrUserIdentifier(Request $request)
     {
-        $sessionId = $request->session()->getId();
-        $userId = Auth::id();
+        // For guest users using x-session-id
+        if ($request->header('x-session-id')) {
+            return ['userId' => null, 'sessionId' => $request->header('x-session-id')];
+        }
 
-        return [$userId, $sessionId];
+        // For authenticated users
+        $user = auth('sanctum')->user();
+        if ($user) {
+            return ['userId' => $user->id, 'sessionId' => null];
+        }
+
+        throw new HttpException(403, 'Invalid session handling - x-session-id header required');
     }
 
     /**
@@ -30,7 +37,7 @@ class WishlistController extends Controller
             'product_id' => 'required|exists:products,id',
         ]);
 
-        [$userId, $sessionId] = $this->getSessionOrUserIdentifier($request);
+        ['userId' => $userId, 'sessionId' => $sessionId] = $this->getSessionOrUserIdentifier($request);
 
         $query = SavedProduct::where('product_id', $request->product_id)
             ->when($userId, fn($q) => $q->where('user_id', $userId))
@@ -64,8 +71,7 @@ class WishlistController extends Controller
      */
     public function index(Request $request)
     {
-        [$userId, $sessionId] = $this->getSessionOrUserIdentifier($request);
-        $locale = app()->getLocale();
+        ['userId' => $userId, 'sessionId' => $sessionId] = $this->getSessionOrUserIdentifier($request);
 
         $wishlistItems = SavedProduct::with(['product' => function ($query) {
             $query->select('id', 'name', 'price', 'after_discount_price', 'slug');
@@ -102,7 +108,7 @@ class WishlistController extends Controller
             return response()->json(['wishlisted' => []]);
         }
 
-        [$userId, $sessionId] = $this->getSessionOrUserIdentifier($request);
+        ['userId' => $userId, 'sessionId' => $sessionId] = $this->getSessionOrUserIdentifier($request);
 
         $wishlisted = SavedProduct::whereIn('product_id', $productIds)
             ->where(function ($q) use ($userId, $sessionId) {
