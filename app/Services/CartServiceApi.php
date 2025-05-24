@@ -112,7 +112,7 @@ class CartServiceApi
             return request()->header('x-session-id');
         }
 
-        $user = request()->user();
+        $user = auth('sanctum')->user();
 
         if ($user) {
             return $user->id;
