@@ -55,42 +55,45 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request)
     {
         try {
-            // Check if user is already authenticated (optional for APIs)
-            if (Auth::check()) {
+            // Check if user is already authenticated
+            if (Auth::guard('sanctum')->check()) {
+                $user = Auth::guard('sanctum')->user();
+
                 return response()->json([
                     'message' => 'User is already logged in',
-                    'user' => Auth::user(),
-                    'token' => Auth::user()->currentAccessToken()?->plainTextToken ?? null
+                    'user' => $user,
+                    'role' => $user->getRoleNames()->first(), // Return the single role
+                    'token' => $user->currentAccessToken()?->plainTextToken,
                 ], 409);
             }
 
-            // Attempt login
+            // Attempt authentication
             $request->authenticate();
 
-            // Get authenticated user
-            $user = Auth::user();
+            $user = Auth::guard('sanctum')->user();
 
-            // Revoke previous tokens if you want to allow only one session per user
+            // Revoke previous tokens
             $user->tokens()->delete();
 
-            // Create a new token
+            // Create new token
             $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([
                 'message' => 'Login successful',
                 'user' => $user,
-                'token' => $token
+                'role' => $user->getRoleNames()->first(), // Return the single role
+                'token' => $token,
             ], 200);
 
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Validation failed',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Authentication failed',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 401);
         }
     }
