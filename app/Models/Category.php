@@ -89,4 +89,14 @@ class Category extends Model implements HasMedia
     {
         return $this->getFirstMediaUrl('main_category_image') ?: null;
     }
+
+    protected static function booted()
+    {
+        static::saving(function ($category) {
+            if ($category->is_default_at_banner) {
+                Category::where('id', '!=', $category->id)
+                    ->update(['is_default_at_banner' => false]);
+            }
+        });
+    }
 }
