@@ -49,8 +49,6 @@ class ClientPanelProvider extends PanelProvider
                 'primary' => Color::Indigo,
                 'gray' => Color::Slate,
             ])
-            ->login(ClientLogin::class)
-            ->registration(ClientRegister::class)
             ->passwordReset()
             ->emailVerification()
             ->favicon($favicon)
