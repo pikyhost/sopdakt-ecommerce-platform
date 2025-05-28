@@ -181,27 +181,6 @@ class AboutUsResource extends Resource
                                             ->itemLabel(fn (array $state): ?string => $state['name'] ?? null),
                                     ]),
 
-                                Forms\Components\Section::make(__('Happy Clients (English)'))
-                                    ->description(__('Add Happy Clients in English. Structure should mirror the Arabic , but use Arabic names.'))
-                                    ->schema([
-                                        Forms\Components\Repeater::make('happy_clients_ar')
-                                            ->label('') // Label omitted for clarity
-                                            ->schema([
-                                                Rating::make('rating')
-                                                    ->label(__('Rating')) // Kept in Arabic as per your original
-                                                    ->required(),
-
-                                                Forms\Components\TextInput::make('name')
-                                                    ->label(__('Name')) // Kept in Arabic as per your original
-                                                    ->required(),
-
-                                                Forms\Components\FileUpload::make('image')
-                                                    ->label(__('Image'))                                                    ->image()
-                                                    ->required(),
-                                            ])
-                                            ->columns(2)
-                                            ->itemLabel(fn (array $state): ?string => $state['name'] ?? null),
-                                    ]),
                             ]),
 
                         Forms\Components\Tabs\Tab::make(__('about_us.tabs.testimonial'))
