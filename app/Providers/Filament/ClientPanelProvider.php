@@ -78,7 +78,7 @@ class ClientPanelProvider extends PanelProvider
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
-                SyncAuthMiddleware::class,
+//                SyncAuthMiddleware::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
                 VerifyCsrfToken::class,
