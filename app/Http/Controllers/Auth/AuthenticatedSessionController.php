@@ -62,7 +62,7 @@ class AuthenticatedSessionController extends Controller
                 return response()->json([
                     'message' => 'User is already logged in',
                     'user' => $user,
-                    'role' => $user->getRoleNames()->first(), // Return the single role
+                    'role' => $user->getRoleNames()->first(),
                     'token' => $user->currentAccessToken()?->plainTextToken,
                 ], 409);
             }
@@ -72,18 +72,21 @@ class AuthenticatedSessionController extends Controller
 
             $user = Auth::guard('sanctum')->user();
 
+            // Log the user into the session (for Filament)
+            Auth::guard('web')->login($user); // Create a session for the 'web' guard
+
             // Revoke previous tokens
             $user->tokens()->delete();
 
-            // Create new token
+            // Create new Sanctum token
             $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([
                 'message' => 'Login successful',
                 'user' => $user,
-                'role' => $user->getRoleNames()->first(), // Return the single role
+                'role' => $user->getRoleNames()->first(),
                 'token' => $token,
-            ], 200);
+            ], 200)->withCookie(cookie('XSRF-TOKEN', csrf_token(), 0, '/', null, true, true, false, 'strict'));
 
         } catch (ValidationException $e) {
             return response()->json([
