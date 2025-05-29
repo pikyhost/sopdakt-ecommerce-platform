@@ -44,8 +44,7 @@ class FaqResource extends Resource
                     ])
                     ->columnSpan('full')
                     ->collapsible()
-                    ->reorderable()
-                    ->default([]),
+                    ->reorderable(),
             ]);
     }
 
@@ -65,13 +64,6 @@ class FaqResource extends Resource
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
             ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-        ];
     }
 
     public static function getPages(): array

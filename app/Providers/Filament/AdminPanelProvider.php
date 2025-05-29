@@ -27,6 +27,7 @@ use App\Filament\Resources\CouponResource;
 use App\Filament\Resources\CouponUsageResource;
 use App\Filament\Resources\CurrencyResource;
 use App\Filament\Resources\DiscountResource;
+use App\Filament\Resources\FaqResource;
 use App\Filament\Resources\GovernorateResource;
 use App\Filament\Resources\HomePageSettingResource;
 use App\Filament\Resources\InventoryResource;
@@ -225,7 +226,7 @@ class AdminPanelProvider extends PanelProvider
                 'label' => __('Products Management'),
                 'items' => [
                     LandingPageResource::getNavigationItems(),
-                     ProductResource::getNavigationItems(),
+                    ProductResource::getNavigationItems(),
                     LabelResource::getNavigationItems(),
                     BundleResource::getNavigationItems(),
                     AttributeResource::getNavigationItems(),
@@ -293,6 +294,7 @@ class AdminPanelProvider extends PanelProvider
                 'label' => __('Settings Management'),
                 'items' => [
                     ServerEnvEditor::getNavigationItems(),
+                    FaqResource::getNavigationItems(),
                     ContactSettingResource::getNavigationItems(),
                     ActivityResource::getNavigationItems(),
                     LandingPageSettingResource::getNavigationItems(),
