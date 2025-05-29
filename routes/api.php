@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AboutUsController;
 use App\Http\Controllers\Api\BlogController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\CartListController;
+use App\Http\Controllers\Api\CartShippingController;
 use App\Http\Controllers\Api\CompareController;
 use App\Http\Controllers\Api\ContactMessageController;
 use App\Http\Controllers\Api\ContactSettingController;
@@ -179,6 +180,7 @@ Route::prefix('coupons')->group(function () {
     Route::post('/apply-to-cart-item', [CouponController::class, 'applyProductCouponToCart']);
 });
 
+
 Route::get('/faqs', [FaqController::class, 'index']);
 
 Route::get('/pixels', function () {
@@ -189,3 +191,8 @@ Route::get('/pixels', function () {
         'meta_pixel' => $settings?->meta_pixel,
     ]);
 });
+
+Route::get('/cart/check-free-shipping', [CartShippingController::class, 'check']);
+
+
+

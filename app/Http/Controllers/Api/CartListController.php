@@ -42,7 +42,7 @@ class CartListController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $cart = $this->getCart(); // ✅ only get if it exists
+        $cart = $this->getCart();
 
         if (!$cart) {
             return response()->json(['message' => __('Cart is empty')]);
