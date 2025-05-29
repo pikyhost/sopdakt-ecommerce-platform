@@ -105,9 +105,7 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
-            ->passwordReset()
-            ->emailVerification()
+            ->authGuard('sanctum')
             ->colors([
                 'primary' => Color::Indigo,
                 'gray' => Color::Slate,
