@@ -5,6 +5,7 @@ namespace App\Providers\Filament;
 use App\Filament\Client\Pages\Auth\ClientLogin;
 use App\Filament\Client\Pages\Auth\ClientRegister;
 use App\Filament\Widgets\HomePageRedirect;
+use App\Http\Middleware\SyncAuthMiddleware;
 use App\Livewire\ProfileContactDetails;
 use App\Models\Setting;
 use App\Rules\CustomPassword;
@@ -77,6 +78,7 @@ class ClientPanelProvider extends PanelProvider
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
+                SyncAuthMiddleware::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
                 VerifyCsrfToken::class,

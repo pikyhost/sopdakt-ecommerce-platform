@@ -57,6 +57,7 @@ use App\Filament\Resources\UserResource;
 use App\Filament\Resources\WheelPrizeResource;
 use App\Filament\Resources\WheelResource;
 use App\Filament\Resources\WheelSpinResource;
+use App\Http\Middleware\SyncAuthMiddleware;
 use App\Models\WheelPrize;
 use DragonCode\Support\Facades\Helpers\Str;
 use Filament\Navigation\NavigationBuilder;
@@ -153,6 +154,7 @@ class AdminPanelProvider extends PanelProvider
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
+                SyncAuthMiddleware::class,
                 AuthenticateSession::class,
                 ShareErrorsFromSession::class,
                 VerifyCsrfToken::class,
