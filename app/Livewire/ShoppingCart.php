@@ -40,125 +40,13 @@ class ShoppingCart extends Component
     }
 
     public function mount()
-    {
-        $this->currentRoute = Route::currentRouteName();
-        $this->loadCart();
-        $this->loadCountries();
-
-        if (Setting::isShippingEnabled()) {
-            $this->loadShippingTypes();
-        }
-
-        if (auth()->guest()) {
-            // Check for guest contact details
-            $contact = Contact::where('session_id', session()->getId())->first();
-            if ($contact) {
-                $this->country_id = $contact->country_id ?? GeneralHelper::getCountryId();
-                $this->governorate_id = $contact->governorate_id;
-                $this->city_id = $contact->city_id;
-            } else {
-                // If no contact record, set country based on IP
-                $this->country_id = GeneralHelper::getCountryId();
-            }
-        } else {
-            // Retrieve the user's primary address or fallback to the first available address
-            $user = auth()->user();
-            $primaryAddress = $user->addresses()->where('is_primary', true)->first();
-            $firstAddress = $user->addresses()->first(); // Get the first available address if no primary exists
-
-            $address = $primaryAddress ?? $firstAddress; // Use primary if available, otherwise fallback to first
-
-            if ($address) {
-                $this->country_id = $address->country_id;
-                $this->governorate_id = $address->governorate_id;
-                $this->city_id = $address->city_id;
-            } else {
-                // If no address exists, set country based on IP
-                $this->country_id = GeneralHelper::getCountryId();
-            }
-        }
-
-        // Load dependent dropdowns
-        $this->governorates = $this->country_id ? Governorate::where('country_id', $this->country_id)->get() : [];
-        $this->cities = $this->governorate_id ? City::where('governorate_id', $this->governorate_id)->get() : [];
+    {//...
     }
 
-    private function extractPrice($priceString)
-    {
-        return (float) preg_replace('/[^0-9.]/', '', $priceString); // Extract numeric value
-    }
-
-    private function extractCurrency($priceString)
-    {
-        return preg_replace('/[\d.]/', '', trim($priceString)); // Extract currency
-    }
-
-    private function calculateSubtotal($priceString, $quantity)
-    {
-        $price = $this->extractPrice($priceString);
-        $currency = $this->extractCurrency($priceString);
-        return number_format($price * $quantity, 2) . ' ' . $currency;
-    }
 
     public function loadCart()
     {
-        if (auth()->check()) {
-            $this->cart = Cart::firstOrCreate(['user_id' => auth()->id()], ['session_id' => null]);
-        } else {
-            $session_id = Session::get('cart_session', Session::getId());
-            Session::put('cart_session', $session_id);
-
-            $this->cart = Cart::firstOrCreate(['session_id' => $session_id], ['user_id' => null]);
-        }
-
-        // Load shipping info into Livewire properties only if shipping locations are enabled
-        if (Setting::isShippingLocationsEnabled()) {
-            $this->country_id = $this->cart->country_id;
-            $this->governorate_id = $this->cart->governorate_id;
-            $this->city_id = $this->cart->city_id;
-
-            // Ensure dependent dropdowns are populated
-            $this->governorates = $this->country_id ? Governorate::where('country_id', $this->country_id)->get() : [];
-            $this->cities = $this->governorate_id ? City::where('governorate_id', $this->governorate_id)->get() : [];
-        }
-
-        $this->selected_shipping = $this->cart->shipping_type_id;
-
-        $this->cartItems = CartItem::where('cart_id', $this->cart->id)
-            ->with(['product', 'bundle', 'size', 'color']) // Load all related models
-            ->get()
-            ->map(fn($item) => [
-                'id' => $item->id,
-                'quantity' => $item->quantity,
-                'price_per_unit' => $this->extractPrice($item->product ? $item->product->discount_price_for_current_country : '0 USD'),
-                'subtotal' => $this->calculateSubtotal(
-                    $item->product ? $item->product->discount_price_for_current_country : '0 USD',
-                    $item->quantity
-                ),
-                'product' => $item->product ? [
-                    'id' => $item->product->id,
-                    'name' => $item->product->name,
-                    'slug' => $item->product->slug,
-                    'feature_product_image_url' => $item->product->getFeatureProductImageUrl() ?? '',
-                    'price' => $item->product->discount_price_for_current_country ?? 0,
-                ] : null,
-                'bundle' => $item->bundle ? [
-                    'id' => $item->bundle->id,
-                    'name' => $item->bundle->name,
-                    'price' => $item->bundle->discount_price ?? 0,
-                ] : null,
-                'size' => $item->size ? [
-                    'id' => $item->size->id,
-                    'name' => $item->size->name,
-                ] : null,
-                'color' => $item->color ? [
-                    'id' => $item->color->id,
-                    'name' => $item->color->name,
-                    'code' => $item->color->code, // Assuming colors have a hex code
-                ] : null,
-            ])
-            ->toArray();
-
+     ///.....
         $this->calculateTotals();
     }
 
@@ -167,17 +55,6 @@ class ShoppingCart extends Component
         $this->countries = Country::all();
     }
 
-    public function updateCartShipping()
-    {
-        if ($this->cart) {
-            $this->cart->update([
-                'shipping_type_id' => $this->selected_shipping,
-                'country_id' => Setting::isShippingLocationsEnabled() ? $this->country_id : null,
-                'governorate_id' => Setting::isShippingLocationsEnabled() ? $this->governorate_id : null,
-                'city_id' => Setting::isShippingLocationsEnabled() ? $this->city_id : null,
-            ]);
-        }
-    }
 
     public function loadShippingTypes()
     {
@@ -284,71 +161,6 @@ class ShoppingCart extends Component
         $this->calculateTotals();
     }
 
-    public function updateQuantity($cartItemId, $action)
-    {
-        $cartItem = CartItem::find($cartItemId);
-
-        if (!$cartItem) {
-            return;
-        }
-
-        if ($action === 'increase') {
-            $cartItem->increment('quantity');
-        } elseif ($action === 'decrease' && $cartItem->quantity > 1) {
-            $cartItem->decrement('quantity');
-        } else {
-            $cartItem->delete();
-            $this->loadCart(); // Reload cart to remove deleted item
-            return;
-        }
-
-        // Get price string from the product
-        $priceString = $cartItem->product ? $cartItem->product->discount_price_for_current_country : '0 USD';
-
-        // Extract price and currency separately
-        $price = $this->extractPrice($priceString);
-        $currency = $this->extractCurrency($priceString);
-
-        // Calculate subtotal (only numeric value for DB)
-        $subtotal = $price * $cartItem->quantity;
-
-        $cartItem->update([
-            'subtotal' => $subtotal,  // Store numeric value only
-        ]);
-
-        // Convert cart items to a collection, update only the changed item
-        $this->cartItems = collect($this->cartItems)->map(function ($item) use ($cartItem, $subtotal, $currency) {
-            if ($item['id'] === $cartItem->id) {
-                $item['quantity'] = $cartItem->quantity;
-                $item['subtotal'] = number_format($subtotal, 2) . ' ' . $currency; // Format for display
-                $item['currency'] = $currency;
-            }
-            return $item;
-        })->toArray(); // Convert back to array for Livewire
-
-        $this->calculateTotals();
-        $this->dispatch('cartUpdated');
-    }
-
-    public function removeCartItem($id)
-    {
-        $cartItem =  CartItem::where('cart_id', $this->cart->id)->find($id);
-
-        if (!$cartItem) {
-            return;
-        }
-
-        if ($cartItem->bundle_id) {
-            // Remove all cart items with the same bundle_id
-            CartItem::where('bundle_id', $cartItem->bundle_id)->delete();
-        } else {
-            // Remove only this cart item if it's not part of a bundle
-            $cartItem->delete();
-        }
-
-        $this->loadCart(); // Refresh the cart items
-        $this->dispatch('cartUpdated'); // Notify frontend of the update
-    }
 
     /**
      * Retrieve the product's shipping cost.
@@ -531,64 +343,6 @@ class ShoppingCart extends Component
 
         // Final total: subtotal + highest shipping + tax
         $this->total = $this->subtotal + $this->shippingCost + $this->tax;
-    }
-
-    public function proceedToCheckout()
-    {
-        $link = '<a href="' . route('contact.us') . '" target="_blank">our support page</a>';
-
-// Loop through cart items
-        foreach ($this->cartItems as $item) {
-            if ($item['quantity'] < 1) {
-                $this->addError('quantity', "Please enter a valid quantity for all products. For help, visit $link.");
-                return;
-            }
-
-            if ($item['quantity'] > 10) {
-                $this->addError('quantity', "The maximum quantity allowed per product is 10. Need more? Contact us via $link.");
-                return;
-            }
-        }
-
-        // Shipping and location validations
-        $this->validate([
-            'selected_shipping' => Setting::isShippingEnabled() ? 'required' : 'nullable',
-            'country_id' => 'required|exists:countries,id',
-            'governorate_id' => 'required|exists:governorates,id',
-            'city_id' => 'nullable|exists:cities,id',
-        ]);
-
-        // Tax calculation
-        $taxPercentage = Setting::first()?->tax_percentage ?? 0;
-        $taxAmount = ($taxPercentage > 0) ? ($this->subtotal * $taxPercentage / 100) : 0;
-
-        // Cart update
-        if ($this->cart) {
-            $this->cart->update([
-                'subtotal' => $this->subtotal,
-                'total' => $this->total,
-                'tax_percentage' => $taxPercentage,
-                'tax_amount' => $taxAmount,
-                'country_id' => $this->country_id,
-                'governorate_id' => $this->governorate_id,
-                'city_id' => $this->city_id,
-                'shipping_type_id' => $this->selected_shipping ?? null,
-                'shipping_cost' => $this->shippingCost,
-            ]);
-        }
-
-        return redirect()->route('checkout.index');
-    }
-
-    public function getIsCheckoutReadyProperty()
-    {
-        $isShippingEnabled = Setting::getSetting('shipping_type_enabled') ?? true;
-        $isShippingLocationEnabled = Setting::getSetting('shipping_location_enabled') ?? false;
-
-        return $this->cart &&
-            ($isShippingEnabled ? $this->cart->shipping_type_id : true) &&
-            ($isShippingLocationEnabled ? ($this->cart->country_id && $this->cart->governorate_id) : true) &&
-            $this->cart->subtotal > 0;
     }
 
     public function render()

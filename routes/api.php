@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\ContactMessageController;
 use App\Http\Controllers\Api\ContactSettingController;
 use App\Http\Controllers\Api\CouponController;
 use App\Http\Controllers\Api\DiscountController;
+use App\Http\Controllers\Api\FaqController;
 use App\Http\Controllers\Api\GlobalSearchController;
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\NewsletterSubscriberController;
@@ -22,12 +23,9 @@ use App\Http\Controllers\BostaWebhookController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductRatingController;
-use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
-use Illuminate\Cookie\Middleware\EncryptCookies;
-use Illuminate\Http\Request;
-use Illuminate\Session\Middleware\StartSession;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ShippingController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 require __DIR__.'/auth.php';
 
@@ -152,6 +150,7 @@ Route::get('/service-features', [ServiceFeatureController::class, 'index']);
 // Public route: guests can see approved product ratings
 Route::get('/products/{product}/ratings', [ProductRatingController::class, 'index']);
 
+
 // Authenticated-only routes: only logged-in users can create/update/delete
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/products/{product}/ratings', [ProductRatingController::class, 'store']);
@@ -166,10 +165,7 @@ Route::get('/get-user-id', function () {
    return 'user not login to get his id';
 });
 
-
-
 Route::get('/cart/nested-related-data', [CartController::class, 'getNestedCartData']);
-
 
 Route::get('/cart/related-data', [CartListController::class, 'getRelatedCartData']);
 Route::get('/discounts', [DiscountController::class, 'index']);
@@ -181,3 +177,5 @@ Route::prefix('coupons')->group(function () {
     Route::post('/apply-to-product', [CouponController::class, 'applyToProduct']);
     Route::post('/apply-to-cart-item', [CouponController::class, 'applyProductCouponToCart']);
 });
+
+Route::get('/faqs', [FaqController::class, 'index']);

@@ -7,7 +7,6 @@ use App\Models\Governorate;
 use App\Models\Transaction;
 use App\Services\StockLevelNotifier;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use App\Enums\UserRole;
 use App\Helpers\GeneralHelper;
 use App\Mail\GuestInvitationMail;
@@ -232,7 +231,6 @@ class Checkout extends Component
     public function save()
     {
         if (Auth::check()) {
-            // Authenticated user - Update their contact info
             $user = Auth::user();
 
             // Ensure new email is not used by another user
@@ -345,14 +343,12 @@ class Checkout extends Component
                 $this->addError('auth', __('Your account is not active. Please <a href=":url" class="underline text-blue-500 hover:text-blue-700">contact support</a>.', [
                     'url' => $contactUrl
                 ]));
-                Log::warning('Inactive user tried to place an order', ['user_id' => Auth::id()]);
                 return;
             }
 
             // Prevent double submission
             if (Order::where('checkout_token', $this->checkoutToken)->exists()) {
                 $this->addError('duplicate', __('Your order is already being processed. Please wait.'));
-                Log::info('Duplicate checkout attempt', ['checkout_token' => $this->checkoutToken]);
                 return;
             }
 
@@ -361,7 +357,6 @@ class Checkout extends Component
                 'payment_method_id' => 'nullalbe|in:1,2',
                 // Add other fields as needed
             ]);
-            Log::info('Validation passed for checkout', ['payment_method_id' => $this->payment_method_id]);
 
             // Get cart
             $cart = Cart::where(function ($query) {
@@ -373,13 +368,11 @@ class Checkout extends Component
             })->with('items')->first();
 
             if (!$cart || $cart->items->isEmpty()) {
-                Log::info('Empty cart during checkout', ['user_id' => Auth::id(), 'session_id' => session()->getId()]);
                 return redirect()->route('cart.index')->with('error', __('Your cart is empty.'));
             }
 
             // Save contact data
             $contact = $this->save();
-            Log::info('Contact info saved', ['contact_id' => $contact->id ?? null]);
 
             // Store checkout session data
             session([
@@ -392,13 +385,11 @@ class Checkout extends Component
                     'payment_method_id' => $this->payment_method_id,
                 ]
             ]);
-            Log::info('Checkout session stored', ['checkout_token' => $this->checkoutToken]);
 
             // If Paymob selected
             if ($this->payment_method_id == 2) {
                 try {
                     if (!is_numeric($cart->total)) {
-                        Log::error('Invalid cart total', ['total' => $cart->total]);
                         $this->addError('payment', __('Invalid cart total.'));
                         return;
                     }
@@ -409,26 +400,18 @@ class Checkout extends Component
                         'name' => $contact->name ?? Auth::user()?->name,
                     ]);
 
-                    Log::info('Payment API Response', [
-                        'status' => $response->status(),
-                        'body' => $response->json(),
-                    ]);
-
                     $data = $response->json();
 
                     if (isset($data['success']) && $data['success'] === true && isset($data['iframe_url'])) {
                         $this->paymentUrl = $data['iframe_url'];
                         $this->dispatch('payment-url-updated');
-                        Log::info('Payment URL generated successfully', ['payment_url' => $this->paymentUrl]);
                         return;
                     }
 
                     $this->addError('payment', __('Failed to initiate payment. Invalid response.'));
-                    Log::error('Payment response invalid', ['response' => $data]);
                     return;
 
                 } catch (\Exception $e) {
-                    Log::error('Payment exception', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
                     $this->addError('payment', __('Unexpected error during payment: :msg', [
                         'msg' => $e->getMessage()
                     ]));
@@ -437,14 +420,9 @@ class Checkout extends Component
             }
 
             // Fallback for other methods like COD
-            Log::info('Fallback to manual order creation', ['payment_method_id' => $this->payment_method_id]);
             return $this->createOrderManually($cart, $contact);
 
         } catch (\Exception $e) {
-            Log::critical('Unexpected error in placeOrder', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
             $this->addError('fatal', __('An unexpected error occurred. Please try again later.'));
             return;
         }

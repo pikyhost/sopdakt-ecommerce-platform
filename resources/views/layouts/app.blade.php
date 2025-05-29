@@ -86,6 +86,9 @@
     {{-- Page-specific styles --}}
     @stack('styles')
     @livewireStyles
+
+
+
 </head>
 
 <body>
