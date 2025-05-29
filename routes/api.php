@@ -24,6 +24,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductRatingController;
 use App\Http\Controllers\ShippingController;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -179,3 +180,12 @@ Route::prefix('coupons')->group(function () {
 });
 
 Route::get('/faqs', [FaqController::class, 'index']);
+
+Route::get('/pixels', function () {
+    $settings = Setting::first();
+
+    return response()->json([
+        'google_pixel' => $settings?->google_pixel,
+        'meta_pixel' => $settings?->meta_pixel,
+    ]);
+});

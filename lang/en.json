@@ -1,4 +1,7 @@
 {
+    "Pixel Settings": "Pixel Settings",
+    "Google Pixel Code": "Google Pixel Code",
+    "Meta Pixel Code": "Meta Pixel Code",
     "bundles.type.buy_quantity_fixed_price": "Buy quantity for a fixed price",
     "auth.already_logged_in": "You are already logged in.",
     "auth.invalid_governorate": "The selected governorate does not belong to the selected country.",

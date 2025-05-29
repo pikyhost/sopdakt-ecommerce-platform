@@ -7,7 +7,9 @@ use App\Models\Country;
 use App\Models\Currency;
 use App\Models\Setting;
 use Filament\Forms;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Resources\Concerns\Translatable;
@@ -397,7 +399,19 @@ class SettingResource extends Resource
                             ->helperText(__('Enable Bosta as a shipping option for customers.'))
                             ->visible(fn () => Auth::user()->hasRole('super_admin')),
                     ])
-                    ->columns(3)
+                    ->columns(3),
+
+                Section::make(__('Pixel Settings'))
+                    ->schema([
+                        Textarea::make('google_pixel')
+                            ->label(__('Google Pixel Code'))
+                            ->rows(4),
+
+                        Textarea::make('meta_pixel')
+                            ->label(__('Meta Pixel Code'))
+                            ->rows(4),
+                    ])
+                    ->columns(1),
             ]);
     }
 

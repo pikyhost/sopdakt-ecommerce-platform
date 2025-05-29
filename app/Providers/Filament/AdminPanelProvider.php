@@ -294,7 +294,6 @@ class AdminPanelProvider extends PanelProvider
                 'label' => __('Settings Management'),
                 'items' => [
                     ServerEnvEditor::getNavigationItems(),
-                    FaqResource::getNavigationItems(),
                     ContactSettingResource::getNavigationItems(),
                     ActivityResource::getNavigationItems(),
                     LandingPageSettingResource::getNavigationItems(),
@@ -309,6 +308,7 @@ class AdminPanelProvider extends PanelProvider
                 'label' => __('Pages Settings Management'),
                 'items' => [
                     AboutUsResource::getNavigationItems(),
+                    FaqResource::getNavigationItems(),
                     TopNoticeResource::getNavigationItems(),
                     BannerResource::getNavigationItems(),
                     HomePageSettingResource::getNavigationItems(),
