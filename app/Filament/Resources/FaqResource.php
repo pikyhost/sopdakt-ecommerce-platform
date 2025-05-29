@@ -56,7 +56,7 @@ class FaqResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('locale')->searchable(),
-                Tables\Columns\TextColumn::make('updated_at')->label('Last Modified At'),
+                Tables\Columns\TextColumn::make('updated_at')->label('Last Modified At')->since(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
