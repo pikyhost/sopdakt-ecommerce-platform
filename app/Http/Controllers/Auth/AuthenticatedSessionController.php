@@ -72,6 +72,8 @@ class AuthenticatedSessionController extends Controller
 
             $user = Auth::guard('sanctum')->user();
 
+            Auth::guard('sanctum')->login($user); // Create a session for the 'web' guard
+
             // Log the user into the session (for Filament)
             Auth::guard('web')->login($user); // Create a session for the 'web' guard
 
