@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\FaqResource\Pages;
 use App\Models\Faq;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -23,28 +24,30 @@ class FaqResource extends Resource
     {
         return $form
             ->schema([
-                Select::make('locale')
-                    ->columnSpanFull()
-                    ->default('en')
-                    ->required()
-                    ->options([
-                        'en' => 'English',
-                        'ar' => 'Arabic (العربية)',
-                    ]),
+                Section::make()->schema([
+                    Select::make('locale')
+                        ->columnSpanFull()
+                        ->default('en')
+                        ->required()
+                        ->options([
+                            'en' => 'English',
+                            'ar' => 'Arabic (العربية)',
+                        ]),
 
-                Repeater::make('items')
-                    ->label('FAQ Items')
-                    ->schema([
-                        TextInput::make('question')
-                            ->label('Question')
-                            ->required(),
-                        Textarea::make('answer')
-                            ->label('Answer')
-                            ->required(),
-                    ])
-                    ->columnSpan('full')
-                    ->collapsible()
-                    ->reorderable(),
+                    Repeater::make('items')
+                        ->label('FAQ Items')
+                        ->schema([
+                            TextInput::make('question')
+                                ->label('Question')
+                                ->required(),
+                            Textarea::make('answer')
+                                ->label('Answer')
+                                ->required(),
+                        ])
+                        ->columnSpan('full')
+                        ->collapsible()
+                        ->reorderable(),
+                ])
             ]);
     }
 
@@ -53,16 +56,10 @@ class FaqResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('locale')->searchable(),
-                Tables\Columns\TextColumn::make('items')
-                    ->label('Number of FAQs')
-                    ->formatStateUsing(fn ($state) => is_array($state) ? count($state) : 0),
+                Tables\Columns\TextColumn::make('updated_at')->label('Last Modified At'),
             ])
-            ->filters([])
             ->actions([
                 Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make(),
             ]);
     }
 
