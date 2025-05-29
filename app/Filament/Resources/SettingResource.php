@@ -402,6 +402,8 @@ class SettingResource extends Resource
                     ->columns(3),
 
                 Section::make(__('Pixel Settings'))
+                    ->visible(fn () => Auth::user()->hasRole('super_admin'))
+                    ->collapsed(true)
                     ->schema([
                         Textarea::make('google_pixel')
                             ->label(__('Google Pixel Code'))
