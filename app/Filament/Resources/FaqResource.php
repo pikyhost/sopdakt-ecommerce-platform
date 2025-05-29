@@ -32,7 +32,7 @@ class FaqResource extends Resource
                         ->options([
                             'en' => 'English',
                             'ar' => 'Arabic (العربية)',
-                        ]),
+                        ]) ->unique(ignoreRecord: true),
 
                     Repeater::make('items')
                         ->label('FAQ Items')
