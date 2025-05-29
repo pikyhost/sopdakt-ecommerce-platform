@@ -95,15 +95,11 @@ class CartServiceApi
     {
         $subtotal = $cart->items()->sum('subtotal');
 
-        // Add tax, shipping calculations as needed
         $cart->update([
             'subtotal' => $subtotal,
             'total' => $subtotal,
         ]);
     }
-
-
-
 
     public function getSessionId()
     {

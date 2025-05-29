@@ -555,13 +555,17 @@ class ProductResource extends Resource
                             ->icon('heroicon-o-globe-asia-australia')
                             ->schema([
                                 CheckboxList::make('countries')
-                                    ->label(__('product.available_countries')) // Translatable label
+                                    ->label(__('product.available_countries'))
                                     ->relationship(
                                         name: 'countries',
                                         titleAttribute: 'name'
                                     )
                                     ->default(function () {
-                                        return [Setting::getSetting('country_id')];
+                                        $defaultCountryId = Setting::getSetting('country_id');
+
+                                        return \App\Models\Country::where('id', $defaultCountryId)->exists()
+                                            ? [$defaultCountryId]
+                                            : [];
                                     })
                                     ->searchable()
                                     ->columns(5)
@@ -569,7 +573,6 @@ class ProductResource extends Resource
                                     ->selectAllAction(fn ($action) => $action->label(__('product.select_all')))
                                     ->deselectAllAction(fn ($action) => $action->label(__('product.deselect_all'))),
                             ]),
-
 
                         // Additional Info Tab
                         Tab::make(__('Additional Info'))

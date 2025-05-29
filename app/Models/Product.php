@@ -219,11 +219,12 @@ class Product extends Model implements HasMedia
 
     public function scopeAvailableInUserCountry(Builder $query): Builder
     {
-        $countryId = GeneralHelper::getCountryId();
-
-        return $query->whereHas('countries', function ($q) use ($countryId) {
-            $q->where('countries.id', $countryId);
-        });
+        return $query;
+//        $countryId = GeneralHelper::getCountryId();
+//
+//        return $query->whereHas('countries', function ($q) use ($countryId) {
+//            $q->where('countries.id', $countryId);
+//        });
     }
 
     public function complementaryProducts(): BelongsToMany
