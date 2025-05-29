@@ -61,8 +61,7 @@ class AuthenticatedSessionController extends Controller
 
                 return response()->json([
                     'message' => 'User is already logged in',
-                    'user' => $user,
-                    'role' => $user->getRoleNames()->first(),
+                    'user' => $user->load('roles'), // Include roles
                     'token' => $user->currentAccessToken()?->plainTextToken,
                 ], 409);
             }
@@ -72,33 +71,27 @@ class AuthenticatedSessionController extends Controller
 
             $user = Auth::guard('sanctum')->user();
 
-            Auth::guard('sanctum')->login($user); // Create a session for the 'web' guard
-
-            // Log the user into the session (for Filament)
-            Auth::guard('web')->login($user); // Create a session for the 'web' guard
-
-            // Revoke previous tokens
+            // Revoke existing tokens if enforcing single session
             $user->tokens()->delete();
 
-            // Create new Sanctum token
+            // Create new token
             $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([
                 'message' => 'Login successful',
-                'user' => $user,
-                'role' => $user->getRoleNames()->first(),
+                'user' => $user->load('roles'), // Include roles
                 'token' => $token,
-            ], 200)->withCookie(cookie('XSRF-TOKEN', csrf_token(), 0, '/', null, true, true, false, 'strict'));
+            ], 200);
 
         } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Validation failed',
-                'errors' => $e->errors(),
+                'errors' => $e->errors()
             ], 422);
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'Authentication failed',
-                'error' => $e->getMessage(),
+                'error' => $e->getMessage()
             ], 401);
         }
     }
