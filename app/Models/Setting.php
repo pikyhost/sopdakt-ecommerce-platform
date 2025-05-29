@@ -14,6 +14,8 @@ class Setting extends Model
     public $translatable = ['address']; // Define translatable fields
 
     protected $fillable = [
+        'google_pixel',
+        'meta_pixel',
         'address',
         'site_name',
         'currency_id',
