@@ -55,25 +55,33 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request)
     {
         try {
-            // Attempt authentication (using 'web' guard for session)
-            if (!Auth::guard('web')->attempt($request->only('email', 'password'))) {
-                throw ValidationException::withMessages([
-                    'email' => [trans('auth.failed')],
-                ]);
+            // Check if user is already authenticated
+            if (Auth::guard('sanctum')->check()) {
+                $user = Auth::guard('sanctum')->user();
+
+                return response()->json([
+                    'message' => 'User is already logged in',
+                    'user' => $user,
+                    'role' => $user->getRoleNames()->first(), // Return the single role
+                    'token' => $user->currentAccessToken()?->plainTextToken,
+                ], 409);
             }
 
-            $user = Auth::guard('web')->user();
+            // Attempt authentication
+            $request->authenticate();
 
-            // Revoke old tokens (if any)
+            $user = Auth::guard('sanctum')->user();
+
+            // Revoke previous tokens
             $user->tokens()->delete();
 
-            // Create new API token for SPA
+            // Create new token
             $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([
                 'message' => 'Login successful',
                 'user' => $user,
-                'role' => $user->getRoleNames()->first(),
+                'role' => $user->getRoleNames()->first(), // Return the single role
                 'token' => $token,
             ], 200);
 
