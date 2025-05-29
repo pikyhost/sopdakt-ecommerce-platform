@@ -10,6 +10,27 @@ use Illuminate\Support\Facades\Auth;
 
 class CartShippingController extends Controller
 {
+    /**
+     * Check if cart qualifies for free shipping
+     *
+     * This endpoint checks if the current cart meets the free shipping threshold set in the system settings.
+     *
+     * @response 200 {
+     *   "is_free_shipping": true,
+     *   "shipping_cost": null,
+     *   "threshold": 100.00,
+     *   "cart_total": 120.50
+     * }
+     * @response 404 {
+     *   "message": "Cart not found."
+     * }
+     * @response 500 {
+     *   "message": "Free shipping threshold not set."
+     * }
+     *
+     * @group Cart
+     * @authenticated
+     */
     public function check()
     {
         $cart = $this->getCart();
