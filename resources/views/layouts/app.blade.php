@@ -88,7 +88,6 @@
     @livewireStyles
 
 
-
 </head>
 
 <body>

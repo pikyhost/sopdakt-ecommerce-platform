@@ -194,5 +194,9 @@ Route::get('/pixels', function () {
 
 Route::get('/cart/check-free-shipping', [CartShippingController::class, 'check']);
 
+Route::get('/free-shipping-amount', function () {
+    return  Setting::first()?->free_shipping_threshold;
+});
+
 
 
