@@ -55,7 +55,6 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request)
     {
         try {
-            // Check if user is already authenticated
             if (Auth::guard('sanctum')->check()) {
                 $user = Auth::guard('sanctum')->user();
 
@@ -64,21 +63,16 @@ class AuthenticatedSessionController extends Controller
                     'user' => $user,
                     'role' => $user->getRoleNames()->first(),
                     'token' => $user->currentAccessToken()?->plainTextToken,
+                    'redirect_url' => $this->getRedirectUrl($user, $request),
                 ], 409);
             }
 
-            // Attempt authentication
             $request->authenticate();
-
             $user = Auth::guard('sanctum')->user();
 
-            // Log the user into the session (for Filament)
-            Auth::guard('web')->login($user); // Create a session for the 'web' guard
-
-            // Revoke previous tokens
+            Auth::guard('web')->login($user);
             $user->tokens()->delete();
 
-            // Create new Sanctum token
             $token = $user->createToken('auth_token')->plainTextToken;
 
             return response()->json([
@@ -86,6 +80,7 @@ class AuthenticatedSessionController extends Controller
                 'user' => $user,
                 'role' => $user->getRoleNames()->first(),
                 'token' => $token,
+                'redirect_url' => $this->getRedirectUrl($user, $request),
             ], 200)->withCookie(cookie('XSRF-TOKEN', csrf_token(), 0, '/', null, true, true, false, 'strict'));
 
         } catch (ValidationException $e) {
@@ -101,6 +96,19 @@ class AuthenticatedSessionController extends Controller
         }
     }
 
+    protected function getRedirectUrl($user, Request $request): string
+    {
+        if ($user->hasRole('super_admin') || $user->hasRole('admin')) {
+            return 'https://backend.sopdakt.com/admin';
+        }
+
+        if ($user->hasRole('client')) {
+            return 'https://backend.sopdakt.com/client'; // relative URL for frontend redirection
+        }
+
+        return '/'; // default fallback
+    }
+    
     /**
      * Destroy an authenticated session
      *
