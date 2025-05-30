@@ -108,7 +108,7 @@ class AuthenticatedSessionController extends Controller
 
         return '/'; // default fallback
     }
-    
+
     /**
      * Destroy an authenticated session
      *
