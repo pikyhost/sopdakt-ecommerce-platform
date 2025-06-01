@@ -46,6 +46,7 @@ class ClientPanelProvider extends PanelProvider
         return $panel
             ->id('client')
             ->path('client')
+
             ->colors([
                 'primary' => Color::Indigo,
                 'gray' => Color::Slate,

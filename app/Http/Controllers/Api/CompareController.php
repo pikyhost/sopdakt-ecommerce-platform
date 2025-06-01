@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
@@ -75,42 +76,64 @@ class CompareController extends Controller
             'product_ids.*' => 'exists:products,id',
         ]);
 
-        $locale = App::getLocale();
+        $locale = app()->getLocale();
 
-        $products = DB::table('products')
+        $products = Product::with([
+            'category',
+            'productColors.color',
+            'productColors.productColorSizes.size',
+            'ratings',
+        ])
             ->whereIn('id', $request->product_ids)
-            ->select([
-                'id',
-                DB::raw("JSON_UNQUOTE(JSON_EXTRACT(name, '$.\"$locale\"')) as name"),
-                DB::raw("JSON_UNQUOTE(JSON_EXTRACT(description, '$.\"$locale\"')) as description"),
-                DB::raw("JSON_UNQUOTE(JSON_EXTRACT(meta_title, '$.\"$locale\"')) as meta_title"),
-                DB::raw("JSON_UNQUOTE(JSON_EXTRACT(meta_description, '$.\"$locale\"')) as meta_description"),
-                'price',
-                'after_discount_price',
-                'slug',
-                'sku',
-                'cost',
-                'shipping_estimate_time',
-                'discount_start',
-                'discount_end',
-                'views',
-                'sales',
-                'fake_average_rating',
-                'summary',
-                'quantity',
-                'custom_attributes',
-                'is_published',
-                'is_featured',
-                'is_free_shipping',
-            ])
             ->get()
-            ->map(function ($product) {
-                $product->custom_attributes = json_decode($product->custom_attributes, true);
-                return $product;
+            ->map(function ($product) use ($locale) {
+                return [
+                    'id' => $product->id,
+                    'category_id' => $product->category_id,
+                    'name' => $product->getTranslation('name', $locale),
+                    'description' => $product->getTranslation('description', $locale),
+                    'meta_title' => $product->getTranslation('meta_title', $locale),
+                    'meta_description' => $product->getTranslation('meta_description', $locale),
+                    'price' => $product->price,
+                    'after_discount_price' => $product->after_discount_price,
+                    'slug' => $product->slug,
+                    'sku' => $product->sku,
+                    'cost' => $product->cost,
+                    'shipping_estimate_time' => $product->shipping_estimate_time,
+                    'discount_start' => $product->discount_start,
+                    'discount_end' => $product->discount_end,
+                    'views' => $product->views,
+                    'sales' => $product->sales,
+                    'fake_average_rating' => $product->fake_average_rating,
+                    'summary' => $product->getTranslation('summary', $locale),
+                    'quantity' => $product->quantity,
+                    'is_published' => $product->is_published,
+                    'is_featured' => $product->is_featured,
+                    'is_free_shipping' => $product->is_free_shipping,
+                    'media' => [
+                        'feature_product_image' => $product->getFeatureProductImageUrl(),
+                        'second_feature_product_image' => $product->getSecondFeatureProductImageUrl(),
+                    ],
+                    'variants' => $product->productColors->map(fn($variant) => [
+                        'id' => $variant->id,
+                        'color_code' => optional($variant->color)->code,
+                        'color_id' => $variant->color_id,
+                        'color_name' => optional($variant->color)->name,
+                        'image_url' => asset('storage/' . $variant->image),
+                        'sizes' => $variant->productColorSizes->map(fn($pcs) => [
+                            'id' => $pcs->id,
+                            'size_id' => $pcs->size_id,
+                            'size_name' => optional($pcs->size)->name,
+                            'quantity' => $pcs->quantity,
+                        ]),
+                    ]),
+                    'real_average_rating' => round($product->ratings->avg('rating'), 1),
+                ];
             });
 
         return response()->json([
             'products' => $products,
         ]);
     }
+
 }

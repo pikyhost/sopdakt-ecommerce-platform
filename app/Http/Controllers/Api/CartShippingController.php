@@ -49,7 +49,7 @@ class CartShippingController extends Controller
 
         $cart->update([
             'is_free_shipping' => $isFreeShipping,
-            'shipping_cost' => $isFreeShipping ? null : $cart->shipping_cost,
+            'shipping_cost' => $isFreeShipping ? 0 : $cart->shipping_cost,
         ]);
 
         return response()->json([

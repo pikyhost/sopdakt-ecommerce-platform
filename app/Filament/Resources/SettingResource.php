@@ -263,7 +263,7 @@ class SettingResource extends Resource
                     ->columns(2),
 
                 Forms\Components\Section::make(__('Logos'))
-                     ->collapsed(true)
+                    ->collapsed(true)
                     ->description(__('Upload logos for different languages'))
                     ->schema([
                         FileUpload::make('logo_en')
@@ -288,7 +288,7 @@ class SettingResource extends Resource
                     ])->columns(2),
 
                 Forms\Components\Section::make(__('Favicon'))
-                     ->collapsed(true)
+                    ->collapsed(true)
                     ->description(__('Upload website favicon'))
                     ->schema([
                         FileUpload::make('favicon')
@@ -299,7 +299,7 @@ class SettingResource extends Resource
                     ])->columns(2),
 
                 Forms\Components\Section::make(__('social_media'))
-                     ->collapsed(true)
+                    ->collapsed(true)
                     ->description(__('social_media_description'))
                     ->schema([
                         Forms\Components\TextInput::make('facebook')
@@ -402,7 +402,7 @@ class SettingResource extends Resource
                     ->columns(3),
 
                 Section::make(__('Pixel Settings'))
-                    ->visible(fn () => Auth::user()->hasRole('super_admin'))
+
                     ->collapsed(true)
                     ->schema([
                         Textarea::make('google_pixel')

@@ -18,6 +18,11 @@ use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Coupon;
+use App\Models\City;
+use App\Models\Governorate;
+use App\Models\Country;
+use App\Models\ShippingType;
+use App\Models\Setting;
 use App\Services\StockLevelNotifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -30,6 +35,9 @@ use Spatie\Permission\Models\Role;
 
 class CheckoutController extends Controller
 {
+    /**
+     * Store a new order
+     */
     public function store(StoreCheckoutRequest $request): JsonResponse
     {
         try {
@@ -42,7 +50,6 @@ class CheckoutController extends Controller
                 Log::warning('Inactive user attempted checkout', ['user_id' => Auth::guard('sanctum')->id()]);
                 return response()->json([
                     'error' => 'Your account is not active. Please contact support.',
-
                 ], 403);
             }
 
@@ -67,91 +74,55 @@ class CheckoutController extends Controller
                 Log::info('Empty cart during checkout', ['user_id' => Auth::id(), 'session_id' => $sessionId]);
                 return response()->json([
                     'error' => 'Cart is empty or not found',
-
                 ], 404);
             }
 
-            // Validate coupon if applied
-            if ($cart->coupon_id) {
-                $coupon = Coupon::where('id', $cart->coupon_id)
-                    ->where('is_active', true)
-                    ->whereHas('discount', function ($q) {
-                        $q->where('is_active', true)
-                            ->where(function ($q2) {
-                                $q2->whereNull('starts_at')->orWhere('starts_at', '<=', now());
-                            })
-                            ->where(function ($q2) {
-                                $q2->whereNull('ends_at')->orWhere('ends_at', '>=', now());
-                            });
-                    })
-                    ->first();
-
-                if (!$coupon) {
-                    Log::warning('Invalid or expired coupon during checkout', ['coupon_id' => $cart->coupon_id]);
-                    return response()->json([
-                        'error' => 'Invalid or expired coupon.',
-
-                    ], 422);
-                }
-
-                // Check coupon usage limits
-                if ($coupon->total_usage_limit) {
-                    $totalUsages = $coupon->usages()->count();
-                    if ($totalUsages >= $coupon->total_usage_limit) {
-                        Log::warning('Coupon usage limit reached', ['coupon_id' => $cart->coupon_id]);
-                        return response()->json([
-                            'error' => 'Coupon usage limit reached.',
-
-                        ], 422);
-                    }
-                }
-
-                if ($coupon->usage_limit_per_user && Auth::guard('sanctum')->check()) {
-                    $userUsages = $coupon->usages()->where('user_id', Auth::guard('sanctum')->id())->count();
-                    if ($userUsages >= $coupon->usage_limit_per_user) {
-                        Log::warning('Coupon usage limit per user reached', ['coupon_id' => $cart->coupon_id, 'user_id' => Auth::id()]);
-                        return response()->json([
-                            'error' => 'Coupon usage limit per user reached.',
-
-                        ], 422);
-                    }
-                }
-            }
 
             // Save contact data
+            $contact = $this->saveContact($data, $cart);
 
-            /* Issue When User Contact Saved */
-//            Contact
+            // Calculate shipping cost
+            $shippingCost = $this->updateShippingCost(
+                $cart->shipping_type_id,
+                $cart->items->map(function ($item) {
+                    return [
+                        'product_id' => $item->product_id,
+                        'quantity' => $item->quantity,
+                    ];
+                })->toArray(),
+                $cart->city_id,
+                $cart->governorate_id,
+                $cart->country_id
+            );
 
-            $contact = Contact::create([
-                'session_id' => $sessionId.rand(1000, 9999),
-                'name' => $data['name'],
-                'email' => $data['email'],
-                'phone' => $data['phone'],
-                'second_phone' => $data['second_phone'],
-                'address' => $data['address'],
-                'country_id' => $cart->country_id,
-                'governorate_id' => $cart->governorate_id,
-                'city_id' => $cart->city_id,
+            // Update cart with shipping cost and recalculate total
+            $subTotal = $cart->items->sum(fn ($item) => $item->subtotal);
+            $taxPercentage = $this->getTaxPercentage();
+            $taxAmount = ($subTotal * $taxPercentage) / 100;
+            $total = $subTotal + $taxAmount + $shippingCost;
+
+            $cart->update([
+                'shipping_cost' => $shippingCost,
+                'subtotal' => $subTotal,
+                'tax_percentage' => $taxPercentage,
+                'tax_amount' => $taxAmount,
+                'total' => $total,
             ]);
-            Log::info('Contact info saved', ['contact_id' => $contact->id ?? null, 'user_id' => Auth::guard('sanctum')->id()]);
-
 
             // Store checkout session data
             session([
                 'pending_checkout' => [
                     'user_id' => Auth::guard('sanctum')->id(),
-                    'contact_id' => null,
+                    'contact_id' => $contact instanceof Contact ? $contact->id : null,
                     'cart_id' => $cart->id,
                     'notes' => $data['notes'] ?? null,
                     'checkout_token' => $checkoutToken,
                     'payment_method_id' => $data['payment_method_id'],
                 ]
             ]);
-            Log::info('Checkout session stored', ['checkout_token' => $checkoutToken]);
 
             // Handle Paymob payment
-            if ($data['payment_method_id'] == 2) {
+            if ($data['payment_method_id'] == 100) {
                 return $this->processPaymobPayment($cart, $contact, $checkoutToken);
             }
             // Handle COD or other methods
@@ -164,7 +135,6 @@ class CheckoutController extends Controller
             ]);
             return response()->json([
                 'error' => $e->getMessage(),
-
             ], 500);
         }
     }
@@ -174,7 +144,7 @@ class CheckoutController extends Controller
      */
     private function saveContact(array $data, Cart $cart): User|Contact
     {
-        if (Auth::check()) {
+        if (Auth::guard('sanctum')->check()) {
             // Update authenticated user
             $user = Auth::guard('sanctum')->user();
 
@@ -213,14 +183,13 @@ class CheckoutController extends Controller
         } else {
             $sessionId = request()->header('x-session-id');
 
-            if ($data['create_account']) {
+            if (isset($data['create_account']) && $data['create_account']) {
                 // Create new user
                 $user = User::create([
                     'name' => $data['name'],
                     'email' => $data['email'],
                     'phone' => $data['phone'],
                     'second_phone' => $data['second_phone'],
-                    'address' => $data['address'],
                     'password' => bcrypt($data['password']),
                     'country_id' => $cart->country_id,
                     'governorate_id' => $cart->governorate_id,
@@ -266,6 +235,155 @@ class CheckoutController extends Controller
                 return $guestContact;
             }
         }
+    }
+
+    /**
+     * Calculate shipping cost for the cart
+     */
+    private function updateShippingCost($shippingTypeId, array $items, $cityId, $governorateId, $countryId): float
+    {
+        $totalShippingCost = 0.0;
+        $hasChargeableItems = false;
+
+        // Check if all items are free shipping
+        foreach ($items as $item) {
+            $product = Product::find($item['product_id'] ?? null);
+            if ($product && !$product->is_free_shipping) {
+                $hasChargeableItems = true;
+                break;
+            }
+        }
+
+        // If all products have free shipping, set cost to 0
+        if (!$hasChargeableItems) {
+            return 0.0;
+        }
+
+        // If shipping locations are disabled, force cost to 0
+        if (!Setting::isShippingLocationsEnabled()) {
+            return 0.0;
+        }
+
+        // Add shipping type cost (only if there are chargeable items)
+        if ($shippingTypeId) {
+            $shippingType = ShippingType::find($shippingTypeId);
+            $totalShippingCost += $shippingType?->shipping_cost ?? 0.0;
+        }
+
+        // Get the highest shipping cost per item instead of summing them
+        $highestShippingCost = 0.0;
+        if (!empty($items) && ($cityId || $governorateId || $countryId)) {
+            foreach ($items as $item) {
+                $product = Product::find($item['product_id'] ?? null);
+                if ($product && !$product->is_free_shipping) {
+                    $cost = $this->calculateProductShippingCost($product, $cityId, $governorateId, $countryId);
+                    if ($cost > $highestShippingCost) {
+                        $highestShippingCost = $cost;
+                    }
+                }
+            }
+        }
+
+        return $totalShippingCost + $highestShippingCost;
+    }
+
+    /**
+     * Calculate shipping cost for a single product
+     */
+    private function calculateProductShippingCost(Product $product, $cityId, $governorateId, $countryId): float
+    {
+        if ($product->is_free_shipping) {
+            return 0.0;
+        }
+
+        // If shipping locations are disabled, force cost to 0
+        if (!Setting::isShippingLocationsEnabled()) {
+            return 0.0;
+        }
+
+        if (!$cityId && !$governorateId && !$countryId) {
+            return $product->cost ?? 0.0;
+        }
+
+        return $this->getProductShippingCost($product, $cityId, $governorateId, $countryId)
+            ?? $this->getLocationBasedShippingCost($cityId, $governorateId, $countryId)
+            ?? $product->cost
+            ?? 0.0;
+    }
+
+    /**
+     * Get product-specific shipping cost based on location
+     */
+    private function getProductShippingCost(Product $product, $cityId, $governorateId, $countryId): ?float
+    {
+        if (!Setting::isShippingLocationsEnabled()) {
+            return 0.0;
+        }
+
+        if ($cityId) {
+            $cost = $product->shippingCosts()
+                ->where('city_id', $cityId)
+                ->where('country_id', $countryId)
+                ->value('cost');
+            if ($cost !== null) return $cost;
+        }
+
+        if ($governorateId) {
+            $cost = $product->shippingCosts()
+                ->where('governorate_id', $governorateId)
+                ->where('country_id', $countryId)
+                ->whereNull('city_id')
+                ->value('cost');
+            if ($cost !== null) return $cost;
+        }
+
+        if ($countryId) {
+            return $product->shippingCosts()
+                ->where('country_id', $countryId)
+                ->whereNull('city_id')
+                ->whereNull('governorate_id')
+                ->value('cost');
+        }
+
+        return null;
+    }
+
+    /**
+     * Get location-based shipping cost
+     */
+    private function getLocationBasedShippingCost($cityId, $governorateId, $countryId): ?float
+    {
+        if (!Setting::isShippingLocationsEnabled()) {
+            return 0.0;
+        }
+
+        if ($cityId) {
+            $city = City::find($cityId);
+            if ($city?->cost > 0) return (float) $city->cost;
+        }
+
+        if ($governorateId) {
+            $governorate = Governorate::find($governorateId);
+            if ($governorate?->cost > 0) return (float) $governorate->cost;
+
+            $zone = $governorate->shippingZones()->first();
+            if ($zone?->cost > 0) return (float) $zone->cost;
+        }
+
+        if ($countryId) {
+            $country = Country::find($countryId);
+            if ($country?->cost > 0) return (float) $country->cost;
+        }
+
+        return null;
+    }
+
+    /**
+     * Get tax percentage
+     */
+    private static function getTaxPercentage(): float
+    {
+        return Setting::getTaxPercentage() ?? 0;
     }
 
     /**
@@ -341,7 +459,7 @@ class CheckoutController extends Controller
                 'status' => OrderStatus::Shipping,
                 'notes' => $data['notes'] ?? null,
                 'checkout_token' => $checkoutToken,
-                'tracking_number' => null, // Explicitly set to null
+                'tracking_number' => null,
             ];
 
             if (!Auth::guard('sanctum')->check() && $contact instanceof Contact) {
@@ -437,7 +555,7 @@ class CheckoutController extends Controller
                     'order_id' => $order->id,
                     'total' => $order->total,
                     'status' => $order->status,
-                    'tracking_number' => $order->tracking_number, // Should be null
+                    'tracking_number' => $order->tracking_number,
                     'created_at' => $order->created_at->toIso8601String(),
                 ],
                 'message' => 'Order placed successfully',
@@ -448,9 +566,7 @@ class CheckoutController extends Controller
             Log::error('Order creation failed', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return response()->json([
                 'error' => 'We encountered an issue: ' . $e->getMessage(),
-
             ], 500);
         }
     }
 }
-

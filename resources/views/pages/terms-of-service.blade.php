@@ -1,17 +1,13 @@
 @extends('layouts.app')
 
-@php
-    $direction = app()->getLocale() === 'ar' ? 'rtl' : 'ltr';
-@endphp
-
 @section('title', __('Terms of Service'))
 
 @section('content')
     <br>
-    <div class="container text-center" dir="{{ $direction }}">
-        <h1>{{ __('Terms of Service') }}</h1>
-        <div class="content">
+    <div>
+        <h3>Terms & Conditions</h3>
+    </div>
+    <div>
             {!! \App\Models\Policy::first()?->{"terms_of_service_" . app()->getLocale()} ?? __('policy.no_policy_found') !!}
-        </div>
     </div>
 @endsection

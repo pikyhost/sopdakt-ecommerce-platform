@@ -32,6 +32,8 @@ use Spatie\Permission\Models\Role;
 
 class Checkout extends Component
 {
+    public $governorates;
+    public $showCouponInput;
     public string|null $paymentUrl = null;
     public $payment_method_id;
     public string $checkoutToken;

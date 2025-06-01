@@ -181,7 +181,7 @@ Route::prefix('coupons')->group(function () {
 });
 
 
-Route::get('/faqs', [FaqController::class, 'index']);
+//Route::get('/faqs', [FaqController::class, 'index']);
 
 Route::get('/pixels', function () {
     $settings = Setting::first();
@@ -200,3 +200,9 @@ Route::get('/free-shipping-amount', function () {
 
 
 
+Route::get('/get-phone-number', function () {
+    return response()->json([
+        'response' => 'success',
+        'phone' => Setting::first()->phone,
+    ]);
+});

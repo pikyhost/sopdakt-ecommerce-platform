@@ -11,6 +11,7 @@ use App\Models\CartItem;
 use App\Models\Country;
 use App\Models\Governorate;
 use App\Models\City;
+use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Models\ShippingType;
@@ -109,7 +110,7 @@ class CartListController extends Controller
         ]);
     }
 
-      private function getOrCreateCart()
+    private function getOrCreateCart()
     {
         if (Auth::guard('sanctum')->check()) {
             return Cart::firstOrCreate(
@@ -175,10 +176,17 @@ class CartListController extends Controller
                     ->map(fn ($type) => [
                         'id' => $type->id,
                         'name' => $type->getTranslation('name', $locale),
-                        'shipping_cost' => $type->cost,
+                        'shipping_cost' => $type->shipping_cost,
                         'shipping_estimate_time' => $type->shipping_estimate_time,
                     ])
                 : [],
+            'payment_methods' => PaymentMethod::all()
+                ->map(fn ($type) => [
+                    'id' => $type->id,
+                    'name' => $type->getTranslation('name', $locale),
+                    'shipping_cost' => $type->cost,
+                    'shipping_estimate_time' => $type->shipping_estimate_time,
+                ]),
             'currency' => Setting::getCurrency(),
 
         ]);

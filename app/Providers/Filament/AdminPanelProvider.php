@@ -229,7 +229,6 @@ class AdminPanelProvider extends PanelProvider
                     ProductResource::getNavigationItems(),
                     LabelResource::getNavigationItems(),
                     BundleResource::getNavigationItems(),
-                    AttributeResource::getNavigationItems(),
                     ColorResource::getNavigationItems(),
                     SizeResource::getNavigationItems(),
                     SizeGuideResource::getNavigationItems(),
