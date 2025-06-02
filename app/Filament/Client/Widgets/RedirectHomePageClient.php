@@ -20,6 +20,7 @@ class RedirectHomePageClient extends Widget
 
     public function goToMainPage(): Action
     {
+
         return Action::make('redirectToHomePage')
             ->button()
             ->icon('heroicon-o-home')

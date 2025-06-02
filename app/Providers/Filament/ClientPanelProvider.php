@@ -4,10 +4,12 @@ namespace App\Providers\Filament;
 
 use App\Filament\Client\Pages\Auth\ClientLogin;
 use App\Filament\Client\Pages\Auth\ClientRegister;
-use App\Filament\Widgets\HomePageRedirect;
+use App\Filament\Widgets\RedirectHomePage;
+use App\Http\Middleware\CheckClientApiAuthTokenMiddleware;
 use App\Http\Middleware\SyncAuthMiddleware;
 use App\Livewire\ProfileContactDetails;
 use App\Models\Setting;
+use App\Models\UserLoginToken;
 use App\Rules\CustomPassword;
 use CharrafiMed\GlobalSearchModal\GlobalSearchModalPlugin;
 use Filament\Facades\Filament;
@@ -35,8 +37,10 @@ use SolutionForest\FilamentSimpleLightBox\SimpleLightBoxPlugin;
 
 class ClientPanelProvider extends PanelProvider
 {
+
     public function panel(Panel $panel): Panel
     {
+
         $settings = Setting::getAllSettings();
 
         $faviconPath = $settings["favicon"] ?? null;
@@ -51,6 +55,8 @@ class ClientPanelProvider extends PanelProvider
                 'primary' => Color::Indigo,
                 'gray' => Color::Slate,
             ])
+            ->login(
+            )
             ->favicon($favicon)
             ->discoverResources(in: app_path('Filament/Client/Resources'), for: 'App\\Filament\\Client\\Resources')
             ->discoverPages(in: app_path('Filament/Client/Pages'), for: 'App\\Filament\\Client\\Pages')
@@ -86,6 +92,7 @@ class ClientPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+                CheckClientApiAuthTokenMiddleware::class
             ])
             ->navigationGroups($this->getNavigationGroups())
             ->viteTheme('resources/css/filament/admin/theme.css')

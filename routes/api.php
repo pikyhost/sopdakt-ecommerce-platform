@@ -37,6 +37,7 @@ Route::get('/user', function (Request $request) {
 
 Route::post('jt-express-webhook', [ShippingController::class, 'handleWebhook']);
 
+
 Route::post('/bosta/webhook', [BostaWebhookController::class, 'handle'])->name('bosta.webhook');
 
 Route::prefix('aramex')->group(function () {

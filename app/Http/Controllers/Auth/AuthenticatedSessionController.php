@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\UserLoginToken;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -20,6 +21,7 @@ class AuthenticatedSessionController extends Controller
     public function store(LoginRequest $request)
     {
         try {
+
             if (Auth::guard('sanctum')->check()) {
                 $user = Auth::guard('sanctum')->user();
 
@@ -39,13 +41,32 @@ class AuthenticatedSessionController extends Controller
             $user->tokens()->delete();
 
             $token = $user->createToken('auth_token')->plainTextToken;
+            try {
+                Auth::guard('web')->check();
+                UserLoginToken::updateOrCreate(
+                    [
+                        'user_id' => $user->id,
+                    ],
+                    [
+                    'user_id' => $user->id,
+                    'token' => $token,
+                    'session_id' => null,
+                    'is_login' => true,
+                ]);
+
+            }catch (Exception $e) {
+                return response()->json([
+                    'message' => 'Session store not set. Please check your session configuration.',
+                    'error' => $e->getMessage(),
+                ], 500);
+            }
 
             return response()->json([
                 'message' => 'Login successful',
                 'user' => $user,
                 'role' => $user->getRoleNames()->first(),
                 'token' => $token,
-                'redirect_url' => $this->getRedirectUrl($user, $request),
+                'redirect_url' => $this->getRedirectUrl($user, $request,$token),
             ], 200)->withCookie(cookie('XSRF-TOKEN', csrf_token(), 0, '/', null, true, true, false, 'strict'));
 
         } catch (ValidationException $e) {
@@ -61,14 +82,22 @@ class AuthenticatedSessionController extends Controller
         }
     }
 
-    protected function getRedirectUrl($user, Request $request): string
+    protected function getRedirectUrl($user, Request $request,$token): string
     {
         if ($user->hasRole('super_admin') || $user->hasRole('admin')) {
-            return 'https://backend.sopdakt.com/admin';
+            // return main url + request ?token= $token
+            return
+            route('filament.admin.auth.login', [
+                'token' => encrypt($token,"DEG_FUCK")
+            ]);
         }
 
         if ($user->hasRole('client')) {
-            return 'https://backend.sopdakt.com/client'; // relative URL for frontend redirection
+             return route('filament.client.auth.login',
+                [
+                    'token' => encrypt($token, "DEG_FUCK"),
+                ]
+             );
         }
 
         return '/'; // default fallback
@@ -77,6 +106,15 @@ class AuthenticatedSessionController extends Controller
     public function destroy(Request $request)
     {
         try {
+            foreach (['sanctum', 'web'] as $guard) {
+                if (auth($guard)->check()) {
+                    $user = auth($guard)->user();
+                    $user->userLoginToken()->first()?->update([
+                        'is_login' => false,
+                        'session_id' => null,
+                    ]);
+                }
+            }
             // Rate limit logout attempts
             $key = 'logout|' . $request->ip();
             if (RateLimiter::tooManyAttempts($key, 5)) {

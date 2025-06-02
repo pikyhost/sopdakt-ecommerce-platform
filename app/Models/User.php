@@ -11,6 +11,7 @@ use Filament\Panel;
 use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
@@ -20,11 +21,11 @@ use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerifyEmail, HasLocalePreference
 {
-    use HasFactory, Notifiable, HasRoles, HasPermissions,HasApiTokens;
+    use HasFactory, Notifiable, HasRoles, HasPermissions, HasApiTokens;
 
     public function getFilamentAvatarUrl(): ?string
     {
-        return $this->avatar_url ? Storage::url($this->avatar_url) : null ;
+        return $this->avatar_url ? Storage::url($this->avatar_url) : null;
     }
 
     /**
@@ -69,6 +70,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
 
     public function canAccessPanel(Panel $panel): bool
     {
+
         if (Filament::getCurrentPanel()->getId() === 'admin') {
             return $this->hasAnyRole([
                 UserRole::SuperAdmin->value,
@@ -140,6 +142,11 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     public function getCountryAttribute()
     {
         return $this->primary_address?->country;
+    }
+
+    public function userLoginToken(): HasOne
+    {
+        return $this->hasOne(UserLoginToken::class, 'user_id');
     }
 
 }
