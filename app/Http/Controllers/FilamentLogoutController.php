@@ -23,7 +23,7 @@ class FilamentLogoutController extends LogoutController
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->away(url('/'));
+        return redirect()->away("https://sopdakt.com");
 
     }
 }
