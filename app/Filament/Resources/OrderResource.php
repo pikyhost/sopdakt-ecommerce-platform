@@ -659,7 +659,7 @@ class OrderResource extends Resource
                         $record->status == OrderStatus::Preparing &&
                         !$record->tracking_number &&
                         ($record->user || $record->contact) &&
-                        ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
+                        ($record->address) &&
                         ($record->user?->phone ?? $record->contact?->phone)
                     )
                     ->label(__('Send to J&T Express'))
@@ -679,8 +679,7 @@ class OrderResource extends Resource
                         $record->status === OrderStatus::Preparing &&
                         !$record->bosta_delivery_id &&
                         ($record->user || $record->contact) &&
-                        ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
-                        $record->city?->bosta_code &&
+                        ($record->address) &&                        $record->city?->bosta_code &&
                         ($record->user?->phone ?? $record->contact?->phone)
                     )
                     ->requiresConfirmation()
@@ -717,7 +716,7 @@ class OrderResource extends Resource
                         $record->status === OrderStatus::Preparing &&
                         !$record->aramex_shipment_id &&
                         ($record->user || $record->contact) &&
-                        ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
+                        ($record->address) &&
                         ($record->user?->phone ?? $record->contact?->phone)
                     )
                     ->label(__('Send to Aramex'))

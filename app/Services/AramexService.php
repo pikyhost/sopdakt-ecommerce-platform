@@ -79,7 +79,7 @@ class AramexService
                         'Reference2' => '',
                         'AccountNumber' => '',
                         'PartyAddress' => [
-                            'Line1' => preg_replace('/[\r\n]+/', ' ', $contact->addresses()->where('is_primary', true)->first()->address ?? 'N/A'),
+                            'Line1' => preg_replace('/[\r\n]+/', ' ', $order->address ?? 'N/A'),
                             'Line2' => '',
                             'Line3' => '',
                             'City' => $order->city->name ?? 'Cairo',
