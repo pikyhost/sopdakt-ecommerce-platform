@@ -1,0 +1,78 @@
+<?php
+
+namespace App\Livewire;
+
+use Illuminate\Contracts\Support\Htmlable;
+use Livewire\Attributes\On;
+use Illuminate\Support\Carbon;
+use App\Models\User;
+use Flowframe\Trend\Trend;
+use Flowframe\Trend\TrendValue;
+use Filament\Widgets\ChartWidget;
+
+class UsersChart extends ChartWidget
+{
+    public Carbon $fromDate;
+    public Carbon $toDate;
+
+    protected static ?string $pollingInterval = null;
+    protected static bool $isLazy = false;
+
+    public function mount(): void
+    {
+        $this->fromDate = now()->subMonth();
+        $this->toDate = now();
+    }
+
+    public function getHeading(): string|Htmlable|null
+    {
+      return __('Users Chart');
+    }
+
+    protected function getData(): array
+    {
+        $fromDate = $this->fromDate ??= now()->subWeek();
+        $toDate = $this->toDate ??= now();
+
+        $data = Trend::model(User::class)
+            ->between(
+                start: $fromDate,
+                end: $toDate,
+            )
+            ->perDay()
+            ->count();
+
+        return [
+            'datasets' => [
+                [
+                    'label' => 'Users',
+                    'data' => $data->map(fn (TrendValue $value) => $value->aggregate),
+                ],
+            ],
+            'labels' => $data->map(fn (TrendValue $value) => $value->date),
+        ];
+    }
+
+    #[On('updateFromDate1')]
+    public function updateFromDate(?string $from): void
+    {
+        if ($from) {
+            $this->fromDate = Carbon::parse($from)->startOfDay();
+        }
+        $this->dispatch('$refresh');
+    }
+
+    #[On('updateToDate1')]
+    public function updateToDate(?string $to): void
+    {
+        if ($to) {
+            $this->toDate = Carbon::parse($to)->endOfDay();
+        }
+        $this->dispatch('$refresh');
+    }
+
+    protected function getType(): string
+    {
+        return 'bar';
+    }
+}

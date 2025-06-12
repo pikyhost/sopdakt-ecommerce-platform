@@ -1,0 +1,209 @@
+name: Checkout
+description: ''
+endpoints:
+  -
+    httpMethods:
+      - POST
+    uri: api/checkout
+    metadata:
+      groupName: Checkout
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Process the checkout and place an order'
+      description: |-
+        This endpoint handles the checkout process, validating user or guest contact details, processing payments,
+        and creating an order. It supports both authenticated users and guests, with optional account creation for guests.
+        Payment methods include Paymob (returns a payment iframe URL) and Cash on Delivery (creates the order directly).
+        The endpoint updates user/contact information, manages cart items, updates stock, sends email/WhatsApp notifications,
+        and integrates with JT Express for shipping. It also validates and applies any coupons associated with the cart.
+        The response includes the order details or payment URL on success, or an error message for failures (e.g., empty cart, invalid payment, invalid coupon).
+      authenticated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      payment_method_id:
+        name: payment_method_id
+        description: 'The ID of the payment method (1 for COD, 2 for Paymob).'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      name:
+        name: name
+        description: 'The name of the customer.'
+        required: true
+        example: 'John Doe'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      address:
+        name: address
+        description: 'The shipping address.'
+        required: true
+        example: '123 Main St, Cairo'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      email:
+        name: email
+        description: 'The email address of the customer. Must be unique if creating an account.'
+        required: true
+        example: john.doe@example.com
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      phone:
+        name: phone
+        description: 'The primary phone number of the customer (min 10 characters).'
+        required: true
+        example: '01025263865'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      second_phone:
+        name: second_phone
+        description: 'A secondary phone number, different from the primary (min 10 characters).'
+        required: true
+        example: '01125263865'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      notes:
+        name: notes
+        description: 'Optional notes for the order.'
+        required: false
+        example: 'Please deliver after 5 PM'
+        type: string|null
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        custom: []
+      create_account:
+        name: create_account
+        description: 'Whether to create a user account for guests.'
+        required: false
+        example: true
+        type: boolean
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      password:
+        name: password
+        description: 'Required if create_account is true (min 6 characters).'
+        required: false
+        example: password123
+        type: string|null
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: true
+        custom: []
+    cleanBodyParameters:
+      payment_method_id: 1
+      name: 'John Doe'
+      address: '123 Main St, Cairo'
+      email: john.doe@example.com
+      phone: '01025263865'
+      second_phone: '01125263865'
+      notes: 'Please deliver after 5 PM'
+      create_account: true
+      password: password123
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+              "data": {
+                  "payment_url": "https://paymob.com/iframe/123456"
+              },
+              "message": "Payment initiated successfully"
+          }
+        headers: []
+        description: ''
+        custom: []
+      -
+        status: 201
+        content: |-
+          {
+              "data": {
+                  "order_id": 1,
+                  "total": 150.00,
+                  "status": "shipping",
+                  "tracking_number": null,
+                  "created_at": "2025-04-30T12:00:00.000000Z"
+              },
+              "message": "Order placed successfully"
+          }
+        headers: []
+        description: ''
+        custom: []
+      -
+        status: 404
+        content: |-
+          {
+              "error": "Cart is empty or not found",
+              "support_link": "https://your-domain.com/contact-us"
+          }
+        headers: []
+        description: ''
+        custom: []
+      -
+        status: 422
+        content: |-
+          {
+              "message": "The given data was invalid.",
+              "errors": {
+                  "email": ["The email has already been taken."],
+                  "phone": ["The phone number is blocked. Please contact support."],
+                  "payment_method_id": ["The selected payment method is invalid."]
+              }
+          }
+        headers: []
+        description: ''
+        custom: []
+      -
+        status: 422
+        content: |-
+          {
+              "error": "Invalid or expired coupon."
+          }
+        headers: []
+        description: ''
+        custom: []
+      -
+        status: 500
+        content: |-
+          {
+              "error": "An unexpected error occurred during checkout. Please try again.",
+              "support_link": "https://your-domain.com/contact-us"
+          }
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []

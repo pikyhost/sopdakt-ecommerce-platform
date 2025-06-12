@@ -1,0 +1,1455 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Exports\OrderExporter;
+use App\Services\AramexService;
+use App\Services\BostaService;
+use Filament\Actions\Exports\Enums\ExportFormat;
+use Filament\Forms\Components\Select;
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\Indicator;
+use Filament\Tables\Filters\QueryBuilder;
+use Filament\Tables\Filters\QueryBuilder\Constraints\NumberConstraint;
+use Illuminate\Database\Eloquent\Builder;
+use App\Enums\OrderStatus;
+use App\Filament\Resources\OrderResource\Pages;
+use App\Mail\OrderStatusMail;
+use App\Models\Bundle;
+use App\Models\City;
+use App\Models\Country;
+use App\Models\Governorate;
+use App\Models\Order;
+use App\Models\Product;
+use App\Models\ProductColor;
+use App\Models\Setting;
+use App\Models\ShippingType;
+use App\Services\JtExpressService;
+use Carbon\Carbon;
+use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Wizard;
+use Filament\Forms\Components\Wizard\Step;
+use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Notifications\Notification;
+use Filament\Resources\Resource;
+use Filament\Support\Enums\ActionSize;
+use Filament\Support\Enums\FontWeight;
+use Filament\Support\Enums\IconPosition;
+use Filament\Tables;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Columns\Summarizers\Sum;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+
+class OrderResource extends Resource
+{
+    protected static ?string $model = Order::class;
+
+    protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('landing_page_order.orders_contacts');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('landing_page_order.orders');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('order');
+    }
+
+    /**
+     * @return string|null
+     */
+    public static function getPluralLabel(): ?string
+    {
+        return __('landing_page_order.orders');
+    }
+
+    public static function getLabel(): ?string
+    {
+        return __('order');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('landing_page_order.orders');
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->headerActions([
+                ExportAction::make()
+                    ->formats([
+                        ExportFormat::Xlsx,
+                        ExportFormat::Csv,
+                    ])
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->exporter(OrderExporter::class),
+                Action::make('back')
+                    ->label(__('Back to previous page'))
+                    ->icon(app()->getLocale() == 'en' ? 'heroicon-m-arrow-right' : 'heroicon-m-arrow-left')
+                    ->iconPosition(IconPosition::After)
+                    ->color('gray')
+                    ->url(url()->previous())
+                    ->hidden(fn() => url()->previous() === url()->current()),
+            ])
+            ->columns([
+                Tables\Columns\TextColumn::make('id')
+                    ->copyable()
+                    ->formatStateUsing(fn($state) => '#' . $state)
+                    ->label(__('Number'))
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('country.name')
+                      ->toggleable(isToggledHiddenByDefault: true)
+                    ->label(__('Country'))
+                    ->placeholder('-')
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('governorate.name')
+                      ->toggleable(isToggledHiddenByDefault: true)
+                    ->label(__('governorate'))
+                    ->placeholder('-')
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('city.name')
+                    ->label(__('City'))
+                    ->placeholder('-')
+                    ->searchable(),
+
+                TextColumn::make('user.primaryAddress.address')
+                    ->label('User Address')
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('contact.address')
+                    ->label(__('Contact Address'))
+                    ->placeholder('-')
+                    ->searchable(),
+
+                // Display just the address line
+                TextColumn::make('user.address_line')
+                    ->label('Address')
+                    ->searchable(),
+
+                TextColumn::make('tracking_number')  // this is thetracking_number of j and t
+                    ->copyable()
+                    ->placeholder('-')
+                    ->label(__('J&T Express Tracking Number'))
+                    ->searchable()
+                    ->weight(FontWeight::Bold)
+                    ->copyMessage(__('Tracking number copied')),
+
+                TextColumn::make('bosta_delivery_id')
+                    ->copyable()
+                    ->placeholder('-')
+                    ->label(__('Bosta Tracking Number'))
+                    ->searchable()
+                    ->weight(FontWeight::Bold)
+                    ->copyMessage(__('Tracking number copied')),
+
+                TextColumn::make('aramex_tracking_number')
+                    ->placeholder('-')
+                    ->label(__('Aramex Tracking Number'))
+                    ->searchable()
+                    ->sortable()
+                    ->weight(FontWeight::Bold)
+                    ->copyable()
+                    ->copyMessage(__('Tracking number copied')),
+
+                TextColumn::make('aramex_tracking_url')
+                    ->label(__('Aramex Shipment Waybill URL')) // Best universal term
+                    ->searchable()
+                    ->sortable()
+                    ->url(fn ($record) => $record->aramex_tracking_url, true)
+                    ->openUrlInNewTab()
+                    ->icon('heroicon-o-document-text')
+                    ->color('info')
+                    ->limit(30)
+                    ->tooltip(function (TextColumn $column): ?string {
+                        $url = $column->getState();
+                        return strlen($url) > 30 ? $url : null;
+                    }),
+
+                Tables\Columns\TextColumn::make('user.name')
+                    ->formatStateUsing(function ($record) {
+                        return $record->user->name . ' (#' . $record->user_id . ')';
+                    })
+                    ->label(__('User Name'))
+                    ->searchable()
+                    ->placeholder('-')
+                    ->numeric()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('contact.name')
+                    ->formatStateUsing(function ($record) {
+                        return $record->contact->name . ' (#' . $record->contact_id . ')';
+                    })
+                    ->label(__('Contact Name'))
+                    ->searchable()
+                    ->placeholder('-')
+                    ->numeric()
+                    ->sortable(),
+
+                TextColumn::make('user.phone')
+                    ->iconColor('primary')
+                    ->icon('heroicon-o-phone')
+                    ->label(__('User Phone Number'))
+                    ->placeholder(__('No phone number saved'))
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('user.second_phone')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->label(__('Second Phone Number'))
+                    ->searchable()
+                    ->placeholder('-'),
+
+                TextColumn::make('contact.phone')
+                    ->iconColor('primary')
+                    ->icon('heroicon-o-phone')
+                    ->label(__('Contact Phone Number'))
+                    ->placeholder(__('No phone number saved'))
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('status')
+                    ->label(__('Status'))
+                    ->badge()
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('shippingType.name')
+                      ->toggleable(isToggledHiddenByDefault: true)
+                    ->label(__('Shipping Type'))
+                    ->searchable()
+                    ->numeric()
+                    ->placeholder('-')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('paymentMethod.name')
+                      ->toggleable(isToggledHiddenByDefault: true)
+                    ->label(__('Payment Method'))
+                    ->searchable()
+                    ->numeric()
+                    ->placeholder('-')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('coupon.id')
+                      ->toggleable(isToggledHiddenByDefault: true)
+                    ->label(__('Coupon ID'))
+                    ->searchable()
+                    ->numeric()
+                    ->placeholder('-')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('shipping_cost')
+                      ->toggleable(isToggledHiddenByDefault: true)
+                    ->label(__('Shipping Cost'))
+                    ->numeric()
+                    ->placeholder('-')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('tax_percentage')
+                      ->toggleable(isToggledHiddenByDefault: true)
+                    ->label(__('Tax Percentage'))
+                    ->numeric()
+                    ->placeholder('-')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('tax_amount')
+                      ->toggleable(isToggledHiddenByDefault: true)
+                    ->label(__('Tax Amount'))
+                    ->numeric()
+                    ->placeholder('-')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('subtotal')
+                    ->label(__('Subtotal'))
+                    ->numeric()
+                    ->placeholder('-')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('total')
+                    ->summarize(Sum::make())
+                    ->label(__('Total'))
+                    ->numeric()
+                    ->placeholder('-')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('Created At'))
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label(__('Updated At'))
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->filters([
+        // First Row: Status and Date Range
+        SelectFilter::make('status')
+            ->label(__('Status'))
+            ->multiple()
+            ->options(
+                collect(OrderStatus::cases())
+                    ->mapWithKeys(fn($status) => [$status->value => $status->getLabel()])
+                    ->toArray()
+            )
+            ->columnSpan(['md' => 2, 'xl' => 1]),
+
+        Filter::make('created_at')
+            ->form([
+                DatePicker::make('created_from')
+                    ->label(__('From'))
+                    ->columnSpan(1),
+                DatePicker::make('created_until')
+                    ->label(__('To'))
+                    ->columnSpan(1),
+            ])
+            ->columns(2)
+            ->query(function (Builder $query, array $data): Builder {
+                return $query
+                    ->when($data['created_from'] ?? null,
+                        fn(Builder $q, $date) => $q->whereDate('created_at', '>=', $date))
+                    ->when($data['created_until'] ?? null,
+                        fn(Builder $q, $date) => $q->whereDate('created_at', '<=', $date));
+            })
+            ->columnSpanFull(),
+
+        // Second Row: Location Filters
+        Filter::make('location')
+            ->form([
+                Select::make('country_ids')
+                    ->label(__('Countries'))
+                    ->multiple()
+                    ->live()
+                    ->options(fn() => Country::pluck('name', 'id'))
+                    ->columnSpan(1),
+
+                Select::make('governorate_ids')
+                    ->label(__('Governorates'))
+                    ->multiple()
+                    ->live()
+                    ->searchable()
+                    ->options(function (callable $get) {
+                        $countryIds = $get('country_ids');
+                        return empty($countryIds) ? [] : Governorate::whereIn('country_id', $countryIds)->pluck('name', 'id');
+                    })
+                    ->columnSpan(1),
+
+                Select::make('city_ids')
+                    ->label(__('Cities'))
+                    ->multiple()
+                    ->searchable()
+                    ->options(function (callable $get) {
+                        $governorateIds = $get('governorate_ids');
+                        return empty($governorateIds) ? [] : City::whereIn('governorate_id', $governorateIds)->pluck('name', 'id');
+                    })
+                    ->columnSpan(1),
+            ])
+            ->columns(['md' => 3])
+            ->query(function (Builder $query, array $data): Builder {
+                return $query
+                    ->when($data['country_ids'] ?? null,
+                        fn(Builder $q) => $q->whereIn('country_id', $data['country_ids']))
+                    ->when($data['governorate_ids'] ?? null,
+                        fn(Builder $q) => $q->whereIn('governorate_id', $data['governorate_ids']))
+                    ->when($data['city_ids'] ?? null,
+                        fn(Builder $q) => $q->whereIn('city_id', $data['city_ids']));
+            })
+            ->indicateUsing(function (array $data) {
+                $indicators = [];
+                if (!empty($data['country_ids'])) {
+                    $countries = Country::whereIn('id', $data['country_ids'])->pluck('name')->implode(', ');
+                    $indicators[] = Indicator::make("Countries: $countries")->removeField('country_ids');
+                }
+                if (!empty($data['governorate_ids'])) {
+                    $governorates = Governorate::whereIn('id', $data['governorate_ids'])->pluck('name')->implode(', ');
+                    $indicators[] = Indicator::make("Governorates: $governorates")->removeField('governorate_ids');
+                }
+                if (!empty($data['city_ids'])) {
+                    $cities = City::whereIn('id', $data['city_ids'])->pluck('name')->implode(', ');
+                    $indicators[] = Indicator::make("Cities: $cities")->removeField('city_ids');
+                }
+                return $indicators;
+            })
+            ->columnSpanFull(),
+
+        // Third Row: Query Builder
+        QueryBuilder::make()
+            ->columnSpanFull()
+            ->constraints([
+                NumberConstraint::make('id')->integer(),
+            ]),
+    ], Tables\Enums\FiltersLayout::AboveContentCollapsible)
+            ->actions([
+//                Tables\Actions\Action::make('trackOrder')
+//                ->label(__('actions.track_order'))
+//                ->icon('heroicon-o-map')
+//                ->color('success')
+//                ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt && !is_null($record->tracking_number))
+//                ->action(function (Order $record): void {
+//                    try {
+//                        $shipping_response = json_decode($record->shipping_response, true);
+//                        if (json_last_error() !== JSON_ERROR_NONE || !is_array($shipping_response)) {
+//                            Log::error('Invalid shipping_response', ['order_id' => $record->id, 'shipping_response' => $record->shipping_response]);
+//                            Notification::make()->title('Tracking Error')->body('Invalid shipping response data')->danger()->send();
+//                            return;
+//                        }
+//
+//                        $response_data = isset($shipping_response['data']) ? $shipping_response['data'] : $shipping_response;
+//                        $txlogisticId = $response_data['txlogisticId'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
+//                        $billCode = $response_data['billCode'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
+//
+//                        if (!$txlogisticId || !$billCode) {
+//                            Log::error('Missing tracking data', ['order_id' => $record->id, 'txlogisticId' => $txlogisticId, 'billCode' => $billCode, 'response_data' => $response_data]);
+//                            Notification::make()->title('Tracking Error')->body('Missing required tracking data (txlogisticId or billCode)')->danger()->send();
+//                            return;
+//                        }
+//
+//                        $tracking_data = (object) [
+//                            'txlogisticId' => $txlogisticId,
+//                            'billCode' => $billCode,
+//                            'sortingCode' => $response_data['sortingCode'] ?? '',
+//                            'createOrderTime' => $response_data['createOrderTime'] ?? now()->toDateTimeString(),
+//                            'lastCenterName' => $response_data['lastCenterName'] ?? '',
+//                        ];
+//
+//                        $trackingInfo = app(JtExpressService::class)->trackLogistics($tracking_data);
+//
+//                        if (($trackingInfo['code'] ?? 0) === 1) {
+//                            Notification::make()->title('Tracking Information')->body('Tracking details retrieved successfully: ' . ($trackingInfo['data']['billCode'] ?? $record->tracking_number))->success()->send();
+//                        } else {
+//                            Log::error('Track Order Failed', ['order_id' => $record->id, 'response' => $trackingInfo]);
+//                            Notification::make()->title('Tracking Error')->body($trackingInfo['msg'] ?? 'Unable to retrieve tracking information')->danger()->send();
+//                        }
+//                    } catch (\Exception $e) {
+//                        Log::error('Track Order Error', ['order_id' => $record->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+//                        Notification::make()->title('Tracking Error')->body('An error occurred: ' . $e->getMessage())->danger()->send();
+//                    }
+//                }),
+//
+//                Tables\Actions\Action::make('checkOrder')
+//                    ->label(__('actions.check_order'))
+//                    ->icon('heroicon-o-check-circle')
+//                    ->color('primary')
+//                    ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt && !is_null($record->tracking_number))
+//                    ->action(function (Order $record): void {
+//                        try {
+//                            $shipping_response = json_decode($record->shipping_response, true);
+//                            if (json_last_error() !== JSON_ERROR_NONE || !is_array($shipping_response)) {
+//                                Log::error('Invalid shipping_response', ['order_id' => $record->id, 'shipping_response' => $record->shipping_response]);
+//                                Notification::make()->title('Check Error')->body('Invalid shipping response data')->danger()->send();
+//                                return;
+//                            }
+//
+//                            $response_data = isset($shipping_response['data']) ? $shipping_response['data'] : $shipping_response;
+//                            $txlogisticId = $response_data['txlogisticId'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
+//                            $billCode = $response_data['billCode'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
+//
+//                            if (!$txlogisticId || !$billCode) {
+//                                Log::error('Missing check order data', ['order_id' => $record->id, 'txlogisticId' => $txlogisticId, 'billCode' => $billCode, 'response_data' => $response_data]);
+//                                Notification::make()->title('Check Error')->body('Missing required order data (txlogisticId or billCode)')->danger()->send();
+//                                return;
+//                            }
+//
+//                            $check_data = (object) [
+//                                'txlogisticId' => $txlogisticId,
+//                                'billCode' => $billCode,
+//                                'sortingCode' => $response_data['sortingCode'] ?? '',
+//                                'createOrderTime' => $response_data['createOrderTime'] ?? now()->toDateTimeString(),
+//                                'lastCenterName' => $response_data['lastCenterName'] ?? '',
+//                            ];
+//
+//                            $orderInfo = app(JtExpressService::class)->checkingOrder($check_data);
+//
+//                            if (($orderInfo['code'] ?? 0) === 1) {
+//                                Notification::make()->title('Order Status')->body('Order exists: ' . ($orderInfo['data']['isExist'] ?? 'Unknown'))->success()->send();
+//                            } else {
+//                                Log::error('Check Order Failed', ['order_id' => $record->id, 'response' => $orderInfo]);
+//                                Notification::make()->title('Check Error')->body($orderInfo['msg'] ?? 'Unable to check order status')->danger()->send();
+//                            }
+//                        } catch (\Exception $e) {
+//                            Log::error('Check Order Error', ['order_id' => $record->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+//                            Notification::make()->title('Check Error')->body('An error occurred: ' . $e->getMessage())->danger()->send();
+//                        }
+//                    }),
+//
+//                Tables\Actions\Action::make('getOrderStatus')
+//                    ->label(__('actions.get_order_status'))
+//                    ->icon('heroicon-o-clipboard-document-list')
+//                    ->color('info')
+//                    ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt && !is_null($record->tracking_number))
+//                    ->action(function (Order $record): void {
+//                        try {
+//                            $shipping_response = json_decode($record->shipping_response, true);
+//                            if (json_last_error() !== JSON_ERROR_NONE || !is_array($shipping_response)) {
+//                                Log::error('Invalid shipping_response', ['order_id' => $record->id, 'shipping_response' => $record->shipping_response]);
+//                                Notification::make()->title('Status Error')->body('Invalid shipping response data')->danger()->send();
+//                                return;
+//                            }
+//
+//                            $response_data = isset($shipping_response['data']) ? $shipping_response['data'] : $shipping_response;
+//                            $txlogisticId = $response_data['txlogisticId'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
+//                            $billCode = $response_data['billCode'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
+//
+//                            if (!$txlogisticId || !$billCode) {
+//                                Log::error('Missing status data', ['order_id' => $record->id, 'txlogisticId' => $txlogisticId, 'billCode' => $billCode, 'response_data' => $response_data]);
+//                                Notification::make()->title('Status Error')->body('Missing required status data (txlogisticId or billCode)')->danger()->send();
+//                                return;
+//                            }
+//
+//                            $status_data = (object) [
+//                                'txlogisticId' => $txlogisticId,
+//                                'billCode' => $billCode,
+//                                'sortingCode' => $response_data['sortingCode'] ?? '',
+//                                'createOrderTime' => $response_data['createOrderTime'] ?? now()->toDateTimeString(),
+//                                'lastCenterName' => $response_data['lastCenterName'] ?? '',
+//                            ];
+//
+//                            $statusInfo = app(JtExpressService::class)->getOrderStatus($status_data);
+//
+//                            if (($statusInfo['code'] ?? 0) === 1) {
+//                                $status = $statusInfo['data']['deliveryStatus'] ?? 'Unknown';
+//                                $record->update([
+//                                    'shipping_status' => $status,
+//                                    'shipping_response' => json_encode($statusInfo)
+//                                ]);
+//                                Notification::make()->title('Order Status Updated')->body('Current status: ' . $status)->success()->send();
+//                            } else {
+//                                Log::error('Get Status Failed', ['order_id' => $record->id, 'response' => $statusInfo]);
+//                                Notification::make()->title('Status Error')->body($statusInfo['msg'] ?? 'Unable to get order status')->danger()->send();
+//                            }
+//                        } catch (\Exception $e) {
+//                            Log::error('Get Status Error', ['order_id' => $record->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+//                            Notification::make()->title('Status Error')->body('An error occurred: ' . $e->getMessage())->danger()->send();
+//                        }
+//                    }),
+//
+//                Tables\Actions\Action::make('getTrajectory')
+//                    ->label(__('actions.get_trajectory'))
+//                    ->icon('heroicon-o-arrow-path')
+//                    ->color('gray')
+//                    ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt && !is_null($record->tracking_number))
+//                    ->action(function (Order $record): void {
+//                        try {
+//                            $shipping_response = json_decode($record->shipping_response, true);
+//                            if (json_last_error() !== JSON_ERROR_NONE || !is_array($shipping_response)) {
+//                                Log::error('Invalid shipping_response', ['order_id' => $record->id, 'shipping_response' => $record->shipping_response]);
+//                                Notification::make()->title('Trajectory Error')->body('Invalid shipping response data')->danger()->send();
+//                                return;
+//                            }
+//
+//                            $response_data = isset($shipping_response['data']) ? $shipping_response['data'] : $shipping_response;
+//                            $txlogisticId = $response_data['txlogisticId'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
+//                            $billCode = $response_data['billCode'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
+//
+//                            if (!$txlogisticId || !$billCode) {
+//                                Log::error('Missing trajectory data', ['order_id' => $record->id, 'txlogisticId' => $txlogisticId, 'billCode' => $billCode, 'response_data' => $response_data]);
+//                                Notification::make()->title('Trajectory Error')->body('Missing required trajectory data (txlogisticId or billCode)')->danger()->send();
+//                                return;
+//                            }
+//
+//                            $trajectory_data = (object) [
+//                                'txlogisticId' => $txlogisticId,
+//                                'billCode' => $billCode,
+//                                'sortingCode' => $response_data['sortingCode'] ?? '',
+//                                'createOrderTime' => $response_data['createOrderTime'] ?? now()->toDateTimeString(),
+//                                'lastCenterName' => $response_data['lastCenterName'] ?? '',
+//                            ];
+//
+//                            $trajectoryInfo = app(JtExpressService::class)->getLogisticsTrajectory($trajectory_data);
+//
+//                            if (($trajectoryInfo['code'] ?? 0) === 1) {
+//                                $steps = count($trajectoryInfo['data']['details'] ?? []);
+//                                Notification::make()->title('Delivery Trajectory')->body("Retrieved {$steps} tracking events for this shipment.")->success()->send();
+//                            } else {
+//                                Log::error('Get Trajectory Failed', ['order_id' => $record->id, 'response' => $trajectoryInfo]);
+//                                Notification::make()->title('Trajectory Error')->body($trajectoryInfo['msg'] ?? 'Unable to get trajectory information')->danger()->send();
+//                            }
+//                        } catch (\Exception $e) {
+//                            Log::error('Get Trajectory Error', ['order_id' => $record->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+//                            Notification::make()->title('Trajectory Error')->body('An error occurred: ' . $e->getMessage())->danger()->send();
+//                        }
+//                    }),
+//
+//                Tables\Actions\Action::make('cancelOrder')
+//                    ->label(__('actions.cancel_order'))
+//                    ->icon('heroicon-o-x-circle')
+//                    ->color('danger')
+//                    ->requiresConfirmation()
+//                    ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt && !is_null($record->tracking_number) && $record->shipping_status !== 'delivered' && $record->shipping_status !== 'cancelled')
+//                    ->action(function (Order $record): void {
+//                        try {
+//                            $shipping_response = json_decode($record->shipping_response, true);
+//                            if (json_last_error() !== JSON_ERROR_NONE || !is_array($shipping_response)) {
+//                                Log::error('Invalid shipping_response', ['order_id' => $record->id, 'shipping_response' => $record->shipping_response]);
+//                                Notification::make()->title('Cancellation Error')->body('Invalid shipping response data')->danger()->send();
+//                                return;
+//                            }
+//
+//                            $response_data = isset($shipping_response['data']) ? $shipping_response['data'] : $shipping_response;
+//                            $txlogisticId = $response_data['txlogisticId'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
+//                            $billCode = $response_data['billCode'] ?? preg_replace('/^#5\s*/', '', $record->tracking_number);
+//
+//                            if (!$txlogisticId || !$billCode) {
+//                                Log::error('Missing cancel order data', ['order_id' => $record->id, 'txlogisticId' => $txlogisticId, 'billCode' => $billCode, 'response_data' => $response_data]);
+//                                Notification::make()->title('Cancellation Error')->body('Missing required cancel data (txlogisticId or billCode)')->danger()->send();
+//                                return;
+//                            }
+//
+//                            $cancel_data = (object) [
+//                                'txlogisticId' => $txlogisticId,
+//                                'billCode' => $billCode,
+//                                'sortingCode' => $response_data['sortingCode'] ?? '',
+//                                'createOrderTime' => $response_data['createOrderTime'] ?? now()->toDateTimeString(),
+//                                'lastCenterName' => $response_data['lastCenterName'] ?? '',
+//                            ];
+//
+//                            $cancelResult = app(JtExpressService::class)->cancelOrder($cancel_data);
+//
+//                            if (($cancelResult['code'] ?? 0) === 1) {
+//                                $record->update([
+//                                    'status' => OrderStatus::Cancelled,
+//                                    'shipping_status' => 'cancelled',
+//                                    'shipping_response' => json_encode($cancelResult)
+//                                ]);
+//                                Notification::make()->title('Order Cancelled')->body('The order has been successfully cancelled.')->success()->send();
+//                            } else {
+//                                Log::error('Cancel Order Failed', ['order_id' => $record->id, 'response' => $cancelResult]);
+//                                Notification::make()->title('Cancellation Error')->body($cancelResult['msg'] ?? 'Unable to cancel the order')->danger()->send();
+//                            }
+//                        } catch (\Exception $e) {
+//                            Log::error('Cancel Order Error', ['order_id' => $record->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+//                            Notification::make()->title('Cancellation Error')->body('An error occurred: ' . $e->getMessage())->danger()->send();
+//                        }
+//                    }),
+
+
+
+                Tables\Actions\Action::make('send_to_jt_express')
+                    ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt &&
+                        is_null($record->tracking_number) &&
+                        is_null($record->bosta_delivery_id) &&
+                        is_null($record->aramex_shipment_id) &&
+                        $record->status == OrderStatus::Preparing &&
+                        !$record->tracking_number &&
+                        ($record->user || $record->contact) &&
+                        ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
+                        ($record->user?->phone ?? $record->contact?->phone)
+                    )
+                    ->label(__('Send to J&T Express'))
+                    ->icon('heroicon-o-truck')
+                    ->color('primary')
+                    ->requiresConfirmation()
+                    ->action(fn($record) => self::updateOrderStatus($record, OrderStatus::Shipping, true)),
+
+                Action::make('send_to_bosta')
+                    ->label(__('Send to Bosta'))
+                    ->icon('heroicon-o-truck')
+                    ->color('primary')
+                    ->visible(fn(Order $record): bool => Setting::first()?->enable_bosta &&
+                        is_null($record->tracking_number) &&
+                        is_null($record->bosta_delivery_id) &&
+                        is_null($record->aramex_shipment_id) &&
+                        $record->status === OrderStatus::Preparing &&
+                        !$record->bosta_delivery_id &&
+                        ($record->user || $record->contact) &&
+                        ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
+                        $record->city?->bosta_code &&
+                        ($record->user?->phone ?? $record->contact?->phone)
+                    )
+                    ->requiresConfirmation()
+                    ->action(function (Order $record) {
+                        $bostaService = new BostaService();
+                        $response = $bostaService->createDelivery($record);
+
+                        if ($response && isset($response['data']['_id'])) {
+                            $record->update([
+                                'status' => OrderStatus::Shipping,
+                                'bosta_delivery_id' => $response['data']['trackingNumber'],
+                            ]);
+                            Notification::make()->title(__('Order sent to Bosta'))->success()->send();
+
+                            $email = $record->user?->email ?? $record->contact?->email ?? null;
+                            if ($email) {
+                                Mail::to($email)->send(new OrderStatusMail($record, $record->status));
+                            }
+                        } else {
+                            Notification::make()
+                                ->title(__('Failed to send order to Bosta'))
+                                ->body(__('Check logs for API error details'))
+                                ->danger()
+                                ->send();
+                            Log::error('Failed to create Bosta delivery for order.', ['order_id' => $record->id, 'response' => $response]);
+                        }
+                    }),
+
+                Action::make('createAramexShipment')
+                    ->visible(fn(Order $record): bool => Setting::first()?->enable_aramex &&
+                        is_null($record->tracking_number) &&
+                        is_null($record->bosta_delivery_id) &&
+                        is_null($record->aramex_shipment_id) &&
+                        $record->status === OrderStatus::Preparing &&
+                        !$record->aramex_shipment_id &&
+                        ($record->user || $record->contact) &&
+                        ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
+                        ($record->user?->phone ?? $record->contact?->phone)
+                    )
+                    ->label(__('Send to Aramex'))
+                    ->icon('heroicon-o-truck')
+                    ->action(function (Order $record, AramexService $aramexService) {
+                        try {
+                            $contact = $record->user ?? $record->contact;
+                            $city = $record->city;
+                            $country = $record->country;
+
+                            if (!$contact || !$city || !$country) {
+                                Notification::make()
+                                    ->title(__('Cannot create ARAMEX shipment'))
+                                    ->body(__('Missing contact, city, or country information'))
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
+
+                            $addressLine1 = null;
+                            if ($contact instanceof \App\Models\User) {
+                                $primaryAddress = $contact->addresses()->where('is_primary', true)->first();
+                                $addressLine1 = $primaryAddress?->address;
+                            } else {
+                                $addressLine1 = $contact->address ?? null;
+                            }
+
+                            if (!$addressLine1) {
+                                Notification::make()
+                                    ->title(__('Cannot create ARAMEX shipment'))
+                                    ->body(__('Missing contact address information'))
+                                    ->danger()
+                                    ->send();
+                                return;
+                            }
+
+                            $response = $aramexService->createShipment($record);
+
+                            if ($response['success']) {
+                                Notification::make()
+                                    ->title(__('Shipment Created Successfully'))
+                                    ->success()
+                                    ->send();
+
+
+                                $email = $record->user?->email ?? $record->contact?->email ?? null;
+
+                                if ($email) {
+                                    Mail::to($email)->send(new OrderStatusMail($record, $record->status));
+                                }
+                            } else {
+                                Notification::make()
+                                    ->title(__('Failed to create shipment'))
+                                    ->body($response['message'])
+                                    ->danger()
+                                    ->send();
+                            }
+                        } catch (\Exception $e) {
+                            Notification::make()
+                                ->title(__('Failed to create shipment'))
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
+                    })
+                    ->requiresConfirmation(),
+
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\ViewAction::make(),
+                    Tables\Actions\EditAction::make(),
+                    ...collect(OrderStatus::cases())->map(fn($status) =>
+                    Tables\Actions\Action::make($status->value)
+                        ->label(__($status->getLabel()))
+                        ->icon($status->getIcon())
+                        ->color($status->getColor())
+                        ->action(fn($record) => self::updateOrderStatus($record, $status, false)) // no J&T integration here
+                    )->toArray(),
+
+
+                    Tables\Actions\DeleteAction::make(),
+                ])->label(__('Actions'))
+                    ->icon('heroicon-m-ellipsis-vertical')
+                    ->size(ActionSize::Small)
+                    ->color('primary')
+                    ->button(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\ExportBulkAction::make()
+                        ->formats([
+                        ExportFormat::Xlsx,
+                        ExportFormat::Csv,
+                    ])
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->exporter(OrderExporter::class),
+                    ...collect(OrderStatus::cases())
+                        ->filter(fn($status) => $status !== OrderStatus::Shipping) // Optionally exclude Shipping if you want to handle it differently
+                        ->map(fn($status) => Action::make($status->value)
+                            ->label(__($status->getLabel()))
+                            ->icon($status->getIcon())
+                            ->color($status->getColor())
+                            ->action(fn($record) => self::updateOrderStatus($record, $status))
+                        )->toArray(),
+
+                    Tables\Actions\BulkAction::make('bulk_send_to_jt_express')
+                        ->label(__('Send to J&T Express'))
+                        ->icon('heroicon-o-paper-airplane')
+                        ->requiresConfirmation()
+                        ->visible(fn() => Setting::first()?->enable_jnt)
+                        ->action(function (Collection $records) {
+                            $jtExpress = new JtExpressService();
+
+                            foreach ($records as $record) {
+                                if (
+                                    $record->status === OrderStatus::Preparing &&
+                                    !$record->tracking_number &&
+                                    ($record->user || $record->contact) &&
+                                    ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
+                                    ($record->user?->phone ?? $record->contact?->phone)
+                                ) {
+                                    try {
+                                        $response = $jtExpress->createOrder($record);
+
+                                        if (isset($response['data']['waybill_number'])) {
+                                            self::updateJtExpressOrder($record, $response);
+                                            $email = $record->user?->email ?? $record->contact?->email;
+                                            if ($email) {
+                                                Mail::to($email)->send(new OrderStatusMail($record, $record->status));
+                                            }
+                                        } else {
+                                            Log::error('J&T response error', ['order_id' => $record->id, 'response' => $response]);
+                                        }
+                                    } catch (\Exception $e) {
+                                        Log::error('Failed to send order to J&T', ['order_id' => $record->id, 'error' => $e->getMessage()]);
+                                    }
+                                }
+                            }
+
+                            Notification::make()->title(__('J&T Express bulk action completed'))->success()->send();
+                        }),
+
+                    Tables\Actions\BulkAction::make('bulk_send_to_bosta')
+                        ->label(__('Send to Bosta'))
+                        ->icon('heroicon-o-truck')
+                        ->color('primary')
+                        ->requiresConfirmation()
+                        ->action(function ($records) {
+                            foreach ($records as $record) {
+                                $bostaService = new \App\Services\BostaService();
+                                $response = $bostaService->createDelivery($record);
+
+                                if ($response && isset($response['data']['_id'])) {
+                                    $record->update([
+                                        'status' => \App\Enums\OrderStatus::Shipping,
+                                        'bosta_delivery_id' => $response['data']['trackingNumber'],
+                                    ]);
+
+                                    $email = $record->user->email ?? $record->contact->email;
+                                    if ($email) {
+                                        Mail::to($email)->send(new \App\Mail\OrderStatusMail($record, $record->status));
+                                    }
+                                } else {
+                                    Log::error('Failed to create Bosta delivery for order.', ['order_id' => $record->id, 'response' => $response]);
+                                }
+                            }
+                        }),
+
+                    Tables\Actions\BulkAction::make('bulk_send_to_aramex')
+                        ->label(__('Send to Aramex'))
+                        ->icon('heroicon-o-truck')
+                        ->color('primary')
+                        ->requiresConfirmation()
+                        ->action(function ($records) {
+                            $aramexService = new \App\Services\AramexService();
+
+                            foreach ($records as $record) {
+                                try {
+                                    $contact = $record->user ?? $record->contact;
+                                    $city = $record->city;
+                                    $country = $record->country;
+
+                                    if (!$contact || !$city || !$country) {
+                                        continue;
+                                    }
+
+                                    $addressLine1 = null;
+                                    if ($contact instanceof \App\Models\User) {
+                                        $primaryAddress = $contact->addresses()->where('is_primary', true)->first();
+                                        $addressLine1 = $primaryAddress?->address;
+                                    } else {
+                                        $addressLine1 = $contact->address ?? null;
+                                    }
+
+                                    if (!$addressLine1) {
+                                        continue;
+                                    }
+
+                                    $response = $aramexService->createShipment($record);
+
+                                    if ($response['success']) {
+                                        $email = $record->user->email ?? $record->contact->email;
+                                        if ($email) {
+                                            Mail::to($email)->send(new \App\Mail\OrderStatusMail($record, $record->status));
+                                        }
+                                    }
+                                } catch (\Exception $e) {
+                                    Log::error('Failed to create Aramex shipment.', ['order_id' => $record->id, 'error' => $e->getMessage()]);
+                                }
+                            }
+                        }),
+
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ]);
+    }
+    public static function updateOrderStatus($order, OrderStatus $status, bool $withShippingIntegration = true)
+    {
+        $previousStatus = $order->status;
+        $newStatus = $status->value;
+        $order->refresh();
+
+        if (
+            $previousStatus !== null &&
+            in_array($previousStatus, [OrderStatus::Pending->value, OrderStatus::Preparing->value, OrderStatus::Shipping->value], true) &&
+            in_array($newStatus, [OrderStatus::Cancelled->value, OrderStatus::Refund->value], true)
+        ) {
+            foreach ($order->items as $item) {
+                if ($item->product_id) {
+                    $product = Product::find($item->product_id);
+                    if ($product) {
+                        $product->increment('quantity', $item->quantity);
+                        $product->inventory()->increment('quantity', $item->quantity);
+                    }
+                }
+            }
+        }
+
+        $order->status = $newStatus;
+
+        if ($newStatus === OrderStatus::Shipping->value && $withShippingIntegration) {
+            $JtExpressOrderData = self::prepareJtExpressOrderData($order);
+            $jtExpressResponse = app(JtExpressService::class)->createOrder($JtExpressOrderData);
+
+            $trackingNumber = $jtExpressResponse['data']['billCode'] ?? null;
+            if ($trackingNumber) {
+                $order->tracking_number = $trackingNumber;
+            }
+
+            $order->save();
+            self::updateJtExpressOrder($order, 'pending', $JtExpressOrderData, $jtExpressResponse);
+
+            Notification::make()->title(__('Order sent to J&T Express'))->success()->send();
+
+        } else {
+            $order->save();
+        }
+
+        $order->refresh();
+
+        if ($withShippingIntegration) {
+            $email = $order->user->email ?? $order->contact->email;
+            if ($email) {
+                Mail::to($email)->send(new OrderStatusMail($order, $status));
+            }
+        }
+    }
+
+    private static function prepareJtExpressOrderData($order): array
+    {
+        $data = [
+            'tracking_number' => time() . rand(1000, 9999),
+            'weight' => 1.0, // You might want to calculate the total weight dynamically
+            'quantity' => $order->items->sum('quantity'), // Sum of all item quantities
+            'remark' => implode(' , ', array_filter([
+                'Notes: ' . ($order->notes ?? 'No notes'),
+                $order->user?->name ? 'User: ' . $order->user->name : null,
+                $order->user?->email ? 'Email: ' . $order->user->email : null,
+                $order->user?->phone ? 'Phone: ' . $order->user->phone : null,
+                $order->user?->address ? 'Address: ' . $order->user->address : null,
+                $order->contact?->name ? 'Contact: ' . $order->contact->name : null,
+                $order->contact?->email ? 'Contact Email: ' . $order->contact->email : null,
+                $order->contact?->phone ? 'Contact Phone: ' . $order->contact->phone : null,
+                $order->contact?->address ? 'Contact Address: ' . $order->contact->address : null,
+            ])),
+            'item_name' => $order->items->pluck('product.name')->implode(', '),
+            'item_quantity' => $order->items->count(),
+            'item_value' => $order->total,
+            'item_currency' => 'EGP',
+            'item_description' => $order->notes ?? 'No description provided',
+        ];
+
+        $data['sender'] = [
+            'name' => 'Your Company Name',
+            'company' => 'Your Company',
+            'city' => 'Your City',
+            'address' => 'Your Full Address',
+            'mobile' => 'Your Contact Number',
+            'countryCode' => 'Your Country Code',
+            'prov' => 'Your Prov',
+            'area' => 'Your Area',
+            'town' => 'Your Town',
+            'street' => 'Your Street',
+            'addressBak' => 'Your Address Bak',
+            'postCode' => 'Your Post Code',
+            'phone' => 'Your Phone',
+            'mailBox' => 'Your Mail Box',
+            'areaCode' => 'Your Area Code',
+            'building' => 'Your Building',
+            'floor' => 'Your Floor',
+            'flats' => 'Your Flats',
+            'alternateSenderPhoneNo' => 'Your Alternate Sender Phone No',
+        ];
+
+        $data['receiver'] = [
+            'name' => $order->name ?? 'test',
+            'prov' => $order->region->governorate->name ?? 'أسيوط',
+            'city' => $order->region->name ?? 'القوصية',
+            'address' => $order->address ?? 'sdfsacdscdscdsa',
+            'mobile' => $order->phone ?? '1441234567',
+            'company' => 'guangdongshengshenzhe',
+            'countryCode' => 'EGY',
+            'area' => 'الصبحه',
+            'town' => 'town',
+            'addressBak' => $order->address ?? 'receivercdsfsafdsaf lkhdlksjlkfjkndskjfnhskjlkafdslkjdshflksjal',
+            'street' => 'street',
+            'postCode' => '54830',
+            'phone' => $order->phone ?? '23423423423',
+            'mailBox' => $order->user?->email ?? 'ant_li123@qq.com',
+            'areaCode' => '2342343',
+            'building' => '13',
+            'floor' => '25',
+            'flats' => '47',
+            'alternateReceiverPhoneNo' => $order->another_phone ?? '1231321322',
+        ];
+
+        return $data;
+    }
+
+    private static function updateJtExpressOrder(Order $order, string $shipping_status, $jtExpressOrderData, $jtExpressResponse)
+    {
+        if (isset($jtExpressResponse['code']) && $jtExpressResponse['code'] == 1) {
+            $order->update([
+                'tracking_number' => $jtExpressResponse['data']['billCode'] ?? null,
+                'shipping_status' => $shipping_status,
+                'shipping_response' => json_encode($jtExpressResponse)
+            ]);
+        }
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListOrders::route('/'),
+            'create' => Pages\CreateOrder::route('/create'),
+            'edit' => Pages\EditOrder::route('/{record}/edit'),
+            'view' => Pages\ViewOrder::route('/{record}'),
+        ];
+    }
+
+    public static function form(Form $form): Form
+    {
+        return $form->schema([
+            Forms\Components\Hidden::make('checkout_token')
+                ->default(fn () => (string) Str::uuid())
+                ->dehydrated(),
+            Wizard::make([
+                Step::make(__('Order Items'))
+                    ->schema([
+                        Repeater::make('items')
+                            ->label(__('Order Items'))
+                            ->relationship('items')
+                            ->schema([
+                                Select::make('product_id')
+                                    ->label(__('Product'))
+                                    ->options(Product::pluck('name', 'id'))
+                                    ->searchable()
+                                    ->live()
+                                    ->afterStateUpdated(fn ($state, Forms\Set $set) =>
+                                    $set('price_per_unit', (float) Product::find($state)?->discount_price_for_current_country ?? 0)
+                                    )
+                                    ->disabled(fn ($record, $operation) => $operation === 'edit' && $record?->bundle_id !== null),
+
+                                Select::make('color_id')
+                                    ->label(__('Color'))
+                                    ->options(fn (Get $get) => ProductColor::where('product_id', $get('product_id'))
+                                        ->with('color')
+                                        ->get()
+                                        ->pluck('color.name', 'color.id'))
+                                    ->reactive()
+                                    ->afterStateUpdated(fn ($state, Forms\Set $set) => $set('size_id', null))
+                                    ->visible(fn (Get $get) => Product::find($get('product_id'))?->productColors()->exists()),
+
+                                Select::make('size_id')
+                                    ->label(__('Size'))
+                                    ->options(fn (Get $get) => ProductColor::where([
+                                        ['product_id', $get('product_id')],
+                                        ['color_id', $get('color_id')],
+                                    ])
+                                        ->with('sizes')
+                                        ->first()?->sizes
+                                        ->pluck('name', 'id') ?? [])
+                                    ->reactive()
+                                    ->visible(fn (Get $get) => Product::find($get('product_id'))?->productColors()->exists()),
+
+                                TextInput::make('quantity')
+                                    ->required()
+                                    ->label(__('Quantity'))
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->live()
+                                    ->disabled(fn ($record, $operation) => $operation === 'edit' && $record?->bundle_id !== null)
+                                    ->afterStateUpdated(fn ($state, callable $set, Get $get) =>
+                                    $set('subtotal', ($get('price_per_unit') ?? 0) * ($state ?? 1))
+                                    ),
+
+                                TextInput::make('price_per_unit')
+                                    ->default(fn (Get $get) => (float) Product::find($get('product_id'))?->discount_price_for_current_country ?? 0)
+                                    ->readOnly()
+                                    ->label(__('Price per Unit'))
+                                    ->numeric(),
+
+                                TextInput::make('subtotal')
+                                    ->readOnly()
+                                    ->label(__('Subtotal'))
+                                    ->numeric(),
+                            ])
+                            ->columns(3)
+                            ->collapsible()
+                            ->afterStateUpdated(function (Get $get, Forms\Set $set) {
+                                $items = $get('items') ?? [];
+                                $subtotal = collect($items)
+                                    ->filter(fn ($item) => !isset($item['bundle_id']) || empty($item['bundle_id']))
+                                    ->sum(fn ($item) => ($item['subtotal'] ?? 0));
+
+                                if ($get('bundle_id')) {
+                                    $subtotal += Bundle::find($get('bundle_id'))?->discount_price ?? 0;
+                                }
+
+                                $taxPercentage = Setting::getTaxPercentage();
+                                $taxAmount = ($subtotal * $taxPercentage) / 100;
+                                $shippingCost = $get('shipping_cost') ?? 0;
+                                $total = $subtotal + $taxAmount + $shippingCost;
+
+                                $set('subtotal', $subtotal);
+                                $set('tax_amount', $taxAmount);
+                                $set('total', $total);
+                                $set('shipping_type_id', null);
+                            }),
+                    ]),
+
+                Step::make(__('Shipping Information'))
+                    ->schema([
+                        Select::make('shipping_type_id')
+                            ->relationship('shippingType', 'name')
+                            ->required()
+                            ->label(__('Shipping Type'))
+                            ->live()
+                            ->afterStateUpdated(fn ($state, callable $set, Get $get) =>
+                            self::updateShippingCost($set, $state, $get('items'), $get('city_id'), $get('governorate_id'), $get('country_id'))
+                            ),
+
+                        Select::make('country_id')
+                            ->searchable()
+                            ->required()
+                            ->label(__('Country'))
+                            ->options(Country::pluck('name', 'id'))
+                            ->live()
+                            ->afterStateUpdated(function (callable $set, Get $get) {
+                                $set('governorate_id', null);
+                                $set('city_id', null);
+                                self::updateShippingCost($set, $get('shipping_type_id'), $get('items'), null, null, $get('country_id'));
+                                self::recalculateTotal($set, $get);
+                            }),
+
+                        Select::make('governorate_id')
+                            ->searchable()
+                            ->required()
+                            ->label(__('Governorate'))
+                            ->options(function (Get $get) {
+                                return Governorate::where('country_id', $get('country_id'))->pluck('name', 'id');
+                            })
+                            ->live()
+                            ->afterStateUpdated(function ($state, callable $set, Get $get) {
+                                self::updateShippingCost($set, $get('shipping_type_id'), $get('items'), null, $state, $get('country_id'));
+                                self::recalculateTotal($set, $get);
+                            }),
+
+                        Select::make('city_id')
+                            ->searchable()
+                            ->label(__('City'))
+                            ->options(function (Get $get) {
+                                return City::where('governorate_id', $get('governorate_id'))->pluck('name', 'id');
+                            })
+                            ->live()
+                            ->placeholder(function (Get $get) {
+                                return empty($get('governorate_id')) ? __('Select a governorate first') : 'Select a city';
+                            })
+                            ->afterStateUpdated(function ($state, callable $set, Get $get) {
+                                self::updateShippingCost($set, $get('shipping_type_id'), $get('items'), $state, $get('governorate_id'), $get('country_id'));
+                                self::recalculateTotal($set, $get);
+                            }),
+
+                        Forms\Components\TextInput::make('shipping_cost')
+                            ->columnSpanFull()
+                            ->numeric()
+                            ->readOnly()
+                            ->label(__('Shipping Cost'))
+                            ->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
+                                self::recalculateTotal($set, $get);
+                            }),
+                    ])->columns(2),
+
+                Step::make(__('Billing Information'))
+                    ->schema([
+                        Select::make('payment_method_id')
+                            ->relationship('paymentMethod', 'name')
+                            ->required()
+                            ->label(__('Payment Method')),
+
+//                        Select::make('coupon_id')
+//                            ->relationship('coupon', 'id')
+//                            ->label(__('Coupon')),
+
+                        Forms\Components\TextInput::make('tax_percentage')
+                            ->required()
+                            ->numeric()
+                            ->readOnly()
+                            ->default(self::getTaxPercentage())
+                            ->live()
+                            ->label(__('Tax Percentage')),
+
+                        Forms\Components\TextInput::make('tax_amount')
+                            ->live()
+                            ->readOnly()
+                            ->numeric()
+                            ->label(__('Tax Amount')),
+
+                        Forms\Components\TextInput::make('subtotal')
+                            ->live()
+                            ->numeric()
+                            ->readOnly()
+                            ->label(__('Subtotal')),
+
+                        Forms\Components\TextInput::make('total')
+                            ->live()
+                            ->numeric()
+                            ->readOnly()
+                            ->label(__('Total')),
+                    ])->columns(2),
+
+                Step::make(__('Order Details'))
+                    ->schema([
+                        Forms\Components\MarkdownEditor::make('notes')
+                            ->label(__('Notes'))
+                            ->columnSpan('full'),
+                    ]),
+            ])->columnSpanFull()->skippable()
+        ]);
+    }
+
+    private static function calculateProductShippingCost(Product $product, $cityId, $governorateId, $countryId): float
+    {
+        if ($product->is_free_shipping) {
+            return 0.0;
+        }
+
+        if (!Setting::isShippingLocationsEnabled()) {
+            return 0.0;
+        }
+
+        if (!$cityId && !$governorateId && !$countryId) {
+            return $product->cost ?? 0.0;
+        }
+
+        $cost = self::getProductShippingCost($product, $cityId, $governorateId, $countryId);
+
+        if ($cost !== null) {
+            return $cost;
+        }
+
+        return self::getLocationBasedShippingCost($cityId, $governorateId, $countryId) ?? $product->cost ?? 0.0;
+    }
+
+    private static function updateShippingCost(callable $set, $shippingTypeId, $items, $cityId, $governorateId, $countryId): void
+    {
+        $totalShippingCost = 0.0;
+        $hasChargeableItems = false;
+
+        foreach ($items as $item) {
+            $product = Product::find($item['product_id'] ?? null);
+            if ($product && !$product->is_free_shipping) {
+                $hasChargeableItems = true;
+                break;
+            }
+        }
+
+        if (!$hasChargeableItems) {
+            $set('shipping_cost', 0.0);
+            return;
+        }
+
+        if (!Setting::isShippingLocationsEnabled()) {
+            $set('shipping_cost', 0.0);
+            return;
+        }
+
+        if ($shippingTypeId && Setting::isShippingEnabled()) {
+            $shippingType = ShippingType::find($shippingTypeId);
+            $totalShippingCost += $shippingType?->shipping_cost ?? 0.0;
+        }
+
+        $highestShippingCost = 0.0;
+        if (!empty($items) && ($cityId || $governorateId || $countryId)) {
+            foreach ($items as $item) {
+                $product = Product::find($item['product_id'] ?? null);
+                if ($product && !$product->is_free_shipping) {
+                    $cost = self::calculateProductShippingCost($product, $cityId, $governorateId, $countryId);
+                    if ($cost > $highestShippingCost) {
+                        $highestShippingCost = $cost;
+                    }
+                }
+            }
+        }
+
+        $set('shipping_cost', $totalShippingCost + $highestShippingCost);
+    }
+
+    private static function recalculateTotal(callable $set, Get $get): void
+    {
+        $items = collect($get('items') ?? []);
+        $subtotal = $items->sum(fn ($item) => $item['subtotal'] ?? 0);
+
+        if ($bundleId = $get('bundle_id')) {
+            $subtotal += Bundle::find($bundleId)?->discount_price ?? 0;
+        }
+
+        $taxPercentage = self::getTaxPercentage();
+        $taxAmount = ($subtotal * $taxPercentage) / 100;
+        $shippingCost = $get('shipping_cost') ?? 0;
+        $total = $subtotal + $taxAmount + $shippingCost;
+
+        $set('subtotal', $subtotal);
+        $set('tax_amount', $taxAmount);
+        $set('total', $total);
+    }
+
+    private static function getProductShippingCost(Product $product, $cityId, $governorateId, $countryId): ?float
+    {
+        if (!Setting::isShippingLocationsEnabled()) {
+            return 0.0;
+        }
+
+        $shippingCosts = $product->shippingCosts()->get();
+
+        if ($shippingCosts->isEmpty()) {
+            return null;
+        }
+
+        // Priority 1: Check City
+        foreach ($shippingCosts as $shippingCost) {
+            if ($shippingCost->priority === 'City' && $cityId && $shippingCost->city_id == $cityId) {
+                return (float) $shippingCost->cost;
+            }
+        }
+
+        // Priority 2: Check Governorate
+        foreach ($shippingCosts as $shippingCost) {
+            if ($shippingCost->priority === 'Governorate' && $governorateId && $shippingCost->governorate_id == $governorateId) {
+                return (float) $shippingCost->cost;
+            }
+        }
+
+        // Priority 3: Check Shipping Zone
+        foreach ($shippingCosts as $shippingCost) {
+            if ($shippingCost->priority === 'Shipping Zone' && $governorateId && $shippingCost->shipping_zone_id) {
+                $governorate = Governorate::find($governorateId);
+                if ($governorate && $governorate->shippingZones()->where('shipping_zones.id', $shippingCost->shipping_zone_id)->exists()) {
+                    $governorateCost = $shippingCosts->firstWhere(function ($cost) use ($governorateId) {
+                        return $cost->priority === 'Governorate' && $cost->governorate_id == $governorateId;
+                    });
+                    if ($governorateCost) {
+                        return (float) $governorateCost->cost;
+                    }
+                    return (float) $shippingCost->cost;
+                }
+            }
+        }
+
+        // Priority 4: Check Country
+        foreach ($shippingCosts as $shippingCost) {
+            if ($shippingCost->priority === 'Country' && $countryId && $shippingCost->country_id == $countryId) {
+                return (float) $shippingCost->cost;
+            }
+        }
+
+        // Priority 5: Check Country Group
+        foreach ($shippingCosts as $shippingCost) {
+            if ($shippingCost->priority === 'Country Group' && $countryId && $shippingCost->country_group_id) {
+                $country = Country::find($countryId);
+                if ($country && $country->countryGroups()->where('id', $shippingCost->country_group_id)->exists()) {
+                    return (float) $shippingCost->cost;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static function getLocationBasedShippingCost($cityId, $governorateId, $countryId): ?float
+    {
+        if (!Setting::isShippingLocationsEnabled()) {
+            return 0.0;
+        }
+
+        if ($cityId) {
+            $city = City::find($cityId);
+            if ($city?->cost > 0) return (float) $city->cost;
+        }
+
+        if ($governorateId) {
+            $governorate = Governorate::find($governorateId);
+            if ($governorate?->cost > 0) return (float) $governorate->cost;
+
+            $zone = $governorate->shippingZones()->first();
+            if ($zone?->cost > 0) return (float) $zone->cost;
+        }
+
+        if ($countryId) {
+            $country = Country::find($countryId);
+            if ($country?->cost > 0) return (float) $country->cost;
+        }
+
+        return null;
+    }
+
+    private static function getTaxPercentage(): float
+    {
+        return Setting::getTaxPercentage() ?? 0;
+    }
+}

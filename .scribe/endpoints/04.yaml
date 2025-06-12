@@ -1,0 +1,682 @@
+name: Products
+description: |-
+
+  APIs for managing product comparison
+endpoints:
+  -
+    httpMethods:
+      - GET
+    uri: 'api/products/{id}/colors-sizes'
+    metadata:
+      groupName: Products
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Get all color and size variants for a product.'
+      description: |-
+        This endpoint returns all color variants for a given product, each including:
+        - Color information (ID, name)
+        - Associated image (if available)
+        - Size variants under each color, including:
+          - Size ID
+          - Size name
+          - Available quantity
+
+        This structure matches the `variants` format used in the product detail endpoint.
+      authenticated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        name: id
+        description: 'The ID of the product.'
+        required: true
+        example: shirt
+        type: string
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      product:
+        name: product
+        description: 'The ID of the product.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      id: shirt
+      product: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+            "variants": [
+              {
+                "id": 1,
+                "color_id": 3,
+                "color_name": "Red",
+                "image_url": "https://example.com/storage/variant1.jpg",
+                "sizes": [
+                  {
+                    "id": 5,
+                    "size_id": 2,
+                    "size_name": "L",
+                    "quantity": 8
+                  },
+                  {
+                    "id": 6,
+                    "size_id": 3,
+                    "size_name": "XL",
+                    "quantity": 4
+                  }
+                ]
+              }
+            ]
+          }
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - POST
+    uri: api/compare
+    metadata:
+      groupName: Products
+      groupDescription: |-
+
+        APIs for managing product comparison
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Compare Products'
+      description: 'Compares multiple products side-by-side by their IDs.'
+      authenticated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      product_ids:
+        name: product_ids
+        description: 'Array of product IDs to compare (minimum 2 products).'
+        required: true
+        example:
+          - 1
+          - 2
+          - 3
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      'product_ids.*':
+        name: 'product_ids.*'
+        description: 'Each ID must exist in the products table.'
+        required: true
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    cleanBodyParameters:
+      product_ids:
+        - 1
+        - 2
+        - 3
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+            "products": [
+              {
+                "id": 1,
+                "name": "Premium Headphones",
+                "description": "Noise-cancelling wireless headphones",
+                "meta_title": "Best Wireless Headphones",
+                "meta_description": "Top-quality wireless headphones with noise cancellation",
+                "price": 199,
+                "after_discount_price": 179,
+                "slug": "premium-headphones",
+                "quantity": 25,
+                "sku": "HD2024",
+                "cost": 120,
+                "shipping_estimate_time": "2-4 days",
+                "discount_start": "2025-04-01 00:00:00",
+                "discount_end": "2025-04-30 23:59:59",
+                "views": 1280,
+                "sales": 430,
+                "fake_average_rating": 4,
+                "summary": "Great sound quality in a compact design",
+                "custom_attributes": {
+                  "color": "black",
+                  "battery_life": "30 hours"
+                },
+                "is_published": true,
+                "is_featured": false,
+                "is_free_shipping": true
+              }
+            ]
+          }
+        headers: []
+        description: ''
+        custom: []
+      -
+        status: 422
+        content: |-
+          {
+            "message": "The given data was invalid.",
+            "errors": {
+              "product_ids": [
+                "The product ids field is required.",
+                "The product ids must be an array.",
+                "The product ids must have at least 2 items."
+              ],
+              "product_ids.0": [
+                "The selected product_ids.0 is invalid."
+              ]
+            }
+          }
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/products/featured
+    metadata:
+      groupName: Products
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Get up to 3 featured published products.'
+      description: |-
+        This endpoint retrieves a limited list of featured and published products.
+        It returns localized fields based on the `Accept-Language` header and includes:
+        - Localized fields (`name`, `description`, `summary`, `meta_title`, etc.)
+        - Related user and category names
+        - Product media (feature image, secondary image, and more)
+        - Frontend action URLs (e.g., add to cart, wishlist)
+      authenticated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+            "products": [
+              {
+                "id": 1,
+                "name": "Localized name",
+                "description": "Localized description...",
+                ...
+                "media": {
+                  "feature_product_image": "https://example.com/storage/feature.jpg",
+                  "second_feature_product_image": "https://example.com/storage/feature2.jpg",
+                  "more_product_images_and_videos": [
+                    "https://example.com/storage/image1.jpg",
+                    "https://example.com/storage/video1.mp4"
+                  ]
+                },
+                "actions": {
+                  "add_to_cart": {
+                    "method": "POST",
+                    "url": "https://example.com/api/cart"
+                  },
+                  ...
+                }
+              }
+            ]
+          }
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: 'api/products/{slug}'
+    metadata:
+      groupName: Products
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Get a single published product by its slug.'
+      description: |-
+        This endpoint retrieves a product using its unique slug. The response includes:
+        - Localized fields (`name`, `description`, `summary`, `meta_title`, etc.) based on the `Accept-Language` header.
+        - Associated user and category names.
+        - Media including feature image, secondary image, sizes image, and more images/videos.
+        - Size guide (if any) with title, description, and image URL.
+        - Variants (product colors) with nested sizes and quantity.
+        - Labels (with localized titles and color codes).
+        - Bundles the product is part of (optional).
+        - Real average rating based on reviews.
+        - Action endpoints with methods for cart, wishlist, and comparison.
+      authenticated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      slug:
+        name: slug
+        description: 'The unique slug of the product.'
+        required: true
+        example: '"smartphone-2025"'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanUrlParameters:
+      slug: '"smartphone-2025"'
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+            "product": {
+              "id": 1,
+              "user_name": "Admin",
+              "category_name": "Accessories",
+              "name": "Localized Product Name",
+              ...
+              "media": {
+                "feature_product_image": "https://example.com/storage/feature.jpg",
+                "second_feature_product_image": "https://example.com/storage/feature2.jpg",
+                "sizes_image": "https://example.com/storage/sizes.jpg",
+                "more_product_images_and_videos": [...]
+              },
+              "size_guide": {
+                "title": "Size Chart",
+                "description": "Details...",
+                "image_url": "https://example.com/storage/size_guide.jpg"
+              },
+              "variants": [...],
+              "labels": [...],
+              "bundles": [...],
+              "average_rating": 4.3,
+              "actions": {
+                "add_to_cart": { "method": "POST", "url": "/api/cart" },
+                ...
+              }
+            }
+          }
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/all-products
+    metadata:
+      groupName: Products
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: |-
+        Get all active products with filtering and pagination
+
+        This endpoint returns a paginated list of all published products with their details, variants, and available filters.
+        Products can be filtered by various criteria like color, size, category, and rating.
+      description: ''
+      authenticated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters:
+      color_id:
+        name: color_id
+        description: 'optional Filter products by color ID.'
+        required: false
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      size_id:
+        name: size_id
+        description: 'optional Filter products by size ID.'
+        required: false
+        example: 2
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      category_id:
+        name: category_id
+        description: 'optional Filter products by category ID (includes subcategories).'
+        required: false
+        example: 3
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      min_rating:
+        name: min_rating
+        description: 'optional Filter products by minimum fake rating (1-5).'
+        required: false
+        example: 4.5
+        type: number
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+      sort_by:
+        name: sort_by
+        description: "optional Sort products by creation date. Possible values: 'latest', 'oldest'. Default: 'latest'."
+        required: false
+        example: latest
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        custom: []
+    cleanQueryParameters:
+      color_id: 1
+      size_id: 2
+      category_id: 3
+      min_rating: 4.5
+      sort_by: latest
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+            "products": [
+              {
+                "id": 1,
+                "category_id": 3,
+                "category_name": "T-Shirts",
+                "name": "Premium Cotton T-Shirt",
+                "price": 29.99,
+                "after_discount_price": 24.99,
+                "description": "High quality cotton t-shirt...",
+                "slug": "premium-cotton-t-shirt",
+                "views": 150,
+                "sales": 30,
+                "fake_average_rating": 4.5,
+                "label_id": null,
+                "summary": "Comfortable and stylish...",
+                "quantity": 100,
+                "created_at": "2023-01-15T10:00:00.000000Z",
+                "updated_at": "2023-01-20T12:30:00.000000Z",
+                "media": {
+                  "feature_product_image": "https://example.com/storage/products/image1.jpg",
+                  "second_feature_product_image": "https://example.com/storage/products/image2.jpg"
+                },
+                "variants": [
+                  {
+                    "id": 5,
+                    "color_id": 1,
+                    "color_name": "Red",
+                    "image_url": "https://example.com/storage/variants/red.jpg",
+                    "sizes": [
+                      {
+                        "id": 10,
+                        "size_id": 2,
+                        "size_name": "M",
+                        "quantity": 25
+                      },
+                      {
+                        "id": 11,
+                        "size_id": 3,
+                        "size_name": "L",
+                        "quantity": 30
+                      }
+                    ]
+                  }
+                ],
+                "real_average_rating": 4.3,
+                "actions": {
+                  "view": "https://example.com/api/products/1",
+                  "edit": "https://example.com/api/products/1/edit",
+                  "delete": "https://example.com/api/products/1"
+                }
+              }
+            ],
+            "pagination": {
+              "current_page": 1,
+              "last_page": 5,
+              "per_page": 15,
+              "total": 75
+            },
+            "filters": {
+              "colors": [
+                {
+                  "id": 1,
+                  "name": "Red"
+                },
+                {
+                  "id": 2,
+                  "name": "Blue"
+                }
+              ],
+              "sizes": [
+                {
+                  "id": 1,
+                  "name": "S"
+                },
+                {
+                  "id": 2,
+                  "name": "M"
+                }
+              ],
+              "categories": [
+                {
+                  "id": 1,
+                  "name": "Men",
+                  "parent_id": null
+                },
+                {
+                  "id": 3,
+                  "name": "T-Shirts",
+                  "parent_id": 1
+                }
+              ]
+            }
+          }
+        headers: []
+        description: ''
+        custom: []
+    responseFields:
+      products:
+        name: products
+        description: 'The list of active products with their details.'
+        required: false
+        example: null
+        type: 'string[][]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      pagination:
+        name: pagination
+        description: Pagination
+        required: false
+        example: null
+        type: object
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      filters:
+        name: filters
+        description: 'Available filters for products (colors, sizes, categories).'
+        required: false
+        example: null
+        type: object
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      products.id:
+        name: products.id
+        description: 'The product ID.'
+        required: false
+        example: null
+        type: ''
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      products.name:
+        name: products.name
+        description: 'The product name (translated to current locale).'
+        required: false
+        example: null
+        type: ''
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      products.price:
+        name: products.price
+        description: 'The original product price.'
+        required: false
+        example: null
+        type: ''
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      products.after_discount_price:
+        name: products.after_discount_price
+        description: 'The discounted price if available.'
+        required: false
+        example: null
+        type: ''
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      products.media.feature_product_image:
+        name: products.media.feature_product_image
+        description: 'The URL of the main product image.'
+        required: false
+        example: null
+        type: ''
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      products.variants:
+        name: products.variants
+        description: 'of product variants with color and size information.'
+        required: false
+        example: null
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      products.real_average_rating:
+        name: products.real_average_rating
+        description: 'The actual average rating from customer reviews.'
+        required: false
+        example: null
+        type: ''
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      filters.colors:
+        name: filters.colors
+        description: 'of available colors for filtering.'
+        required: false
+        example: null
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      filters.sizes:
+        name: filters.sizes
+        description: 'of available sizes for filtering.'
+        required: false
+        example: null
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+      filters.categories:
+        name: filters.categories
+        description: 'of available categories for filtering.'
+        required: false
+        example: null
+        type: 'string[]'
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        custom: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []

@@ -1,0 +1,942 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use App\Filament\Exports\ProductExporter;
+use App\Filament\Exports\UserExporter;
+use App\Models\Category;
+use Closure;
+use App\Filament\Resources\ProductResource\Pages;
+use App\Filament\Resources\ProductResource\RelationManagers\BundlesRelationManager;
+use App\Models\City;
+use App\Models\Governorate;
+use App\Models\Product;
+use App\Models\Setting;
+use App\Models\ShippingCost;
+use App\Services\ProductActionsService;
+use CodeWithDennis\FilamentSelectTree\SelectTree;
+use DesignTheBox\BarcodeField\Forms\Components\BarcodeInput;
+use Filament\Actions\Exports\Enums\ExportFormat;
+use Filament\Forms;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\KeyValue;
+use Filament\Forms\Components\MarkdownEditor;
+use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
+use Filament\Forms\Components\Tabs;
+use Filament\Forms\Components\Tabs\Tab;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+use Filament\Resources\Concerns\Translatable;
+use Filament\Resources\Resource;
+use Filament\Support\Enums\ActionSize;
+use Filament\Support\Enums\FontWeight;
+use Filament\Support\Enums\IconPosition;
+use Filament\Tables;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\ExportAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Validation\Rule;
+use Mokhosh\FilamentRating\Columns\RatingColumn;
+use Mokhosh\FilamentRating\Components\Rating;
+use Webbingbrasil\FilamentAdvancedFilter\Filters\DateFilter;
+
+class ProductResource extends Resource
+{
+    use Translatable;
+
+    protected static ?string $model = Product::class;
+
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
+
+    protected static ?string $recordTitleAttribute = 'name';
+
+    public static function getNavigationLabel(): string
+    {
+        return __('product.label');
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('Products Management'); //Products Attributes Management
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('product.label');
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return __('product.label');
+    }
+
+    public static function getLabel(): ?string
+    {
+        return __('product.label');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('product.label');
+    }
+
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Tabs::make('Product Tabs')
+                    ->tabs([
+                        // General Information Tab
+                        Tab::make(__('General Info'))
+                            ->icon('heroicon-o-information-circle')
+                            ->schema([
+                                SelectTree::make('category_id')
+                                    ->searchable()
+                                    ->enableBranchNode()
+                                    ->label(__('_category'))
+                                    ->relationship('category', 'name', 'parent_id')
+                                    ->placeholder(__('Please select a category'))
+                                    ->required(),
+                                TextInput::make('name')
+                                    ->label(__('Product Name'))
+                                    ->required()
+                                    ->maxLength(255),
+
+                                TextInput::make('slug')
+                                    ->unique(ignoreRecord: true)
+                                    ->label(__('Slug'))
+                                    ->required()
+                                    ->maxLength(255),
+
+                                Forms\Components\Checkbox::make('must_be_collection')
+                                    ->columnSpanFull()
+                                    ->label(__('Must be Collection?'))
+                                    ->helperText(__('This product must be added to the cart and ordered in a quantity of 2 or more.'))
+                            ]),
+
+                        // Pricing & Stock Tab
+                        Tab::make(__('Stock & Pricing'))
+                            ->columns(2)
+                            ->icon('heroicon-o-currency-dollar')
+                            ->schema([
+                                TextInput::make('sku')
+                                    ->label(__('SKU'))
+                                    ->unique(ignoreRecord: true)
+                                    ->required()
+                                    ->maxLength(255),
+                                TextInput::make('quantity')
+                                    ->minValue(1)
+                                    ->maxLength(null)
+                                    ->label(__('Total Quantity'))
+                                    ->numeric()
+                                    ->default(1)
+                                    ->required()
+                                    ->rule(function (Get $get) {
+                                        return function (string $attribute, $value, Closure $fail) use ($get) {
+                                            $productColors = $get('productColors');
+
+                                            // Only apply rule if product has productColors and it's not empty
+                                            if (!is_array($productColors) || empty($productColors)) {
+                                                return;
+                                            }
+
+                                            $sumOfVariants = collect($productColors)
+                                                ->flatMap(fn ($color) => $color['productColorSizes'] ?? [])
+                                                ->sum('quantity');
+
+                                            if ((int) $value !== (int) $sumOfVariants) {
+                                                $message = app()->getLocale() === 'ar'
+                                                    ? __('يجب أن تتطابق الكمية الإجمالية مع مجموع كميات خيارات المنتج. تم إدخال :value بينما المجموع هو :sum.', [
+                                                        'value' => $value,
+                                                        'sum'   => $sumOfVariants,
+                                                    ])
+                                                    : __('The total quantity must equal the sum of all variant quantities. You entered :value, but the sum is :sum.', [
+                                                        'value' => $value,
+                                                        'sum'   => $sumOfVariants,
+                                                    ]);
+
+                                                $fail($message);
+                                            }
+                                        };
+                                    }),
+                                TextInput::make('price')
+                                    ->minValue(0)
+                                    ->label(__('Price'))
+                                    ->required()
+                                    ->numeric(),
+                                TextInput::make('after_discount_price')
+                                    ->minValue(0)
+                                    ->lt('price')
+                                    ->label(__('After Discount Price'))
+                                    ->numeric(),
+                                DateTimePicker::make('discount_start')
+                                    ->requiredWith('after_discount_price')
+                                    ->afterOrEqual('today')
+                                    ->label(__('Discount Start'))
+                                    ->nullable(),
+
+                                DateTimePicker::make('discount_end')
+                                    ->requiredWith('after_discount_price')
+                                    ->after('discount_start')
+                                    ->label(__('Discount End'))
+                                    ->nullable(),
+                            ]),
+
+                        Tabs\Tab::make(__('tabs.special_prices'))
+                            ->label(__('tabs.special_prices'))
+                            ->icon('heroicon-o-flag') // banknotes
+                            ->schema([
+                                Repeater::make('specialPrices')
+                                    ->defaultItems(0)
+                                    ->label(__('tabs.special_prices'))
+                                    ->relationship('specialPrices')
+                                    ->columns(2)
+                                    ->schema([
+                                        Placeholder::make('country_or_group_info')
+                                            ->label(__('country_or_group_info'))
+                                            ->content(__('messages.select_country_or_group'))
+                                            ->columnSpanFull(),
+
+                                        Select::make('country_id')
+                                            ->label(__('fields.select_country'))
+                                            ->relationship('country', 'name')
+                                            ->nullable()
+                                            ->live()
+                                            ->afterStateUpdated(fn (Forms\Set $set) => $set('country_group_id', null))
+                                            ->hidden(fn (Forms\Get $get) => filled($get('country_group_id')))
+                                            ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
+
+                                        Select::make('country_group_id')
+                                            ->label(__('fields.select_country_group'))
+                                            ->relationship('countryGroup', 'name')
+                                            ->preload()
+                                            ->createOptionForm([
+                                                Forms\Components\TextInput::make('name')
+                                                    ->label(__('name'))
+                                                    ->required()
+                                                    ->maxLength(255),
+
+                                                Forms\Components\Select::make('countries')
+                                                    ->label(__('countries'))
+                                                    ->relationship('countries', 'name')
+                                                    ->multiple()
+                                                    ->searchable()
+                                                    ->preload(),
+                                            ])
+                                            ->nullable()
+                                            ->live()
+                                            ->afterStateUpdated(fn (Forms\Set $set) => $set('country_id', null))
+                                            ->hidden(fn (Forms\Get $get) => filled($get('country_id')))
+                                            ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
+
+                                        Select::make('currency_id')
+                                            ->label(__('fields.currency'))
+                                            ->relationship('currency', 'name')
+                                            ->required(),
+
+                                        TextInput::make('special_price')
+                                            ->label(__('Price'))
+                                            ->numeric()
+                                            ->required(),
+
+                                        TextInput::make('special_price_after_discount')
+                                            ->lt('special_price')
+                                            ->label(__('After Discount Price'))
+                                            ->numeric()
+                                            ->nullable(),
+                                    ])->columnSpanFull(),
+                            ]),
+                        Tab::make(__('Features'))
+                            ->columns(2)
+                            ->icon('heroicon-o-table-cells')
+                            ->schema([
+                                Select::make('labels')
+                                    ->label(__('labels.plural_label'))
+                                    ->createOptionForm([
+                                        Forms\Components\TextInput::make('title')
+                                            ->label(__('fields.text_title'))
+                                            ->columnSpanFull(),
+                                        Forms\Components\ColorPicker::make('color_code')
+                                            ->label(__('fields.text_color_code')),
+                                        Forms\Components\ColorPicker::make('background_color_code')
+                                            ->label(__('fields.background_color_code')),
+                                    ])
+                                    ->multiple()
+                                    ->label(__('labels'))
+                                    ->relationship('labels', 'title')
+                                    ->searchable()
+                                    ->preload()
+                                    ->nullable(),
+
+                                Select::make('size_guide_id')
+                                    ->relationship('sizeGuide', 'title')
+                                    ->label(__('Size Guide'))
+                                    ->createOptionForm([
+                                        TextInput::make('title')
+                                            ->label(__('Title'))
+                                            ->required()
+                                            ->maxLength(255),
+                                        Textarea::make('description')
+                                            ->label(__('Description'))
+                                            ->required()
+                                            ->columnSpanFull(),
+                                        FileUpload::make('image')
+                                            ->label(__('Image'))
+                                            ->image()
+                                            ->required(),
+                                    ]),
+
+                                Repeater::make('productColors')
+                                    ->relationship('productColors')
+                                    ->label(__('Variants Information'))
+                                    ->schema([
+                                        Select::make('color_id')
+                                            ->label(__('Color'))
+                                            ->columnSpanFull()
+                                            ->relationship('color', 'name')
+                                            ->required(),
+
+                                        FileUpload::make('image')
+                                            ->label(__('Image'))
+                                            ->imageEditor()
+                                            ->columnSpanFull()
+                                            ->required(),
+
+                                        Repeater::make('productColorSizes')
+                                            ->relationship('productColorSizes') // hasMany
+                                            ->label(__('Sizes with Quantities'))
+                                            ->schema([
+                                                Select::make('size_id')
+                                                    ->label(__('Size'))
+                                                    ->relationship('size', 'name')
+                                                    ->required(),
+
+                                                TextInput::make('quantity')
+                                                    ->minValue(1)
+                                                    ->label(__('Quantity'))
+                                                    ->required()
+                                                    ->numeric()
+                                                    ->default(1),
+                                            ])
+                                            ->columns(2)
+                                            ->columnSpanFull(),
+                                    ])
+                                    ->columns(2)
+                                    ->collapsible()
+                                    ->columnSpanFull(),
+
+//                                Repeater::make('types')
+//                                    ->defaultItems(0)
+//                                    ->label(__('Types'))
+//                                    ->columnSpanFull()
+//                                    ->relationship('types') // Defines the relationship with ProductType model
+//                                    ->schema([
+//                                        TextInput::make('name')
+//                                            ->required()
+//                                            ->label(__('name')),
+//
+//                                        FileUpload::make('image')
+//                                            ->label(__('image'))
+//                                            ->imageEditor()
+//                                            ->required(),
+//                                    ])
+//                                    ->collapsible() // Allow collapsing sections
+//                                    ->addActionLabel('Add Product Type'), // Custom button label
+
+                                Forms\Components\Section::make(__('Attributes'))
+                                    ->schema([
+                                        KeyValue::make('custom_attributes')
+                                            ->label(__('Custom Attributes'))
+                                            ->addActionLabel(__('Add Custom Attribute'))
+                                    ]),
+                            ]),
+
+                        // Media Tab
+                        Tab::make(__('Media'))
+                            ->icon('heroicon-o-photo')
+                            ->schema([
+                                SpatieMediaLibraryFileUpload::make('feature_product_image')
+                                    ->label(__('Feature Image'))
+                                    ->required()
+                                    ->collection('feature_product_image')
+                                    ->image()
+                                    ->maxSize(5120),
+
+                                SpatieMediaLibraryFileUpload::make('second_feature_product_image')
+                                    ->label(__('Second Feature Image'))
+
+                                    ->collection('second_feature_product_image')
+                                    ->image()
+                                    ->maxSize(5120),
+
+                                SpatieMediaLibraryFileUpload::make('size_image')
+                                    ->label(__('Size Guide Image'))
+                                    ->collection('size_image')
+                                    ->image()
+                                    ->maxSize(5120), //size_image
+
+                                SpatieMediaLibraryFileUpload::make('more_product_images_and_videos')
+                                    ->maxFiles(20)
+                                    ->label(__('Extra Images and Videos'))
+                                    ->collection('more_product_images_and_videos')
+                                    ->multiple()
+                                    ->acceptedFileTypes(['video/mp4', 'video/mpeg', 'video/quicktime',
+                                        'image/jpeg', 'image/png', 'image/webp'])
+                                    ->imageEditor()
+                                    ->reorderable(),
+                            ]),
+
+
+                        // SEO Tab
+                        Tab::make(__('SEO'))
+                            ->columns(2)
+                            ->icon('heroicon-o-globe-alt') //banknotes
+                            ->schema([
+                                TextInput::make('meta_title')
+                                    ->label(__('Meta Title'))
+                                    ->maxLength(255),
+                                Textarea::make('meta_description')
+                                    ->label(__('Meta Description'))
+                                    ->maxLength(255),
+                            ])->columns(1),
+
+                        Tabs\Tab::make(__('shipping_cost.navigation_label'))
+                            ->icon('heroicon-o-truck')
+                            ->schema([
+                               Forms\Components\Section::make()->schema([
+                                   Forms\Components\TextInput::make('cost')
+                                       ->numeric()
+                                       ->label(__('Shipping cost worldwide')),
+
+                                   Forms\Components\TextInput::make('shipping_estimate_time')
+                                       ->label(__('Shipping estimate time worldwide')),
+
+                                   Forms\Components\Checkbox::make('is_free_shipping')
+                                       ->default(false)
+                                       ->label(__('Is free shipping cost?')),
+                               ])->columns(2),
+                                Repeater::make('shipping_costs')
+                                    ->defaultItems(0)
+                                    ->label(__('shipping_cost.navigation_label'))
+                                    ->relationship('shippingCosts')
+                                    ->schema([
+                                        Select::make('country_group_id')
+                                            ->label(__('shipping_cost.country_group'))
+                                            ->rules(fn (Get $get, $record) => [
+                                                Rule::unique(ShippingCost::class, 'country_group_id')
+                                                    ->where(fn ($query) => $query
+                                                        ->where('product_id', $get('../../id'))
+                                                        ->whereNull('governorate_id')
+                                                        ->whereNull('shipping_zone_id')
+                                                        ->whereNull('city_id')
+                                                        ->whereNull('country_id')
+                                                    )
+                                                    ->when($record, fn ($rule) => $rule->ignore($record->id))
+                                            ])
+                                            ->relationship('countryGroup', 'name')
+                                            ->nullable()
+                                            ->live()
+                                            ->hidden(fn (Get $get) => $get('../city_id') || $get('../governorate_id') || $get('../shipping_zone_id') || $get('../country_id')),
+
+                                        Select::make('shipping_zone_id')
+                                            ->label(__('shipping_zone.name'))
+                                            ->rules(fn (Get $get, $record) => [
+                                                Rule::unique(ShippingCost::class, 'shipping_zone_id')
+                                                    ->where(fn ($query) => $query
+                                                        ->where('product_id', $get('../../id'))
+                                                        ->whereNull('governorate_id')
+                                                        ->whereNull('country_group_id')
+                                                        ->whereNull('city_id')
+                                                        ->whereNull('country_id')
+                                                    )
+                                                    ->when($record, fn ($rule) => $rule->ignore($record->id))
+                                            ])
+                                            ->relationship('shippingZone', 'name')
+                                            ->nullable()
+                                            ->live()
+                                            ->hidden(fn (Get $get) => $get('../city_id') || $get('../governorate_id') || $get('../country_id') || $get('../country_group_id')),
+
+                                        Select::make('country_id')
+                                            ->label(__('shipping_cost.country'))
+                                            ->searchable()
+                                            ->rules(fn (Get $get, $record) => [
+                                                Rule::unique(ShippingCost::class, 'country_id')
+                                                    ->where(fn ($query) => $query
+                                                        ->where('product_id', $get('../../id'))
+                                                        ->whereNull('governorate_id')
+                                                        ->whereNull('city_id')
+                                                    )
+                                                    ->when($record, fn ($rule) => $rule->ignore($record->id))
+                                            ])
+                                            ->relationship('country', 'name')
+                                            ->nullable()
+                                            ->live()
+                                            ->hidden(fn (Get $get) => $get('governorate_id') || $get('city_id')) // ✅ Hide when governorate or city is set
+                                            ->afterStateHydrated(fn (Set $set, Get $get, $state) =>
+                                            $set('country_id', $state ?: $get('../../country_id')) // ✅ Ensure correct value is selected
+                                            )
+                                            ->dehydrated(fn (Get $get) => !$get('governorate_id') && !$get('city_id')),
+
+                                        Select::make('governorate_id')
+                                            ->label(__('shipping_cost.governorate'))
+                                            ->rules(fn (Get $get, $record) => [
+                                                Rule::unique(ShippingCost::class, 'governorate_id')
+                                                    ->where(fn ($query) => $query
+                                                        ->where('product_id', $get('../../id'))
+                                                        ->whereNull('shipping_zone_id')
+                                                        ->whereNull('country_group_id')
+                                                        ->whereNull('city_id')
+                                                        ->whereNull('country_id')
+                                                    )
+                                                    ->when($record, fn ($rule) => $rule->ignore($record->id))
+                                            ])
+                                            ->options(fn (Get $get, $record) =>
+                                            $get('country_id')
+                                                ? Governorate::where('country_id', $get('country_id'))
+                                                ->orWhere('id', $record?->governorate_id) // Ensure existing governorate is included
+                                                ->pluck('name', 'id')
+                                                : ($record?->governorate_id ? Governorate::where('id', $record->governorate_id)->pluck('name', 'id') : [])
+                                            )
+                                            ->nullable()
+                                            ->live()
+                                            ->afterStateUpdated(fn (Set $set) => $set('city_id', null))
+                                            ->hidden(fn ($get) => $get('city_id')),
+
+
+                                        // City Select
+                                        Select::make('city_id')
+                                            ->label(__('shipping_cost.city'))
+                                            ->rules(fn (Get $get, $record) => [
+                                                Rule::unique(ShippingCost::class, 'city_id')
+                                                    ->where(fn ($query) => $query
+                                                        ->where('product_id', $get('../../id'))
+                                                        ->whereNull('governorate_id')
+                                                        ->whereNull('country_id')
+                                                    )
+                                                    ->when($record, fn ($rule) => $rule->ignore($record->id))
+                                            ])
+                                            ->options(fn (Get $get, $record) =>
+                                            $get('governorate_id')
+                                                ? City::where('governorate_id', $get('governorate_id'))
+                                                ->orWhere('id', $record?->city_id)
+                                                ->pluck('name', 'id')
+                                                : ($record?->city_id ? City::where('id', $record->city_id)->pluck('name', 'id') : [])
+                                            )
+                                            ->nullable()
+                                            ->live()
+                                            ->afterStateHydrated(fn (Set $set, Get $get, $state) =>
+                                            $set('city_id', $state ?: $get('../../city_id'))
+                                            )
+                                            ->dehydrated(true)
+                                            ->hidden(false),
+
+        TextInput::make('cost')
+            ->label(__('shipping_cost.cost'))
+            ->required()
+            ->numeric()
+            ->default(0),
+        TextInput::make('shipping_estimate_time')
+            ->label(__('shipping_cost.shipping_estimate_time'))
+            ->required()
+            ->maxLength(255)
+            ->default('0-0'),
+     ])
+              ->columns(2),
+                            ]),
+
+                        Tabs\Tab::make(__('product.availability'))
+                            ->icon('heroicon-o-globe-asia-australia')
+                            ->schema([
+                                CheckboxList::make('countries')
+                                    ->label(__('product.available_countries'))
+                                    ->relationship(
+                                        name: 'countries',
+                                        titleAttribute: 'name'
+                                    )
+                                    ->default(function () {
+                                        $defaultCountryId = Setting::getSetting('country_id');
+
+                                        return \App\Models\Country::where('id', $defaultCountryId)->exists()
+                                            ? [$defaultCountryId]
+                                            : [];
+                                    })
+                                    ->searchable()
+                                    ->columns(5)
+                                    ->bulkToggleable()
+                                    ->selectAllAction(fn ($action) => $action->label(__('product.select_all')))
+                                    ->deselectAllAction(fn ($action) => $action->label(__('product.deselect_all'))),
+                            ]),
+
+                        // Additional Info Tab
+                        Tab::make(__('Additional Info'))
+                            ->columns(3)
+                            ->icon('heroicon-o-plus-circle')
+                            ->schema([
+                                Rating::make('fake_average_rating')
+                                    ->default(0)
+                                    ->columnSpanFull()
+                                    ->live()
+                                    ->allowZero()
+                                    ->label(__('Rating')),
+                                TextInput::make('views')
+                                    ->label(__('Views'))
+                                    ->numeric()
+                                    ->default(0),
+                                TextInput::make('sales')
+                                    ->label(__('Sales'))
+                                    ->numeric()
+                                    ->default(0),
+
+                                Select::make('complementaryProducts')
+                                    ->columnSpanFull()
+                                    ->label(__('Complementary Products'))
+                                    ->relationship('complementaryProducts', 'name')
+                                    ->multiple()
+                                    ->preload(),
+
+                                Textarea::make('summary')
+                                    ->rules([
+                                        fn (): Closure => function (string $attribute, $value, Closure $fail) {
+                                            if (strlen($value) > 255) {
+                                                $fail(__('validation.max.string', ['attribute' => __('Small description'), 'max' => 255]));
+                                            }
+                                        },
+                                    ])
+                                    ->maxLength(255)
+                                    ->columnSpanFull()
+                                    ->nullable()
+                                    ->label(__('Small description')),
+
+                                MarkdownEditor::make('description')
+                                    ->columnSpanFull()
+                                    ->label(__('Description'))
+                                    ->columnSpanFull(),
+                                Forms\Components\Checkbox::make('is_published')
+                                    ->columnSpanFull()
+                                    ->default(true)
+                                    ->label(__('Is Published?'))
+                                    ->required(),
+                                Forms\Components\Checkbox::make('is_featured')
+                                    ->columnSpanFull()
+                                    ->label(__('Is Featured?'))
+                                    ->required(),
+                            ])->columns(2),
+                    ])
+                    ->columnSpanFull()
+            ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('id')
+                    ->weight(FontWeight::Bold)
+                    ->formatStateUsing(fn($state) => '#'.$state)
+                    ->label(__('ID'))
+                    ->searchable()
+                    ->sortable(),
+
+                Tables\Columns\SpatieMediaLibraryImageColumn::make('feature_product_image')
+                    ->toggleable(true, false)
+                    ->circular()
+                    ->simpleLightbox()
+                    ->placeholder('-')
+                    ->collection('feature_product_image')
+                    ->label(__('products.Product Image')),
+
+                Tables\Columns\TextColumn::make('name')
+                    ->label(__('products.Product Name'))
+                    ->searchable(),
+
+                TextColumn::make('order_items_count')
+                    ->badge()
+                    ->color('success')
+                    ->label(__('Times Ordered'))
+                    ->counts('orderItems')
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('user.name')
+                    ->label(__('products.User'))
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('category.name')
+                    ->label(__('products.Category'))
+                    ->numeric()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('label.title')
+                    ->label(__('label'))
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('summary')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->placeholder('-')
+                    ->label(__('Small description'))
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('price')
+                    ->label(__('products.Price'))
+                    ->formatStateUsing(function ($state) {
+                        $currency = Setting::getCurrency();
+                        $symbol = $currency?->symbol ?? '';
+
+                        $locale = app()->getLocale();
+                        return $locale === 'ar' ? "{$state} {$symbol}" : "{$symbol} {$state}";
+                    })
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('price')
+                    ->label(__('products.Price'))
+                    ->sortable(),
+
+
+                Tables\Columns\TextColumn::make('after_discount_price')
+                    ->label(__('products.After Discount Price'))
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('quantity')
+                    ->label(__('Quantity'))
+                    ->numeric()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('sku')
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->label(__('SKU')),
+
+                Tables\Columns\TextColumn::make('colors.name')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->searchable()
+                    ->placeholder('-')
+                    ->label(__('Colors'))
+                    ->limitList(2)
+                    ->badge(),
+
+                Tables\Columns\TextColumn::make('sizes.name')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->searchable()
+                    ->placeholder('-')
+                    ->label(__('Sizes'))
+                    ->limitList(2)
+                    ->badge(),
+
+                Tables\Columns\TextColumn::make('slug')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->label(__('products.Slug'))
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('meta_title')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->label(__('products.Meta Title'))
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('meta_description')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->label(__('products.Meta Description'))
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('discount_start')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->label(__('products.Discount Start'))
+                    ->dateTime()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('discount_end')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->label(__('products.Discount End'))
+                    ->dateTime()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('views')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->label(__('products.Views'))
+                    ->numeric()
+                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('sales')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->label(__('products.Sales'))
+                    ->numeric()
+                    ->sortable(),
+
+                RatingColumn::make('fake_average_rating')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->label(__('products.Rating')),
+
+                Tables\Columns\IconColumn::make('is_published')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->default(true)
+                    ->label(__('products.Is Published'))
+                    ->boolean(),
+
+                Tables\Columns\IconColumn::make('is_featured')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->label(__('products.Is Featured'))
+                    ->boolean(),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label(__('products.Created At'))
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label(__('products.Updated At'))
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->headerActions([
+                ExportAction::make()
+                    ->formats([
+                        ExportFormat::Xlsx,
+                    ])
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('success')
+                    ->exporter(ProductExporter::class),
+                Action::make('back')
+                    ->label(__('Back to previous page'))
+                    ->icon(app()->getLocale() == 'en' ? 'heroicon-m-arrow-right' : 'heroicon-m-arrow-left')
+                    ->iconPosition(IconPosition::After)
+                    ->color('gray')
+                    ->url(url()->previous())
+                    ->hidden(fn () => url()->previous() === url()->current()),
+            ])
+            ->filters([
+                Filter::make('category')
+                  ->columnSpanFull()
+                    ->form([
+                        SelectTree::make('category_id')
+                            ->placeholder(__('Search for a Category...'))
+                            ->enableBranchNode()
+                            ->hiddenLabel()
+                            ->relationship('category', 'name', 'parent_id')
+                            ->searchable(),
+                    ])
+                    ->query(function (Builder $query, array $data) {
+                        if (!empty($data['category_id'])) {
+                            $selectedCategoryId = $data['category_id'];
+
+                            // Check if the selected category has children
+                            $hasChildren = Category::where('parent_id', $selectedCategoryId)->exists();
+
+                            if ($hasChildren) {
+                                // Get all descendant category IDs
+                                $categoryIds = self::getCategoryWithDescendants($selectedCategoryId);
+                                $query->whereIn('category_id', $categoryIds);
+                            } else {
+                                $query->where('category_id', $selectedCategoryId);
+                            }
+                        }
+                    })
+                    ->indicateUsing(function (array $data): ?string {
+                        if (empty($data['category_id'])) {
+                            return null;
+                        }
+
+                        $category = Category::find($data['category_id']);
+                        $categoryName = $category->name ?? __('Unknown Category');
+
+                        $isParent = Category::where('parent_id', $data['category_id'])->exists();
+
+                        return $isParent
+                            ? __('Showing products in category and subcategories:') . " {$categoryName}"
+                            : __('Showing products in category:') . " {$categoryName}";
+                    }),
+                DateFilter::make('created_at')
+                    ->columnSpanFull()
+                    ->label(__('Creation date')),
+
+                Filter::make('is_published')
+                    ->toggle()
+                    ->label(__('Is Active?'))
+                    ->query(fn ($query) => $query->where('is_published', true)),
+
+                Filter::make('is_featured')
+                    ->toggle()
+                    ->label(__('Is Featured?'))
+                    ->query(fn ($query) => $query->where('is_featured', true)),
+
+                Filter::make('must_be_collection')
+                    ->toggle()
+                    ->label(__('Must be Collection?'))
+                    ->query(fn ($query) => $query->where('must_be_collection', true)),
+            ], Tables\Enums\FiltersLayout::AboveContentCollapsible)
+            ->filtersFormColumns(3)
+            ->actions([
+                Tables\Actions\ActionGroup::make(
+                    array_merge([
+                        Tables\Actions\EditAction::make(),
+                        Tables\Actions\DeleteAction::make(),
+                    ], ProductActionsService::getActions())
+                ) ->label(__('Actions'))
+                    ->icon('heroicon-m-ellipsis-vertical')
+                    ->size(ActionSize::Small)
+                    ->color('primary')
+                    ->button(),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\ExportBulkAction::make()
+                        ->formats([
+                            ExportFormat::Xlsx,
+                            ExportFormat::Csv,
+                        ])
+                        ->icon('heroicon-o-arrow-down-tray')
+                        ->color('success')
+                        ->exporter(ProductExporter::class),
+                    Tables\Actions\DeleteBulkAction::make(),
+                ]),
+            ])
+            ->defaultSort('order_items_count', 'desc'); //order_items_count
+    }
+
+    public static function getCategoryWithDescendants($categoryId): array
+    {
+        $ids = [$categoryId];
+        $children = Category::where('parent_id', $categoryId)->pluck('id');
+
+        foreach ($children as $childId) {
+            $ids = array_merge($ids, self::getCategoryWithDescendants($childId));
+        }
+
+        return $ids;
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->withCount('media')->withCount('orderItems'); // Count media instead of loading full records
+    }
+
+    public static function getRelations(): array
+    {
+       return [
+           BundlesRelationManager::class
+       ];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListProducts::route('/'),
+            'create' => Pages\CreateProduct::route('/create'),
+            'edit' => Pages\EditProduct::route('/{record}/edit'),
+        ];
+    }
+}

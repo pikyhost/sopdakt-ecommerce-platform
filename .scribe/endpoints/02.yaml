@@ -1,0 +1,139 @@
+name: Homepage
+description: 'Retrieves a list of featured categories for the homepage with their images.'
+endpoints:
+  -
+    httpMethods:
+      - GET
+    uri: api/home/featured-categories
+    metadata:
+      groupName: Homepage
+      groupDescription: 'Retrieves a list of featured categories for the homepage with their images.'
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Get Featured Categories'
+      description: ''
+      authenticated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+            "success": true,
+            "data": [
+              {
+                "name": "Electronics",
+                "image_url": "https://example.com/media/categories/electronics.jpg"
+              },
+              {
+                "name": "Fashion",
+                "image_url": "https://example.com/media/categories/fashion.jpg"
+              }
+            ]
+          }
+        headers: []
+        description: ''
+        custom: []
+      -
+        status: 500
+        content: |-
+          {
+            "success": false,
+            "message": "Server Error"
+          }
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
+  -
+    httpMethods:
+      - GET
+    uri: api/products/fakeBestSellers
+    metadata:
+      groupName: Homepage
+      groupDescription: |-
+        Retrieves top 10 best-selling products with complete details including:
+        - Product information
+        - Available colors with sizes
+        - Action links
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Get Best Selling Products'
+      description: ''
+      authenticated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+            "success": true,
+            "data": [
+              {
+                "id": 1,
+                "name": "Premium Headphones",
+                "price": 199.99,
+                "after_discount_price": 179.99,
+                "sales": 150,
+                "slug": "premium-headphones",
+                "image_url": "https://example.com/media/products/headphones.jpg",
+                "category": {
+                  "name": "Electronics",
+                  "slug": "electronics"
+                },
+                "colors_with_sizes": [
+                  {
+                    "color_name": "Black",
+                    "color_code": "#000000",
+                    "color_image": null,
+                    "sizes": [
+                      {
+                        "size_name": "One Size",
+                        "quantity": 50
+                      }
+                    ]
+                  }
+                ],
+                "actions": {
+                  "add_to_cart": "http://example.com/api/cart/1",
+                  "toggle_love": "http://example.com/api/wishlist/toggle/1",
+                  "compare": "http://example.com/api/compare/1",
+                  "view": "http://example.com/products/premium-headphones"
+                }
+              }
+            ]
+          }
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []

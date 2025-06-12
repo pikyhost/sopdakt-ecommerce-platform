@@ -1,0 +1,144 @@
+name: 'About Us'
+description: ''
+endpoints:
+  -
+    httpMethods:
+      - GET
+    uri: api/about-us
+    metadata:
+      groupName: 'About Us'
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Retrieve About Us page data'
+      description: |-
+        This endpoint fetches the About Us page content, including header, breadcrumbs, about section,
+        accordion, team members, testimonials, and SEO metadata. The response is localized based on the
+        current application locale (en or ar). If no data is found or the data is empty, an error message
+        is returned indicating that the content is null or empty.
+      authenticated: false
+      custom: []
+    headers:
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        status: 200
+        content: |-
+          {
+              "data": {
+                  "direction": "ltr",
+                  "header": {
+                      "title": "Who we are",
+                      "subtitle": null,
+                      "background_image": "https://your-domain.com/assets/images/demoes/demo12/page-header-bg.jpg"
+                  },
+                  "breadcrumbs": {
+                      "home": {
+                          "title": "Home",
+                          "url": "https://your-domain.com/"
+                      },
+                      "current": {
+                          "title": "About Us"
+                      }
+                  },
+                  "about": {
+                      "title": "About Us",
+                      "description_1": "We are a forward-thinking company...",
+                      "description_2": "Our goal is to innovate and lead...",
+                      "image": "https://your-domain.com/storage/about/history.jpg"
+                  },
+                  "accordion": [
+                      {
+                          "title": "Company History",
+                          "content": "We started in 2005 with a mission...",
+                          "is_open": true
+                      },
+                      {
+                          "title": "Our Vision",
+                          "content": "To be the best in class...",
+                          "is_open": false
+                      },
+                      {
+                          "title": "Our Mission",
+                          "content": "To deliver quality products...",
+                          "is_open": false
+                      },
+                      {
+                          "title": "Fun Facts",
+                          "content": "We’ve served over 1M users...",
+                          "is_open": false
+                      }
+                  ],
+                  "team": {
+                      "title": "Team",
+                      "members": [
+                          {
+                              "name": "John Doe",
+                              "image": "https://your-domain.com/storage/team/team1.jpg"
+                          },
+                          {
+                              "name": "Jessica Doe",
+                              "image": "https://your-domain.com/storage/team/team2.jpg"
+                          }
+                      ],
+                      "cta": {
+                          "text": "Join Our Team",
+                          "url": "https://example.com/join"
+                      }
+                  },
+                  "testimonials": {
+                      "title": "Testimonials",
+                      "items": [
+                          {
+                              "content": "Long established fact...",
+                              "name": "Ahmed Mohsen",
+                              "role": "Role X",
+                              "image": "https://your-domain.com/storage/clients/client1.jpg",
+                              "rating": 5
+                          }
+                      ]
+                  },
+                  "seo": {
+                      "meta_title": "About Us",
+                      "meta_description": "Learn about our company and team."
+                  }
+              },
+              "message": "About Us data retrieved successfully"
+          }
+        headers: []
+        description: ''
+        custom: []
+      -
+        status: 404
+        content: |-
+          {
+              "error": "About Us data is null or empty",
+              "support_link": "https://your-domain.com/contact-us"
+          }
+        headers: []
+        description: ''
+        custom: []
+      -
+        status: 500
+        content: |-
+          {
+              "error": "An unexpected error occurred while retrieving About Us data. Please try again.",
+              "support_link": "https://your-domain.com/contact-us"
+          }
+        headers: []
+        description: ''
+        custom: []
+    responseFields: []
+    auth: []
+    controller: null
+    method: null
+    route: null
+    custom: []
