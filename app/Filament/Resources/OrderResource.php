@@ -757,7 +757,7 @@ class OrderResource extends Resource
 
                             if ($response['success']) {
                                 Notification::make()
-                                    ->title(__('Shipment Created Successfully'))
+                                    ->title(__('Order sent to Aramex Successfully'))
                                     ->success()
                                     ->send();
 
@@ -969,7 +969,7 @@ class OrderResource extends Resource
             $order->save();
             self::updateJtExpressOrder($order, 'pending', $JtExpressOrderData, $jtExpressResponse);
 
-            Notification::make()->title(__('Order sent to J&T Express'))->success()->send();
+            Notification::make()->title(__('Order sent to J&T Successfully'))->success()->send();
 
         } else {
             $order->save();
