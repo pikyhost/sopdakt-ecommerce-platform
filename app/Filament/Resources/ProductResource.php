@@ -280,25 +280,7 @@ class ProductResource extends Resource
                                     ->searchable()
                                     ->preload()
                                     ->nullable(),
-
-                                Select::make('size_guide_id')
-                                    ->relationship('sizeGuide', 'title')
-                                    ->label(__('Size Guide'))
-                                    ->createOptionForm([
-                                        TextInput::make('title')
-                                            ->label(__('Title'))
-                                            ->required()
-                                            ->maxLength(255),
-                                        Textarea::make('description')
-                                            ->label(__('Description'))
-                                            ->required()
-                                            ->columnSpanFull(),
-                                        FileUpload::make('image')
-                                            ->label(__('Image'))
-                                            ->image()
-                                            ->required(),
-                                    ]),
-
+                                
                                 Repeater::make('productColors')
                                     ->relationship('productColors')
                                     ->label(__('Variants Information'))

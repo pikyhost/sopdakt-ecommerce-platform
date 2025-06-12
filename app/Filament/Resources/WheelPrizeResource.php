@@ -10,6 +10,8 @@ use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 
 class WheelPrizeResource extends Resource
 {
@@ -102,10 +104,26 @@ class WheelPrizeResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()->label(__('Edit')),
-                Tables\Actions\DeleteAction::make()->label(__('Delete')),
+                Tables\Actions\DeleteAction::make()
+                    ->label(__('Delete'))
+                    ->before(function (Model $record) {
+                        // Optional: manually delete related wheel_spins first
+                        $record->spins()->delete();
+                    })
+                    ->requiresConfirmation(), // optional for safety
             ])
             ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make()->label(__('Delete Selected')),
+                Tables\Actions\DeleteBulkAction::make()
+                    ->label(__('Delete Selected'))
+                    ->before(function (Collection $records) {
+                        foreach ($records as $record) {
+                            if ($record->spins()->exists()) {
+                                throw new \Exception("Prize ID {$record->id} has related spins and cannot be deleted.");
+                            }
+                            $record->spins()->delete(); // optional cleanup
+                        }
+                    })
+                    ->requiresConfirmation(),
             ]);
     }
 
