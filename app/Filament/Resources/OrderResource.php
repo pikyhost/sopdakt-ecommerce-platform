@@ -140,19 +140,19 @@ class OrderResource extends Resource
                     ->placeholder('-')
                     ->searchable(),
 
-                TextColumn::make('user.primaryAddress.address')
-                    ->label('User Address')
-                    ->searchable(),
+//                TextColumn::make('user.primaryAddress.address')
+//                    ->label('User Address')
+//                    ->searchable(),
+//
+//                Tables\Columns\TextColumn::make('contact.address')
+//                    ->label(__('Contact Address'))
+//                    ->placeholder('-')
+//                    ->searchable(),
 
-                Tables\Columns\TextColumn::make('contact.address')
-                    ->label(__('Contact Address'))
-                    ->placeholder('-')
-                    ->searchable(),
-
-                // Display just the address line
-                TextColumn::make('user.address_line')
-                    ->label('Address')
-                    ->searchable(),
+//                // Display just the address line
+//                TextColumn::make('user.address_line')
+//                    ->label('Address')
+//                    ->searchable(),
 
                 TextColumn::make('tracking_number')  // this is thetracking_number of j and t
                     ->copyable()
