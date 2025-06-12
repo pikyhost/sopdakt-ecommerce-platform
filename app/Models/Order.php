@@ -20,6 +20,9 @@ class Order extends Model
         'status' => OrderStatus::class,
     ];
 
+    protected $appends = ['display_address'];
+
+
     protected static function booted()
     {
         // Prevent duplicate orders
@@ -159,6 +162,48 @@ class Order extends Model
     public function getOrderItemsHash()
     {
         return sha1(json_encode($this->orderItems->pluck('product_id', 'quantity')->toArray()));
+    }
+
+    // app/Models/Order.php
+
+    public function getDisplayAddressAttribute()
+    {
+        if ($this->user_id) {
+            // For registered users - get their primary address
+            $primaryAddress = $this->user->addresses()->where('is_primary', true)->first();
+
+            if ($primaryAddress) {
+                return $this->formatAddress($primaryAddress);
+            }
+        } elseif ($this->contact_id) {
+            // For guest orders - use the contact address
+            return $this->formatAddress($this->contact);
+        }
+
+        return 'No address available';
+    }
+
+    protected function formatAddress($addressable)
+    {
+        $parts = [];
+
+        if (!empty($addressable->address)) {
+            $parts[] = $addressable->address;
+        }
+
+        if ($addressable->city_id && $city = $addressable->city) {
+            $parts[] = $city->name;
+        }
+
+        if ($addressable->governorate_id && $governorate = $addressable->governorate) {
+            $parts[] = $governorate->name;
+        }
+
+        if ($addressable->country_id && $country = $addressable->country) {
+            $parts[] = $country->name;
+        }
+
+        return implode(', ', $parts);
     }
 
 }
