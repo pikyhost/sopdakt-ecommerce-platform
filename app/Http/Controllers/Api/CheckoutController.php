@@ -28,7 +28,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
@@ -47,7 +46,6 @@ class CheckoutController extends Controller
 
             // Block inactive users
             if (Auth::guard('sanctum')->check() && !Auth::guard('sanctum')->user()->is_active) {
-                Log::warning('Inactive user attempted checkout', ['user_id' => Auth::guard('sanctum')->id()]);
                 return response()->json([
                     'error' => 'Your account is not active. Please contact support.',
                 ], 403);
@@ -55,7 +53,6 @@ class CheckoutController extends Controller
 
             // Check for duplicate submission
             if (Order::where('checkout_token', $checkoutToken)->exists()) {
-                Log::info('Duplicate checkout attempt', ['checkout_token' => $checkoutToken]);
                 return response()->json([
                     'error' => 'Your order is already being processed. Please wait.',
                 ], 409);
@@ -71,7 +68,6 @@ class CheckoutController extends Controller
             })->with('items.product')->latest()->first();
 
             if (!$cart || $cart->items->isEmpty()) {
-                Log::info('Empty cart during checkout', ['user_id' => Auth::id(), 'session_id' => $sessionId]);
                 return response()->json([
                     'error' => 'Cart is empty or not found',
                 ], 404);
@@ -82,7 +78,6 @@ class CheckoutController extends Controller
 
             // Calculate subtotal
             $subTotal = $cart->items->sum(fn ($item) => $item->subtotal);
-            Log::info('Subtotal Calculated', ['subtotal' => $subTotal, 'cart_id' => $cart->id]);
 
             // Calculate shipping cost
             $shippingCost = $this->updateShippingCost(
@@ -111,13 +106,6 @@ class CheckoutController extends Controller
                     } elseif ($coupon->type === 'free_shipping') {
                         $shippingCost = 0.0;
                     }
-                    Log::info('Coupon Applied', [
-                        'coupon_id' => $coupon->id,
-                        'type' => $coupon->type,
-                        'value' => $coupon->value,
-                        'discount' => $discount,
-                        'shipping_cost' => $shippingCost,
-                    ]);
                 }
             }
 
@@ -127,15 +115,6 @@ class CheckoutController extends Controller
             $total = max(0, $subTotal + $taxAmount + $shippingCost - $discount);
 
             $cart->update([
-                'shipping_cost' => $shippingCost,
-                'subtotal' => $subTotal,
-                'tax_percentage' => $taxPercentage,
-                'tax_amount' => $taxAmount,
-                'total' => $total,
-            ]);
-
-            Log::info('Cart Updated', [
-                'cart_id' => $cart->id,
                 'shipping_cost' => $shippingCost,
                 'subtotal' => $subTotal,
                 'tax_percentage' => $taxPercentage,
@@ -164,10 +143,6 @@ class CheckoutController extends Controller
             return $this->createOrderManually($cart, $contact, $data, $checkoutToken);
 
         } catch (\Exception $e) {
-            Log::critical('Unexpected error in checkout', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
             return response()->json([
                 'error' => $e->getMessage(),
             ], 500);
@@ -277,14 +252,6 @@ class CheckoutController extends Controller
      */
     private function updateShippingCost($shippingTypeId, array $items, $cityId, $governorateId, $countryId): float
     {
-        Log::info('updateShippingCost Inputs', [
-            'shipping_type_id' => $shippingTypeId,
-            'city_id' => $cityId,
-            'governorate_id' => $governorateId,
-            'country_id' => $countryId,
-            'items' => $items,
-        ]);
-
         $totalShippingCost = 0.0;
         $hasChargeableItems = false;
 
@@ -297,17 +264,13 @@ class CheckoutController extends Controller
             }
         }
 
-        Log::info('Has Chargeable Items', ['has_chargeable_items' => $hasChargeableItems]);
-
         // If all products have free shipping, set cost to 0
         if (!$hasChargeableItems) {
-            Log::info('Returning 0 due to no chargeable items');
             return 0.0;
         }
 
         // If shipping locations are disabled, force cost to 0
         if (!Setting::isShippingLocationsEnabled()) {
-            Log::info('Returning 0 due to disabled shipping locations');
             return 0.0;
         }
 
@@ -315,7 +278,6 @@ class CheckoutController extends Controller
         if ($shippingTypeId && Setting::isShippingEnabled()) {
             $shippingType = ShippingType::find($shippingTypeId);
             $totalShippingCost += $shippingType?->shipping_cost ?? 0.0;
-            Log::info('Shipping Type Cost', ['shipping_type_id' => $shippingTypeId, 'cost' => $shippingType?->shipping_cost ?? 0]);
         }
 
         // Get the highest shipping cost per item instead of summing them
@@ -325,7 +287,6 @@ class CheckoutController extends Controller
                 $product = Product::find($item['product_id'] ?? null);
                 if ($product && !$product->is_free_shipping) {
                     $cost = $this->calculateProductShippingCost($product, $cityId, $governorateId, $countryId);
-                    Log::info('Product Shipping Cost', ['product_id' => $item['product_id'], 'cost' => $cost]);
                     if ($cost > $highestShippingCost) {
                         $highestShippingCost = $cost;
                     }
@@ -334,7 +295,6 @@ class CheckoutController extends Controller
         }
 
         $finalCost = $totalShippingCost + $highestShippingCost;
-        Log::info('Final Shipping Cost', ['total' => $finalCost]);
 
         return $finalCost;
     }
@@ -344,29 +304,19 @@ class CheckoutController extends Controller
      */
     private function calculateProductShippingCost(Product $product, $cityId, $governorateId, $countryId): float
     {
-        Log::info('calculateProductShippingCost Inputs', [
-            'product_id' => $product->id,
-            'city_id' => $cityId,
-            'governorate_id' => $governorateId,
-            'country_id' => $countryId,
-        ]);
-
         // Check if product has free shipping
         if ($product->is_free_shipping) {
-            Log::info('Returning 0 due to product free shipping', ['product_id' => $product->id]);
             return 0.0;
         }
 
         // If shipping locations are disabled, force cost to 0
         if (!Setting::isShippingLocationsEnabled()) {
-            Log::info('Returning 0 due to disabled shipping locations', ['product_id' => $product->id]);
             return 0.0;
         }
 
         // If no location is provided, fall back to product cost
         if (!$cityId && !$governorateId && !$countryId) {
             $cost = $product->cost ?? 0.0;
-            Log::info('Returning product cost due to no location', ['product_id' => $product->id, 'cost' => $cost]);
             return $cost;
         }
 
@@ -374,20 +324,11 @@ class CheckoutController extends Controller
         $cost = $this->getProductShippingCost($product, $cityId, $governorateId, $countryId);
 
         if ($cost !== null) {
-            Log::info('Product Shipping Cost Found', ['product_id' => $product->id, 'cost' => $cost]);
             return $cost;
         }
 
         // Fall back to location-based cost or product cost
         $cost = $this->getLocationBasedShippingCost($cityId, $governorateId, $countryId) ?? $product->cost ?? 0.0;
-
-        Log::info('Final Product Shipping Cost', [
-            'product_id' => $product->id,
-            'cost' => $cost,
-            'city_id' => $cityId,
-            'governorate_id' => $governorateId,
-            'country_id' => $countryId,
-        ]);
 
         return $cost;
     }
@@ -395,37 +336,18 @@ class CheckoutController extends Controller
     private function getProductShippingCost(Product $product, $cityId, $governorateId, $countryId): ?float
     {
         if (!Setting::isShippingLocationsEnabled()) {
-            Log::info('Returning 0 due to disabled shipping locations in getProductShippingCost', ['product_id' => $product->id]);
             return 0.0;
         }
 
         $shippingCosts = $product->shippingCosts()->get();
 
-        Log::info('All Shipping Costs Retrieved', [
-            'product_id' => $product->id,
-            'shipping_costs' => $shippingCosts->map(function ($cost) {
-                return [
-                    'id' => $cost->id,
-                    'priority' => $cost->priority,
-                    'cost' => $cost->cost,
-                    'city_id' => $cost->city_id,
-                    'governorate_id' => $cost->governorate_id,
-                    'country_id' => $cost->country_id,
-                    'shipping_zone_id' => $cost->shipping_zone_id,
-                    'country_group_id' => $cost->country_group_id,
-                ];
-            })->toArray()
-        ]);
-
         if ($shippingCosts->isEmpty()) {
-            Log::info('No Shipping Costs Found for Product', ['product_id' => $product->id]);
             return null;
         }
 
         // Priority 1: Check City
         foreach ($shippingCosts as $shippingCost) {
             if ($shippingCost->priority === 'City' && $cityId && $shippingCost->city_id == $cityId) {
-                Log::info('City Shipping Cost Selected', ['product_id' => $product->id, 'cost' => $shippingCost->cost]);
                 return (float) $shippingCost->cost;
             }
         }
@@ -433,7 +355,6 @@ class CheckoutController extends Controller
         // Priority 2: Check Governorate
         foreach ($shippingCosts as $shippingCost) {
             if ($shippingCost->priority === 'Governorate' && $governorateId && $shippingCost->governorate_id == $governorateId) {
-                Log::info('Governorate Shipping Cost Selected', ['product_id' => $product->id, 'cost' => $shippingCost->cost]);
                 return (float) $shippingCost->cost;
             }
         }
@@ -448,10 +369,8 @@ class CheckoutController extends Controller
                         return $cost->priority === 'Governorate' && $cost->governorate_id == $governorateId;
                     });
                     if ($governorateCost) {
-                        Log::info('Governorate Shipping Cost Preferred Over Zone', ['product_id' => $product->id, 'cost' => $governorateCost->cost]);
                         return (float) $governorateCost->cost;
                     }
-                    Log::info('Shipping Zone Shipping Cost Selected', ['product_id' => $product->id, 'cost' => $shippingCost->cost]);
                     return (float) $shippingCost->cost;
                 }
             }
@@ -460,7 +379,6 @@ class CheckoutController extends Controller
         // Priority 4: Check Country
         foreach ($shippingCosts as $shippingCost) {
             if ($shippingCost->priority === 'Country' && $countryId && $shippingCost->country_id == $countryId) {
-                Log::info('Country Shipping Cost Selected', ['product_id' => $product->id, 'cost' => $shippingCost->cost]);
                 return (float) $shippingCost->cost;
             }
         }
@@ -470,13 +388,11 @@ class CheckoutController extends Controller
             if ($shippingCost->priority === 'Country Group' && $countryId && $shippingCost->country_group_id) {
                 $country = Country::find($countryId);
                 if ($country && $country->countryGroups()->where('id', $shippingCost->country_group_id)->exists()) {
-                    Log::info('Country Group Shipping Cost Selected', ['product_id' => $product->id, 'cost' => $shippingCost->cost]);
                     return (float) $shippingCost->cost;
                 }
             }
         }
 
-        Log::info('No Matching Shipping Cost', ['product_id' => $product->id]);
         return null;
     }
 
@@ -485,44 +401,32 @@ class CheckoutController extends Controller
      */
     private function getLocationBasedShippingCost($cityId, $governorateId, $countryId): ?float
     {
-        Log::info('getLocationBasedShippingCost Inputs', [
-            'city_id' => $cityId,
-            'governorate_id' => $governorateId,
-            'country_id' => $countryId,
-        ]);
-
         // If shipping locations are disabled, return 0
         if (!Setting::isShippingLocationsEnabled()) {
-            Log::info('Returning 0 due to disabled shipping locations in getLocationBasedShippingCost');
             return 0.0;
         }
 
         // Check city cost
         if ($cityId) {
             $city = City::find($cityId);
-            Log::info('City Cost', ['city_id' => $cityId, 'cost' => $city?->cost ?? 0]);
             if ($city?->cost > 0) return (float) $city->cost;
         }
 
         // Check governorate or shipping zone cost
         if ($governorateId) {
             $governorate = Governorate::find($governorateId);
-            Log::info('Governorate Cost', ['governorate_id' => $governorateId, 'cost' => $governorate?->cost ?? 0]);
             if ($governorate?->cost > 0) return (float) $governorate->cost;
 
             $zone = $governorate->shippingZones()->first();
-            Log::info('Shipping Zone Cost', ['governorate_id' => $governorateId, 'zone_cost' => $zone?->cost ?? 0]);
             if ($zone?->cost > 0) return (float) $zone->cost;
         }
 
         // Check country cost
         if ($countryId) {
             $country = Country::find($countryId);
-            Log::info('Country Cost', ['country_id' => $countryId, 'cost' => $country?->cost ?? 0]);
             if ($country?->cost > 0) return (float) $country->cost;
         }
 
-        Log::info('No Location-Based Cost Found');
         return null;
     }
 
@@ -541,7 +445,6 @@ class CheckoutController extends Controller
     {
         try {
             if (!is_numeric($cart->total)) {
-                Log::error('Invalid cart total', ['total' => $cart->total]);
                 return response()->json([
                     'error' => 'Invalid cart total.',
                 ], 400);
@@ -551,11 +454,6 @@ class CheckoutController extends Controller
                 'amount_cents' => (int) ($cart->total * 100),
                 'contact_email' => $contact->email,
                 'name' => $contact->name,
-            ]);
-
-            Log::info('Payment API Response', [
-                'status' => $response->status(),
-                'body' => $response->json(),
             ]);
 
             $data = $response->json();
@@ -570,13 +468,11 @@ class CheckoutController extends Controller
                 ], 200);
             }
 
-            Log::error('Payment response invalid', ['response' => $data]);
             return response()->json([
                 'error' => 'Failed to initiate payment. Invalid response.',
             ], 400);
 
         } catch (\Exception $e) {
-            Log::error('Payment exception', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return response()->json([
                 'error' => 'Unexpected error during payment: ' . $e->getMessage(),
             ], 500);
@@ -712,7 +608,6 @@ class CheckoutController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Order creation failed', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
             return response()->json([
                 'error' => 'We encountered an issue: ' . $e->getMessage(),
             ], 500);

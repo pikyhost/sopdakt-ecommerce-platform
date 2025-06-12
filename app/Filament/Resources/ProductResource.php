@@ -280,7 +280,7 @@ class ProductResource extends Resource
                                     ->searchable()
                                     ->preload()
                                     ->nullable(),
-                                
+
                                 Repeater::make('productColors')
                                     ->relationship('productColors')
                                     ->label(__('Variants Information'))

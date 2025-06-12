@@ -14,7 +14,7 @@ class StoreCheckoutRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true; // Allow all users (authenticated or guests) to make this request
+        return true;
     }
 
     /**
@@ -23,6 +23,9 @@ class StoreCheckoutRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'country_id' => 'required|exists:countries,id',
+            'governorate_id' => 'required|exists:governorates,id',
+            'city_id' => 'required|exists:cities,id',
             'payment_method_id' => ['required', 'exists:payment_methods,id'],
             'name' => ['required', 'string', 'max:255'],
             'address' => ['required', 'string', 'max:500'],
@@ -36,15 +39,14 @@ class StoreCheckoutRequest extends FormRequest
                 'required',
                 'string',
                 'min:10',
-                // Uncomment if you want to block specific phone numbers:
-                // function ($attribute, $value, $fail) {
-                //     foreach ($this->generatePhoneVariations($value) as $variation) {
-                //         if (GeneralHelper::isPhoneBlocked($variation)) {
-                //             $fail('The phone number is blocked. Please contact support at ' . route('contact.us') . '.');
-                //             break;
-                //         }
-                //     }
-                // },
+                 function ($attribute, $value, $fail) {
+                     foreach ($this->generatePhoneVariations($value) as $variation) {
+                         if (GeneralHelper::isPhoneBlocked($variation)) {
+                             $fail('The phone number is blocked. Please contact support');
+                             break;
+                         }
+                     }
+                 },
             ],
             'second_phone' => [
                 'sometimes',
