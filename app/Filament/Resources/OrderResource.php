@@ -1105,8 +1105,7 @@ class OrderResource extends Resource
                             ->options(OrderStatus::class)
                             ->required(),
                         TextInput::make('display_address')
-                            ->label('Address')
-                            ->disabled(),
+                            ->label(__('Address')),
                         Forms\Components\MarkdownEditor::make('notes')
                             ->label(__('Notes'))
                             ->columnSpan('full'),
