@@ -488,6 +488,7 @@ class CheckoutController extends Controller
 
         try {
             $orderData = [
+                'address' => $data['address'],
                 'payment_method_id' => $data['payment_method_id'],
                 'user_id' => Auth::guard('sanctum')->id(),
                 'shipping_type_id' => $cart->shipping_type_id,
