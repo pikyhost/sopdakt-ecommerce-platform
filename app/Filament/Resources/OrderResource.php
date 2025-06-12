@@ -1085,6 +1085,32 @@ class OrderResource extends Resource
                 ->default(fn () => (string) Str::uuid())
                 ->dehydrated(),
             Wizard::make([
+                Step::make(__('Order Details'))
+                    ->schema([
+                        Select::make('user_id')
+                            ->live()
+                            ->hidden(fn (Get $get) => $get('contact_id'))
+                            ->relationship('user', 'name')
+                            ->label(__('Customer')),
+
+                        Select::make('contact_id')
+                            ->live()
+                            ->hidden(fn (Get $get) => $get('user_id'))
+                            ->relationship('contact', 'name')
+                            ->label(__('Contact')),
+
+                        Forms\Components\ToggleButtons::make('status')
+                            ->label(__('Status'))
+                            ->inline()
+                            ->options(OrderStatus::class)
+                            ->required(),
+                        TextInput::make('display_address')
+                            ->label('Address')
+                            ->disabled(),
+                        Forms\Components\MarkdownEditor::make('notes')
+                            ->label(__('Notes'))
+                            ->columnSpan('full'),
+                    ]),
                 Step::make(__('Order Items'))
                     ->schema([
                         Repeater::make('items')
@@ -1268,16 +1294,6 @@ class OrderResource extends Resource
                             ->readOnly()
                             ->label(__('Total')),
                     ])->columns(2),
-
-                Step::make(__('Order Details'))
-                    ->schema([
-                        TextInput::make('display_address')
-                            ->label('Address')
-                            ->disabled(),
-                        Forms\Components\MarkdownEditor::make('notes')
-                            ->label(__('Notes'))
-                            ->columnSpan('full'),
-                    ]),
             ])->columnSpanFull()->skippable()
         ]);
     }
