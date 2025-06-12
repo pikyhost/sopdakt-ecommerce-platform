@@ -1104,7 +1104,7 @@ class OrderResource extends Resource
                             ->inline()
                             ->options(OrderStatus::class)
                             ->required(),
-                        TextInput::make('display_address')
+                        Forms\Components\Textarea::make('display_address')
                             ->label(__('Address')),
                         Forms\Components\MarkdownEditor::make('notes')
                             ->label(__('Notes'))
