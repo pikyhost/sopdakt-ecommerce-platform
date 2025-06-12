@@ -117,7 +117,7 @@ class OrderResource extends Resource
                     ->label(__('Number'))
                     ->searchable(),
 
-                TextColumn::make('display_address')
+                TextColumn::make('address')
                     ->label('Address')
                     ->searchable()
                     ->sortable(),
