@@ -4,17 +4,12 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\WheelSpinResource\Pages;
 use App\Models\WheelSpin;
-use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Concerns\Translatable;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 
 class WheelSpinResource extends Resource
 {
-    use Translatable;
-
     protected static ?string $model = WheelSpin::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-path-rounded-square';
