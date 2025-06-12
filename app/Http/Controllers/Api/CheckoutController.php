@@ -501,7 +501,7 @@ class CheckoutController extends Controller
                 'tax_amount' => $cart->tax_amount,
                 'subtotal' => $cart->subtotal,
                 'total' => $cart->total,
-                'status' => OrderStatus::Shipping,
+                'status' => OrderStatus::Pending,
                 'notes' => $data['notes'] ?? null,
                 'checkout_token' => $checkoutToken,
                 'tracking_number' => null,
