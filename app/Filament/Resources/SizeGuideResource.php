@@ -156,6 +156,14 @@ class SizeGuideResource extends Resource
                         }
                         return __('Not set');
                     }),
+                Tables\Columns\TextColumn::make('age_range')
+                    ->label(__('Age Range'))
+                    ->getStateUsing(function ($record) {
+                        if ($record->min_age && $record->max_age) {
+                            return "{$record->min_age} - {$record->max_age} " . __('years');
+                        }
+                        return __('Not set');
+                    }),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('Created At'))
                     ->dateTime()
