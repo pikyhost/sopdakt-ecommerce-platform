@@ -56,6 +56,7 @@ class SizeGuideResource extends Resource
                             ->required()
                             ->unique(ignoreRecord: true),
                         FileUpload::make('image_path')
+                            ->columnSpanFull()
                             ->label(__('Size Guide Image'))
                             ->image()
                             ->required()
