@@ -49,22 +49,9 @@ class SizeRecommendationController extends Controller
         return response()->json([
             'recommended_size' => $recommendation['size'],
             'image_url' => $imageUrl,
-            'fit_score' => round($recommendation['fit_score'] * 100),
-            'explanation' => $recommendation['explanation'],
+//            'fit_score' => round($recommendation['fit_score'] * 100),
+//            'explanation' => $recommendation['explanation'],
             'message' => "Recommended size: {$recommendation['size']}",
-            'size_guide' => $sizeGuide ? [
-                'height_range' => $sizeGuide->min_height && $sizeGuide->max_height
-                    ? "{$sizeGuide->min_height} - {$sizeGuide->max_height} cm"
-                    : null,
-                'weight_range' => $sizeGuide->min_weight && $sizeGuide->max_weight
-                    ? "{$sizeGuide->min_weight} - {$sizeGuide->max_weight} kg"
-                    : null,
-                'shoulder_range' => $sizeGuide->min_shoulder_width && $sizeGuide->max_shoulder_width
-                    ? "{$sizeGuide->min_shoulder_width} - {$sizeGuide->max_shoulder_width} cm"
-                    : null,
-                'bust_measurement' => $sizeGuide->bust_measurement,
-                'length_measurement' => $sizeGuide->length_measurement,
-            ] : null
         ]);
     }
 }

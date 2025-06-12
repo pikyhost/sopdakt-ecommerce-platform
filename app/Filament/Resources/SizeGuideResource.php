@@ -51,6 +51,7 @@ class SizeGuideResource extends Resource
                 Section::make(__('Size Information'))
                     ->schema([
                         Select::make('size_id')
+                            ->columnSpanFull()
                             ->label(__('Size'))
                             ->relationship('size', 'name')
                             ->required()
