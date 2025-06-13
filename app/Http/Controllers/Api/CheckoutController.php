@@ -113,8 +113,7 @@ class CheckoutController extends Controller
                     'governorate_id' => $cart->governorate_id,
                     'city_id' => $cart->city_id,
                 ]);
-
-                $request->authenticate();
+                
                 $user = Auth::guard('sanctum')->user();
 
                 $user->addresses()->create([
