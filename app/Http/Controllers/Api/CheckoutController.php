@@ -37,12 +37,6 @@ class CheckoutController extends Controller
     /**
      * Save or update contact/user information
      */
-    /**
-     * Save or update contact/user information
-     */
-    /**
-     * Save or update contact/user information
-     */
     private function saveContact(array $data, Cart $cart): User|Contact
     {
         if (Auth::guard('sanctum')->check()) {
@@ -188,7 +182,7 @@ class CheckoutController extends Controller
             $orderData = [
                 'address' => $orderAddress,
                 'payment_method_id' => $data['payment_method_id'],
-                'user_id' => Auth::guard('sanctum')->id(),
+                'user_id' => $contact instanceof User ? $contact->id : Auth::guard('sanctum')->id(),
                 'shipping_type_id' => $cart->shipping_type_id,
                 'coupon_id' => $cart->coupon_id,
                 'shipping_cost' => $cart->shipping_cost,
@@ -206,22 +200,25 @@ class CheckoutController extends Controller
             ];
 
             // Update order location data if shipping to different address
-            if (Auth::guard('sanctum')->check() && isset($data['ship_to_different_address']) && $data['ship_to_different_address']) {
+            if (($contact instanceof User || Auth::guard('sanctum')->check()) && isset($data['ship_to_different_address']) && $data['ship_to_different_address']) {
                 $orderData['country_id'] = $data['shipping_country_id'] ?? $cart->country_id;
                 $orderData['governorate_id'] = $data['shipping_governorate_id'] ?? $cart->governorate_id;
                 $orderData['city_id'] = $data['shipping_city_id'] ?? $cart->city_id;
             }
 
-            if (!Auth::guard('sanctum')->check() && $contact instanceof Contact) {
+            // Set contact_id only for guest users (not newly created accounts)
+            if (!($contact instanceof User) && !Auth::guard('sanctum')->check() && $contact instanceof Contact) {
                 $orderData['contact_id'] = $contact->id;
+                $orderData['user_id'] = null; // Ensure user_id is null for guest orders
             }
 
             $order = Order::create($orderData);
 
             // Record coupon usage if applicable
-            if ($cart->coupon_id && Auth::guard('sanctum')->check()) {
+            if ($cart->coupon_id && ($contact instanceof User || Auth::guard('sanctum')->check())) {
+                $userId = $contact instanceof User ? $contact->id : Auth::guard('sanctum')->id();
                 Coupon::find($cart->coupon_id)->usages()->create([
-                    'user_id' => Auth::guard('sanctum')->id(),
+                    'user_id' => $userId,
                     'order_id' => $order->id,
                 ]);
             }
@@ -277,15 +274,29 @@ class CheckoutController extends Controller
             $cart->delete();
 
             // Send email notification
-            $recipientEmail = Auth::guard('sanctum')->check() ? Auth::guard('sanctum')->user()->email : ($contact->email ?? null);
-            $language = Auth::guard('sanctum')->check() ? Auth::guard('sanctum')->user()->preferred_language : (request()->getPreferredLanguage(['en', 'ar']) ?? 'en');
+            $recipientEmail = null;
+            $language = 'en';
+
+            if ($contact instanceof User) {
+                // Newly created user account
+                $recipientEmail = $contact->email;
+                $language = $contact->preferred_language ?? 'en';
+            } elseif (Auth::guard('sanctum')->check()) {
+                // Existing authenticated user
+                $recipientEmail = Auth::guard('sanctum')->user()->email;
+                $language = Auth::guard('sanctum')->user()->preferred_language ?? 'en';
+            } elseif ($contact instanceof Contact) {
+                // Guest user
+                $recipientEmail = $contact->email;
+                $language = request()->getPreferredLanguage(['en', 'ar']) ?? 'en';
+            }
 
             if ($recipientEmail) {
                 Mail::to($recipientEmail)->locale($language)->send(new OrderStatusMail($order, $order->status));
             }
 
-            // Send guest invitation
-            if (!Auth::guard('sanctum')->check() && $contact instanceof Contact) {
+            // Send guest invitation only for actual guest users (not newly created accounts)
+            if (!($contact instanceof User) && !Auth::guard('sanctum')->check() && $contact instanceof Contact) {
                 $locale = request()->getPreferredLanguage(['en', 'ar']) ?? 'en';
                 $invitation = Invitation::create([
                     'email' => $contact->email,
@@ -319,9 +330,7 @@ class CheckoutController extends Controller
             ], 500);
         }
     }
-    /**
-     * Store a new order
-     */
+
     public function store(StoreCheckoutRequest $request): JsonResponse
     {
         try {
