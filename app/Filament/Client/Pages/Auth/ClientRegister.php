@@ -14,8 +14,6 @@ use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Ysfkaya\FilamentPhoneInput\Forms\PhoneInput;
 
@@ -151,6 +149,6 @@ class ClientRegister extends BaseRegister
 
     public function hasLogo(): bool
     {
-        return true; // Disable the logo for this specific page
+        return true;
     }
 }
