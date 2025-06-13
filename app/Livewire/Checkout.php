@@ -558,3 +558,32 @@ class Checkout extends Component
         ]);
     }
 }
+
+/*
+ *
+ *
+
+
+                       Select::make('user_id')
+    ->live()
+    ->hidden(fn (Get $get) => $get('contact_id'))
+    ->label(__('Customer'))
+    ->options(fn () => \App\Models\User::query()
+        ->pluck('name', 'id')
+        ->filter(fn ($label) => $label !== null)
+    ),
+
+Select::make('contact_id')
+    ->live()
+    ->hidden(fn (Get $get) => $get('user_id'))
+    ->label(__('Contact'))
+    ->options(fn () => \App\Models\Contact::query()
+        ->pluck('name', 'id')
+        ->filter(fn ($label) => $label !== null)
+    ),
+
+
+
+
+
+ * */
