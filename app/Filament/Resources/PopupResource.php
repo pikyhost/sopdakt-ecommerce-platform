@@ -137,6 +137,7 @@ class PopupResource extends Resource
                         ->helperText(__('display_rules_helper')),
 
                     Select::make('specific_pages')
+                        ->columnSpanFull()
                         ->label(__('Page Rules'))
                         ->multiple()
                         ->searchable()
