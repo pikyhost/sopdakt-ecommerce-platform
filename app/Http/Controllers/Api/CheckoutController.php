@@ -35,6 +35,275 @@ use Spatie\Permission\Models\Role;
 class CheckoutController extends Controller
 {
     /**
+     * Save or update contact/user information
+     */
+    private function saveContact(array $data, Cart $cart): User|Contact
+    {
+        if (Auth::guard('sanctum')->check()) {
+            // Update authenticated user
+            $user = Auth::guard('sanctum')->user();
+
+            if ($user->email !== $data['email'] && User::where('email', $data['email'])->exists()) {
+                throw new \Exception('This email is already in use by another user.');
+            }
+
+            $user->update([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'phone' => $data['phone'],
+                'second_phone' => $data['second_phone'] ?? null,
+            ]);
+
+            $primaryAddress = $user->addresses()->where('is_primary', true)->first();
+
+            if ($primaryAddress) {
+                $primaryAddress->update([
+                    'address' => $data['address'],
+                    'country_id' => $cart->country_id ?? null,
+                    'governorate_id' => $cart->governorate_id ?? null,
+                    'city_id' => $cart->city_id ?? null,
+                ]);
+            } else {
+                $user->addresses()->create([
+                    'address' => $data['address'],
+                    'address_name' => 'home',
+                    'country_id' => $cart->country_id ?? null,
+                    'governorate_id' => $cart->governorate_id ?? null,
+                    'city_id' => $cart->city_id ?? null,
+                    'is_primary' => true,
+                ]);
+            }
+
+            // Handle shipping address if different from billing
+            if (isset($data['ship_to_different_address']) && $data['ship_to_different_address']) {
+                // Check if shipping address already exists
+                $shippingAddress = $user->addresses()->where('address_name', 'shipping')->first();
+
+                $shippingData = [
+                    'address' => $data['shipping_address'],
+                    'country_id' => $data['shipping_country_id'] ?? $cart->country_id,
+                    'governorate_id' => $data['shipping_governorate_id'] ?? $cart->governorate_id,
+                    'city_id' => $data['shipping_city_id'] ?? $cart->city_id,
+                ];
+
+                if ($shippingAddress) {
+                    $shippingAddress->update($shippingData);
+                } else {
+                    $user->addresses()->create([
+                        ...$shippingData,
+                        'address_name' => 'shipping',
+                        'is_primary' => false,
+                    ]);
+                }
+            }
+
+            return $user;
+        } else {
+            $sessionId = request()->header('x-session-id');
+
+            if (isset($data['create_account']) && $data['create_account']) {
+                // Create new user
+                $user = User::create([
+                    'name' => $data['name'],
+                    'email' => $data['email'],
+                    'phone' => $data['phone'],
+                    'second_phone' => $data['second_phone'] ?? null,
+                    'password' => bcrypt($data['password']),
+                    'country_id' => $cart->country_id,
+                    'governorate_id' => $cart->governorate_id,
+                    'city_id' => $cart->city_id,
+                ]);
+
+                Auth::guard('sanctum')->login($user);
+
+                $user->addresses()->create([
+                    'address' => $data['address'],
+                    'country_id' => $cart->country_id ?? null,
+                    'governorate_id' => $cart->governorate_id ?? null,
+                    'city_id' => $cart->city_id ?? null,
+                    'address_name' => 'home',
+                    'is_primary' => true,
+                ]);
+
+                Contact::where('session_id', $sessionId)->delete();
+
+                return $user;
+            } else {
+                // Update or create guest contact
+                $guestContact = Contact::where('session_id', $sessionId)->first();
+
+                $contactData = [
+                    'session_id' => $sessionId,
+                    'name' => $data['name'],
+                    'email' => $data['email'],
+                    'phone' => $data['phone'],
+                    'second_phone' => $data['second_phone'] ?? null,
+                    'address' => $data['address'],
+                    'country_id' => $cart->country_id,
+                    'governorate_id' => $cart->governorate_id,
+                    'city_id' => $cart->city_id,
+                ];
+
+                if ($guestContact) {
+                    $guestContact->update($contactData);
+                } else {
+                    $guestContact = Contact::create($contactData);
+                }
+
+                return $guestContact;
+            }
+        }
+    }
+
+    private function createOrderManually(Cart $cart, User|Contact $contact, array $data, string $checkoutToken): JsonResponse
+    {
+        DB::beginTransaction();
+
+        try {
+            // Determine order address based on shipping preference
+            $orderAddress = $data['address']; // Default to billing address
+
+            // For authenticated users, check if they want to ship to different address
+            if (Auth::guard('sanctum')->check() && isset($data['ship_to_different_address']) && $data['ship_to_different_address']) {
+                $orderAddress = $data['shipping_address'];
+            }
+
+            $orderData = [
+                'address' => $orderAddress,
+                'payment_method_id' => $data['payment_method_id'],
+                'user_id' => Auth::guard('sanctum')->id(),
+                'shipping_type_id' => $cart->shipping_type_id,
+                'coupon_id' => $cart->coupon_id,
+                'shipping_cost' => $cart->shipping_cost,
+                'country_id' => $cart->country_id,
+                'governorate_id' => $cart->governorate_id,
+                'city_id' => $cart->city_id,
+                'tax_percentage' => $cart->tax_percentage,
+                'tax_amount' => $cart->tax_amount,
+                'subtotal' => $cart->subtotal,
+                'total' => $cart->total,
+                'status' => OrderStatus::Pending,
+                'notes' => $data['notes'] ?? null,
+                'checkout_token' => $checkoutToken,
+                'tracking_number' => null,
+            ];
+
+            // Update order location data if shipping to different address
+            if (Auth::guard('sanctum')->check() && isset($data['ship_to_different_address']) && $data['ship_to_different_address']) {
+                $orderData['country_id'] = $data['shipping_country_id'] ?? $cart->country_id;
+                $orderData['governorate_id'] = $data['shipping_governorate_id'] ?? $cart->governorate_id;
+                $orderData['city_id'] = $data['shipping_city_id'] ?? $cart->city_id;
+            }
+
+            if (!Auth::guard('sanctum')->check() && $contact instanceof Contact) {
+                $orderData['contact_id'] = $contact->id;
+            }
+
+            $order = Order::create($orderData);
+
+            // Record coupon usage if applicable
+            if ($cart->coupon_id && Auth::guard('sanctum')->check()) {
+                Coupon::find($cart->coupon_id)->usages()->create([
+                    'user_id' => Auth::guard('sanctum')->id(),
+                    'order_id' => $order->id,
+                ]);
+            }
+
+            foreach ($cart->items as $item) {
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => $item->product_id,
+                    'bundle_id' => $item->bundle_id,
+                    'size_id' => $item->size_id,
+                    'color_id' => $item->color_id,
+                    'quantity' => $item->quantity,
+                    'price_per_unit' => $item->price_per_unit,
+                    'subtotal' => $item->subtotal,
+                ]);
+
+                if ($item->product_id) {
+                    $product = Product::find($item->product_id);
+
+                    if ($product) {
+                        $product->decrement('quantity', $item->quantity);
+
+                        $variant = $product->productColors()
+                            ->where('color_id', $item->color_id)
+                            ->first()
+                            ?->productColorSizes()
+                            ->where('size_id', $item->size_id)
+                            ->first();
+
+                        if ($variant) {
+                            $variant->decrement('quantity', $item->quantity);
+                        }
+
+                        $product->inventory()?->decrement('quantity', $item->quantity);
+
+                        Transaction::create([
+                            'product_id' => $item->product_id,
+                            'type' => TransactionType::SALE,
+                            'quantity' => $item->quantity,
+                            'notes' => "Sale of {$item->quantity} units for Order #{$order->id}",
+                        ]);
+                    }
+                }
+            }
+
+            // Notify admins of low stock
+            $productIds = $order->items->pluck('product_id')->filter()->unique();
+            $products = Product::whereIn('id', $productIds)->get();
+            StockLevelNotifier::notifyAdminsForLowStock($products);
+
+            // Clear cart
+            $cart->items()->delete();
+            $cart->delete();
+
+            // Send email notification
+            $recipientEmail = Auth::guard('sanctum')->check() ? Auth::guard('sanctum')->user()->email : ($contact->email ?? null);
+            $language = Auth::guard('sanctum')->check() ? Auth::guard('sanctum')->user()->preferred_language : (request()->getPreferredLanguage(['en', 'ar']) ?? 'en');
+
+            if ($recipientEmail) {
+                Mail::to($recipientEmail)->locale($language)->send(new OrderStatusMail($order, $order->status));
+            }
+
+            // Send guest invitation
+            if (!Auth::guard('sanctum')->check() && $contact instanceof Contact) {
+                $locale = request()->getPreferredLanguage(['en', 'ar']) ?? 'en';
+                $invitation = Invitation::create([
+                    'email' => $contact->email,
+                    'name' => $contact->name ?? null,
+                    'phone' => $contact->phone ?? null,
+                    'preferred_language' => $locale,
+                    'role_id' => Role::where('name', UserRole::Client->value)->first()->id,
+                ]);
+
+                Mail::to($contact->email)->locale($locale)->send(new GuestInvitationMail($invitation));
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'data' => [
+                    'order_id' => $order->id,
+                    'shipping_cost' => $order->shipping_cost,
+                    'total' => $order->total,
+                    'status' => $order->status,
+                    'tracking_number' => $order->tracking_number,
+                    'created_at' => $order->created_at->toIso8601String(),
+                ],
+                'message' => 'Order placed successfully',
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'error' => 'We encountered an issue: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Store a new order
      */
     public function store(StoreCheckoutRequest $request): JsonResponse
@@ -146,104 +415,6 @@ class CheckoutController extends Controller
             return response()->json([
                 'error' => $e->getMessage(),
             ], 500);
-        }
-    }
-
-    /**
-     * Save or update contact/user information
-     */
-    private function saveContact(array $data, Cart $cart): User|Contact
-    {
-        if (Auth::guard('sanctum')->check()) {
-            // Update authenticated user
-            $user = Auth::guard('sanctum')->user();
-
-            if ($user->email !== $data['email'] && User::where('email', $data['email'])->exists()) {
-                throw new \Exception('This email is already in use by another user.');
-            }
-
-            $user->update([
-                'name' => $data['name'],
-                'email' => $data['email'],
-                'phone' => $data['phone'],
-                'second_phone' => $data['second_phone'] ?? null,
-            ]);
-
-            $primaryAddress = $user->addresses()->where('is_primary', true)->first();
-
-            if ($primaryAddress) {
-                $primaryAddress->update([
-                    'address' => $data['address'],
-                    'country_id' => $cart->country_id ?? null,
-                    'governorate_id' => $cart->governorate_id ?? null,
-                    'city_id' => $cart->city_id ?? null,
-                ]);
-            } else {
-                $user->addresses()->create([
-                    'address' => $data['address'],
-                    'address_name' => 'home',
-                    'country_id' => $cart->country_id ?? null,
-                    'governorate_id' => $cart->governorate_id ?? null,
-                    'city_id' => $cart->city_id ?? null,
-                    'is_primary' => true,
-                ]);
-            }
-
-            return $user;
-        } else {
-            $sessionId = request()->header('x-session-id');
-
-            if (isset($data['create_account']) && $data['create_account']) {
-                // Create new user
-                $user = User::create([
-                    'name' => $data['name'],
-                    'email' => $data['email'],
-                    'phone' => $data['phone'],
-                    'second_phone' => $data['second_phone'] ?? null,
-                    'password' => bcrypt($data['password']),
-                    'country_id' => $cart->country_id,
-                    'governorate_id' => $cart->governorate_id,
-                    'city_id' => $cart->city_id,
-                ]);
-
-                Auth::guard('sanctum')->login($user);
-
-                $user->addresses()->create([
-                    'address' => $data['address'],
-                    'country_id' => $cart->country_id ?? null,
-                    'governorate_id' => $cart->governorate_id ?? null,
-                    'city_id' => $cart->city_id ?? null,
-                    'address_name' => 'home',
-                    'is_primary' => true,
-                ]);
-
-                Contact::where('session_id', $sessionId)->delete();
-
-                return $user;
-            } else {
-                // Update or create guest contact
-                $guestContact = Contact::where('session_id', $sessionId)->first();
-
-                $contactData = [
-                    'session_id' => $sessionId,
-                    'name' => $data['name'],
-                    'email' => $data['email'],
-                    'phone' => $data['phone'],
-                    'second_phone' => $data['second_phone'] ?? null,
-                    'address' => $data['address'],
-                    'country_id' => $cart->country_id,
-                    'governorate_id' => $cart->governorate_id,
-                    'city_id' => $cart->city_id,
-                ];
-
-                if ($guestContact) {
-                    $guestContact->update($contactData);
-                } else {
-                    $guestContact = Contact::create($contactData);
-                }
-
-                return $guestContact;
-            }
         }
     }
 
@@ -475,142 +646,6 @@ class CheckoutController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Unexpected error during payment: ' . $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     * Create order manually (e.g., for COD)
-     */
-    private function createOrderManually(Cart $cart, User|Contact $contact, array $data, string $checkoutToken): JsonResponse
-    {
-        DB::beginTransaction();
-
-        try {
-            $orderData = [
-                'address' => $data['address'],
-                'payment_method_id' => $data['payment_method_id'],
-                'user_id' => Auth::guard('sanctum')->id(),
-                'shipping_type_id' => $cart->shipping_type_id,
-                'coupon_id' => $cart->coupon_id,
-                'shipping_cost' => $cart->shipping_cost,
-                'country_id' => $cart->country_id,
-                'governorate_id' => $cart->governorate_id,
-                'city_id' => $cart->city_id,
-                'tax_percentage' => $cart->tax_percentage,
-                'tax_amount' => $cart->tax_amount,
-                'subtotal' => $cart->subtotal,
-                'total' => $cart->total,
-                'status' => OrderStatus::Pending,
-                'notes' => $data['notes'] ?? null,
-                'checkout_token' => $checkoutToken,
-                'tracking_number' => null,
-            ];
-
-            if (!Auth::guard('sanctum')->check() && $contact instanceof Contact) {
-                $orderData['contact_id'] = $contact->id;
-            }
-
-            $order = Order::create($orderData);
-
-            // Record coupon usage if applicable
-            if ($cart->coupon_id && Auth::guard('sanctum')->check()) {
-                Coupon::find($cart->coupon_id)->usages()->create([
-                    'user_id' => Auth::guard('sanctum')->id(),
-                    'order_id' => $order->id,
-                ]);
-            }
-
-            foreach ($cart->items as $item) {
-                OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $item->product_id,
-                    'bundle_id' => $item->bundle_id,
-                    'size_id' => $item->size_id,
-                    'color_id' => $item->color_id,
-                    'quantity' => $item->quantity,
-                    'price_per_unit' => $item->price_per_unit,
-                    'subtotal' => $item->subtotal,
-                ]);
-
-                if ($item->product_id) {
-                    $product = Product::find($item->product_id);
-
-                    if ($product) {
-                        $product->decrement('quantity', $item->quantity);
-
-                        $variant = $product->productColors()
-                            ->where('color_id', $item->color_id)
-                            ->first()
-                            ?->productColorSizes()
-                            ->where('size_id', $item->size_id)
-                            ->first();
-
-                        if ($variant) {
-                            $variant->decrement('quantity', $item->quantity);
-                        }
-
-                        $product->inventory()?->decrement('quantity', $item->quantity);
-
-                        Transaction::create([
-                            'product_id' => $item->product_id,
-                            'type' => TransactionType::SALE,
-                            'quantity' => $item->quantity,
-                            'notes' => "Sale of {$item->quantity} units for Order #{$order->id}",
-                        ]);
-                    }
-                }
-            }
-
-            // Notify admins of low stock
-            $productIds = $order->items->pluck('product_id')->filter()->unique();
-            $products = Product::whereIn('id', $productIds)->get();
-            StockLevelNotifier::notifyAdminsForLowStock($products);
-
-            // Clear cart
-            $cart->items()->delete();
-            $cart->delete();
-
-            // Send email notification
-            $recipientEmail = Auth::guard('sanctum')->check() ? Auth::guard('sanctum')->user()->email : ($contact->email ?? null);
-            $language = Auth::guard('sanctum')->check() ? Auth::guard('sanctum')->user()->preferred_language : (request()->getPreferredLanguage(['en', 'ar']) ?? 'en');
-
-            if ($recipientEmail) {
-                Mail::to($recipientEmail)->locale($language)->send(new OrderStatusMail($order, $order->status));
-            }
-
-            // Send guest invitation
-            if (!Auth::guard('sanctum')->check() && $contact instanceof Contact) {
-                $locale = request()->getPreferredLanguage(['en', 'ar']) ?? 'en';
-                $invitation = Invitation::create([
-                    'email' => $contact->email,
-                    'name' => $contact->name ?? null,
-                    'phone' => $contact->phone ?? null,
-                    'preferred_language' => $locale,
-                    'role_id' => Role::where('name', UserRole::Client->value)->first()->id,
-                ]);
-
-                Mail::to($contact->email)->locale($locale)->send(new GuestInvitationMail($invitation));
-            }
-
-            DB::commit();
-
-            return response()->json([
-                'data' => [
-                    'order_id' => $order->id,
-                    'shipping_cost' => $order->shipping_cost,
-                    'total' => $order->total,
-                    'status' => $order->status,
-                    'tracking_number' => $order->tracking_number,
-                    'created_at' => $order->created_at->toIso8601String(),
-                ],
-                'message' => 'Order placed successfully',
-            ], 201);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'error' => 'We encountered an issue: ' . $e->getMessage(),
             ], 500);
         }
     }

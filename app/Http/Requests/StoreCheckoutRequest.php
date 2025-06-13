@@ -57,6 +57,13 @@ class StoreCheckoutRequest extends FormRequest
             'notes' => ['nullable', 'string'],
             'create_account' => ['boolean'],
             'password' => ['nullable', 'min:6', 'required_if:create_account,true'],
+
+            // Shipping address fields
+            'ship_to_different_address' => 'nullable|boolean',
+            'shipping_address' => 'required_if:ship_to_different_address,true|string|max:500',
+            'shipping_country_id' => 'nullable|integer|exists:countries,id',
+            'shipping_governorate_id' => 'nullable|integer|exists:governorates,id',
+            'shipping_city_id' => 'nullable|integer|exists:cities,id',
         ];
     }
 
