@@ -123,13 +123,13 @@ class OrderResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('country.name')
-                      ->toggleable(isToggledHiddenByDefault: true)
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->label(__('Country'))
                     ->placeholder('-')
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('governorate.name')
-                      ->toggleable(isToggledHiddenByDefault: true)
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->label(__('governorate'))
                     ->placeholder('-')
                     ->searchable(),
@@ -155,7 +155,7 @@ class OrderResource extends Resource
 //                    ->searchable(),
 
                 TextColumn::make('tracking_number')  // this is thetracking_number of j and t
-                    ->copyable()
+                ->copyable()
                     ->placeholder('-')
                     ->label(__('J&T Express Tracking Number'))
                     ->searchable()
@@ -183,7 +183,7 @@ class OrderResource extends Resource
                     ->label(__('Aramex Shipment Waybill URL')) // Best universal term
                     ->searchable()
                     ->sortable()
-                    ->url(fn ($record) => $record->aramex_tracking_url, true)
+                    ->url(fn($record) => $record->aramex_tracking_url, true)
                     ->openUrlInNewTab()
                     ->icon('heroicon-o-document-text')
                     ->color('info')
@@ -239,7 +239,7 @@ class OrderResource extends Resource
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('shippingType.name')
-                      ->toggleable(isToggledHiddenByDefault: true)
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->label(__('Shipping Type'))
                     ->searchable()
                     ->numeric()
@@ -247,7 +247,7 @@ class OrderResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('paymentMethod.name')
-                      ->toggleable(isToggledHiddenByDefault: true)
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->label(__('Payment Method'))
                     ->searchable()
                     ->numeric()
@@ -255,7 +255,7 @@ class OrderResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('coupon.id')
-                      ->toggleable(isToggledHiddenByDefault: true)
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->label(__('Coupon ID'))
                     ->searchable()
                     ->numeric()
@@ -263,21 +263,21 @@ class OrderResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('shipping_cost')
-                      ->toggleable(isToggledHiddenByDefault: true)
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->label(__('Shipping Cost'))
                     ->numeric()
                     ->placeholder('-')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('tax_percentage')
-                      ->toggleable(isToggledHiddenByDefault: true)
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->label(__('Tax Percentage'))
                     ->numeric()
                     ->placeholder('-')
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('tax_amount')
-                      ->toggleable(isToggledHiddenByDefault: true)
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->label(__('Tax Amount'))
                     ->numeric()
                     ->placeholder('-')
@@ -310,102 +310,102 @@ class OrderResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-        // First Row: Status and Date Range
-        SelectFilter::make('status')
-            ->label(__('Status'))
-            ->multiple()
-            ->options(
-                collect(OrderStatus::cases())
-                    ->mapWithKeys(fn($status) => [$status->value => $status->getLabel()])
-                    ->toArray()
-            )
-            ->columnSpan(['md' => 2, 'xl' => 1]),
-
-        Filter::make('created_at')
-            ->form([
-                DatePicker::make('created_from')
-                    ->label(__('From'))
-                    ->columnSpan(1),
-                DatePicker::make('created_until')
-                    ->label(__('To'))
-                    ->columnSpan(1),
-            ])
-            ->columns(2)
-            ->query(function (Builder $query, array $data): Builder {
-                return $query
-                    ->when($data['created_from'] ?? null,
-                        fn(Builder $q, $date) => $q->whereDate('created_at', '>=', $date))
-                    ->when($data['created_until'] ?? null,
-                        fn(Builder $q, $date) => $q->whereDate('created_at', '<=', $date));
-            })
-            ->columnSpanFull(),
-
-        // Second Row: Location Filters
-        Filter::make('location')
-            ->form([
-                Select::make('country_ids')
-                    ->label(__('Countries'))
+                // First Row: Status and Date Range
+                SelectFilter::make('status')
+                    ->label(__('Status'))
                     ->multiple()
-                    ->live()
-                    ->options(fn() => Country::pluck('name', 'id'))
-                    ->columnSpan(1),
+                    ->options(
+                        collect(OrderStatus::cases())
+                            ->mapWithKeys(fn($status) => [$status->value => $status->getLabel()])
+                            ->toArray()
+                    )
+                    ->columnSpan(['md' => 2, 'xl' => 1]),
 
-                Select::make('governorate_ids')
-                    ->label(__('Governorates'))
-                    ->multiple()
-                    ->live()
-                    ->searchable()
-                    ->options(function (callable $get) {
-                        $countryIds = $get('country_ids');
-                        return empty($countryIds) ? [] : Governorate::whereIn('country_id', $countryIds)->pluck('name', 'id');
+                Filter::make('created_at')
+                    ->form([
+                        DatePicker::make('created_from')
+                            ->label(__('From'))
+                            ->columnSpan(1),
+                        DatePicker::make('created_until')
+                            ->label(__('To'))
+                            ->columnSpan(1),
+                    ])
+                    ->columns(2)
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when($data['created_from'] ?? null,
+                                fn(Builder $q, $date) => $q->whereDate('created_at', '>=', $date))
+                            ->when($data['created_until'] ?? null,
+                                fn(Builder $q, $date) => $q->whereDate('created_at', '<=', $date));
                     })
-                    ->columnSpan(1),
+                    ->columnSpanFull(),
 
-                Select::make('city_ids')
-                    ->label(__('Cities'))
-                    ->multiple()
-                    ->searchable()
-                    ->options(function (callable $get) {
-                        $governorateIds = $get('governorate_ids');
-                        return empty($governorateIds) ? [] : City::whereIn('governorate_id', $governorateIds)->pluck('name', 'id');
+                // Second Row: Location Filters
+                Filter::make('location')
+                    ->form([
+                        Select::make('country_ids')
+                            ->label(__('Countries'))
+                            ->multiple()
+                            ->live()
+                            ->options(fn() => Country::pluck('name', 'id'))
+                            ->columnSpan(1),
+
+                        Select::make('governorate_ids')
+                            ->label(__('Governorates'))
+                            ->multiple()
+                            ->live()
+                            ->searchable()
+                            ->options(function (callable $get) {
+                                $countryIds = $get('country_ids');
+                                return empty($countryIds) ? [] : Governorate::whereIn('country_id', $countryIds)->pluck('name', 'id');
+                            })
+                            ->columnSpan(1),
+
+                        Select::make('city_ids')
+                            ->label(__('Cities'))
+                            ->multiple()
+                            ->searchable()
+                            ->options(function (callable $get) {
+                                $governorateIds = $get('governorate_ids');
+                                return empty($governorateIds) ? [] : City::whereIn('governorate_id', $governorateIds)->pluck('name', 'id');
+                            })
+                            ->columnSpan(1),
+                    ])
+                    ->columns(['md' => 3])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when($data['country_ids'] ?? null,
+                                fn(Builder $q) => $q->whereIn('country_id', $data['country_ids']))
+                            ->when($data['governorate_ids'] ?? null,
+                                fn(Builder $q) => $q->whereIn('governorate_id', $data['governorate_ids']))
+                            ->when($data['city_ids'] ?? null,
+                                fn(Builder $q) => $q->whereIn('city_id', $data['city_ids']));
                     })
-                    ->columnSpan(1),
-            ])
-            ->columns(['md' => 3])
-            ->query(function (Builder $query, array $data): Builder {
-                return $query
-                    ->when($data['country_ids'] ?? null,
-                        fn(Builder $q) => $q->whereIn('country_id', $data['country_ids']))
-                    ->when($data['governorate_ids'] ?? null,
-                        fn(Builder $q) => $q->whereIn('governorate_id', $data['governorate_ids']))
-                    ->when($data['city_ids'] ?? null,
-                        fn(Builder $q) => $q->whereIn('city_id', $data['city_ids']));
-            })
-            ->indicateUsing(function (array $data) {
-                $indicators = [];
-                if (!empty($data['country_ids'])) {
-                    $countries = Country::whereIn('id', $data['country_ids'])->pluck('name')->implode(', ');
-                    $indicators[] = Indicator::make("Countries: $countries")->removeField('country_ids');
-                }
-                if (!empty($data['governorate_ids'])) {
-                    $governorates = Governorate::whereIn('id', $data['governorate_ids'])->pluck('name')->implode(', ');
-                    $indicators[] = Indicator::make("Governorates: $governorates")->removeField('governorate_ids');
-                }
-                if (!empty($data['city_ids'])) {
-                    $cities = City::whereIn('id', $data['city_ids'])->pluck('name')->implode(', ');
-                    $indicators[] = Indicator::make("Cities: $cities")->removeField('city_ids');
-                }
-                return $indicators;
-            })
-            ->columnSpanFull(),
+                    ->indicateUsing(function (array $data) {
+                        $indicators = [];
+                        if (!empty($data['country_ids'])) {
+                            $countries = Country::whereIn('id', $data['country_ids'])->pluck('name')->implode(', ');
+                            $indicators[] = Indicator::make("Countries: $countries")->removeField('country_ids');
+                        }
+                        if (!empty($data['governorate_ids'])) {
+                            $governorates = Governorate::whereIn('id', $data['governorate_ids'])->pluck('name')->implode(', ');
+                            $indicators[] = Indicator::make("Governorates: $governorates")->removeField('governorate_ids');
+                        }
+                        if (!empty($data['city_ids'])) {
+                            $cities = City::whereIn('id', $data['city_ids'])->pluck('name')->implode(', ');
+                            $indicators[] = Indicator::make("Cities: $cities")->removeField('city_ids');
+                        }
+                        return $indicators;
+                    })
+                    ->columnSpanFull(),
 
-        // Third Row: Query Builder
-        QueryBuilder::make()
-            ->columnSpanFull()
-            ->constraints([
-                NumberConstraint::make('id')->integer(),
-            ]),
-    ], Tables\Enums\FiltersLayout::AboveContentCollapsible)
+                // Third Row: Query Builder
+                QueryBuilder::make()
+                    ->columnSpanFull()
+                    ->constraints([
+                        NumberConstraint::make('id')->integer(),
+                    ]),
+            ], Tables\Enums\FiltersLayout::AboveContentCollapsible)
             ->actions([
 //                Tables\Actions\Action::make('trackOrder')
 //                ->label(__('actions.track_order'))
@@ -650,7 +650,6 @@ class OrderResource extends Resource
 //                    }),
 
 
-
                 Tables\Actions\Action::make('send_to_jt_express')
                     ->visible(fn(Order $record): bool => Setting::first()?->enable_jnt &&
                         is_null($record->tracking_number) &&
@@ -679,7 +678,7 @@ class OrderResource extends Resource
                         $record->status === OrderStatus::Preparing &&
                         !$record->bosta_delivery_id &&
                         ($record->user || $record->contact) &&
-                        ($record->address) &&  $record->city?->bosta_code &&
+                        ($record->address) && $record->city?->bosta_code &&
                         ($record->user?->phone ?? $record->contact?->phone)
                     )
                     ->requiresConfirmation()
@@ -787,8 +786,7 @@ class OrderResource extends Resource
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\ViewAction::make(),
                     Tables\Actions\EditAction::make(),
-                    ...collect(OrderStatus::cases())->map(fn($status) =>
-                    Tables\Actions\Action::make($status->value)
+                    ...collect(OrderStatus::cases())->map(fn($status) => Tables\Actions\Action::make($status->value)
                         ->label(__($status->getLabel()))
                         ->icon($status->getIcon())
                         ->color($status->getColor())
@@ -807,125 +805,300 @@ class OrderResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\ExportBulkAction::make()
                         ->formats([
-                        ExportFormat::Xlsx,
-                        ExportFormat::Csv,
-                    ])
+                            ExportFormat::Xlsx,
+                            ExportFormat::Csv,
+                        ])
                         ->icon('heroicon-o-arrow-down-tray')
                         ->color('success')
                         ->exporter(OrderExporter::class),
+
+                    // Fixed bulk status update actions
                     ...collect(OrderStatus::cases())
-                        ->filter(fn($status) => $status !== OrderStatus::Shipping) // Optionally exclude Shipping if you want to handle it differently
-                        ->map(fn($status) => Action::make($status->value)
+                        ->filter(fn($status) => $status !== OrderStatus::Shipping) // Exclude Shipping to handle separately
+                        ->map(fn($status) => Tables\Actions\BulkAction::make('bulk_' . $status->value)
                             ->label(__($status->getLabel()))
                             ->icon($status->getIcon())
                             ->color($status->getColor())
-                            ->action(fn($record) => self::updateOrderStatus($record, $status))
+                            ->requiresConfirmation()
+                            ->action(function (Collection $records) use ($status) {
+                                $successCount = 0;
+                                $errorCount = 0;
+
+                                foreach ($records as $record) {
+                                    try {
+                                        self::updateOrderStatus($record, $status, false); // No shipping integration for bulk
+                                        $successCount++;
+                                    } catch (\Exception $e) {
+                                        $errorCount++;
+                                        Log::error('Bulk status update failed', [
+                                            'order_id' => $record->id,
+                                            'status' => $status->value,
+                                            'error' => $e->getMessage()
+                                        ]);
+                                    }
+                                }
+
+                                if ($successCount > 0) {
+                                    Notification::make()
+                                        ->title(__('Bulk Status Update'))
+                                        ->body(__(':count orders updated to :status', [
+                                            'count' => $successCount,
+                                            'status' => $status->getLabel()
+                                        ]))
+                                        ->success()
+                                        ->send();
+                                }
+
+                                if ($errorCount > 0) {
+                                    Notification::make()
+                                        ->title(__('Some updates failed'))
+                                        ->body(__(':count orders failed to update', ['count' => $errorCount]))
+                                        ->warning()
+                                        ->send();
+                                }
+                            })
                         )->toArray(),
 
+                    // Fixed J&T Express bulk action
                     Tables\Actions\BulkAction::make('bulk_send_to_jt_express')
                         ->label(__('Send to J&T Express'))
                         ->icon('heroicon-o-paper-airplane')
+                        ->color('primary')
                         ->requiresConfirmation()
                         ->visible(fn() => Setting::first()?->enable_jnt)
                         ->action(function (Collection $records) {
-                            $jtExpress = new JtExpressService();
+                            $successCount = 0;
+                            $errorCount = 0;
 
                             foreach ($records as $record) {
+                                // Check if order is eligible for J&T Express
                                 if (
                                     $record->status === OrderStatus::Preparing &&
-                                    !$record->tracking_number &&
+                                    is_null($record->tracking_number) &&
+                                    is_null($record->bosta_delivery_id) &&
+                                    is_null($record->aramex_shipment_id) &&
                                     ($record->user || $record->contact) &&
-                                    ($record->user ? $record->user->addresses()->where('is_primary', true)->exists() : $record->contact->address) &&
+                                    ($record->address) &&
                                     ($record->user?->phone ?? $record->contact?->phone)
                                 ) {
                                     try {
-                                        $response = $jtExpress->createOrder($record);
-
-                                        if (isset($response['data']['waybill_number'])) {
-                                            self::updateJtExpressOrder($record, $response);
-                                            $email = $record->user?->email ?? $record->contact?->email;
-                                            if ($email) {
-                                                Mail::to($email)->send(new OrderStatusMail($record, $record->status));
-                                            }
-                                        } else {
-                                            Log::error('J&T response error', ['order_id' => $record->id, 'response' => $response]);
-                                        }
+                                        self::updateOrderStatus($record, OrderStatus::Shipping, true); // With J&T integration
+                                        $successCount++;
                                     } catch (\Exception $e) {
-                                        Log::error('Failed to send order to J&T', ['order_id' => $record->id, 'error' => $e->getMessage()]);
+                                        $errorCount++;
+                                        Log::error('Failed to send order to J&T Express', [
+                                            'order_id' => $record->id,
+                                            'error' => $e->getMessage()
+                                        ]);
                                     }
                                 }
                             }
 
-                            Notification::make()->title(__('J&T Express bulk action completed'))->success()->send();
+                            if ($successCount > 0) {
+                                Notification::make()
+                                    ->title(__('J&T Express Bulk Action'))
+                                    ->body(__(':count orders sent to J&T Express successfully', ['count' => $successCount]))
+                                    ->success()
+                                    ->send();
+                            }
+
+                            if ($errorCount > 0) {
+                                Notification::make()
+                                    ->title(__('Some J&T shipments failed'))
+                                    ->body(__(':count orders failed to send', ['count' => $errorCount]))
+                                    ->warning()
+                                    ->send();
+                            }
                         }),
 
+                    // Fixed Bosta bulk action
                     Tables\Actions\BulkAction::make('bulk_send_to_bosta')
                         ->label(__('Send to Bosta'))
                         ->icon('heroicon-o-truck')
                         ->color('primary')
                         ->requiresConfirmation()
-                        ->action(function ($records) {
+                        ->visible(fn() => Setting::first()?->enable_bosta)
+                        ->action(function (Collection $records) {
+                            $bostaService = new BostaService();
+                            $successCount = 0;
+                            $errorCount = 0;
+
                             foreach ($records as $record) {
-                                $bostaService = new \App\Services\BostaService();
-                                $response = $bostaService->createDelivery($record);
+                                // Check if order is eligible for Bosta
+                                if (
+                                    $record->status === OrderStatus::Preparing &&
+                                    is_null($record->tracking_number) &&
+                                    is_null($record->bosta_delivery_id) &&
+                                    is_null($record->aramex_shipment_id) &&
+                                    ($record->user || $record->contact) &&
+                                    ($record->address) &&
+                                    $record->city?->bosta_code &&
+                                    ($record->user?->phone ?? $record->contact?->phone)
+                                ) {
+                                    try {
+                                        $response = $bostaService->createDelivery($record);
 
-                                if ($response && isset($response['data']['_id'])) {
-                                    $record->update([
-                                        'status' => \App\Enums\OrderStatus::Shipping,
-                                        'bosta_delivery_id' => $response['data']['trackingNumber'],
-                                    ]);
+                                        if ($response && isset($response['data']['_id'])) {
+                                            $record->update([
+                                                'status' => OrderStatus::Shipping,
+                                                'bosta_delivery_id' => $response['data']['trackingNumber'],
+                                            ]);
 
-                                    $email = $record->user->email ?? $record->contact->email;
-                                    if ($email) {
-                                        Mail::to($email)->send(new \App\Mail\OrderStatusMail($record, $record->status));
+                                            // Send email notification
+                                            $email = $record->user?->email ?? $record->contact?->email;
+                                            if ($email) {
+                                                try {
+                                                    Mail::to($email)->send(new OrderStatusMail($record, $record->status));
+                                                } catch (\Exception $e) {
+                                                    Log::warning('Failed to send email notification', [
+                                                        'order_id' => $record->id,
+                                                        'email' => $email,
+                                                        'error' => $e->getMessage()
+                                                    ]);
+                                                }
+                                            }
+
+                                            $successCount++;
+                                        } else {
+                                            $errorCount++;
+                                            Log::error('Failed to create Bosta delivery', [
+                                                'order_id' => $record->id,
+                                                'response' => $response
+                                            ]);
+                                        }
+                                    } catch (\Exception $e) {
+                                        $errorCount++;
+                                        Log::error('Bosta bulk action failed', [
+                                            'order_id' => $record->id,
+                                            'error' => $e->getMessage()
+                                        ]);
                                     }
-                                } else {
-                                    Log::error('Failed to create Bosta delivery for order.', ['order_id' => $record->id, 'response' => $response]);
                                 }
+                            }
+
+                            if ($successCount > 0) {
+                                Notification::make()
+                                    ->title(__('Bosta Bulk Action'))
+                                    ->body(__(':count orders sent to Bosta successfully', ['count' => $successCount]))
+                                    ->success()
+                                    ->send();
+                            }
+
+                            if ($errorCount > 0) {
+                                Notification::make()
+                                    ->title(__('Some Bosta shipments failed'))
+                                    ->body(__(':count orders failed to send', ['count' => $errorCount]))
+                                    ->warning()
+                                    ->send();
                             }
                         }),
 
+                    // Fixed Aramex bulk action
                     Tables\Actions\BulkAction::make('bulk_send_to_aramex')
                         ->label(__('Send to Aramex'))
                         ->icon('heroicon-o-truck')
                         ->color('primary')
                         ->requiresConfirmation()
-                        ->action(function ($records) {
-                            $aramexService = new \App\Services\AramexService();
+                        ->visible(fn() => Setting::first()?->enable_aramex)
+                        ->action(function (Collection $records) {
+                            $aramexService = new AramexService();
+                            $successCount = 0;
+                            $errorCount = 0;
 
                             foreach ($records as $record) {
-                                try {
-                                    $contact = $record->user ?? $record->contact;
-                                    $city = $record->city;
-                                    $country = $record->country;
+                                // Check if order is eligible for Aramex
+                                if (
+                                    $record->status === OrderStatus::Preparing &&
+                                    is_null($record->tracking_number) &&
+                                    is_null($record->bosta_delivery_id) &&
+                                    is_null($record->aramex_shipment_id) &&
+                                    ($record->user || $record->contact) &&
+                                    ($record->address) &&
+                                    ($record->user?->phone ?? $record->contact?->phone)
+                                ) {
+                                    try {
+                                        $contact = $record->user ?? $record->contact;
+                                        $city = $record->city;
+                                        $country = $record->country;
 
-                                    if (!$contact || !$city || !$country) {
-                                        continue;
-                                    }
-
-                                    $addressLine1 = null;
-                                    if ($contact instanceof \App\Models\User) {
-                                        $primaryAddress = $contact->addresses()->where('is_primary', true)->first();
-                                        $addressLine1 = $primaryAddress?->address;
-                                    } else {
-                                        $addressLine1 = $contact->address ?? null;
-                                    }
-
-                                    if (!$addressLine1) {
-                                        continue;
-                                    }
-
-                                    $response = $aramexService->createShipment($record);
-
-                                    if ($response['success']) {
-                                        $email = $record->user->email ?? $record->contact->email;
-                                        if ($email) {
-                                            Mail::to($email)->send(new \App\Mail\OrderStatusMail($record, $record->status));
+                                        if (!$contact || !$city || !$country) {
+                                            $errorCount++;
+                                            Log::warning('Aramex shipment skipped - missing data', [
+                                                'order_id' => $record->id,
+                                                'missing' => [
+                                                    'contact' => !$contact,
+                                                    'city' => !$city,
+                                                    'country' => !$country
+                                                ]
+                                            ]);
+                                            continue;
                                         }
+
+                                        $addressLine1 = null;
+                                        if ($contact instanceof \App\Models\User) {
+                                            $primaryAddress = $contact->addresses()->where('is_primary', true)->first();
+                                            $addressLine1 = $primaryAddress?->address;
+                                        } else {
+                                            $addressLine1 = $contact->address ?? null;
+                                        }
+
+                                        if (!$addressLine1) {
+                                            $errorCount++;
+                                            Log::warning('Aramex shipment skipped - missing address', [
+                                                'order_id' => $record->id
+                                            ]);
+                                            continue;
+                                        }
+
+                                        $response = $aramexService->createShipment($record);
+
+                                        if ($response['success']) {
+                                            // Send email notification
+                                            $email = $record->user?->email ?? $record->contact?->email;
+                                            if ($email) {
+                                                try {
+                                                    Mail::to($email)->send(new OrderStatusMail($record, $record->status));
+                                                } catch (\Exception $e) {
+                                                    Log::warning('Failed to send email notification', [
+                                                        'order_id' => $record->id,
+                                                        'email' => $email,
+                                                        'error' => $e->getMessage()
+                                                    ]);
+                                                }
+                                            }
+
+                                            $successCount++;
+                                        } else {
+                                            $errorCount++;
+                                            Log::error('Failed to create Aramex shipment', [
+                                                'order_id' => $record->id,
+                                                'response' => $response
+                                            ]);
+                                        }
+                                    } catch (\Exception $e) {
+                                        $errorCount++;
+                                        Log::error('Aramex bulk action failed', [
+                                            'order_id' => $record->id,
+                                            'error' => $e->getMessage()
+                                        ]);
                                     }
-                                } catch (\Exception $e) {
-                                    Log::error('Failed to create Aramex shipment.', ['order_id' => $record->id, 'error' => $e->getMessage()]);
                                 }
+                            }
+
+                            if ($successCount > 0) {
+                                Notification::make()
+                                    ->title(__('Aramex Bulk Action'))
+                                    ->body(__(':count orders sent to Aramex successfully', ['count' => $successCount]))
+                                    ->success()
+                                    ->send();
+                            }
+
+                            if ($errorCount > 0) {
+                                Notification::make()
+                                    ->title(__('Some Aramex shipments failed'))
+                                    ->body(__(':count orders failed to send', ['count' => $errorCount]))
+                                    ->warning()
+                                    ->send();
                             }
                         }),
 
@@ -933,12 +1106,20 @@ class OrderResource extends Resource
                 ]),
             ]);
     }
+
+    // Also, make sure your updateOrderStatus method handles individual Order models properly:
     public static function updateOrderStatus($order, OrderStatus $status, bool $withShippingIntegration = true)
     {
+        // Ensure we have a single Order model, not a Collection
+        if ($order instanceof Collection) {
+            throw new \InvalidArgumentException('updateOrderStatus expects a single Order model, not a Collection');
+        }
+
         $previousStatus = $order->status;
         $newStatus = $status->value;
         $order->refresh();
 
+        // Handle inventory restoration for cancelled/refunded orders
         if (
             $previousStatus !== null &&
             in_array($previousStatus, [OrderStatus::Pending->value, OrderStatus::Preparing->value, OrderStatus::Shipping->value], true) &&
@@ -949,7 +1130,7 @@ class OrderResource extends Resource
                     $product = Product::find($item->product_id);
                     if ($product) {
                         $product->increment('quantity', $item->quantity);
-                        $product->inventory()->increment('quantity', $item->quantity);
+                        $product->inventory()?->increment('quantity', $item->quantity);
                     }
                 }
             }
@@ -957,30 +1138,58 @@ class OrderResource extends Resource
 
         $order->status = $newStatus;
 
+        // Handle J&T Express integration for shipping status
         if ($newStatus === OrderStatus::Shipping->value && $withShippingIntegration) {
-            $JtExpressOrderData = self::prepareJtExpressOrderData($order);
-            $jtExpressResponse = app(JtExpressService::class)->createOrder($JtExpressOrderData);
+            try {
+                $JtExpressOrderData = self::prepareJtExpressOrderData($order);
+                $jtExpressResponse = app(JtExpressService::class)->createOrder($JtExpressOrderData);
 
-            $trackingNumber = $jtExpressResponse['data']['billCode'] ?? null;
-            if ($trackingNumber) {
-                $order->tracking_number = $trackingNumber;
+                $trackingNumber = $jtExpressResponse['data']['billCode'] ?? null;
+                if ($trackingNumber) {
+                    $order->tracking_number = $trackingNumber;
+                }
+
+                $order->save();
+                self::updateJtExpressOrder($order, 'pending', $JtExpressOrderData, $jtExpressResponse);
+
+                Notification::make()
+                    ->title(__('Order sent to J&T Successfully'))
+                    ->success()
+                    ->send();
+            } catch (\Exception $e) {
+                Log::error('J&T Express integration failed', [
+                    'order_id' => $order->id,
+                    'error' => $e->getMessage()
+                ]);
+
+                // Still save the order with the new status even if J&T fails
+                $order->save();
+
+                Notification::make()
+                    ->title(__('Status updated but J&T integration failed'))
+                    ->body($e->getMessage())
+                    ->warning()
+                    ->send();
             }
-
-            $order->save();
-            self::updateJtExpressOrder($order, 'pending', $JtExpressOrderData, $jtExpressResponse);
-
-            Notification::make()->title(__('Order sent to J&T Successfully'))->success()->send();
-
         } else {
             $order->save();
         }
 
         $order->refresh();
 
+        // Send email notification
         if ($withShippingIntegration) {
-            $email = $order->user->email ?? $order->contact->email;
+            $email = $order->user?->email ?? $order->contact?->email;
             if ($email) {
-                Mail::to($email)->send(new OrderStatusMail($order, $status));
+                try {
+                    Mail::to($email)->send(new OrderStatusMail($order, $status));
+                } catch (\Exception $e) {
+                    Log::warning('Failed to send email notification', [
+                        'order_id' => $order->id,
+                        'email' => $email,
+                        'error' => $e->getMessage()
+                    ]);
+                }
             }
         }
     }
