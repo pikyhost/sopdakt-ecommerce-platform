@@ -562,9 +562,7 @@ class Checkout extends Component
 /*
  *
  *
-
-
-                       Select::make('user_id')
+                   Select::make('user_id')
     ->live()
     ->hidden(fn (Get $get) => $get('contact_id'))
     ->label(__('Customer'))
