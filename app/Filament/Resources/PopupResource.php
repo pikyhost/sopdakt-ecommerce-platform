@@ -77,16 +77,16 @@ class PopupResource extends Resource
                         ->columnSpanFull()
                         ->helperText(__('description_helper')),
 
-                    // CTA
+                    // CTA fields with conditional required
                     Forms\Components\TextInput::make('cta_text')
                         ->label(__('CTA Text'))
-                        ->required()
+                        ->required(fn (Forms\Get $get): bool => !$get('email_needed'))
                         ->maxLength(255)
                         ->helperText(__('cta_text_helper')),
 
                     Forms\Components\TextInput::make('cta_link')
                         ->label(__('CTA Link'))
-                        ->required()
+                        ->required(fn (Forms\Get $get): bool => !$get('email_needed'))
                         ->maxLength(255)
                         ->helperText(__('cta_link_helper')),
 
@@ -104,11 +104,11 @@ class PopupResource extends Resource
                         ->numeric()
                         ->helperText(__('duration_seconds_helper')),
 
-                    Forms\Components\TextInput::make('dont_show_again_days')
-                        ->label(__('Hide for (days) when closed with "Don\'t show again"'))
-                        ->default(30)
-                        ->numeric()
-                        ->helperText(__('dont_show_again_days_helper')),
+//                    Forms\Components\TextInput::make('dont_show_again_days')
+//                        ->label(__('Hide for (days) when closed with "Don\'t show again"'))
+//                        ->default(30)
+//                        ->numeric()
+//                        ->helperText(__('dont_show_again_days_helper')),
 
                     Forms\Components\TextInput::make('popup_order')
                         ->label(__('Popup Order'))
@@ -164,7 +164,8 @@ class PopupResource extends Resource
 
                     Forms\Components\Checkbox::make('email_needed')
                         ->label(__('Email needed'))
-                        ->helperText(__('email_needed_helper')),
+                        ->helperText(__('email_needed_helper'))
+                        ->live(),
 
                     Forms\Components\Checkbox::make('is_active')
                         ->label(__('Is Active'))

@@ -248,7 +248,7 @@ Route::prefix('wheel')->group(function () {
 //    Route::get('/history', [WheelController::class, 'spinHistory'])->middleware('auth:sanctum');
 
     // Set "don't show again" preference
-    Route::post('/hide', [WheelController::class, 'hideWheel']);
+//    Route::post('/hide', [WheelController::class, 'hideWheel']);
 });
 
 

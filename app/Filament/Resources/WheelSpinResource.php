@@ -4,6 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\WheelSpinResource\Pages;
 use App\Models\WheelSpin;
+use Filament\Forms;
+use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -25,6 +27,11 @@ class WheelSpinResource extends Resource
     }
 
     public static function getPluralLabel(): ?string
+    {
+        return __('Wheel Spins');
+    }
+
+    public static function getLabel(): ?string
     {
         return __('Wheel Spins');
     }
@@ -61,17 +68,13 @@ class WheelSpinResource extends Resource
                 Tables\Columns\TextColumn::make('ip_address')
                     ->label(__('IP Address'))
                     ->searchable(),
-                Tables\Columns\TextColumn::make('next_spin_at')
-                    ->label(__('Next Spin At'))
-                    ->dateTime()
-                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->label(__('Created At'))
                     ->dateTime()
                     ->sortable(),
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->label(__('Edit')),
                 Tables\Actions\DeleteAction::make()->label(__('Delete')),
             ])
             ->bulkActions([
@@ -83,8 +86,6 @@ class WheelSpinResource extends Resource
     {
         return [
             'index' => Pages\ListWheelSpins::route('/'),
-            'create' => Pages\CreateWheelSpin::route('/create'),
-            'edit' => Pages\EditWheelSpin::route('/{record}/edit'),
         ];
     }
 }

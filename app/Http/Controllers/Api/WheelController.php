@@ -69,7 +69,7 @@ class WheelController extends Controller
                 'show_interval_minutes' => $wheel->show_interval_minutes,
                 'delay_seconds' => $wheel->delay_seconds,
                 'duration_seconds' => $wheel->duration_seconds,
-                'dont_show_again_days' => $wheel->dont_show_again_days,
+//                'dont_show_again_days' => $wheel->dont_show_again_days,
             ]
         ]);
     }

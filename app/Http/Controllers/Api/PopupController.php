@@ -57,7 +57,6 @@ class PopupController extends Controller
                     'show_interval_minutes' => $popup->show_interval_minutes,
                     'delay_seconds' => $popup->delay_seconds,
                     'duration_seconds' => $popup->duration_seconds,
-                    'dont_show_again_days' => $popup->dont_show_again_days,
                     'specific_pages' => $specificPagesFriendly,
                     'created_at' => $popup->created_at->toIso8601String(),
                     'updated_at' => $popup->updated_at->toIso8601String(),

@@ -73,11 +73,11 @@ class WheelResource extends Resource
                         ->label(__('Display Duration'))
                         ->numeric()
                         ->helperText(__('Display Duration Helper')),
-                    Forms\Components\TextInput::make('dont_show_again_days')
-                        ->label(__("Hide for (days) when closed with 'Don't show again'"))
-                        ->default(30)
-                        ->numeric()
-                        ->helperText(__('Hide for Days Helper')),
+//                    Forms\Components\TextInput::make('dont_show_again_days')
+//                        ->label(__("Hide for (days) when closed with 'Don't show again'"))
+//                        ->default(30)
+//                        ->numeric()
+//                        ->helperText(__('Hide for Days Helper')),
                     Forms\Components\TextInput::make('show_interval_minutes')
                         ->label(__('Interval Between Displays (minutes)'))
                         ->numeric()

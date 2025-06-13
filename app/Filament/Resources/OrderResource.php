@@ -679,7 +679,7 @@ class OrderResource extends Resource
                         $record->status === OrderStatus::Preparing &&
                         !$record->bosta_delivery_id &&
                         ($record->user || $record->contact) &&
-                        ($record->address) &&                        $record->city?->bosta_code &&
+                        ($record->address) &&  $record->city?->bosta_code &&
                         ($record->user?->phone ?? $record->contact?->phone)
                     )
                     ->requiresConfirmation()
