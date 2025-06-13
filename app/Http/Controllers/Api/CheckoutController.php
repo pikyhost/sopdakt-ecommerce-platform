@@ -40,6 +40,9 @@ class CheckoutController extends Controller
     /**
      * Save or update contact/user information
      */
+    /**
+     * Save or update contact/user information
+     */
     private function saveContact(array $data, Cart $cart): User|Contact
     {
         if (Auth::guard('sanctum')->check()) {
@@ -116,9 +119,6 @@ class CheckoutController extends Controller
                     'governorate_id' => $cart->governorate_id,
                     'city_id' => $cart->city_id,
                 ]);
-
-                // Login the user after creating account
-                Auth::guard('sanctum')->login($user);
 
                 // Create primary address
                 $user->addresses()->create([
@@ -319,8 +319,6 @@ class CheckoutController extends Controller
             ], 500);
         }
     }
-
-
     /**
      * Store a new order
      */
