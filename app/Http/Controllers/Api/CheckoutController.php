@@ -114,7 +114,8 @@ class CheckoutController extends Controller
                     'city_id' => $cart->city_id,
                 ]);
 
-                $token = $user->createToken('auth_token')->plainTextToken;
+                $request->authenticate();
+                $user = Auth::guard('sanctum')->user();
 
                 $user->addresses()->create([
                     'address' => $data['address'],
