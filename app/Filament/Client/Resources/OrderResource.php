@@ -89,25 +89,27 @@ class OrderResource extends Resource
                     ->label(__('Number'))
                     ->searchable(),
 
-                TextColumn::make('display_address')
+
+                TextColumn::make('address')
                     ->label('Address')
                     ->searchable()
                     ->sortable(),
 
+
                 Tables\Columns\TextColumn::make('country.name')
-                       ->toggleable(isToggledHiddenByDefault: true)
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->label(__('Country'))
                     ->placeholder('-')
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('governorate.name')
-                   ->toggleable(isToggledHiddenByDefault: true)
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->label(__('governorate'))
                     ->placeholder('-')
                     ->searchable(),
 
                 Tables\Columns\TextColumn::make('city.name')
-                       ->toggleable(isToggledHiddenByDefault: true)
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->label(__('City'))
                     ->placeholder('-')
                     ->searchable(),
@@ -439,9 +441,9 @@ class OrderResource extends Resource
 
                 Step::make(__('Order Details'))
                     ->schema([
-                        TextInput::make('display_address')
-                            ->label('Address')
-                            ->disabled(),
+                        Forms\Components\Textarea::make('address')  // display_address
+                        ->maxLength(255)
+                            ->label(__('Address')),
                         Forms\Components\MarkdownEditor::make('notes')
                             ->label(__('Notes'))
                             ->columnSpan('full'),

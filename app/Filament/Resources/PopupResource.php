@@ -124,6 +124,7 @@ class PopupResource extends Resource
 
                     // Display logic
                     Forms\Components\Select::make('display_rules')
+                        ->columnSpanFull()
                         ->label(__('Display Rules'))
                         ->options([
                             'all_pages' => 'All Pages',
@@ -137,7 +138,6 @@ class PopupResource extends Resource
                         ->helperText(__('display_rules_helper')),
 
                     Select::make('specific_pages')
-                        ->columnSpanFull()
                         ->label(__('Page Rules'))
                         ->multiple()
                         ->searchable()
