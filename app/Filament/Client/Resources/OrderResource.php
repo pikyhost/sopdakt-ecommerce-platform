@@ -644,7 +644,9 @@ class OrderResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
+        $userId = Auth::guard('sanctum')->id() ?? Filament::auth()?->id();
+
         return parent::getEloquentQuery()
-            ->where('user_id', Filament::auth()->id());
+            ->where('user_id', $userId);
     }
 }
