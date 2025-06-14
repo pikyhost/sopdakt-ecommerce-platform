@@ -269,7 +269,7 @@ class CartController extends Controller
         ]);
     }
 
-    public function store(Request $request) 
+    public function store(Request $request)
     {
         $rules = [
             'product_id' => ['required', 'exists:products,id'],

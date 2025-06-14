@@ -101,28 +101,24 @@ class InventoryResource extends Resource
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('id')
-                    ->placeholder('-')
-                    ->limit(90)
-                    ->tooltip(function (TextColumn $column): ?string {
-                        $state = $column->getState();
-
-                        if (strlen($state) <= $column->getCharacterLimit()) {
-                            return null;
-                        }
-                        return $state;
-                    })
                     ->label(__('Variants Information'))
                     ->formatStateUsing(function ($record) {
                         return $record->product->productColors
                             ->flatMap(function ($productColor) {
                                 return $productColor->productColorSizes->map(function ($size) use ($productColor) {
                                     $colorName = $productColor->color->name ?? 'N/A';
-                                    $sizeName = $size->size->name ?? 'N/A';
+                                    $sizeName = is_array($size->size->name ?? null)
+                                        ? ($size->size->name['en'] ?? 'N/A')
+                                        : ($size->size->name ?? 'N/A');
                                     return "{$colorName} → {$sizeName} = {$size->quantity}";
                                 });
                             })
                             ->implode('<br>');
-                    })->html(),
+                    })
+                    ->html()
+                    ->sortable()
+                    ->toggleable(),
+
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -184,20 +180,22 @@ class InventoryResource extends Resource
                         RepeatableEntry::make('product.productColors')
                             ->placeholder(__('There are no different colors or sizes.'))
                             ->grid(2)
-                        ->hiddenLabel()
+                            ->hiddenLabel()
                             ->schema([
                                 ColorEntry::make('color.code')
-                                    ->helperText(fn($record) => $record->color->name ?? '')
+                                    ->helperText(fn($record) => $record->color->name ?? 'N/A')
                                     ->hiddenLabel(),
 
                                 RepeatableEntry::make('productColorSizes')
-                                   ->hiddenLabel()
+                                    ->hiddenLabel()
                                     ->schema([
                                         TextEntry::make('size.name')
+                                            ->formatStateUsing(fn($state) => is_array($state) ? ($state['en'] ?? 'N/A') : $state) // safeguard
                                             ->weight(FontWeight::Bold)
                                             ->hiddenLabel(),
 
                                         TextEntry::make('quantity')
+                                            ->formatStateUsing(fn($state) => $state ?? '0')
                                             ->badge()
                                             ->hiddenLabel(),
                                     ])
@@ -231,4 +229,11 @@ class InventoryResource extends Resource
             'edit' => Pages\EditInventory::route('/{record}/edit'),
         ];
     }
+
+    public static function getEloquentQuery()
+    {
+        return parent::getEloquentQuery()
+            ->with(['product', 'product.productColors.color', 'product.productColors.productColorSizes.size']);
+    }
+
 }
