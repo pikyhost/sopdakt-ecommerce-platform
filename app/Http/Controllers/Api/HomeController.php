@@ -141,6 +141,7 @@ class HomeController extends Controller
                             'id' => $variant->id,
                             'color_id' => $variant->color_id,
                             'color_name' => optional($variant->color)->name,
+                            'color_code' => $variant->color->code ?? null,
                             'image_url' => $variant->image ? asset('storage/' . $variant->image) : null,
                             'sizes' => $variant->productColorSizes->map(function ($pcs) {
                                 return [
@@ -209,6 +210,7 @@ class HomeController extends Controller
                         return [
                             'id' => $variant->id,
                             'color_id' => $variant->color_id,
+                            'color_code' => $variant->color->code ?? null,
                             'color_name' => optional($variant->color)->name,
                             'image_url' => $variant->image ? asset('storage/' . $variant->image) : null,
                             'sizes' => $variant->productColorSizes->map(function ($pcs) {
