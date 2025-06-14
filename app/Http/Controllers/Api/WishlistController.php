@@ -74,7 +74,7 @@ class WishlistController extends Controller
         ['userId' => $userId, 'sessionId' => $sessionId] = $this->getSessionOrUserIdentifier($request);
 
         $wishlistItems = SavedProduct::with(['product' => function ($query) {
-            $query->select('id', 'name', 'price', 'after_discount_price', 'slug');
+            $query->select('id', 'name', 'price', 'after_discount_price', 'slug', 'quantity');
         }])
             ->where(function ($q) use ($userId, $sessionId) {
                 $userId ? $q->where('user_id', $userId) : $q->where('session_id', $sessionId);
@@ -82,13 +82,16 @@ class WishlistController extends Controller
             ->latest()
             ->get()
             ->map(function ($savedProduct) {
+                $product = $savedProduct->product;
+
                 return [
-                    'id' => $savedProduct->product->id,
-                    'name' => $savedProduct->product->name,
-                    'price' => $savedProduct->product->price,
-                    'after_discount_price' => $savedProduct->product->after_discount_price,
-                    'slug' => $savedProduct->product->slug,
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'price' => $product->price,
+                    'after_discount_price' => $product->after_discount_price,
+                    'slug' => $product->slug,
                     'saved_at' => $savedProduct->created_at->toDateTimeString(),
+                    'status' => $product->quantity > 0 ? 'available' : 'out_of_stock',
                 ];
             });
 

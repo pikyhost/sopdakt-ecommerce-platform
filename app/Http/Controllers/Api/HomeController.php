@@ -86,54 +86,6 @@ class HomeController extends Controller
         ]);
     }
 
-    /**
-     * Get Best Selling Products
-     *
-     * @group Homepage
-     *
-     * Retrieves top 10 best-selling products with complete details including:
-     * - Product information
-     * - Available colors with sizes
-     * - Action links
-     *
-     * @response 200 {
-     *   "success": true,
-     *   "data": [
-     *     {
-     *       "id": 1,
-     *       "name": "Premium Headphones",
-     *       "price": 199.99,
-     *       "after_discount_price": 179.99,
-     *       "sales": 150,
-     *       "slug": "premium-headphones",
-     *       "image_url": "https://example.com/media/products/headphones.jpg",
-     *       "category": {
-     *         "name": "Electronics",
-     *         "slug": "electronics"
-     *       },
-     *       "colors_with_sizes": [
-     *         {
-     *           "color_name": "Black",
-     *           "color_code": "#000000",
-     *           "color_image": null,
-     *           "sizes": [
-     *             {
-     *               "size_name": "One Size",
-     *               "quantity": 50
-     *             }
-     *           ]
-     *         }
-     *       ],
-     *       "actions": {
-     *         "add_to_cart": "http://example.com/api/cart/1",
-     *         "toggle_love": "http://example.com/api/wishlist/toggle/1",
-     *         "compare": "http://example.com/api/compare/1",
-     *         "view": "http://example.com/products/premium-headphones"
-     *       }
-     *     }
-     *   ]
-     * }
-     */
     public function fakeBestSellers(): JsonResponse
     {
         $products = Product::with([
@@ -184,10 +136,26 @@ class HomeController extends Controller
                             })->filter(fn ($size) => $size['quantity'] > 0)->values(),
                         ];
                     }),
+                    'variants' => $product->productColors->map(function ($variant) {
+                        return [
+                            'id' => $variant->id,
+                            'color_id' => $variant->color_id,
+                            'color_name' => optional($variant->color)->name,
+                            'image_url' => $variant->image ? asset('storage/' . $variant->image) : null,
+                            'sizes' => $variant->productColorSizes->map(function ($pcs) {
+                                return [
+                                    'id' => $pcs->id,
+                                    'size_id' => $pcs->size_id,
+                                    'size_name' => optional($pcs->size)->name,
+                                    'quantity' => $pcs->quantity,
+                                ];
+                            }),
+                        ];
+                    }),
                     'actions' => [
-                        'add_to_cart' => route('cart.add'), // No parameter passed
-                        'toggle_love' => route('wishlist.toggle'), // Also doesn't accept params in URL
-                        'compare' => route('compare.add'), // Same here
+                        'add_to_cart' => route('cart.add'),
+                        'toggle_love' => route('wishlist.toggle'),
+                        'compare' => route('compare.add'),
                         'view' => route('products.show', ['slug' => $product->slug]),
                     ],
                 ];
@@ -199,71 +167,6 @@ class HomeController extends Controller
         ]);
     }
 
-    /**
-     * Get the real top 10 best-selling products based on the total quantity sold.
-     *
-     * This method retrieves products that have been ordered at least once,
-     * calculates the total quantity sold (`total_sold`) via the `orderItems` relationship,
-     * and returns the top 10 products sorted by the highest sales.
-     *
-     * Each product includes:
-     * - Basic info: id, name (translated), price, discounted price, sales count, slug, image URL
-     * - Category (with name and slug)
-     * - Available color variants with:
-     *     - Color name, code, and image
-     *     - Sizes available for that color with quantity > 0
-     * - Action URLs:
-     *     - Add to cart
-     *     - Toggle wishlist
-     *     - Compare
-     *     - View product details
-     *
-     * Translation is handled automatically via Spatie Laravel Translatable package.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     *
-     * Example Response:
-     * {
-     *     "message": "Best selling products retrieved successfully.",
-     *     "products": [
-     *         {
-     *             "id": 1,
-     *             "name": "Stylish Shirt",
-     *             "price": 100,
-     *             "after_discount_price": 80,
-     *             "sales": 50,
-     *             "slug": "stylish-shirt",
-     *             "image_url": "https://example.com/storage/media/filename.jpg",
-     *             "category": {
-     *                 "name": "Men",
-     *                 "slug": "men"
-     *             },
-     *             "colors_with_sizes": [
-     *                 {
-     *                     "color_name": "Red",
-     *                     "color_code": "#FF0000",
-     *                     "color_image": "https://example.com/storage/colors/red.png",
-     *                     "sizes": [
-     *                         {
-     *                             "size_name": "M",
-     *                             "quantity": 5
-     *                         },
-     *                         ...
-     *                     ]
-     *                 },
-     *                 ...
-     *             ],
-     *             "actions": {
-     *                 "add_to_cart": "https://yourdomain.com/cart",
-     *                 "toggle_love": "https://yourdomain.com/wishlist/toggle",
-     *                 "compare": "https://yourdomain.com/compare/add",
-     *                 "view": "https://yourdomain.com/products/stylish-shirt"
-     *             }
-     *         },
-     *         ...
-     *     ]
-     * }
-     */
     public function realBestSellers()
     {
         $bestSellers = Product::query()
@@ -302,10 +205,26 @@ class HomeController extends Controller
                             })->filter(fn ($size) => $size['quantity'] > 0)->values(),
                         ];
                     }),
+                    'variants' => $product->productColors->map(function ($variant) {
+                        return [
+                            'id' => $variant->id,
+                            'color_id' => $variant->color_id,
+                            'color_name' => optional($variant->color)->name,
+                            'image_url' => $variant->image ? asset('storage/' . $variant->image) : null,
+                            'sizes' => $variant->productColorSizes->map(function ($pcs) {
+                                return [
+                                    'id' => $pcs->id,
+                                    'size_id' => $pcs->size_id,
+                                    'size_name' => optional($pcs->size)->name,
+                                    'quantity' => $pcs->quantity,
+                                ];
+                            }),
+                        ];
+                    }),
                     'actions' => [
-                        'add_to_cart' => route('cart.add'), // No parameter passed
-                        'toggle_love' => route('wishlist.toggle'), // Also doesn't accept params in URL
-                        'compare' => route('compare.add'), // Same here
+                        'add_to_cart' => route('cart.add'),
+                        'toggle_love' => route('wishlist.toggle'),
+                        'compare' => route('compare.add'),
                         'view' => route('products.show', ['slug' => $product->slug]),
                     ],
                 ];

@@ -7,7 +7,6 @@ use App\Models\Blog;
 use App\Models\BlogCategory;
 use App\Models\Tag;
 use Illuminate\Http\Request;
-use Illuminate\Mail\Markdown;
 use Illuminate\Support\Facades\Auth;
 
 class BlogController extends Controller
@@ -32,6 +31,7 @@ class BlogController extends Controller
             'message' => 'Tags retrieved successfully'
         ]);
     }
+
     public function categories(Request $request)
     {
         $locale = app()->getLocale();
@@ -71,14 +71,11 @@ class BlogController extends Controller
             ->paginate($perPage, ['*'], 'page', $page);
 
         $transformedBlogs = $blogs->getCollection()->map(function ($blog) use ($locale) {
-            $excerptMarkdown = $blog->getTranslation('content', $locale);
-            $excerptHtml = Markdown::parse($excerptMarkdown)->toHtml();
-
             return [
                 'id' => $blog->id,
                 'title' => $blog->getTranslation('title', $locale),
                 'slug' => $blog->slug,
-                'excerpt' => $excerptHtml,
+                'excerpt' => $blog->getTranslation('content', $locale),
                 'published_at' => $blog->published_at->format('Y-m-d'),
                 'category' => $blog->category ? [
                     'id' => $blog->category->id,
@@ -120,11 +117,6 @@ class BlogController extends Controller
             ->where('is_active', true)
             ->firstOrFail();
 
-        // Convert Markdown to HTML for main blog
-        $contentMarkdown = $blog->getTranslation('content', $locale);
-        $contentHtml = Markdown::parse($contentMarkdown)->toHtml();
-
-        // Fetch and convert related blogs
         $relatedBlogs = Blog::where('blog_category_id', $blog->blog_category_id)
             ->where('id', '!=', $blog->id)
             ->where('is_active', true)
@@ -132,25 +124,21 @@ class BlogController extends Controller
             ->limit(3)
             ->get()
             ->map(function ($relatedBlog) use ($locale) {
-                $excerptMarkdown = $relatedBlog->getTranslation('content', $locale);
-                $excerptHtml = Markdown::parse($excerptMarkdown)->toHtml();
-
                 return [
                     'id' => $relatedBlog->id,
                     'title' => $relatedBlog->getTranslation('title', $locale),
                     'slug' => $relatedBlog->slug,
-                    'excerpt' => $excerptHtml,
+                    'excerpt' => $relatedBlog->getTranslation('content', $locale),
                     'published_at' => $relatedBlog->published_at->format('Y-m-d'),
                     'image_url' => $relatedBlog->getMainBlogImageUrl(),
                 ];
             });
 
-        // Main blog response
         $response = [
             'id' => $blog->id,
             'title' => $blog->getTranslation('title', $locale),
             'slug' => $blog->slug,
-            'content' => $contentHtml,
+            'content' => $blog->getTranslation('content', $locale),
             'published_at' => $blog->published_at->format('Y-m-d'),
             'category' => $blog->category ? [
                 'id' => $blog->category->id,
@@ -200,14 +188,11 @@ class BlogController extends Controller
             ->paginate($perPage, ['*'], 'page', $page);
 
         $transformedBlogs = $blogs->getCollection()->map(function ($blog) use ($locale) {
-            $excerptMarkdown = $blog->getTranslation('content', $locale);
-            $excerptHtml = Markdown::parse($excerptMarkdown)->toHtml();
-
             return [
                 'id' => $blog->id,
                 'title' => $blog->getTranslation('title', $locale),
                 'slug' => $blog->slug,
-                'excerpt' => $excerptHtml,
+                'excerpt' => $blog->getTranslation('content', $locale),
                 'published_at' => $blog->published_at->format('Y-m-d'),
                 'author' => [
                     'id' => $blog->author->id,
@@ -252,21 +237,18 @@ class BlogController extends Controller
 
         $blogs = Blog::with(['author', 'category'])
             ->whereHas('tags', function ($query) use ($tagId) {
-                $query->where('tags.id', $tagId); // ← Fixed here
+                $query->where('tags.id', $tagId);
             })
             ->where('is_active', true)
             ->orderBy('published_at', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);
 
         $transformedBlogs = $blogs->getCollection()->map(function ($blog) use ($locale) {
-            $excerptMarkdown = $blog->getTranslation('content', $locale);
-            $excerptHtml = Markdown::parse($excerptMarkdown)->toHtml();
-
             return [
                 'id' => $blog->id,
                 'title' => $blog->getTranslation('title', $locale),
                 'slug' => $blog->slug,
-                'excerpt' => $excerptHtml,
+                'excerpt' => $blog->getTranslation('content', $locale),
                 'published_at' => $blog->published_at->format('Y-m-d'),
                 'author' => [
                     'id' => $blog->author->id,
@@ -297,7 +279,6 @@ class BlogController extends Controller
         ]);
     }
 
-
     public function popular(Request $request)
     {
         $locale = app()->getLocale();
@@ -310,14 +291,11 @@ class BlogController extends Controller
             ->limit($limit)
             ->get()
             ->map(function ($blog) use ($locale) {
-                $excerptMarkdown = $blog->getTranslation('content', $locale);
-                $excerptHtml = Markdown::parse($excerptMarkdown)->toHtml();
-
                 return [
                     'id' => $blog->id,
                     'title' => $blog->getTranslation('title', $locale),
                     'slug' => $blog->slug,
-                    'excerpt' => $excerptHtml,
+                    'excerpt' => $blog->getTranslation('content', $locale),
                     'published_at' => $blog->published_at->format('Y-m-d'),
                     'image_url' => $blog->getMainBlogImageUrl(),
                     'likes_count' => $blog->likers_count,
@@ -342,14 +320,11 @@ class BlogController extends Controller
             ->limit($limit)
             ->get()
             ->map(function ($blog) use ($locale) {
-                $excerptMarkdown = $blog->getTranslation('content', $locale);
-                $excerptHtml = Markdown::parse($excerptMarkdown)->toHtml();
-
                 return [
                     'id' => $blog->id,
                     'title' => $blog->getTranslation('title', $locale),
                     'slug' => $blog->slug,
-                    'excerpt' => $excerptHtml,
+                    'excerpt' => $blog->getTranslation('content', $locale),
                     'published_at' => $blog->published_at->format('Y-m-d'),
                     'image_url' => $blog->getMainBlogImageUrl(),
                 ];
@@ -414,14 +389,11 @@ class BlogController extends Controller
             ->paginate($perPage, ['*'], 'page', $page);
 
         $transformedBlogs = $blogs->getCollection()->map(function ($blog) use ($locale) {
-            $excerptMarkdown = $blog->getTranslation('content', $locale);
-            $excerptHtml = Markdown::parse($excerptMarkdown)->toHtml();
-
             return [
                 'id' => $blog->id,
                 'title' => $blog->getTranslation('title', $locale),
                 'slug' => $blog->slug,
-                'excerpt' => $excerptHtml,
+                'excerpt' => $blog->getTranslation('content', $locale),
                 'published_at' => $blog->published_at->format('Y-m-d'),
                 'author' => [
                     'id' => $blog->author->id,

@@ -179,9 +179,15 @@ class ProductController extends Controller
             $query->whereHas('productColors.productColorSizes', fn($q) => $q->where('size_id', $sizeId)))
 
             // Filter by category (including subcategories)
-            ->when($categoryId, function ($query, $categoryId) {
-                $categoryIds = $this->getCategoryWithChildrenIds($categoryId);
-                $query->whereIn('category_id', $categoryIds);
+            // Filter by multiple categories (including their subcategories)
+            ->when($request->has('category_ids'), function ($query) use ($request) {
+                $inputIds = $request->input('category_ids', []);
+                $allCategoryIds = collect($inputIds)
+                    ->flatMap(fn($id) => $this->getCategoryWithChildrenIds($id))
+                    ->unique()
+                    ->values();
+
+                $query->whereIn('category_id', $allCategoryIds);
             })
 
             // Filter by minimum fake rating
