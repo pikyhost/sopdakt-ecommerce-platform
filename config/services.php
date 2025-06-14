@@ -56,4 +56,10 @@ return [
         'account_entity' => env('ARAMEX_ACCOUNT_ENTITY', 'AMM'),
         'account_country_code' => env('ARAMEX_ACCOUNT_COUNTRY_CODE', 'JO'),
     ],
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI'),
+    ],
+
 ];

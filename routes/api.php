@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Auth\GoogleAuthController;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\AboutUsController;
 use App\Http\Controllers\Api\BlogController;
@@ -277,3 +278,6 @@ Route::get('/google-analytics', function () {
         ], 500);
     }
 });
+
+
+Route::post('/auth/google', [GoogleAuthController::class, 'login']);
