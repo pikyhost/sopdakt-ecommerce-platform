@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('size_guides', function (Blueprint $table) {
+        Schema::create('size_guides', function (Blueprint $table) {
             $table->integer('min_height')->nullable()->after('size_id');
             $table->integer('max_height')->nullable()->after('min_height');
             $table->integer('min_weight')->nullable()->after('max_height');
