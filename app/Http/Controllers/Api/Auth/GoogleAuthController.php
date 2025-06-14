@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 
 class GoogleAuthController extends Controller
@@ -28,8 +27,10 @@ class GoogleAuthController extends Controller
                     'google_id' => $googleUser->id,
                     'password' => bcrypt(uniqid()), // just a random default
                 ]);
-            }
 
+                $user->assignRole('client');
+            }
+            
             $token = $user->createToken('google-token')->plainTextToken;
 
             return response()->json([
@@ -41,7 +42,7 @@ class GoogleAuthController extends Controller
             return response()->json([
                 'message' => 'Invalid Google token',
                 'error' => $e->getMessage(),
-            ], 422);
+            ], 422); //00
         }
     }
 }
