@@ -260,7 +260,7 @@ class ProductController extends Controller
                 ->get()
                 ->map(fn($size) => [
                     'id' => $size->id,
-                    'name' => $size->getTranslation('name', $locale),
+                    'name' => $size->name,
                 ]),
 
             'categories' => Category::where('is_published', true)
