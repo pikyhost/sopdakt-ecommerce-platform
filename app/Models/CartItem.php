@@ -51,4 +51,11 @@ class CartItem extends Model
     {
         return $this->belongsTo(Color::class);
     }
+
+    public function productColor()
+    {
+        return $this->hasOne(ProductColor::class, 'product_id', 'product_id')
+            ->whereColumn('color_id', 'color_id');
+    }
+
 }

@@ -19,6 +19,11 @@ class CartItemResource extends JsonResource
         $price = (float) preg_replace('/[^0-9.]/', '', $priceString);
         $currency = preg_replace('/[\d.]/', '', trim($priceString));
 
+        // Prefer the image from the productColor if available
+        $imageUrl = $this->productColor && $this->productColor->image
+            ? asset('storage/' . $this->productColor->image)
+            : ($this->product?->getFeatureProductImageUrl() ?? '');
+
         return [
             'id' => $this->id,
             'quantity' => $this->quantity,
@@ -28,7 +33,7 @@ class CartItemResource extends JsonResource
                 'id' => $this->product->id,
                 'name' => $this->product->name,
                 'slug' => $this->product->slug,
-                'feature_product_image_url' => $this->product->getFeatureProductImageUrl() ?? '',
+                'feature_product_image_url' => $imageUrl,
                 'price' => $this->product->discount_price_for_current_country ?? 0,
             ] : null,
             'bundle' => $this->bundle ? [

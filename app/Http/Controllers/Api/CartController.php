@@ -45,7 +45,8 @@ class CartController extends Controller
             return response()->json(['message' => __('Cart is empty')]);
         }
 
-        $cartItems = $cart->items()->with('product')->get();
+        $cartItems = $cart->items()->with(['product', 'productColor'])->get();
+
 
         if ($cartItems->isEmpty()) {
             return response()->json(['message' => __('Cart is empty')]);
