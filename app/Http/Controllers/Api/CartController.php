@@ -337,9 +337,16 @@ class CartController extends Controller
 
         $cart = app(CartServiceApi::class)->getCart();
 
-        if ($request->quantity > Setting::first()->max_cart_quantity ||
-            $cart->items()->where('id', $product->id)->quantity < Setting::first()->max_cart_quantity)
-            
+        $maxCartQuantity = Setting::first()->max_cart_quantity;
+        $totalCartQuantity = $cart->items->sum('quantity');
+
+        if (($totalCartQuantity + $request->quantity) > $maxCartQuantity) {
+            return response()->json([
+                'message' => 'Max quantity available to add to cart is ' . $maxCartQuantity
+            ], 422);
+        }
+
+
         app(CartServiceApi::class)->addItemToCart(
             $cart,
             $request->product_id,
