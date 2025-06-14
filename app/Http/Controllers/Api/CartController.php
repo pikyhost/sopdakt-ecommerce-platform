@@ -269,7 +269,7 @@ class CartController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request) 
     {
         $rules = [
             'product_id' => ['required', 'exists:products,id'],
@@ -296,7 +296,6 @@ class CartController extends Controller
                 'message' => 'This product must be ordered in a quantity of 2 or more.'
             ], 422);
         }
-
         $hasColors = $product->productColors()->exists();
         if ($hasColors && !$request->color_id) {
             return response()->json(['message' => 'Please select a color.'], 422);
@@ -311,7 +310,6 @@ class CartController extends Controller
                 return response()->json(['message' => 'Please select a size.'], 422);
             }
         }
-
         $availableStock = $product->quantity;
 
         if ($request->color_id && $request->size_id) {
@@ -326,7 +324,6 @@ class CartController extends Controller
 
             $availableStock = $variant->quantity;
         }
-
         if ($availableStock <= 0) {
             return response()->json(['message' => 'This product is out of stock!'], 422);
         }
@@ -345,7 +342,6 @@ class CartController extends Controller
                 'message' => 'Max quantity available to add to cart is ' . $maxCartQuantity
             ], 422);
         }
-
 
         app(CartServiceApi::class)->addItemToCart(
             $cart,
