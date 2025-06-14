@@ -230,7 +230,7 @@ class InventoryResource extends Resource
         ];
     }
 
-    public static function getEloquentQuery()
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
     {
         return parent::getEloquentQuery()
             ->with(['product', 'product.productColors.color', 'product.productColors.productColorSizes.size']);
