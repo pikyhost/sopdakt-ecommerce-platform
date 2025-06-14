@@ -335,13 +335,11 @@ class CartController extends Controller
             return response()->json(['message' => 'Requested quantity exceeds stock!'], 422);
         }
 
-        if ($request->quantity > Setting::first()->max_cart_quantity) {
-            return response()->json(['message' => 'Max quantity available to add to cart is '. Setting::first()->max_cart_quantity ], 422);
-        }
-
         $cart = app(CartServiceApi::class)->getCart();
-        Log::info('Store Request', ['request_data' => $request->all(), 'cart_id' => $cart->id]);
 
+        if ($request->quantity > Setting::first()->max_cart_quantity ||
+            $cart->items()->where('id', $product->id)->quantity < Setting::first()->max_cart_quantity)
+            
         app(CartServiceApi::class)->addItemToCart(
             $cart,
             $request->product_id,
