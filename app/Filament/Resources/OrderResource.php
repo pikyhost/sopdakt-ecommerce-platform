@@ -1439,7 +1439,7 @@ class OrderResource extends Resource
                                 self::updateShippingCost($set, $get('shipping_type_id'), $get('items'), null, $state, $get('country_id'));
                                 self::recalculateTotal($set, $get);
                             }),
-
+//
                         Select::make('city_id')
                             ->searchable()
                             ->label(__('City'))
