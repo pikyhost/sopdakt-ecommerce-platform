@@ -12,17 +12,21 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('size_guides', function (Blueprint $table) {
-            $table->integer('min_height')->nullable()->after('size_id');
-            $table->integer('max_height')->nullable()->after('min_height');
-            $table->integer('min_weight')->nullable()->after('max_height');
-            $table->integer('max_weight')->nullable()->after('min_weight');
-            $table->integer('min_age')->nullable()->after('max_weight');
-            $table->integer('max_age')->nullable()->after('min_age');
-            $table->integer('min_shoulder_width')->nullable()->after('max_age');
-            $table->integer('max_shoulder_width')->nullable()->after('min_shoulder_width');
-            $table->integer('bust_measurement')->nullable()->after('max_shoulder_width');
-            $table->integer('length_measurement')->nullable()->after('bust_measurement');
+            $table->id();
+            $table->unsignedBigInteger('size_id')->nullable(); // optional FK
+            $table->integer('min_height')->nullable();
+            $table->integer('max_height')->nullable();
+            $table->integer('min_weight')->nullable();
+            $table->integer('max_weight')->nullable();
+            $table->integer('min_age')->nullable();
+            $table->integer('max_age')->nullable();
+            $table->integer('min_shoulder_width')->nullable();
+            $table->integer('max_shoulder_width')->nullable();
+            $table->integer('bust_measurement')->nullable();
+            $table->integer('length_measurement')->nullable();
+            $table->timestamps();
         });
+
     }
 
     /**
