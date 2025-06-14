@@ -114,6 +114,8 @@ class CheckoutController extends Controller
                     'city_id' => $cart->city_id,
                 ]);
 
+                $user->assignRole('client');
+
                 // Create primary address
                 $user->addresses()->create([
                     'address' => $data['address'],
