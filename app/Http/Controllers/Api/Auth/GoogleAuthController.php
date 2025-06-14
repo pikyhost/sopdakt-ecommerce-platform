@@ -3,8 +3,12 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\UserLoginToken;
+use Exception;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Laravel\Socialite\Facades\Socialite;
 
 class GoogleAuthController extends Controller
@@ -25,24 +29,68 @@ class GoogleAuthController extends Controller
                     'name' => $googleUser->name,
                     'email' => $googleUser->email,
                     'google_id' => $googleUser->id,
-                    'password' => bcrypt(uniqid()), // just a random default
+                    'password' => bcrypt(uniqid()), // random password
                 ]);
 
                 $user->assignRole('client');
             }
-            
-            $token = $user->createToken('google-token')->plainTextToken;
+
+            // Clear previous tokens
+            $user->tokens()->delete();
+
+            // Generate new token
+            $token = $user->createToken('google-login')->plainTextToken;
+
+            // Manually login the user via web guard if needed
+            Auth::guard('web')->login($user);
+
+            // Store login token info
+            try {
+                UserLoginToken::updateOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'user_id' => $user->id,
+                        'token' => $token,
+                        'session_id' => null,
+                        'is_login' => true,
+                    ]
+                );
+            } catch (Exception $e) {
+                return response()->json([
+                    'message' => 'Session store not set. Please check your session configuration.',
+                    'error' => $e->getMessage(),
+                ], 500);
+            }
 
             return response()->json([
-                'token' => $token,
+                'message' => 'Google login successful',
                 'user' => $user,
-            ]);
+                'role' => $user->getRoleNames()->first(),
+                'token' => $token,
+                'redirect_url' => $this->getRedirectUrl($user, $request, $token),
+            ], 200)->withCookie(cookie('XSRF-TOKEN', csrf_token(), 0, '/', null, true, true, false, 'Strict'));
 
-        } catch (\Exception $e) {
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (Exception $e) {
             return response()->json([
                 'message' => 'Invalid Google token',
                 'error' => $e->getMessage(),
-            ], 422); //00
+            ], 422);
         }
+    }
+
+    protected function getRedirectUrl($user, Request $request, $token): string
+    {
+        if ($user->hasRole('client')) {
+            return route('filament.client.auth.login', [
+                'token' => encrypt($token, "DEG_FUCK")
+            ]);
+        }
+
+        return '/';
     }
 }
