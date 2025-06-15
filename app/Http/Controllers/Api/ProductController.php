@@ -162,6 +162,19 @@ class ProductController extends Controller
         $minRating = $request->input('min_rating');
         $sortBy = $request->input('sort_by'); // 'latest' or 'oldest'
 
+        // Get session ID or user for wishlist checking
+        $sessionId = null;
+        $userId = null;
+
+        if ($request->header('x-session-id')) {
+            $sessionId = $request->header('x-session-id');
+        }
+
+        $user = auth('sanctum')->user();
+        if ($user) {
+            $userId = $user->id;
+        }
+
         $products = Product::with([
             'category',
             'productColors.color',
@@ -200,7 +213,20 @@ class ProductController extends Controller
 
             ->paginate(15);
 
-        $result = $products->getCollection()->map(function ($product) use ($locale) {
+        // Get wishlisted product IDs for current user/session
+        $wishlistedProductIds = collect();
+
+        if ($userId) {
+            $wishlistedProductIds = \DB::table('saved_products')
+                ->where('user_id', $userId)
+                ->pluck('product_id');
+        } elseif ($sessionId) {
+            $wishlistedProductIds = \DB::table('saved_products')
+                ->where('session_id', $sessionId)
+                ->pluck('product_id');
+        }
+
+        $result = $products->getCollection()->map(function ($product) use ($locale, $wishlistedProductIds) {
             return [
                 'id' => $product->id,
                 'category_id' => $product->category_id,
@@ -218,6 +244,7 @@ class ProductController extends Controller
                 'quantity' => $product->quantity,
                 'created_at' => $product->created_at,
                 'updated_at' => $product->updated_at,
+                'is_wishlisted' => $wishlistedProductIds->contains($product->id),
                 'media' => [
                     'feature_product_image' => $product->getFeatureProductImageUrl(),
                     'second_feature_product_image' => $product->getSecondFeatureProductImageUrl(),
@@ -282,7 +309,6 @@ class ProductController extends Controller
             ],
             'filters' => $filters,
         ]);
-
     }
 
     /**
