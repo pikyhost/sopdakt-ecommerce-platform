@@ -30,31 +30,6 @@ class HomeController extends Controller
         ]);
     }
 
-    /**
-     * Get Featured Categories
-     *
-     * @group Homepage
-     *
-     * Retrieves a list of featured categories for the homepage with their images.
-     *
-     * @response 200 {
-     *   "success": true,
-     *   "data": [
-     *     {
-     *       "name": "Electronics",
-     *       "image_url": "https://example.com/media/categories/electronics.jpg"
-     *     },
-     *     {
-     *       "name": "Fashion",
-     *       "image_url": "https://example.com/media/categories/fashion.jpg"
-     *     }
-     *   ]
-     * }
-     * @response 500 {
-     *   "success": false,
-     *   "message": "Server Error"
-     * }
-     */
     public function featuredCategories(Request $request): JsonResponse
     {
         $locale = app()->getLocale();
@@ -88,6 +63,19 @@ class HomeController extends Controller
 
     public function fakeBestSellers(): JsonResponse
     {
+        // Get session ID or user for wishlist checking
+        $sessionId = null;
+        $userId = null;
+
+        if (request()->header('x-session-id')) {
+            $sessionId = request()->header('x-session-id');
+        }
+
+        $user = auth('sanctum')->user();
+        if ($user) {
+            $userId = $user->id;
+        }
+
         $products = Product::with([
             'media',
             'category',
@@ -107,69 +95,97 @@ class HomeController extends Controller
             ->where('is_published', true)
             ->orderBy('sales', 'desc')
             ->limit(10)
-            ->get()
-            ->map(function ($product) {
-                return [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'price' => $product->price,
-                    'after_discount_price' => $product->after_discount_price,
-                    'sales' => $product->sales,
-                    'slug' => $product->slug,
-                    'media' => [
-                        'feature_product_image' => $product->getFeatureProductImageUrl(),
-                        'second_feature_product_image' => $product->getSecondFeatureProductImageUrl(),
-                    ],
-                    'category' => $product->category?->only(['name', 'slug']),
-                    'colors_with_sizes' => $product->productColors->map(function ($productColor) {
-                        return [
-                            'color_id' => $productColor->color->id ?? null,
-                            'color_name' => $productColor->color->name ?? null,
-                            'color_code' => $productColor->color->code ?? null,
-                            'color_image' => $productColor->image ? asset('storage/' . $productColor->image) : null,
-                            'sizes' => $productColor->productColorSizes->map(function ($productColorSize) {
-                                return [
-                                    'size_id' => $productColorSize->size->id ?? null,
-                                    'size_name' => $productColorSize->size->name ?? null,
-                                    'quantity' => $productColorSize->quantity,
-                                ];
-                            })->filter(fn ($size) => $size['quantity'] > 0)->values(),
-                        ];
-                    }),
-                    'variants' => $product->productColors->map(function ($variant) {
-                        return [
-                            'id' => $variant->id,
-                            'color_id' => $variant->color_id,
-                            'color_name' => optional($variant->color)->name,
-                            'color_code' => $variant->color->code ?? null,
-                            'image_url' => $variant->image ? asset('storage/' . $variant->image) : null,
-                            'sizes' => $variant->productColorSizes->map(function ($pcs) {
-                                return [
-                                    'id' => $pcs->id,
-                                    'size_id' => $pcs->size_id,
-                                    'size_name' => optional($pcs->size)->name,
-                                    'quantity' => $pcs->quantity,
-                                ];
-                            }),
-                        ];
-                    }),
-                    'actions' => [
-                        'add_to_cart' => route('cart.add'),
-                        'toggle_love' => route('wishlist.toggle'),
-                        'compare' => route('compare.add'),
-                        'view' => route('products.show', ['slug' => $product->slug]),
-                    ],
-                ];
-            });
+            ->get();
+
+        // Get wishlisted product IDs for current user/session
+        $wishlistedProductIds = collect();
+
+        if ($userId) {
+            $wishlistedProductIds = \DB::table('saved_products')
+                ->where('user_id', $userId)
+                ->pluck('product_id');
+        } elseif ($sessionId) {
+            $wishlistedProductIds = \DB::table('saved_products')
+                ->where('session_id', $sessionId)
+                ->pluck('product_id');
+        }
+
+        $mappedProducts = $products->map(function ($product) use ($wishlistedProductIds) {
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'price' => $product->price,
+                'after_discount_price' => $product->after_discount_price,
+                'sales' => $product->sales,
+                'slug' => $product->slug,
+                'is_wishlisted' => $wishlistedProductIds->contains($product->id),
+                'media' => [
+                    'feature_product_image' => $product->getFeatureProductImageUrl(),
+                    'second_feature_product_image' => $product->getSecondFeatureProductImageUrl(),
+                ],
+                'category' => $product->category?->only(['name', 'slug']),
+                'colors_with_sizes' => $product->productColors->map(function ($productColor) {
+                    return [
+                        'color_id' => $productColor->color->id ?? null,
+                        'color_name' => $productColor->color->name ?? null,
+                        'color_code' => $productColor->color->code ?? null,
+                        'color_image' => $productColor->image ? asset('storage/' . $productColor->image) : null,
+                        'sizes' => $productColor->productColorSizes->map(function ($productColorSize) {
+                            return [
+                                'size_id' => $productColorSize->size->id ?? null,
+                                'size_name' => $productColorSize->size->name ?? null,
+                                'quantity' => $productColorSize->quantity,
+                            ];
+                        })->filter(fn ($size) => $size['quantity'] > 0)->values(),
+                    ];
+                }),
+                'variants' => $product->productColors->map(function ($variant) {
+                    return [
+                        'id' => $variant->id,
+                        'color_id' => $variant->color_id,
+                        'color_name' => optional($variant->color)->name,
+                        'color_code' => $variant->color->code ?? null,
+                        'image_url' => $variant->image ? asset('storage/' . $variant->image) : null,
+                        'sizes' => $variant->productColorSizes->map(function ($pcs) {
+                            return [
+                                'id' => $pcs->id,
+                                'size_id' => $pcs->size_id,
+                                'size_name' => optional($pcs->size)->name,
+                                'quantity' => $pcs->quantity,
+                            ];
+                        }),
+                    ];
+                }),
+                'actions' => [
+                    'add_to_cart' => route('cart.add'),
+                    'toggle_love' => route('wishlist.toggle'),
+                    'compare' => route('compare.add'),
+                    'view' => route('products.show', ['slug' => $product->slug]),
+                ],
+            ];
+        });
 
         return response()->json([
             'success' => true,
-            'data' => $products,
+            'data' => $mappedProducts,
         ]);
     }
 
     public function realBestSellers()
     {
+        // Get session ID or user for wishlist checking
+        $sessionId = null;
+        $userId = null;
+
+        if (request()->header('x-session-id')) {
+            $sessionId = request()->header('x-session-id');
+        }
+
+        $user = auth('sanctum')->user();
+        if ($user) {
+            $userId = $user->id;
+        }
+
         $bestSellers = Product::query()
             ->withCount(['orderItems as total_sold' => function ($query) {
                 $query->select(DB::raw("SUM(quantity)"));
@@ -177,122 +193,82 @@ class HomeController extends Controller
             ->orderByDesc('total_sold')
             ->whereHas('orderItems') // Only products that were ordered
             ->take(10)
-            ->get()
-            ->map(function ($product) {
-                return [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'price' => $product->price,
-                    'after_discount_price' => $product->after_discount_price,
-                    'sales' => $product->sales,
-                    'slug' => $product->slug,
-                    'media' => [
-                        'feature_product_image' => $product->getFeatureProductImageUrl(),
-                        'second_feature_product_image' => $product->getSecondFeatureProductImageUrl(),
-                    ],
-                    'category' => $product->category?->only(['name', 'slug']),
-                    'colors_with_sizes' => $product->productColors->map(function ($productColor) {
-                        return [
-                            'color_id' => $productColor->color->id ?? null,
-                            'color_name' => $productColor->color->name ?? null,
-                            'color_code' => $productColor->color->code ?? null,
-                            'color_image' => $productColor->image ? asset('storage/' . $productColor->image) : null,
-                            'sizes' => $productColor->productColorSizes->map(function ($productColorSize) {
-                                return [
-                                    'size_id' => $productColorSize->size->id ?? null,
-                                    'size_name' => $productColorSize->size->name ?? null,
-                                    'quantity' => $productColorSize->quantity,
-                                ];
-                            })->filter(fn ($size) => $size['quantity'] > 0)->values(),
-                        ];
-                    }),
-                    'variants' => $product->productColors->map(function ($variant) {
-                        return [
-                            'id' => $variant->id,
-                            'color_id' => $variant->color_id,
-                            'color_code' => $variant->color->code ?? null,
-                            'color_name' => optional($variant->color)->name,
-                            'image_url' => $variant->image ? asset('storage/' . $variant->image) : null,
-                            'sizes' => $variant->productColorSizes->map(function ($pcs) {
-                                return [
-                                    'id' => $pcs->id,
-                                    'size_id' => $pcs->size_id,
-                                    'size_name' => optional($pcs->size)->name,
-                                    'quantity' => $pcs->quantity,
-                                ];
-                            }),
-                        ];
-                    }),
-                    'actions' => [
-                        'add_to_cart' => route('cart.add'),
-                        'toggle_love' => route('wishlist.toggle'),
-                        'compare' => route('compare.add'),
-                        'view' => route('products.show', ['slug' => $product->slug]),
-                    ],
-                ];
-            });
+            ->get();
+
+        // Get wishlisted product IDs for current user/session
+        $wishlistedProductIds = collect();
+
+        if ($userId) {
+            $wishlistedProductIds = \DB::table('saved_products')
+                ->where('user_id', $userId)
+                ->pluck('product_id');
+        } elseif ($sessionId) {
+            $wishlistedProductIds = \DB::table('saved_products')
+                ->where('session_id', $sessionId)
+                ->pluck('product_id');
+        }
+
+        $mappedProducts = $bestSellers->map(function ($product) use ($wishlistedProductIds) {
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'price' => $product->price,
+                'after_discount_price' => $product->after_discount_price,
+                'sales' => $product->sales,
+                'slug' => $product->slug,
+                'is_wishlisted' => $wishlistedProductIds->contains($product->id),
+                'media' => [
+                    'feature_product_image' => $product->getFeatureProductImageUrl(),
+                    'second_feature_product_image' => $product->getSecondFeatureProductImageUrl(),
+                ],
+                'category' => $product->category?->only(['name', 'slug']),
+                'colors_with_sizes' => $product->productColors->map(function ($productColor) {
+                    return [
+                        'color_id' => $productColor->color->id ?? null,
+                        'color_name' => $productColor->color->name ?? null,
+                        'color_code' => $productColor->color->code ?? null,
+                        'color_image' => $productColor->image ? asset('storage/' . $productColor->image) : null,
+                        'sizes' => $productColor->productColorSizes->map(function ($productColorSize) {
+                            return [
+                                'size_id' => $productColorSize->size->id ?? null,
+                                'size_name' => $productColorSize->size->name ?? null,
+                                'quantity' => $productColorSize->quantity,
+                            ];
+                        })->filter(fn ($size) => $size['quantity'] > 0)->values(),
+                    ];
+                }),
+                'variants' => $product->productColors->map(function ($variant) {
+                    return [
+                        'id' => $variant->id,
+                        'color_id' => $variant->color_id,
+                        'color_code' => $variant->color->code ?? null,
+                        'color_name' => optional($variant->color)->name,
+                        'image_url' => $variant->image ? asset('storage/' . $variant->image) : null,
+                        'sizes' => $variant->productColorSizes->map(function ($pcs) {
+                            return [
+                                'id' => $pcs->id,
+                                'size_id' => $pcs->size_id,
+                                'size_name' => optional($pcs->size)->name,
+                                'quantity' => $pcs->quantity,
+                            ];
+                        }),
+                    ];
+                }),
+                'actions' => [
+                    'add_to_cart' => route('cart.add'),
+                    'toggle_love' => route('wishlist.toggle'),
+                    'compare' => route('compare.add'),
+                    'view' => route('products.show', ['slug' => $product->slug]),
+                ],
+            ];
+        });
 
         return response()->json([
             'message' => __('Best selling products retrieved successfully.'),
-            'products' => $bestSellers,
+            'products' => $mappedProducts,
         ]);
     }
 
-    /**
-     * Get homepage slider and CTA content.
-     *
-     * This endpoint returns the main slider, second slider, center section,
-     * last sections, and latest section based on the current app locale
-     * (either English or Arabic).
-     *
-     * @route GET /api/homepage/slider-with-cta
-     *
-     * @queryParam locale string Optional. Language code ('en' or 'ar').
-     *
-     * @response {
-     *   "data": {
-     *     "main_slider": {
-     *       "image_url": "string",
-     *       "thumbnail_url": "string",
-     *       "heading": "string",
-     *       "discount_text": "string",
-     *       "discount_value": "string",
-     *       "starting_price": "string",
-     *       "currency_symbol": "string",
-     *       "button_text": "string",
-     *       "button_url": "string"
-     *     },
-     *     "second_slider": {
-     *       "image_url": "string",
-     *       "thumbnail_url": "string"
-     *     },
-     *     "center_section": {
-     *       "image_url": "string",
-     *       "heading": "string",
-     *       "button_text": "string",
-     *       "button_url": "string"
-     *     },
-     *     "last_sections": [
-     *       {
-     *         "image_url": "string",
-     *         "heading": "string",
-     *         "subheading": "string",
-     *         "button_text": "string",
-     *         "button_url": "string"
-     *       },
-     *       ...
-     *     ],
-     *     "latest_section": {
-     *       "image_url": "string",
-     *       "heading": "string",
-     *       "button_text": "string",
-     *       "button_url": "string"
-     *     }
-     *   }
-     * }
-     *
-     * @return \Illuminate\Http\JsonResponse|\App\Http\Resources\HomePageSettingResource
-     */
     public function sliderWithCta()
     {
         $homePageSetting = HomePageSetting::getCached();
