@@ -22,9 +22,20 @@ class GoogleAuthController extends Controller
         try {
             $googleUser = Socialite::driver('google')->stateless()->userFromToken($request->access_token);
 
+            // ❗ Check if user already exists by google_id
             $user = User::where('google_id', $googleUser->id)->first();
 
+            // ❗ If no user with google_id, check by email
             if (!$user) {
+                $existingUserWithEmail = User::where('email', $googleUser->email)->first();
+                if ($existingUserWithEmail) {
+                    return response()->json([
+                        'message' => 'This email is already registered. Please login using your original method.',
+                        'error' => 'Email already exists in system',
+                    ], 409); // Conflict
+                }
+
+                // Create new user
                 $user = User::create([
                     'name' => $googleUser->name,
                     'email' => $googleUser->email,
@@ -41,7 +52,7 @@ class GoogleAuthController extends Controller
             // Generate new token
             $token = $user->createToken('google-login')->plainTextToken;
 
-            // Manually login the user via web guard if needed
+            // Manually login the user via web guard
             Auth::guard('web')->login($user);
 
             // Store login token info
@@ -82,6 +93,7 @@ class GoogleAuthController extends Controller
             ], 422);
         }
     }
+
 
     protected function getRedirectUrl($user, Request $request, $token): string
     {
