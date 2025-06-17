@@ -31,13 +31,12 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         return $this->avatar_url ? Storage::url($this->avatar_url) : null;
     }
 
-    public function sendPasswordResetNotification($token): void
-    {
-        $url = 'https:/sopdakt.com/reset-password?token='.$token;
+   public function sendPasswordResetNotification($token): void
+{
+    $url = 'https://sopdakt.com/reset-password?token=' . $token . '&email=' . urlencode($this->email);
 
-        $this->notify(new CustomResetPasswordNotification($url));
-    }
-
+    $this->notify(new CustomResetPasswordNotification($url));
+}
     /**
      * The attributes that are mass assignable.
      *
