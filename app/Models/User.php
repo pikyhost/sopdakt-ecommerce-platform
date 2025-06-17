@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasPermissions;
 use Spatie\Permission\Traits\HasRoles;
+use App\Notifications\CustomResetPasswordNotification;
 
 class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerifyEmail, HasLocalePreference
 {
@@ -31,12 +32,12 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     }
 
     public function sendPasswordResetNotification($token): void
-    {
-        $url = 'https://sopdakt.com/reset-password?token='.$token;
-
-        $this->notify(new ResetPasswordNotification($url));
-    }
-
+{
+    $url = 'https://backend.sopdakt.com/reset-password?token='.$token;
+ 
+    $this->notify(new CustomResetPasswordNotification($url));
+}
+    
     /**
      * The attributes that are mass assignable.
      *
@@ -172,5 +173,8 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     {
         return $this->hasMany(WheelSpin::class);
     }
+    
+
+
 
 }
