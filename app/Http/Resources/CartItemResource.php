@@ -12,14 +12,13 @@ class CartItemResource extends JsonResource
      *
      * @return array<string, mixed>
      */
-
     public function toArray($request)
     {
         $priceString = $this->product ? $this->product->discount_price_for_current_country : '0 USD';
         $price = (float) preg_replace('/[^0-9.]/', '', $priceString);
         $currency = preg_replace('/[\d.]/', '', trim($priceString));
 
-        // Prefer the image from the productColor if available
+        // Use image from productColor (inferred by product_id + color_id), fallback to product feature image
         $imageUrl = $this->productColor && $this->productColor->image
             ? asset('storage/' . $this->productColor->image)
             : ($this->product?->getFeatureProductImageUrl() ?? '');

@@ -58,4 +58,17 @@ class CartItem extends Model
             ->whereColumn('color_id', 'color_id');
     }
 
+    // CartItem.php
+
+    public function getProductColorAttribute()
+    {
+        if (!$this->product_id || !$this->color_id) {
+            return null;
+        }
+
+        return $this->product?->productColors
+            ?->firstWhere('color_id', $this->color_id);
+    }
+
+
 }
