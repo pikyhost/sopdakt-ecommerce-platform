@@ -34,6 +34,8 @@ class PasswordResetLinkController extends Controller
             ]);
         }
 
+        // custom reset password
+
         return response()->json(['status' => __($status)]);
     }
 }
