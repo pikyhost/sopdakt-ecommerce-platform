@@ -157,3 +157,4 @@ Stack trace:
 [17-Jun-2025 20:42:09 UTC] PHP Fatal error:  Cannot use App\Notifications\ResetPasswordNotification as ResetPasswordNotification because the name is already in use in /home/sodakt/public_html/backend/app/Models/User.php on line 23
 [17-Jun-2025 20:42:28 UTC] PHP Fatal error:  Cannot use App\Notifications\ResetPasswordNotification as ResetPasswordNotification because the name is already in use in /home/sodakt/public_html/backend/app/Models/User.php on line 23
 [17-Jun-2025 20:42:36 UTC] PHP Fatal error:  Cannot use App\Notifications\ResetPasswordNotification as ResetPasswordNotification because the name is already in use in /home/sodakt/public_html/backend/app/Models/User.php on line 23
+[17-Jun-2025 21:18:48 UTC] PHP Fatal error:  Trait "App\Notifications\Queueable" not found in /home/sodakt/public_html/backend/app/Notifications/CustomResetPasswordNotification.php on line 9

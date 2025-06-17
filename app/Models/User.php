@@ -33,7 +33,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
 
     public function sendPasswordResetNotification($token): void
     {
-        $url = config('app.frontend_url').'/reset-password?token='.$token;
+        $url = 'https:/sopdakt.com/reset-password?token='.$token;
 
         $this->notify(new CustomResetPasswordNotification($url));
     }
