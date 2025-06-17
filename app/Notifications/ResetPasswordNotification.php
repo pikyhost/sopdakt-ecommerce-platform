@@ -5,7 +5,7 @@ namespace App\Notifications;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Notifications\Messages\MailMessage;
 
-class CustomResetPassword extends ResetPassword
+class ResetPasswordNotification extends ResetPassword
 {
     public function toMail($notifiable)
     {

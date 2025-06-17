@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\UserRole;
 use App\Notifications\CustomResetPassword;
+use App\Notifications\ResetPasswordNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Filament\Facades\Filament;
 use Filament\Models\Contracts\FilamentUser;
@@ -29,9 +30,11 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
         return $this->avatar_url ? Storage::url($this->avatar_url) : null;
     }
 
-    public function sendPasswordResetNotification($token)
+    public function sendPasswordResetNotification($token): void
     {
-        $this->notify(new CustomResetPassword($token));
+        $url = 'https://sopdakt.com/reset-password?token='.$token;
+
+        $this->notify(new ResetPasswordNotification($url));
     }
 
     /**
