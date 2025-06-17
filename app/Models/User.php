@@ -32,12 +32,12 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     }
 
     public function sendPasswordResetNotification($token): void
-{
-    $url = 'https://backend.sopdakt.com/reset-password?token='.$token;
- 
-    $this->notify(new CustomResetPasswordNotification($url));
-}
-    
+    {
+        $url = config('app.frontend_url').'/reset-password?token='.$token;
+
+        $this->notify(new CustomResetPasswordNotification($url));
+    }
+
     /**
      * The attributes that are mass assignable.
      *
@@ -173,7 +173,7 @@ class User extends Authenticatable implements FilamentUser, HasAvatar, MustVerif
     {
         return $this->hasMany(WheelSpin::class);
     }
-    
+
 
 
 
