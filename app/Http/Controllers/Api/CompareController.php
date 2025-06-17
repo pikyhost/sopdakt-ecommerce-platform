@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\DB;
 
 /**
  * @group Products
@@ -89,6 +87,7 @@ class CompareController extends Controller
             ->map(function ($product) use ($locale) {
                 return [
                     'id' => $product->id,
+                    'status' => $product->quantity > 0 ? "In Stock" : "Out of stock",
                     'category_id' => $product->category_id,
                     'name' => $product->getTranslation('name', $locale),
                     'description' => $product->getTranslation('description', $locale),

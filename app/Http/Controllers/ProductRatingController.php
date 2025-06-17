@@ -64,7 +64,7 @@ class ProductRatingController extends Controller
 
         $validated = $request->validate([
             'rating' => 'required|integer|min:1|max:5',
-            'comment' => 'nulable|string|min:1',
+            'comment' => 'nullable|string|min:1',
         ]);
 
         $isAdmin = Auth::user()->hasRole(['admin', 'super_admin']);

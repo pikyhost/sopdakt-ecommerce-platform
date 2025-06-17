@@ -20,12 +20,12 @@ class GoogleAuthController extends Controller
         ]);
 
         try {
-            $googleUser = Socialite::driver('google')->stateless()->userFromToken($request->access_token);
+            $googleUser = \Socialite::driver('google')->stateless()->userFromToken($request->access_token);
 
-            // ❗ Check if user already exists by google_id
+            //  Check if user already exists by google_id
             $user = User::where('google_id', $googleUser->id)->first();
 
-            // ❗ If no user with google_id, check by email
+            //  If no user with google_id, check by email
             if (!$user) {
                 $existingUserWithEmail = User::where('email', $googleUser->email)->first();
                 if ($existingUserWithEmail) {
