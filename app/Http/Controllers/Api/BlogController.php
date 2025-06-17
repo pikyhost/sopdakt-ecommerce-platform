@@ -8,6 +8,7 @@ use App\Models\BlogCategory;
 use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class BlogController extends Controller
 {
@@ -75,7 +76,7 @@ class BlogController extends Controller
                 'id' => $blog->id,
                 'title' => $blog->getTranslation('title', $locale),
                 'slug' => $blog->slug,
-                'excerpt' => $blog->getTranslation('content', $locale),
+                'excerpt' => Str::markdown($blog->getTranslation('content', $locale)),
                 'published_at' => $blog->published_at->format('Y-m-d'),
                 'category' => $blog->category ? [
                     'id' => $blog->category->id,
@@ -128,7 +129,7 @@ class BlogController extends Controller
                     'id' => $relatedBlog->id,
                     'title' => $relatedBlog->getTranslation('title', $locale),
                     'slug' => $relatedBlog->slug,
-                    'excerpt' => $relatedBlog->getTranslation('content', $locale),
+                    'excerpt' => Str::markdown($relatedBlog->getTranslation('content', $locale)),
                     'published_at' => $relatedBlog->published_at->format('Y-m-d'),
                     'image_url' => $relatedBlog->getMainBlogImageUrl(),
                 ];
@@ -138,7 +139,7 @@ class BlogController extends Controller
             'id' => $blog->id,
             'title' => $blog->getTranslation('title', $locale),
             'slug' => $blog->slug,
-            'content' => $blog->getTranslation('content', $locale),
+            'content' => Str::markdown($blog->getTranslation('content', $locale)),
             'published_at' => $blog->published_at->format('Y-m-d'),
             'category' => $blog->category ? [
                 'id' => $blog->category->id,
@@ -149,7 +150,7 @@ class BlogController extends Controller
                 'id' => $blog->author->id,
                 'name' => $blog->author->name,
                 'desc_for_comment' => $blog->author->desc_for_comment ?? 'Author',
-                'avatar' => asset('storage/' . $blog->author->avatar_url)
+                'avatar' => asset('storage/' . $blog->author->avatar_url),
             ],
             'image_url' => $blog->getMainBlogImageUrl(),
             'likes_count' => $blog->likers->count(),
@@ -192,7 +193,7 @@ class BlogController extends Controller
                 'id' => $blog->id,
                 'title' => $blog->getTranslation('title', $locale),
                 'slug' => $blog->slug,
-                'excerpt' => $blog->getTranslation('content', $locale),
+                'excerpt' => Str::markdown($blog->getTranslation('content', $locale)),
                 'published_at' => $blog->published_at->format('Y-m-d'),
                 'author' => [
                     'id' => $blog->author->id,
@@ -248,7 +249,7 @@ class BlogController extends Controller
                 'id' => $blog->id,
                 'title' => $blog->getTranslation('title', $locale),
                 'slug' => $blog->slug,
-                'excerpt' => $blog->getTranslation('content', $locale),
+                'excerpt' => Str::markdown($blog->getTranslation('content', $locale)),
                 'published_at' => $blog->published_at->format('Y-m-d'),
                 'author' => [
                     'id' => $blog->author->id,
@@ -295,7 +296,7 @@ class BlogController extends Controller
                     'id' => $blog->id,
                     'title' => $blog->getTranslation('title', $locale),
                     'slug' => $blog->slug,
-                    'excerpt' => $blog->getTranslation('content', $locale),
+                    'excerpt' => Str::markdown($blog->getTranslation('content', $locale)),
                     'published_at' => $blog->published_at->format('Y-m-d'),
                     'image_url' => $blog->getMainBlogImageUrl(),
                     'likes_count' => $blog->likers_count,
@@ -324,7 +325,7 @@ class BlogController extends Controller
                     'id' => $blog->id,
                     'title' => $blog->getTranslation('title', $locale),
                     'slug' => $blog->slug,
-                    'excerpt' => $blog->getTranslation('content', $locale),
+                    'excerpt' => Str::markdown($blog->getTranslation('content', $locale)),
                     'published_at' => $blog->published_at->format('Y-m-d'),
                     'image_url' => $blog->getMainBlogImageUrl(),
                 ];
@@ -393,7 +394,7 @@ class BlogController extends Controller
                 'id' => $blog->id,
                 'title' => $blog->getTranslation('title', $locale),
                 'slug' => $blog->slug,
-                'excerpt' => $blog->getTranslation('content', $locale),
+                'excerpt' => Str::markdown($blog->getTranslation('content', $locale)),
                 'published_at' => $blog->published_at->format('Y-m-d'),
                 'author' => [
                     'id' => $blog->author->id,
