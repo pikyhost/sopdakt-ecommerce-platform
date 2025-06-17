@@ -22,7 +22,7 @@ Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
 
 Route::post('/reset-password', [NewPasswordController::class, 'store'])
     ->middleware(['guest', 'api'])
-    ->name('password.store');
+    ->name('password.reset');
 
 Route::get('/verify-email/{id}/{hash}', VerifyEmailController::class)
     ->middleware(['auth:api', 'signed', 'throttle:6,1'])

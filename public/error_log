@@ -20,3 +20,140 @@
 [22-May-2025 07:09:43 UTC] PHP Fatal error:  Cannot declare class App\Http\Controllers\Api\fNewsletterSubscriberController, because the name is already in use in /home/sodakt/public_html/backend/app/Http/Controllers/Api/NewsletterSubscriberController.php on line 16
 [22-May-2025 07:14:36 UTC] PHP Fatal error:  Cannot declare class App\Http\Controllers\Api\fNewsletterSubscriberController, because the name is already in use in /home/sodakt/public_html/backend/app/Http/Controllers/Api/NewsletterSubscriberController.php on line 16
 [22-May-2025 07:14:41 UTC] PHP Fatal error:  Cannot declare class App\Http\Controllers\Api\fNewsletterSubscriberController, because the name is already in use in /home/sodakt/public_html/backend/app/Http/Controllers/Api/NewsletterSubscriberController.php on line 16
+[17-Jun-2025 20:37:09 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:37:09 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:37:09 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:37:09 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:37:09 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:37:09 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:37:09 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:37:09 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:37:09 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:37:11 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:37:11 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:37:11 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:37:11 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:37:11 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:37:11 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:37:11 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:37:11 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:37:11 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:39:20 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:39:25 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:39:35 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:39:48 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:40:01 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:40:04 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:40:04 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:40:04 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:40:04 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:40:04 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:40:04 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:40:04 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:40:04 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:40:05 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:40:05 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:40:05 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:40:05 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:40:05 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:40:05 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:40:05 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:40:06 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:40:15 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:40:22 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:40:35 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:40:56 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:41:14 UTC] PHP Fatal error:  Cannot use Illuminate\Auth\Notifications\ResetPassword as ResetPassword because the name is already in use in /home/sodakt/public_html/backend/app/Providers/AppServiceProvider.php on line 26
+[17-Jun-2025 20:41:36 UTC] PHP Fatal error:  Uncaught ReflectionException: Class "view" does not exist in /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Container/Container.php:959
+Stack trace:
+#0 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Container/Container.php(959): ReflectionClass->__construct('view')
+#1 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Container/Container.php(832): Illuminate\Container\Container->build('view')
+#2 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1078): Illuminate\Container\Container->resolve('view', Array, true)
+#3 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Container/Container.php(763): Illuminate\Foundation\Application->resolve('view', Array)
+#4 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1058): Illuminate\Container\Container->make('view', Array)
+#5 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Container/Container.php(1580): Illuminate\Foundation\Application->make('view')
+#6 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(239): Illuminate\Container\Container->offsetGet('view')
+#7 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(210): Illuminate\Support\Facades\Facade::resolveFacadeInstance('view')
+#8 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(355): Illuminate\Support\Facades\Facade::getFacadeRoot()
+#9 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/RegisterErrorViewPaths.php(17): Illuminate\Support\Facades\Facade::__callStatic('replaceNamespac...', Array)
+#10 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(915): Illuminate\Foundation\Exceptions\RegisterErrorViewPaths->__invoke()
+#11 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(890): Illuminate\Foundation\Exceptions\Handler->registerErrorViewPaths()
+#12 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(815): Illuminate\Foundation\Exceptions\Handler->renderHttpException(Object(Symfony\Component\HttpKernel\Exception\HttpException))
+#13 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(706): Illuminate\Foundation\Exceptions\Handler->prepareResponse(Object(Illuminate\Http\Request), Object(Symfony\Component\HttpKernel\Exception\HttpException))
+#14 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(594): Illuminate\Foundation\Exceptions\Handler->renderExceptionResponse(Object(Illuminate\Http\Request), Object(Illuminate\Contracts\Container\BindingResolutionException))
+#15 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(219): Illuminate\Foundation\Exceptions\Handler->render(Object(Illuminate\Http\Request), Object(Illuminate\Contracts\Container\BindingResolutionException))
+#16 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(196): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse(Object(Illuminate\Contracts\Container\BindingResolutionException))
+#17 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(256): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException(Object(Illuminate\Contracts\Container\BindingResolutionException))
+#18 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->Illuminate\Foundation\Bootstrap\{closure}(Object(Illuminate\Contracts\Container\BindingResolutionException))
+#19 {main}
+
+Next Illuminate\Contracts\Container\BindingResolutionException: Target class [view] does not exist. in /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Container/Container.php:961
+Stack trace:
+#0 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Container/Container.php(832): Illuminate\Container\Container->build('view')
+#1 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1078): Illuminate\Container\Container->resolve('view', Array, true)
+#2 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Container/Container.php(763): Illuminate\Foundation\Application->resolve('view', Array)
+#3 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1058): Illuminate\Container\Container->make('view', Array)
+#4 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Container/Container.php(1580): Illuminate\Foundation\Application->make('view')
+#5 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(239): Illuminate\Container\Container->offsetGet('view')
+#6 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(210): Illuminate\Support\Facades\Facade::resolveFacadeInstance('view')
+#7 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(355): Illuminate\Support\Facades\Facade::getFacadeRoot()
+#8 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/RegisterErrorViewPaths.php(17): Illuminate\Support\Facades\Facade::__callStatic('replaceNamespac...', Array)
+#9 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(915): Illuminate\Foundation\Exceptions\RegisterErrorViewPaths->__invoke()
+#10 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(890): Illuminate\Foundation\Exceptions\Handler->registerErrorViewPaths()
+#11 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(815): Illuminate\Foundation\Exceptions\Handler->renderHttpException(Object(Symfony\Component\HttpKernel\Exception\HttpException))
+#12 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(706): Illuminate\Foundation\Exceptions\Handler->prepareResponse(Object(Illuminate\Http\Request), Object(Symfony\Component\HttpKernel\Exception\HttpException))
+#13 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(594): Illuminate\Foundation\Exceptions\Handler->renderExceptionResponse(Object(Illuminate\Http\Request), Object(Illuminate\Contracts\Container\BindingResolutionException))
+#14 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(219): Illuminate\Foundation\Exceptions\Handler->render(Object(Illuminate\Http\Request), Object(Illuminate\Contracts\Container\BindingResolutionException))
+#15 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(196): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse(Object(Illuminate\Contracts\Container\BindingResolutionException))
+#16 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(256): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException(Object(Illuminate\Contracts\Container\BindingResolutionException))
+#17 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->Illuminate\Foundation\Bootstrap\{closure}(Object(Illuminate\Contracts\Container\BindingResolutionException))
+#18 {main}
+  thrown in /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Container/Container.php on line 961
+[17-Jun-2025 20:41:49 UTC] PHP Fatal error:  Uncaught ReflectionException: Class "view" does not exist in /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Container/Container.php:959
+Stack trace:
+#0 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Container/Container.php(959): ReflectionClass->__construct('view')
+#1 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Container/Container.php(832): Illuminate\Container\Container->build('view')
+#2 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1078): Illuminate\Container\Container->resolve('view', Array, true)
+#3 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Container/Container.php(763): Illuminate\Foundation\Application->resolve('view', Array)
+#4 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1058): Illuminate\Container\Container->make('view', Array)
+#5 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Container/Container.php(1580): Illuminate\Foundation\Application->make('view')
+#6 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(239): Illuminate\Container\Container->offsetGet('view')
+#7 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(210): Illuminate\Support\Facades\Facade::resolveFacadeInstance('view')
+#8 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(355): Illuminate\Support\Facades\Facade::getFacadeRoot()
+#9 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/RegisterErrorViewPaths.php(17): Illuminate\Support\Facades\Facade::__callStatic('replaceNamespac...', Array)
+#10 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(915): Illuminate\Foundation\Exceptions\RegisterErrorViewPaths->__invoke()
+#11 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(890): Illuminate\Foundation\Exceptions\Handler->registerErrorViewPaths()
+#12 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(815): Illuminate\Foundation\Exceptions\Handler->renderHttpException(Object(Symfony\Component\HttpKernel\Exception\HttpException))
+#13 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(706): Illuminate\Foundation\Exceptions\Handler->prepareResponse(Object(Illuminate\Http\Request), Object(Symfony\Component\HttpKernel\Exception\HttpException))
+#14 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(594): Illuminate\Foundation\Exceptions\Handler->renderExceptionResponse(Object(Illuminate\Http\Request), Object(Illuminate\Contracts\Container\BindingResolutionException))
+#15 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(219): Illuminate\Foundation\Exceptions\Handler->render(Object(Illuminate\Http\Request), Object(Illuminate\Contracts\Container\BindingResolutionException))
+#16 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(196): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse(Object(Illuminate\Contracts\Container\BindingResolutionException))
+#17 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(256): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException(Object(Illuminate\Contracts\Container\BindingResolutionException))
+#18 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->Illuminate\Foundation\Bootstrap\{closure}(Object(Illuminate\Contracts\Container\BindingResolutionException))
+#19 {main}
+
+Next Illuminate\Contracts\Container\BindingResolutionException: Target class [view] does not exist. in /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Container/Container.php:961
+Stack trace:
+#0 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Container/Container.php(832): Illuminate\Container\Container->build('view')
+#1 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1078): Illuminate\Container\Container->resolve('view', Array, true)
+#2 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Container/Container.php(763): Illuminate\Foundation\Application->resolve('view', Array)
+#3 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1058): Illuminate\Container\Container->make('view', Array)
+#4 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Container/Container.php(1580): Illuminate\Foundation\Application->make('view')
+#5 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(239): Illuminate\Container\Container->offsetGet('view')
+#6 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(210): Illuminate\Support\Facades\Facade::resolveFacadeInstance('view')
+#7 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Support/Facades/Facade.php(355): Illuminate\Support\Facades\Facade::getFacadeRoot()
+#8 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/RegisterErrorViewPaths.php(17): Illuminate\Support\Facades\Facade::__callStatic('replaceNamespac...', Array)
+#9 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(915): Illuminate\Foundation\Exceptions\RegisterErrorViewPaths->__invoke()
+#10 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(890): Illuminate\Foundation\Exceptions\Handler->registerErrorViewPaths()
+#11 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(815): Illuminate\Foundation\Exceptions\Handler->renderHttpException(Object(Symfony\Component\HttpKernel\Exception\HttpException))
+#12 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(706): Illuminate\Foundation\Exceptions\Handler->prepareResponse(Object(Illuminate\Http\Request), Object(Symfony\Component\HttpKernel\Exception\HttpException))
+#13 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Exceptions/Handler.php(594): Illuminate\Foundation\Exceptions\Handler->renderExceptionResponse(Object(Illuminate\Http\Request), Object(Illuminate\Contracts\Container\BindingResolutionException))
+#14 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(219): Illuminate\Foundation\Exceptions\Handler->render(Object(Illuminate\Http\Request), Object(Illuminate\Contracts\Container\BindingResolutionException))
+#15 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(196): Illuminate\Foundation\Bootstrap\HandleExceptions->renderHttpResponse(Object(Illuminate\Contracts\Container\BindingResolutionException))
+#16 /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Foundation/Bootstrap/HandleExceptions.php(256): Illuminate\Foundation\Bootstrap\HandleExceptions->handleException(Object(Illuminate\Contracts\Container\BindingResolutionException))
+#17 [internal function]: Illuminate\Foundation\Bootstrap\HandleExceptions->Illuminate\Foundation\Bootstrap\{closure}(Object(Illuminate\Contracts\Container\BindingResolutionException))
+#18 {main}
+  thrown in /home/sodakt/public_html/backend/vendor/laravel/framework/src/Illuminate/Container/Container.php on line 961
+[17-Jun-2025 20:42:09 UTC] PHP Fatal error:  Cannot use App\Notifications\ResetPasswordNotification as ResetPasswordNotification because the name is already in use in /home/sodakt/public_html/backend/app/Models/User.php on line 23
+[17-Jun-2025 20:42:28 UTC] PHP Fatal error:  Cannot use App\Notifications\ResetPasswordNotification as ResetPasswordNotification because the name is already in use in /home/sodakt/public_html/backend/app/Models/User.php on line 23
+[17-Jun-2025 20:42:36 UTC] PHP Fatal error:  Cannot use App\Notifications\ResetPasswordNotification as ResetPasswordNotification because the name is already in use in /home/sodakt/public_html/backend/app/Models/User.php on line 23
