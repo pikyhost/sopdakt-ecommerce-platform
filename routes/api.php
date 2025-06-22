@@ -65,6 +65,7 @@ Route::post('/compare', [CompareController::class, 'compare'])->name('compare.ad
 Route::get('/products/featured', [ProductController::class, 'featured']);
 Route::get('/products/fakeBestSellers', [HomeController::class, 'fakeBestSellers']);
 Route::get('/products/realBestSellers', [HomeController::class, 'realBestSellers']);
+Route::get('/products/best-sellers/manual', [\App\Http\Controllers\Api\HomeController::class, 'manuallySelectedBestSellers']);
 Route::get('/products/{slug}', [ProductController::class, 'showBySlug'])->name('products.show');
 Route::get('/homepage/slider', [HomeController::class, 'sliderWithCta']);
 
