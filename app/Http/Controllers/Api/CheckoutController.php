@@ -322,8 +322,29 @@ class CheckoutController extends Controller
                     'tracking_number' => $order->tracking_number,
                     'created_at' => $order->created_at->toIso8601String(),
                 ],
+                'cart_summary' => [
+                    'items' => $cart->items->map(function ($item) {
+                        return [
+                            'product_id' => $item->product_id,
+                            'name' => $item->product->name ?? null,
+                            'price_per_unit' => $item->price_per_unit,
+                            'quantity' => $item->quantity,
+                            'subtotal' => $item->subtotal,
+                            'color' => $item->color->name ?? null,
+                            'size' => $item->size->name ?? null,
+                            'image' => $item->product->getFirstMediaUrl('default', 'thumb') ?? null,
+                        ];
+                    }),
+                    'subtotal' => $cart->subtotal,
+                    'discount' => $cart->coupon?->value ?? 0,
+                    'shipping_cost' => $cart->shipping_cost,
+                    'tax_percentage' => $cart->tax_percentage,
+                    'tax_amount' => $cart->tax_amount,
+                    'total' => $cart->total,
+                ],
                 'message' => 'Order placed successfully',
             ], 201);
+
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -361,7 +382,7 @@ class CheckoutController extends Controller
                 } else {
                     $query->where('session_id', $sessionId);
                 }
-            })->with('items.product')->latest()->first();
+            })->with(['items.product', 'items.color', 'items.size', 'items.product.media'])->latest()->first();
 
             if (!$cart || $cart->items->isEmpty()) {
                 return response()->json([
@@ -431,6 +452,36 @@ class CheckoutController extends Controller
             ]);
 
             // Handle Paymob payment
+            // Prepare cart summary response
+            $cartSummary = [
+                'items' => $cart->items->map(function ($item) {
+                    return [
+                        'product_id' => $item->product_id,
+                        'name' => $item->product->name ?? null,
+                        'price_per_unit' => $item->price_per_unit,
+                        'quantity' => $item->quantity,
+                        'subtotal' => $item->subtotal,
+                        'color' => $item->color->name ?? null,
+                        'size' => $item->size->name ?? null,
+                        'image' => $item->product->getFirstMediaUrl('default', 'thumb') ?? null,
+                    ];
+                }),
+                'subtotal' => $subTotal,
+                'discount' => $discount,
+                'shipping_cost' => $shippingCost,
+                'tax_percentage' => $taxPercentage,
+                'tax_amount' => $taxAmount,
+                'total' => $total,
+            ];
+
+            // If frontend only needs summary (optional flag)
+            if (isset($data['only_summary']) && $data['only_summary']) {
+                return response()->json([
+                    'cart_summary' => $cartSummary,
+                    'message' => 'Cart summary generated successfully.',
+                ]);
+            }
+
             if ($data['payment_method_id'] == 100) {
                 return $this->processPaymobPayment($cart, $contact, $checkoutToken);
             }
@@ -662,8 +713,29 @@ class CheckoutController extends Controller
                         'payment_url' => $data['iframe_url'],
                         'checkout_token' => $checkoutToken,
                     ],
+                    'cart_summary' => [
+                        'items' => $cart->items->map(function ($item) {
+                            return [
+                                'product_id' => $item->product_id,
+                                'name' => $item->product->name ?? null,
+                                'price_per_unit' => $item->price_per_unit,
+                                'quantity' => $item->quantity,
+                                'subtotal' => $item->subtotal,
+                                'color' => $item->color->name ?? null,
+                                'size' => $item->size->name ?? null,
+                                'image' => $item->product->getFirstMediaUrl('default', 'thumb') ?? null,
+                            ];
+                        }),
+                        'subtotal' => $cart->subtotal,
+                        'discount' => $cart->coupon?->value ?? 0,
+                        'shipping_cost' => $cart->shipping_cost,
+                        'tax_percentage' => $cart->tax_percentage,
+                        'tax_amount' => $cart->tax_amount,
+                        'total' => $cart->total,
+                    ],
                     'message' => 'Payment initiated successfully',
                 ], 200);
+
             }
 
             return response()->json([
