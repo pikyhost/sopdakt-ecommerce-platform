@@ -382,7 +382,7 @@ class CheckoutController extends Controller
                 } else {
                     $query->where('session_id', $sessionId);
                 }
-            })->with(['items.product', 'items.color', 'items.size', 'items.product.media'])->latest()->first();
+            })->with('items.product')->latest()->first();
 
             if (!$cart || $cart->items->isEmpty()) {
                 return response()->json([
