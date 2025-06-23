@@ -7,6 +7,7 @@ use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class OrderController extends Controller
 {
@@ -118,6 +119,41 @@ class OrderController extends Controller
             ])),
         ]);
     }
+
+    /**
+     * Store a new order after verifying WhatsApp code if payment method is COD.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'payment_method_id' => 'required|integer',
+            'phone' => 'required|string',
+        ]);
+
+        $COD_PAYMENT_METHOD_ID = 1;
+
+        if ($request->payment_method_id == $COD_PAYMENT_METHOD_ID) {
+            $isVerified = Cache::get('whatsapp_verified_' . $request->phone);
+
+            if (!$isVerified) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Please verify your WhatsApp number before placing the order.',
+                ], 403);
+            }
+
+            Cache::forget('whatsapp_verified_' . $request->phone);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Order placed successfully (placeholder).',
+        ]);
+    }
+
 
     /**
      * Delete the order (only if it belongs to the authenticated user).
