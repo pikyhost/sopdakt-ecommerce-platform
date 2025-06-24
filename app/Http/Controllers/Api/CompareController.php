@@ -123,7 +123,7 @@ class CompareController extends Controller
                             'id' => $pcs->id,
                             'size_id' => $pcs->size_id,
                             'size_name' => optional($pcs->size)->name,
-                            'quantity' => $pcs->quantity,
+                            'stock_status' => $pcs->quantity <= 3 ? 'HOT' : null,
                         ]),
                     ]),
                     'real_average_rating' => round($product->ratings->avg('rating'), 1),
