@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class WhatsAppController extends Controller
 {
@@ -31,6 +32,42 @@ class WhatsAppController extends Controller
         return response()->json($response);
     }
 
+
+    public function sendVerificationCode(Request $request)
+    {
+
+        $request->validate([
+            'phone' => 'required'
+        ]);
+
+        $code = rand(100000, 999999);
+        Cache::put("whatsapp_code_{$request->phone}", $code, now()->addMinutes(10));
+
+        WhatsAppService::sendMessage($request->phone, "Your verification code is: $code");
+
+        return response()->json(['message' => 'Verification code sent successfully.']);
+    }
+
+    public function confirmCode(Request $request)
+    {
+
+        $request->validate([
+            'phone' => 'required|string',
+            'code'  => 'required|string',
+        ]);
+
+
+        $cached = Cache::get("whatsapp_code_{$request->phone}");
+
+        if ($cached && $cached == $request->code) {
+            Cache::forget("whatsapp_code_{$request->phone}");
+            Cache::put("whatsapp_verified_{$request->phone}", true, now()->addMinutes(15));
+            return response()->json(['message' => 'Phone verified.']);
+        }
+
+        return response()->json(['message' => 'Invalid or expired code.'], 400);
+    }
+    
     public function sendTemplateMessage(Request $request)
     {
         $validated = $request->validate([

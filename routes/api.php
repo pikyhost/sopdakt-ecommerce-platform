@@ -28,6 +28,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductRatingController;
 use App\Http\Controllers\ShippingController;
+use App\Http\Controllers\WhatsAppController;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -173,6 +174,10 @@ Route::get('/get-user-id', function () {
    }
    return 'user not login to get his id';
 });
+
+Route::post('/order/request-code', [WhatsAppController::class, 'sendVerificationCode']);
+Route::post('/order/verify-code', [WhatsAppController::class, 'confirmCode']);
+Route::post('/orders', [OrderController::class, 'store']);
 
 Route::get('/cart/nested-related-data', [CartController::class, 'getNestedCartData']);
 

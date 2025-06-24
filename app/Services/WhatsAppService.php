@@ -55,6 +55,18 @@ class WhatsAppService
     /**
      * Send a template message
      */
+
+    public static function sendMessage($phone, $message)
+    {
+        $service = new self();
+
+        $response = $service->sendTextMessage($phone, $message);
+
+        logger("WhatsApp response: " . json_encode($response));
+
+        return $response;
+    }
+
     public function sendTemplateMessage(string $to, string $templateName, array $components = [])
     {
         try {
