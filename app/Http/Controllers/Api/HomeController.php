@@ -269,6 +269,71 @@ class HomeController extends Controller
         ]);
     }
 
+        public function manuallySelectedBestSellers(): JsonResponse
+    {
+        $locale = app()->getLocale();
+        $sessionId = request()->header('x-session-id');
+        $user = auth('sanctum')->user();
+
+        $wishlistedProductIds = collect();
+
+        if ($user) {
+            $wishlistedProductIds = DB::table('saved_products')
+                ->where('user_id', $user->id)
+                ->pluck('product_id');
+        } elseif ($sessionId) {
+            $wishlistedProductIds = DB::table('saved_products')
+                ->where('session_id', $sessionId)
+                ->pluck('product_id');
+        }
+
+        $products = Product::with([
+            'media',
+            'category',
+            'productColors.color',
+            'productColors.productColorSizes.size',
+        ])
+            ->where('is_best_seller', true)
+            ->where('is_published', true)
+            ->get();
+
+        $mappedProducts = $products->map(function ($product) use ($wishlistedProductIds, $locale) {
+            return [
+                'id' => $product->id,
+                'name' => $product->getTranslation('name', $locale),
+                'price' => $product->price,
+                'after_discount_price' => $product->after_discount_price,
+                'slug' => $product->slug,
+                'is_wishlisted' => $wishlistedProductIds->contains($product->id),
+                'media' => [
+                    'feature_product_image' => $product->getFeatureProductImageUrl(),
+                    'second_feature_product_image' => $product->getSecondFeatureProductImageUrl(),
+                ],
+                'category' => $product->category?->only(['name', 'slug']),
+                'colors_with_sizes' => $product->productColors->map(function ($productColor) {
+                    return [
+                        'color_id' => $productColor->color->id ?? null,
+                        'color_name' => $productColor->color->name ?? null,
+                        'color_code' => $productColor->color->code ?? null,
+                        'color_image' => $productColor->image ? asset('storage/' . $productColor->image) : null,
+                        'sizes' => $productColor->productColorSizes->map(function ($pcs) {
+                            return [
+                                'size_id' => $pcs->size->id ?? null,
+                                'size_name' => $pcs->size->name ?? null,
+                                'quantity' => $pcs->quantity,
+                            ];
+                        })->filter(fn ($size) => $size['quantity'] > 0)->values(),
+                    ];
+                }),
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $mappedProducts,
+        ]);
+    }
+
     public function sliderWithCta()
     {
         $homePageSetting = HomePageSetting::getCached();
