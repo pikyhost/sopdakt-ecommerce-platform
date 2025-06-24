@@ -24,14 +24,16 @@ class PaymobPaymentService extends BasePaymentService implements PaymentGatewayI
             'Content-Type' => 'application/json',
         ];
 
-        $this->integrations_id = [5059981, 5059766];
+        $this->integrations_id = [env("PAYMOB_INTEGRATION_ID")];
     }
+
 
 //first generate token to access api
     protected function generateToken()
     {
         $response = $this->buildRequest('POST', '/api/auth/tokens', ['api_key' => $this->api_key]);
-        return $response->getData(true)['data']['token'];
+        $body = $response->getData(true);
+        return $body['data']['token'] ?? $body['token'] ?? null;
     }
 
     public function sendPayment(Request $request): array
@@ -106,7 +108,7 @@ class PaymobPaymentService extends BasePaymentService implements PaymentGatewayI
             'order_id' => $orderId,
             'billing_data' => $billingData,
             'currency' => 'EGP',
-            'integration_id' => $this->integrations_id[0], // use iframe integration id
+            'integration_id' => $this->integrations_id[0],
         ];
 
         $response = $this->buildRequest('POST', '/api/acceptance/payment_keys', $data);
