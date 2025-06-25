@@ -23,7 +23,11 @@ class Wishlist extends Component
             ->where('saved_products.user_id', Auth::id())
             ->with(['category'])
             ->orderByDesc('saved_at')
-            ->get();
+            ->get()
+            ->map(function ($product) {
+                $product->stock_status = $product->quantity > 0 ? 'available' : 'out_of_stock';
+                return $product;
+            });
     }
 
     public function removeFromWishlist($productId)

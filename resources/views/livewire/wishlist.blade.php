@@ -32,8 +32,8 @@
                         <a href="{{ route('product.show', $product->slug) }}">{{ $product->name }}</a>
                     </td>
                     <td data-label="PRICE">{{ $product->discount_price_for_current_country }}</td>
-                    <td data-label="STOCK STATUS" style="color: {{ $product->quantity > 1 ? 'green' : 'red' }};">
-                        {{ $product->quantity > 1 ? __('In stock') : __('Out of stock') }}
+                    <td data-label="STOCK STATUS" style="color: {{ $product->stock_status === 'available' ? 'green' : 'red' }};">
+                        {{ $product->stock_status === 'available' ? __('In stock') : __('Out of stock') }}
                     </td>
                     <td data-label="ACTIONS">
                         @if($product->quantity > 0)

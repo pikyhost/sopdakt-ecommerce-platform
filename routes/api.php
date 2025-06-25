@@ -287,3 +287,7 @@ Route::get('/google-analytics', function () {
 
 
 Route::post('/auth/google', [GoogleAuthController::class, 'login']);
+
+Route::middleware('auth:sanctum')->get('/me', function (Request $request) {
+    return $request->user();
+});
