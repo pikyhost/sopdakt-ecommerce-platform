@@ -615,6 +615,10 @@ class ProductResource extends Resource
                                     ->columnSpanFull()
                                     ->label(__('Is Featured?'))
                                     ->required(),
+                                Forms\Components\Checkbox::make('')
+                                    ->label(__('Best Seller'))
+                                    ->default(false)
+                                    ->columnSpanFull(),
                             ])->columns(2),
                     ])
                     ->columnSpanFull()
