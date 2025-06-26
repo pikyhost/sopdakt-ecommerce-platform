@@ -124,7 +124,7 @@ class ProductController extends Controller
                         'id' => $pcs->id,
                         'size_id' => $pcs->size_id,
                         'size_name' => optional($pcs->size)->name,
-                        'stock_status' => $pcs->quantity <= 3 ? 'HOT' : null,
+                        'quantity' => $pcs->quantity,
                     ]),
                 ]),
                 'real_average_rating' => round($product->ratings->avg('rating'), 1),
@@ -250,7 +250,7 @@ class ProductController extends Controller
                         'id' => $pcs->id,
                         'size_id' => $pcs->size_id,
                         'size_name' => optional($pcs->size)->name,
-                        'stock_status' => $pcs->quantity <= 3 ? 'HOT' : null,
+                        'quantity' => $pcs->quantity,
                     ]),
                 ]),
                 'real_average_rating' => round($product->ratings->avg('rating'), 1),
@@ -400,7 +400,7 @@ class ProductController extends Controller
                                 'id' => $pcs->id,
                                 'size_id' => $pcs->size_id,
                                 'size_name' => optional($pcs->size)->name,
-                                'stock_status' => $pcs->quantity <= 3 ? 'HOT' : null,
+                                'quantity' => $pcs->quantity,
                             ];
                         }),
                     ];
@@ -507,7 +507,7 @@ class ProductController extends Controller
                                 'id' => $pcs->id,
                                 'size_id' => $pcs->size_id,
                                 'size_name' => optional($pcs->size)->name,
-                                'stock_status' => $pcs->quantity <= 3 ? 'HOT' : null,
+                                'quantity' => $pcs->quantity,
                             ];
                         }),
                     ];
@@ -580,7 +580,7 @@ class ProductController extends Controller
                         'id' => $pcs->id,
                         'size_id' => $pcs->size_id,
                         'size_name' => optional($pcs->size)->name,
-                        'stock_status' => $pcs->quantity <= 3 ? 'HOT' : null,
+                        'quantity' => $pcs->quantity,
                     ];
                 }),
             ];
