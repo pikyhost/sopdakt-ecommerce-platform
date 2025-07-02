@@ -55,8 +55,12 @@ class ShippingController extends Controller
             $order = Order::where('tracking_number', $trackingNumber)->first();
             if (!$order) {
                 Log::error('JT Express Webhook: Order not found', ['tracking_number' => $trackingNumber]);
-                return response()->json(['message' => 'Order not found'], 404);
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Order not found.'
+                    ], 200);
             }
+            
 
             // Update order
             $order->update([
