@@ -40,6 +40,11 @@ class ServerEnvEditor extends Page implements Forms\Contracts\HasForms
     public string $MAIL_FROM_ADDRESS;
     public string $MAIL_FROM_NAME;
 
+    public string $BAYMOB_BASE_URL;
+    public string $BAYMOB_API_KEY;
+    public string $PAYMOB_IFRAME_ID;
+    public string $PAYMOB_INTEGRATION_ID;
+
     public function mount(): void
     {
         foreach ($this->getEditableKeys() as $key) {
@@ -177,6 +182,25 @@ class ServerEnvEditor extends Page implements Forms\Contracts\HasForms
                         ->label(__('env.MAIL_FROM_NAME.label'))
                         ->helperText(__('env.MAIL_FROM_NAME.helper')),
                 ]),
+
+            Forms\Components\Section::make('Paymob Settings')
+                ->schema([
+                    Forms\Components\TextInput::make('BAYMOB_BASE_URL')
+                        ->label('Paymob Base URL')
+                        ->required(),
+
+                    Forms\Components\TextInput::make('BAYMOB_API_KEY')
+                        ->label('Paymob API Key')
+                        ->required(),
+
+                    Forms\Components\TextInput::make('PAYMOB_IFRAME_ID')
+                        ->label('Paymob Iframe ID')
+                        ->required(),
+
+                    Forms\Components\TextInput::make('PAYMOB_INTEGRATION_ID')
+                        ->label('Paymob Integration ID')
+                        ->required(),
+                ]),
         ];
     }
 
@@ -203,6 +227,9 @@ class ServerEnvEditor extends Page implements Forms\Contracts\HasForms
 
             File::put($envPath, $envContent);
 
+            \Artisan::call('config:clear');
+            \Artisan::call('config:cache');
+
             Notification::make()
                 ->title('Updated .env successfully')
                 ->success()
@@ -227,6 +254,8 @@ class ServerEnvEditor extends Page implements Forms\Contracts\HasForms
             'ANALYTICS_PROPERTY_ID', 'ANALYTICS_SERVICE_ACCOUNT_JSON',
             'MAIL_MAILER', 'MAIL_HOST', 'MAIL_PORT', 'MAIL_USERNAME',
             'MAIL_PASSWORD', 'MAIL_ENCRYPTION', 'MAIL_FROM_ADDRESS', 'MAIL_FROM_NAME',
+            'BAYMOB_BASE_URL', 'BAYMOB_API_KEY',
+            'PAYMOB_IFRAME_ID', 'PAYMOB_INTEGRATION_ID',
         ];
     }
 

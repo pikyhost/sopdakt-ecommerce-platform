@@ -62,4 +62,10 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'paymob' => [
+        'base_url' => env('BAYMOB_BASE_URL'),
+        'api_key' => env('BAYMOB_API_KEY'),
+        'iframe_id' => env('PAYMOB_IFRAME_ID'),
+        'integration_id' => env('PAYMOB_INTEGRATION_ID'),
+    ],
 ];

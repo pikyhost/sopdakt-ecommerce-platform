@@ -17,14 +17,13 @@ class PaymobPaymentService extends BasePaymentService implements PaymentGatewayI
 
     public function __construct()
     {
-        $this->base_url = env("BAYMOB_BASE_URL");
-        $this->api_key = env("BAYMOB_API_KEY");
+        $this->base_url = config('services.paymob.base_url');
+        $this->api_key = config('services.paymob.api_key');
         $this->header = [
             'Accept' => 'application/json',
             'Content-Type' => 'application/json',
         ];
-
-        $this->integrations_id = [env("PAYMOB_INTEGRATION_ID")];
+        $this->integrations_id = [config('services.paymob.integration_id')];
     }
 
 
@@ -76,7 +75,7 @@ class PaymobPaymentService extends BasePaymentService implements PaymentGatewayI
             return ['success' => false, 'message' => 'Failed to generate payment key.'];
         }
 
-        $iframeId = env('PAYMOB_IFRAME_ID');
+        $iframeId = config('services.paymob.iframe_id');
         $iframeUrl = "{$this->base_url}/api/acceptance/iframes/{$iframeId}?payment_token={$paymentToken}";
         Log::info('Iframe URL Generated', ['url' => $iframeUrl]);
 
