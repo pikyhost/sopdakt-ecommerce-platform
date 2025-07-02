@@ -63,8 +63,8 @@ class OrderController extends Controller
         if (! $order) {
             return response()->json([
                 'success' => false,
-                'message' => 'Order not found.',
-            ], 404);
+                'message' => 'Order not found.'
+            ], 200);
         }
 
         return response()->json([
