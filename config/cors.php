@@ -14,7 +14,7 @@ return [
 
     'allowed_origins' => [
         'http://localhost:5173',          // Local dev
-        'https://redaa.store/', 
+        'https://redaa.store', 
                    // Production (HTTPS only)
     ],
 
