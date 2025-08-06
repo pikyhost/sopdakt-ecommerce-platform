@@ -14,7 +14,8 @@ return [
 
     'allowed_origins' => [
         'http://localhost:5173',          // Local dev
-        'https://sopdakt.com',            // Production (HTTPS only)
+        'https://redaa.store/', 
+                   // Production (HTTPS only)
     ],
 
     'allowed_origins_patterns' => [],     // Optional for subdomains

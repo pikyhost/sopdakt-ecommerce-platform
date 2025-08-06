@@ -15,7 +15,7 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
-    'frontend_url' => env('FRONTEND_URL', 'https://sopdakt.com/'),
+    'frontend_url' => env('FRONTEND_URL', 'https://redaa.store/'),
 
 
     /*
